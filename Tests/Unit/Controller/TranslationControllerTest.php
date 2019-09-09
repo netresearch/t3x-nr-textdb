@@ -37,7 +37,7 @@ class TranslationControllerTest extends \TYPO3\TestingFramework\Core\Unit\UnitTe
             ->disableOriginalConstructor()
             ->getMock();
 
-        $translationRepository = $this->getMockBuilder(\::class)
+        $translationRepository = $this->getMockBuilder(\Netresearch\NrTextdb\Domain\Repository\TranslationRepository::class)
             ->setMethods(['findAll'])
             ->disableOriginalConstructor()
             ->getMock();
@@ -72,7 +72,7 @@ class TranslationControllerTest extends \TYPO3\TestingFramework\Core\Unit\UnitTe
     {
         $translation = new \Netresearch\NrTextdb\Domain\Model\Translation();
 
-        $translationRepository = $this->getMockBuilder(\::class)
+        $translationRepository = $this->getMockBuilder(\Netresearch\NrTextdb\Domain\Repository\TranslationRepository::class)
             ->setMethods(['add'])
             ->disableOriginalConstructor()
             ->getMock();
@@ -104,7 +104,7 @@ class TranslationControllerTest extends \TYPO3\TestingFramework\Core\Unit\UnitTe
     {
         $translation = new \Netresearch\NrTextdb\Domain\Model\Translation();
 
-        $translationRepository = $this->getMockBuilder(\::class)
+        $translationRepository = $this->getMockBuilder(\Netresearch\NrTextdb\Domain\Repository\TranslationRepository::class)
             ->setMethods(['update'])
             ->disableOriginalConstructor()
             ->getMock();
@@ -122,7 +122,7 @@ class TranslationControllerTest extends \TYPO3\TestingFramework\Core\Unit\UnitTe
     {
         $translation = new \Netresearch\NrTextdb\Domain\Model\Translation();
 
-        $translationRepository = $this->getMockBuilder(\::class)
+        $translationRepository = $this->getMockBuilder(\Netresearch\NrTextdb\Domain\Repository\TranslationRepository::class)
             ->setMethods(['remove'])
             ->disableOriginalConstructor()
             ->getMock();

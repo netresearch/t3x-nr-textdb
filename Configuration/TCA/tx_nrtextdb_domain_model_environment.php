@@ -117,5 +117,10 @@ return [
             ],
         ],
     
+        'translation' => [
+            'config' => [
+                'type' => 'passthrough',
+            ],
+        ],
     ],
 ];

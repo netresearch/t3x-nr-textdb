@@ -1,6 +1,7 @@
 <?php
 namespace Netresearch\NrTextdb\Controller;
 
+use TYPO3\CMS\Extbase\Mvc\View\ViewInterface;
 
 /***
  *
@@ -17,6 +18,12 @@ namespace Netresearch\NrTextdb\Controller;
  */
 class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
 {
+
+    /**
+     * @var \Netresearch\NrTextdb\Domain\Repository\Translation
+     * @inject
+     */
+    private $translationRepository = null;
 
     /**
      * action list
@@ -42,7 +49,7 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
 
     /**
      * action new
-     * 
+     *
      * @return void
      */
     public function newAction()
@@ -98,5 +105,18 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
         $this->addFlashMessage('The object was deleted. Please be aware that this action is publicly accessible unless you implement an access check. See https://docs.typo3.org/typo3cms/extensions/extension_builder/User/Index.html', '', \TYPO3\CMS\Core\Messaging\AbstractMessage::WARNING);
         $this->translationRepository->remove($translation);
         $this->redirect('list');
+    }
+
+    /**
+     * Set up the doc header properly here
+     *
+     * @param ViewInterface $view
+     * @return void
+     */
+    protected function initializeView(ViewInterface $view)
+    {
+        if ($view instanceof BackendTemplateView) {
+            $view->getModuleTemplate()->getPageRenderer()->loadRequireJsModule('TYPO3/CMS/Backend/Modal');
+        }
     }
 }

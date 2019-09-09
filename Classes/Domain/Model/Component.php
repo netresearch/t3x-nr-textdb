@@ -15,7 +15,7 @@ namespace Netresearch\NrTextdb\Domain\Model;
 /**
  * Component
  */
-class Component extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
+class Component extends \TYPO3\CMS\Extbase\DomainObject\AbstractValueObject
 {
 
     /**

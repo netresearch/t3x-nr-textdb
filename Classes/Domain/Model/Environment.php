@@ -15,7 +15,7 @@ namespace Netresearch\NrTextdb\Domain\Model;
 /**
  * Environment
  */
-class Environment extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
+class Environment extends \TYPO3\CMS\Extbase\DomainObject\AbstractValueObject
 {
 
     /**

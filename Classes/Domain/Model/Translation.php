@@ -19,22 +19,30 @@ class Translation extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
 {
 
     /**
+     * value
+     *
+     * @var string
+     * @validate NotEmpty
+     */
+    protected $value = '';
+
+    /**
      * environment
-     * 
+     *
      * @var \Netresearch\NrTextdb\Domain\Model\Environment
      */
     protected $environment = null;
 
     /**
      * component
-     * 
+     *
      * @var \Netresearch\NrTextdb\Domain\Model\Component
      */
     protected $component = null;
 
     /**
      * type
-     * 
+     *
      * @var \Netresearch\NrTextdb\Domain\Model\Type
      */
     protected $type = null;
@@ -100,5 +108,26 @@ class Translation extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     public function setType(\Netresearch\NrTextdb\Domain\Model\Type $type)
     {
         $this->type = $type;
+    }
+
+    /**
+     * Returns the value
+     *
+     * @return string $value
+     */
+    public function getValue()
+    {
+        return $this->value;
+    }
+
+    /**
+     * Sets the value
+     *
+     * @param string $value
+     * @return void
+     */
+    public function setValue($value)
+    {
+        $this->value = $value;
     }
 }
