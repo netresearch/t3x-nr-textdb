@@ -185,7 +185,19 @@
                     "uid": "1071989020078"
                 },
                 "propertyGroup": {
-                    "properties": []
+                    "properties": [
+                        {
+                            "allowedFileTypes": "",
+                            "maxItems": "1",
+                            "propertyDescription": "",
+                            "propertyIsExcludeField": true,
+                            "propertyIsL10nModeExclude": false,
+                            "propertyIsRequired": true,
+                            "propertyName": "value",
+                            "propertyType": "String",
+                            "uid": "174267408895"
+                        }
+                    ]
                 },
                 "relationGroup": {
                     "relations": [
@@ -221,70 +233,8 @@
                             "relationWire": "[wired]",
                             "renderType": "selectSingle",
                             "uid": "568988502847"
-                        },
-                        {
-                            "foreignRelationClass": "",
-                            "lazyLoading": false,
-                            "propertyIsExcludeField": true,
-                            "relationDescription": "",
-                            "relationName": "value",
-                            "relationType": "manyToOne",
-                            "relationWire": "[wired]",
-                            "renderType": "selectSingle",
-                            "uid": "1029250937514"
                         }
                     ]
-                }
-            }
-        },
-        {
-            "config": {
-                "position": [
-                    898,
-                    378
-                ]
-            },
-            "name": "New Model Object",
-            "value": {
-                "actionGroup": {
-                    "_default0_list": false,
-                    "_default1_show": false,
-                    "_default2_new_create": false,
-                    "_default3_edit_update": false,
-                    "_default4_delete": false,
-                    "customActions": []
-                },
-                "name": "Value",
-                "objectsettings": {
-                    "addDeletedField": true,
-                    "addHiddenField": true,
-                    "addStarttimeEndtimeFields": true,
-                    "aggregateRoot": false,
-                    "categorizable": false,
-                    "description": "",
-                    "mapToTable": "",
-                    "parentClass": "",
-                    "sorting": false,
-                    "type": "Entity",
-                    "uid": "1210425519298"
-                },
-                "propertyGroup": {
-                    "properties": [
-                        {
-                            "allowedFileTypes": "",
-                            "maxItems": "1",
-                            "propertyDescription": "",
-                            "propertyIsExcludeField": true,
-                            "propertyIsL10nModeExclude": false,
-                            "propertyIsRequired": true,
-                            "propertyName": "name",
-                            "propertyType": "String",
-                            "uid": "314782486753"
-                        }
-                    ]
-                },
-                "relationGroup": {
-                    "relations": []
                 }
             }
         }
@@ -366,22 +316,10 @@
                 "terminal": "SOURCES",
                 "uid": "786736465789"
             }
-        },
-        {
-            "src": {
-                "moduleId": 3,
-                "terminal": "relationWire_3",
-                "uid": "1029250937514"
-            },
-            "tgt": {
-                "moduleId": 4,
-                "terminal": "SOURCES",
-                "uid": "1210425519298"
-            }
         }
     ],
     "log": {
-        "last_modified": "2019-09-11 11:36",
+        "last_modified": "2019-09-11 10:31",
         "extension_builder_version": "9.10.0",
         "be_user": "Thomas Sch\u00f6ne (5)"
     }

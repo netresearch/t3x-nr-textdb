@@ -30,18 +30,9 @@ CREATE TABLE tx_nrtextdb_domain_model_type (
 #
 CREATE TABLE tx_nrtextdb_domain_model_translation (
 
+	value varchar(255) DEFAULT '' NOT NULL,
 	environment int(11) unsigned DEFAULT '0',
 	component int(11) unsigned DEFAULT '0',
 	type int(11) unsigned DEFAULT '0',
-	value int(11) unsigned DEFAULT '0',
-
-);
-
-#
-# Table structure for table 'tx_nrtextdb_domain_model_value'
-#
-CREATE TABLE tx_nrtextdb_domain_model_value (
-
-	name varchar(255) DEFAULT '' NOT NULL,
 
 );

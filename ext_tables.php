@@ -39,8 +39,5 @@ call_user_func(
         \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addLLrefForTCAdescr('tx_nrtextdb_domain_model_translation', 'EXT:nr_textdb/Resources/Private/Language/locallang_csh_tx_nrtextdb_domain_model_translation.xlf');
         \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::allowTableOnStandardPages('tx_nrtextdb_domain_model_translation');
 
-        \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addLLrefForTCAdescr('tx_nrtextdb_domain_model_value', 'EXT:nr_textdb/Resources/Private/Language/locallang_csh_tx_nrtextdb_domain_model_value.xlf');
-        \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::allowTableOnStandardPages('tx_nrtextdb_domain_model_value');
-
     }
 );

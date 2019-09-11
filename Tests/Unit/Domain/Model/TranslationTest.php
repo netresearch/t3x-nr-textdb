@@ -27,6 +27,31 @@ class TranslationTest extends \TYPO3\TestingFramework\Core\Unit\UnitTestCase
     /**
      * @test
      */
+    public function getValueReturnsInitialValueForString()
+    {
+        self::assertSame(
+            '',
+            $this->subject->getValue()
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function setValueForStringSetsValue()
+    {
+        $this->subject->setValue('Conceived at T3CON10');
+
+        self::assertAttributeEquals(
+            'Conceived at T3CON10',
+            'value',
+            $this->subject
+        );
+    }
+
+    /**
+     * @test
+     */
     public function getEnvironmentReturnsInitialValueForEnvironment()
     {
         self::assertEquals(
@@ -98,32 +123,6 @@ class TranslationTest extends \TYPO3\TestingFramework\Core\Unit\UnitTestCase
         self::assertAttributeEquals(
             $typeFixture,
             'type',
-            $this->subject
-        );
-    }
-
-    /**
-     * @test
-     */
-    public function getValueReturnsInitialValueForValue()
-    {
-        self::assertEquals(
-            null,
-            $this->subject->getValue()
-        );
-    }
-
-    /**
-     * @test
-     */
-    public function setValueForValueSetsValue()
-    {
-        $valueFixture = new \Netresearch\NrTextdb\Domain\Model\Value();
-        $this->subject->setValue($valueFixture);
-
-        self::assertAttributeEquals(
-            $valueFixture,
-            'value',
             $this->subject
         );
     }

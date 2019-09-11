@@ -49,7 +49,7 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
 
     /**
      * action new
-     * 
+     *
      * @return void
      */
     public function newAction()
@@ -109,7 +109,7 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
 
     /**
      * Set up the doc header properly here
-     * 
+     *
      * @param ViewInterface $view
      * @return void
      */
