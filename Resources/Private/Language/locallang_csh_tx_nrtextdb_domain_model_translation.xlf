@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <xliff version="1.0">
-	<file source-language="en" datatype="plaintext" original="messages" date="2019-09-11T10:31:41Z" product-name="nr_textdb">
+	<file source-language="en" datatype="plaintext" original="messages" date="2019-09-11T11:36:04Z" product-name="nr_textdb">
 		<header/>
 		<body>
-			<trans-unit id="value.description">
-				<source>value</source>
-			</trans-unit>
 			<trans-unit id="environment.description">
 				<source>environment</source>
 			</trans-unit>
@@ -14,6 +11,9 @@
 			</trans-unit>
 			<trans-unit id="type.description">
 				<source>type</source>
+			</trans-unit>
+			<trans-unit id="value.description">
+				<source>value</source>
 			</trans-unit>
 		</body>
 	</file>

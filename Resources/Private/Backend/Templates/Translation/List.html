@@ -19,14 +19,12 @@ Otherwise your changes will be overwritten the next time you save the extension 
 
 <table  class="tx_nrtextdb" >
 	<tr>
-		<th><f:translate key="tx_nrtextdb_domain_model_translation.value" /></th>
 		<th> </th>
 		<th> </th>
 	</tr>
 
 	<f:for each="{translations}" as="translation">
 		<tr>
-			<td><f:link.action action="show" arguments="{translation : translation}"> {translation.value}</f:link.action></td>
 			<td><f:link.action action="edit" arguments="{translation : translation}">Edit</f:link.action></td>
 			<td><f:link.action action="delete" arguments="{translation : translation}">Delete</f:link.action></td>
 		</tr>

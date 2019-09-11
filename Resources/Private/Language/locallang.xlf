@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <xliff version="1.0">
-	<file source-language="en" datatype="plaintext" original="messages" date="2019-09-11T10:31:41Z" product-name="nr_textdb">
+	<file source-language="en" datatype="plaintext" original="messages" date="2019-09-11T11:36:04Z" product-name="nr_textdb">
 		<header/>
 		<body>
 			<trans-unit id="tx_nrtextdb_domain_model_environment">
@@ -24,9 +24,6 @@
 			<trans-unit id="tx_nrtextdb_domain_model_translation">
 				<source>Translation</source>
 			</trans-unit>
-			<trans-unit id="tx_nrtextdb_domain_model_translation.value">
-				<source>Value</source>
-			</trans-unit>
 			<trans-unit id="tx_nrtextdb_domain_model_translation.environment">
 				<source>Environment</source>
 			</trans-unit>
@@ -35,6 +32,15 @@
 			</trans-unit>
 			<trans-unit id="tx_nrtextdb_domain_model_translation.type">
 				<source>Type</source>
+			</trans-unit>
+			<trans-unit id="tx_nrtextdb_domain_model_translation.value">
+				<source>Value</source>
+			</trans-unit>
+			<trans-unit id="tx_nrtextdb_domain_model_value">
+				<source>Value</source>
+			</trans-unit>
+			<trans-unit id="tx_nrtextdb_domain_model_value.name">
+				<source>Name</source>
 			</trans-unit>
 		</body>
 	</file>

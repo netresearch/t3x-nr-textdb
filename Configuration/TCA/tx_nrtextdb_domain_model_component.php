@@ -68,19 +68,14 @@ return [
         ],
 
         'name' => [
-            'exclude' => true,
+            'exclude' => false,
             'label' => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang_db.xlf:tx_nrtextdb_domain_model_component.name',
             'config' => [
                 'type' => 'input',
                 'size' => 30,
-                'eval' => 'trim'
+                'eval' => 'trim,required'
             ],
         ],
     
-        'translation' => [
-            'config' => [
-                'type' => 'passthrough',
-            ],
-        ],
     ],
 ];
