@@ -1,25 +1,30 @@
-<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+	  xmlns:be="http://typo3.org/ns/TYPO3/CMS/Backend/ViewHelpers"
+	  data-namespace-typo3-fluid="true">
 <f:layout name="Default" />
 
 <f:section name="content">
 <h1>Listing for Translation</h1>
-
-<f:flashMessages />
-
-<table  class="tx_nrtextdb" >
+	<be:link.newRecord table="tx_nrtextdb_domain_model_translation" returnUrl="">Neue Übersetzung</be:link.newRecord>
+	<f:debug>{translations}</f:debug>
+<table  id="tx_nrtextdb" class="table table-hover" >
 	<tr>
-		<th> </th>
-		<th> </th>
+		<th>Environment</th>
+		<th>Component</th>
+		<th>Type</th>
+		<th>Value</th>
 	</tr>
-
 	<f:for each="{translations}" as="translation">
 		<tr>
-			<td><f:link.action action="edit" arguments="{translation : translation}">Edit</f:link.action></td>
-			<td><f:link.action action="delete" arguments="{translation : translation}">Delete</f:link.action></td>
+			<td>{translation.getEnvironment.getName}</td>
+			<td>{translation.component}</td>
+			<td>{translation.type}</td>
+			<td>{translation.value}</td>
+			<td><be:link.editRecord uid="{translation.uid}" table="tx_nrtextdb_domain_model_translation" returnUrl="">Bearbeiten </be:link.editRecord></td>
+
 		</tr>
-		</f:for>
+	</f:for>
 </table>
 
-<f:link.action action="new">New Translation</f:link.action>
 	</f:section>
 </html>
