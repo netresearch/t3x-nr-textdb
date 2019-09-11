@@ -93,9 +93,9 @@ return [
                 'type' => 'select',
                 'renderType' => 'selectSingle',
                 'foreign_table' => 'tx_nrtextdb_domain_model_environment',
-                'foreign_field' => 'translation',
+                'minitems' => 0,
+                'maxitems' => 1,
             ],
-
         ],
         'component' => [
             'exclude' => true,
@@ -104,9 +104,9 @@ return [
                 'type' => 'select',
                 'renderType' => 'selectSingle',
                 'foreign_table' => 'tx_nrtextdb_domain_model_component',
-                'foreign_field' => 'translation',
+                'minitems' => 0,
+                'maxitems' => 1,
             ],
-
         ],
         'type' => [
             'exclude' => true,
@@ -115,10 +115,9 @@ return [
                 'type' => 'select',
                 'renderType' => 'selectSingle',
                 'foreign_table' => 'tx_nrtextdb_domain_model_type',
-                'foreign_field' => 'translation',
-                'foreign_sortby' => 'sorting',
+                'minitems' => 0,
+                'maxitems' => 1,
             ],
-
         ],
     
     ],

@@ -3,8 +3,6 @@
 #
 CREATE TABLE tx_nrtextdb_domain_model_environment (
 
-	translation int(11) unsigned DEFAULT '0' NOT NULL,
-
 	name varchar(255) DEFAULT '' NOT NULL,
 
 );
@@ -14,8 +12,6 @@ CREATE TABLE tx_nrtextdb_domain_model_environment (
 #
 CREATE TABLE tx_nrtextdb_domain_model_component (
 
-	translation int(11) unsigned DEFAULT '0' NOT NULL,
-
 	name varchar(255) DEFAULT '' NOT NULL,
 
 );
@@ -24,8 +20,6 @@ CREATE TABLE tx_nrtextdb_domain_model_component (
 # Table structure for table 'tx_nrtextdb_domain_model_type'
 #
 CREATE TABLE tx_nrtextdb_domain_model_type (
-
-	translation int(11) unsigned DEFAULT '0' NOT NULL,
 
 	name varchar(255) DEFAULT '' NOT NULL,
 
@@ -37,35 +31,8 @@ CREATE TABLE tx_nrtextdb_domain_model_type (
 CREATE TABLE tx_nrtextdb_domain_model_translation (
 
 	value varchar(255) DEFAULT '' NOT NULL,
-	environment int(11) unsigned DEFAULT '0' NOT NULL,
-	component int(11) unsigned DEFAULT '0' NOT NULL,
-	type int(11) unsigned DEFAULT '0' NOT NULL,
-
-);
-
-#
-# Table structure for table 'tx_nrtextdb_domain_model_environment'
-#
-CREATE TABLE tx_nrtextdb_domain_model_environment (
-
-	translation int(11) unsigned DEFAULT '0' NOT NULL,
-
-);
-
-#
-# Table structure for table 'tx_nrtextdb_domain_model_component'
-#
-CREATE TABLE tx_nrtextdb_domain_model_component (
-
-	translation int(11) unsigned DEFAULT '0' NOT NULL,
-
-);
-
-#
-# Table structure for table 'tx_nrtextdb_domain_model_type'
-#
-CREATE TABLE tx_nrtextdb_domain_model_type (
-
-	translation int(11) unsigned DEFAULT '0' NOT NULL,
+	environment int(11) unsigned DEFAULT '0',
+	component int(11) unsigned DEFAULT '0',
+	type int(11) unsigned DEFAULT '0',
 
 );

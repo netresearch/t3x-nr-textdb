@@ -22,6 +22,7 @@ class Component extends \TYPO3\CMS\Extbase\DomainObject\AbstractValueObject
      * name
      * 
      * @var string
+     * @validate NotEmpty
      */
     protected $name = '';
 

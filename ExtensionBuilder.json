@@ -37,9 +37,9 @@
                             "allowedFileTypes": "",
                             "maxItems": "1",
                             "propertyDescription": "",
-                            "propertyIsExcludeField": true,
+                            "propertyIsExcludeField": false,
                             "propertyIsL10nModeExclude": true,
-                            "propertyIsRequired": false,
+                            "propertyIsRequired": true,
                             "propertyName": "name",
                             "propertyType": "String",
                             "uid": "696420666763"
@@ -88,9 +88,9 @@
                             "allowedFileTypes": "",
                             "maxItems": "1",
                             "propertyDescription": "",
-                            "propertyIsExcludeField": true,
+                            "propertyIsExcludeField": false,
                             "propertyIsL10nModeExclude": true,
-                            "propertyIsRequired": false,
+                            "propertyIsRequired": true,
                             "propertyName": "name",
                             "propertyType": "String",
                             "uid": "367198458015"
@@ -139,9 +139,9 @@
                             "allowedFileTypes": "",
                             "maxItems": "1",
                             "propertyDescription": "",
-                            "propertyIsExcludeField": true,
+                            "propertyIsExcludeField": false,
                             "propertyIsL10nModeExclude": true,
-                            "propertyIsRequired": false,
+                            "propertyIsRequired": true,
                             "propertyName": "name",
                             "propertyType": "String",
                             "uid": "648219231358"
@@ -207,9 +207,9 @@
                             "propertyIsExcludeField": true,
                             "relationDescription": "",
                             "relationName": "environment",
-                            "relationType": "zeroToMany",
+                            "relationType": "manyToOne",
                             "relationWire": "[wired]",
-                            "renderType": "inline",
+                            "renderType": "selectSingle",
                             "uid": "633434588410"
                         },
                         {
@@ -218,9 +218,9 @@
                             "propertyIsExcludeField": true,
                             "relationDescription": "",
                             "relationName": "component",
-                            "relationType": "zeroToMany",
+                            "relationType": "manyToOne",
                             "relationWire": "[wired]",
-                            "renderType": "inline",
+                            "renderType": "selectSingle",
                             "uid": "575474122550"
                         },
                         {
@@ -229,9 +229,9 @@
                             "propertyIsExcludeField": true,
                             "relationDescription": "",
                             "relationName": "type",
-                            "relationType": "zeroToMany",
+                            "relationType": "manyToOne",
                             "relationWire": "[wired]",
-                            "renderType": "inline",
+                            "renderType": "selectSingle",
                             "uid": "568988502847"
                         }
                     ]
@@ -319,7 +319,7 @@
         }
     ],
     "log": {
-        "last_modified": "2019-09-10 03:25",
+        "last_modified": "2019-09-11 10:31",
         "extension_builder_version": "9.10.0",
         "be_user": "Thomas Sch\u00f6ne (5)"
     }

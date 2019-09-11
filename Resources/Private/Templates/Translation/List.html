@@ -5,8 +5,7 @@
 
 <f:section name="content">
 <h1>Listing for Translation</h1>
-	<be:link.newRecord table="tx_nrtextdb_domain_model_translation" returnUrl="">Neue Übersetzung</be:link.newRecord>
-	<f:debug>{translations}</f:debug>
+	<be:link.newRecord table="tx_nrtextdb_domain_model_translation" pid="64" returnUrl="">Neue Übersetzung</be:link.newRecord>
 <table  id="tx_nrtextdb" class="table table-hover" >
 	<tr>
 		<th>Environment</th>
@@ -16,9 +15,9 @@
 	</tr>
 	<f:for each="{translations}" as="translation">
 		<tr>
-			<td>{translation.getEnvironment.getName}</td>
-			<td>{translation.component}</td>
-			<td>{translation.type}</td>
+			<td>{translation.environment.name}</td>
+			<td>{translation.component.name}</td>
+			<td>{translation.type.name}</td>
 			<td>{translation.value}</td>
 			<td><be:link.editRecord uid="{translation.uid}" table="tx_nrtextdb_domain_model_translation" returnUrl="">Bearbeiten </be:link.editRecord></td>
 
