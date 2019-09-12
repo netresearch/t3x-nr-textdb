@@ -62,6 +62,7 @@ return [
             ],
         ],
         'hidden' => [
+            'l10n_mode' => 'exclude',
             'exclude' => true,
             'label' => 'LLL:EXT:core/Resources/Private/Language/locallang_general.xlf:LGL.visible',
             'config' => [
@@ -87,6 +88,7 @@ return [
             ],
         ],
         'environment' => [
+            'l10n_mode' => 'exclude',
             'exclude' => true,
             'label' => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang_db.xlf:tx_nrtextdb_domain_model_translation.environment',
             'config' => [
@@ -98,6 +100,7 @@ return [
             ],
         ],
         'component' => [
+            'l10n_mode' => 'exclude',
             'exclude' => true,
             'label' => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang_db.xlf:tx_nrtextdb_domain_model_translation.component',
             'config' => [
@@ -109,6 +112,7 @@ return [
             ],
         ],
         'type' => [
+            'l10n_mode' => 'exclude',
             'exclude' => true,
             'label' => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang_db.xlf:tx_nrtextdb_domain_model_translation.type',
             'config' => [
