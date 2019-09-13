@@ -1,6 +1,7 @@
 <?php
 namespace Netresearch\NrTextdb\Controller;
 
+use TYPO3\CMS\Backend\View\BackendTemplateView;
 use TYPO3\CMS\Extbase\Mvc\View\ViewInterface;
 
 /***
@@ -27,7 +28,7 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
 
     /**
      * action list
-     * 
+     *
      * @return void
      */
     public function listAction()
@@ -38,7 +39,7 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
 
     /**
      * action show
-     * 
+     *
      * @param \Netresearch\NrTextdb\Domain\Model\Translation $translation
      * @return void
      */
@@ -58,7 +59,7 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
 
     /**
      * action create
-     * 
+     *
      * @param \Netresearch\NrTextdb\Domain\Model\Translation $newTranslation
      * @return void
      */
@@ -71,7 +72,7 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
 
     /**
      * action edit
-     * 
+     *
      * @param \Netresearch\NrTextdb\Domain\Model\Translation $translation
      * @ignorevalidation $translation
      * @return void
@@ -83,7 +84,7 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
 
     /**
      * action update
-     * 
+     *
      * @param \Netresearch\NrTextdb\Domain\Model\Translation $translation
      * @return void
      */
@@ -96,7 +97,7 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
 
     /**
      * action delete
-     * 
+     *
      * @param \Netresearch\NrTextdb\Domain\Model\Translation $translation
      * @return void
      */
