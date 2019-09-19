@@ -52,7 +52,9 @@ class TextdbViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelper\AbstractTagBased
         $this->registerArgument(
             'environment',
             'string',
-            'TextDB environment'
+            'TextDB environment',
+            false,
+            'default'
         );
     }
 
