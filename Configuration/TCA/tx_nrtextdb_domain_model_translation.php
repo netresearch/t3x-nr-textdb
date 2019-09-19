@@ -18,10 +18,10 @@ return [
         'iconfile' => 'EXT:nr_textdb/Resources/Public/Icons/tx_nrtextdb_domain_model_translation.gif'
     ],
     'interface' => [
-        'showRecordFieldList' => 'sys_language_uid, l10n_parent, l10n_diffsource, hidden, value, environment, component, type',
+        'showRecordFieldList' => 'sys_language_uid, l10n_parent, l10n_diffsource, hidden, environment, component, type, placeholder, value',
     ],
     'types' => [
-        '1' => ['showitem' => 'sys_language_uid, l10n_parent, l10n_diffsource, hidden, value, environment, component, type'],
+        '1' => ['showitem' => 'sys_language_uid, l10n_parent, l10n_diffsource, hidden, environment, component, type, placeholder, value'],
     ],
     'columns' => [
         'sys_language_uid' => [
@@ -77,16 +77,6 @@ return [
                 ],
             ],
         ],
-
-        'value' => [
-            'exclude' => true,
-            'label' => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang_db.xlf:tx_nrtextdb_domain_model_translation.value',
-            'config' => [
-                'type' => 'input',
-                'size' => 30,
-                'eval' => 'trim,required'
-            ],
-        ],
         'environment' => [
             'l10n_mode' => 'exclude',
             'exclude' => true,
@@ -123,6 +113,25 @@ return [
                 'maxitems' => 1,
             ],
         ],
-    
+        'placeholder' => [
+            'exclude' => true,
+            'l10n_mode' => 'exclude',
+            'label' => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang_db.xlf:tx_nrtextdb_domain_model_translation.placeholder',
+            'config' => [
+                'type' => 'input',
+                'size' => 30,
+                'eval' => 'trim,required'
+            ],
+        ],
+        'value' => [
+            'exclude' => true,
+            'label' => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang_db.xlf:tx_nrtextdb_domain_model_translation.value',
+            'config' => [
+                'type' => 'input',
+                'size' => 30,
+                'eval' => 'trim,required'
+            ],
+        ],
+
     ],
 ];

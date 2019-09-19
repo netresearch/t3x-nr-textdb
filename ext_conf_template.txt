@@ -1,0 +1,2 @@
+# cat=General; typoe=string; label=PID for the TextDB translations
+textDbPid =
