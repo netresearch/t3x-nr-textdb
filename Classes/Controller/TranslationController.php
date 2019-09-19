@@ -21,7 +21,7 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
 {
 
     /**
-     * @var \Netresearch\NrTextdb\Domain\Repository\Translation
+     * @var \Netresearch\NrTextdb\Domain\Repository\TranslationRepository
      * @inject
      */
     private $translationRepository = null;
@@ -35,6 +35,7 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
     {
         $translations = $this->translationRepository->findAll();
         $this->view->assign('translations', $translations);
+        $this->view->assign('textDbPid', $this->getConfiguredPageId());
     }
 
     /**
@@ -46,15 +47,6 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
     public function showAction(\Netresearch\NrTextdb\Domain\Model\Translation $translation)
     {
         $this->view->assign('translation', $translation);
-    }
-
-    /**
-     * action new
-     *
-     * @return void
-     */
-    public function newAction()
-    {
     }
 
     /**
@@ -119,5 +111,28 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
         if ($view instanceof BackendTemplateView) {
             $view->getModuleTemplate()->getPageRenderer()->loadRequireJsModule('TYPO3/CMS/Backend/Modal');
         }
+    }
+
+    /**
+     * Get the extension configuration.
+     *
+     * @return mixed
+     */
+    protected function getExtensionConfiguration()
+    {
+        return \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(
+            \TYPO3\CMS\Core\COnfiguration\ExtensionConfiguration::class
+        )->get('nr_textdb');
+    }
+
+    /**
+     * Get the configured pid from extension configuration.
+     *
+     * @return mixed
+     */
+    protected function getConfiguredPageId()
+    {
+        $configuration = $this->getExtensionConfiguration();
+        return $configuration['textDbPid'];
     }
 }

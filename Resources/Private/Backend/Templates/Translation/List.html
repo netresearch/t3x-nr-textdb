@@ -1,38 +1,38 @@
-<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+	  xmlns:be="http://typo3.org/ns/TYPO3/CMS/Backend/ViewHelpers"
+	  data-namespace-typo3-fluid="true">
 <f:layout name="Default" />
-
-This Template is responsible for creating a table of domain objects.
-
-If you modify this template, do not forget to change the overwrite settings
-in /Configuration/ExtensionBuilder/settings.yaml:
-  Resources:
-    Private:
-      Templates:
-        List.html: keep
-
-Otherwise your changes will be overwritten the next time you save the extension in the extension builder
-
 <f:section name="content">
-<h1>Listing for Translation</h1>
-
-<f:flashMessages />
-
-<table  class="tx_nrtextdb" >
-	<tr>
-		<th><f:translate key="tx_nrtextdb_domain_model_translation.value" /></th>
-		<th> </th>
-		<th> </th>
-	</tr>
-
-	<f:for each="{translations}" as="translation">
+	<be:link.newRecord table="tx_nrtextdb_domain_model_translation" pid="{textDbPid}" returnUrl="" class="btn btn-default">Neue Übersetzung</be:link.newRecord>
+	<h1>Listing for Translation</h1>
+	<table  id="tx_nrtextdb" class="table table-hover" >
 		<tr>
-			<td><f:link.action action="show" arguments="{translation : translation}"> {translation.value}</f:link.action></td>
-			<td><f:link.action action="edit" arguments="{translation : translation}">Edit</f:link.action></td>
-			<td><f:link.action action="delete" arguments="{translation : translation}">Delete</f:link.action></td>
+			<th>Environment</th>
+			<th>Component</th>
+			<th>Type</th>
+			<th>Placeholder</th>
+			<th>Value</th>
+			<th>Funktionen</th>
 		</tr>
-		</f:for>
-</table>
+		<f:for each="{translations}" as="translation">
+			<tr>
+				<td>{translation.environment.name}</td>
+				<td>{translation.component.name}</td>
+				<td>{translation.type.name}</td>
+				<td>{translation.placeholder}</td>
+				<td>{translation.value}</td>
+				<td>
+					<be:link.editRecord uid="{translation.uid}" table="tx_nrtextdb_domain_model_translation" returnUrl="" class="btn btn-default">
+						Bearbeiten
+					</be:link.editRecord>
+					<f:link.action action="delete" arguments="{translation: translation}" class="btn btn-default">
+						Löschen
+					</f:link.action>
+				</td>
 
-<f:link.action action="new">New Translation</f:link.action>
-	</f:section>
+			</tr>
+		</f:for>
+	</table>
+
+</f:section>
 </html>
