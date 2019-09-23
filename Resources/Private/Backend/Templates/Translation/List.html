@@ -5,6 +5,7 @@
 <f:section name="content">
 	<be:link.newRecord table="tx_nrtextdb_domain_model_translation" pid="{textDbPid}" returnUrl="" class="btn btn-default">Neue Übersetzung</be:link.newRecord>
 	<h1>Listing for Translation</h1>
+	<f:be.widget.paginate objects="{translations}" as="paginatedtranslations" configuration="{itemsPerPage: 15, insertBelow: 1}">
 	<table  id="tx_nrtextdb" class="table table-hover" >
 		<tr>
 			<th>Environment</th>
@@ -14,7 +15,7 @@
 			<th>Value</th>
 			<th>Funktionen</th>
 		</tr>
-		<f:for each="{translations}" as="translation">
+		<f:for each="{paginatedtranslations}" as="translation">
 			<tr>
 				<td>{translation.environment.name}</td>
 				<td>{translation.component.name}</td>
@@ -33,6 +34,6 @@
 			</tr>
 		</f:for>
 	</table>
-
+	</f:be.widget.paginate>
 </f:section>
 </html>
