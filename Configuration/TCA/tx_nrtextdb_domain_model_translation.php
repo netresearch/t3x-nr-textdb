@@ -25,6 +25,7 @@ return [
     ],
     'columns' => [
         'sys_language_uid' => [
+            'displayCond' => 'REC:NEW:true',
             'exclude' => true,
             'label' => 'LLL:EXT:core/Resources/Private/Language/locallang_general.xlf:LGL.language',
             'config' => [
