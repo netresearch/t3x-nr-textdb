@@ -3,6 +3,7 @@ namespace Netresearch\NrTextdb\Domain\Repository;
 
 use Netresearch\NrTextdb\Domain\Model\Translation;
 use TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings;
+use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 
 /***
  *
@@ -34,6 +35,18 @@ class TranslationRepository extends \TYPO3\CMS\Extbase\Persistence\Repository
         $querySettings->setRespectStoragePage(false);
 
         $this->setDefaultQuerySettings($querySettings);
+    }
+
+    /**
+     * Returns all objects of this repository.
+     *
+     * @return QueryResultInterface|array
+     */
+    public function findAllWithHidden()
+    {
+        $query = $this->createQuery();
+        $query->getQuerySettings()->setIgnoreEnableFields(true);
+        return $query->execute();
     }
 
     /**
@@ -108,12 +121,19 @@ class TranslationRepository extends \TYPO3\CMS\Extbase\Persistence\Repository
             }
         }
 
+        $query->getQuerySettings()->setIgnoreEnableFields(true);
+        $queryResult = $query->execute();
+        $translation = $queryResult->getFirst();
+
         if ($translation === null) {
             $translation = $this->createTranslation($component, $environment, $type, $placeholder);
             $this->add($translation);
             $this->persistenceManager->persistAll();
             return  $translation;
         }
+
+        $translation = new \Netresearch\NrTextdb\Domain\Model\Translation();
+        return $translation;
     }
 
     /**
