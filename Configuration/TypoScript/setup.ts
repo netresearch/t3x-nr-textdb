@@ -1,9 +1,6 @@
 
 # Module configuration
 module.tx_nrtextdb_web_nrtextdbtextdb {
-    persistence {
-        storagePid = {$module.tx_nrtextdb_textdb.persistence.storagePid}
-    }
     view {
         templateRootPaths.0 = EXT:{extension.extensionKey}/Resources/Private/Backend/Templates/
         templateRootPaths.1 = {$module.tx_nrtextdb_textdb.view.templateRootPath}
