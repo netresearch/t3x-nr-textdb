@@ -33,7 +33,7 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
      */
     public function listAction()
     {
-        $translations = $this->translationRepository->findAll();
+        $translations = $this->translationRepository->findAllWithHidden();
         $this->view->assign('translations', $translations);
         $this->view->assign('textDbPid', $this->getConfiguredPageId());
     }

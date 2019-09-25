@@ -55,6 +55,11 @@ class Translation extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     protected $value = '';
 
     /**
+     * @var boolean
+     */
+    protected $hidden;
+
+    /**
      * __construct
      */
     public function __construct()
@@ -177,5 +182,13 @@ class Translation extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     public function setValue($value)
     {
         $this->value = $value;
+    }
+
+    /**
+     * @return boolean $hidden
+     */
+    public function getHidden()
+    {
+        return $this->hidden;
     }
 }
