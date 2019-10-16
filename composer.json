@@ -4,7 +4,7 @@
     "description": "",
     "authors": [
         {
-            "name": "Thomas Sch\u00f6ne",
+            "name": "Thomas Schöne",
             "role": "Developer"
         }
     ],
@@ -24,5 +24,10 @@
     "replace": {
         "nr_textdb": "self.version",
         "typo3-ter/nr-textdb": "self.version"
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.0.x-dev"
+        }
     }
 }
