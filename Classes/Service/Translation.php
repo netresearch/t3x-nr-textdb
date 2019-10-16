@@ -46,7 +46,8 @@ class Translation
             $component,
             $environment,
             $type,
-            $placeholder
+            $placeholder,
+            $this->getCurrentLanguage()
         );
 
         return $translation->getValue();

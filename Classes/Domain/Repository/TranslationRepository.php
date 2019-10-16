@@ -1,7 +1,10 @@
 <?php
 namespace Netresearch\NrTextdb\Domain\Repository;
 
+use Netresearch\NrTextdb\Domain\Model\Component;
+use Netresearch\NrTextdb\Domain\Model\Environment;
 use Netresearch\NrTextdb\Domain\Model\Translation;
+use Netresearch\NrTextdb\Domain\Model\Type;
 use TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings;
 use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 
@@ -15,7 +18,7 @@ use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
  *  (c) 2019 Thomas Schöne <thomas.schoene@netresearch.de>, Netresearch
  *
  ***/
-class TranslationRepository extends \TYPO3\CMS\Extbase\Persistence\Repository
+class TranslationRepository extends AbstractRepository
 {
     /**
      * @var boolean
@@ -23,16 +26,42 @@ class TranslationRepository extends \TYPO3\CMS\Extbase\Persistence\Repository
     private $useLanguageFilter;
 
     /**
+     * @var ComponentRepository
+     */
+    private $componentRepository;
+
+    /**
+     * @var EnvironmentRepository
+     */
+    private $environmentRepository;
+
+    /**
+     * @var TypeRepository
+     */
+    private $typeRepository;
+
+    /**
      * @var integer
      */
     private $languageUid;
 
+    /**
+     * TranslationRepository constructor.
+     *
+     * @param \TYPO3\CMS\Extbase\Object\ObjectManagerInterface $objectManager
+     */
     public function __construct(\TYPO3\CMS\Extbase\Object\ObjectManagerInterface $objectManager)
     {
         parent::__construct($objectManager);
 
+        /** @var Typo3QuerySettings $querySettings */
         $querySettings = $this->objectManager->get(Typo3QuerySettings::class);
         $querySettings->setRespectStoragePage(false);
+        $querySettings->setRespectSysLanguage(true);
+
+        $this->componentRepository   = $this->objectManager->get(ComponentRepository::class);
+        $this->environmentRepository = $this->objectManager->get(EnvironmentRepository::class);
+        $this->typeRepository        = $this->objectManager->get(TypeRepository::class);
 
         $this->setDefaultQuerySettings($querySettings);
     }
@@ -87,6 +116,7 @@ class TranslationRepository extends \TYPO3\CMS\Extbase\Persistence\Repository
         return $this;
     }
 
+    static $call = 0;
     /**
      * Returns a translation.
      *
@@ -94,103 +124,92 @@ class TranslationRepository extends \TYPO3\CMS\Extbase\Persistence\Repository
      * @param string $environment Environment of the translation
      * @param string $type        Type of the translation
      * @param string $placeholder Value of the translation
+     * @param int    $languageUid uid of the language
      *
      * @return Translation
      */
-    public function findEntry(string $component, string $environment, string $type, string $placeholder): Translation
+    public function findEntry(string $component, string $environment, string $type, string $placeholder, int $languageUid): Translation
     {
+        static::$call++;
+
         $query = $this->createQuery();
+        $query->getQuerySettings()->setIgnoreEnableFields(true);
+        $query->getQuerySettings()->setLanguageUid($languageUid);
+
+        /** @var Component $component */
+        $component   = $this->componentRepository->findByName($component);
+        /** @var Environment $environment */
+        $environment = $this->environmentRepository->findByName($environment);
+        /** @var Type $type */
+        $type        = $this->typeRepository->findByName($type);
 
         $query->matching(
             $query->logicalAnd(
                 [
                     $query->equals('placeholder', $placeholder),
-                    $query->equals('pid', $this->getConfiguredPageId())
+                    $query->equals('pid', $this->getConfiguredPageId()),
+                    $query->equals('type', $type->getUid()),
+                    $query->equals('component', $component->getUid()),
                 ]
             )
         );
 
         $queryResult = $query->execute();
-        $translation = $queryResult->getFirst();
 
-        foreach ($queryResult as $translation) {
-            if ($translation->getComponent()->getName() === $component
-                && $translation->getEnvironment()->getName() === $environment
-                && $translation->getType()->getName() === $type) {
-                return $translation;
+        $translation = null;
+
+        /** @var Translation $translation */
+        foreach ($queryResult as $result) {
+            if ($result->getEnvironment()->getName() === $environment->getName()) {
+                $translation = $result;
+            } elseif ($result->getEnvironment()->getName() === 'default') {
+                $translation = $result;
             }
         }
 
-        $query->getQuerySettings()->setIgnoreEnableFields(true);
-        $queryResult = $query->execute();
-        $translation = $queryResult->getFirst();
-
-        if ($translation === null) {
-            $translation = $this->createTranslation($component, $environment, $type, $placeholder);
-            $this->add($translation);
-            $this->persistenceManager->persistAll();
-            return  $translation;
+        if ($translation instanceof Translation) {
+            if ($translation->getHidden() || $translation->_getProperty('deleted')) {
+                return new Translation();
+            }
+            return $translation;
         }
 
-        $translation = new \Netresearch\NrTextdb\Domain\Model\Translation();
-        return $translation;
+        return $this->createTranslation($component, $environment, $type, $placeholder, $languageUid, $placeholder);
     }
 
     /**
      * Create a new translation.
      *
-     * @param string $component   Component of the translation
-     * @param string $environment Environment of the translation
-     * @param string $type        Type of the translation
-     * @param string $placeholder Value of the translation
+     * @param Component   $component   Component of the translation
+     * @param Environment $environment Environment of the translation
+     * @param Type        $type        Type of the translation
+     * @param string      $placeholder Placeholder of the translation
+     * @param int         $languageUid the uid of the language
+     * @param string      $value       Value of the translation
      *
      * @return Translation
      */
-    private function createTranslation($component, $environment, $type, $placeholder)
+    public function createTranslation($component, $environment, $type, $placeholder, $languageUid, $value = '')
     {
         $pid = $this->getConfiguredPageId();
 
-        $objComponent = new \Netresearch\NrTextdb\Domain\Model\Component();
-        $objComponent->setName($component);
-        $objComponent->setPid($pid);
-        $objEnvironment = new \Netresearch\NrTextdb\Domain\Model\Environment();
-        $objEnvironment->setName($environment);
-        $objEnvironment->setPid($pid);
-        $objType = new \Netresearch\NrTextdb\Domain\Model\Type();
-        $objType->setName($type);
-        $objType->setPid($pid);
-
         $translation = new \Netresearch\NrTextdb\Domain\Model\Translation();
         $translation->setPid($pid);
-        $translation->setComponent($objComponent);
-        $translation->setEnvironment($objEnvironment);
-        $translation->setType($objType);
+        $translation->setComponent($component);
+        $translation->setEnvironment($environment);
+        $translation->setType($type);
         $translation->setPlaceholder($placeholder);
-        $translation->setValue($placeholder);
+        $translation->setValue($value);
+        $translation->setLanguageUid($languageUid);
+
+        if ($languageUid != 0) {
+            $origTranslation = $this->findEntry($component->getName(), $environment->getName(), $type->getName(), $placeholder, 0);
+            $translation->setL10nParent($origTranslation->getUid());
+        }
+
+        $this->add($translation);
+        $this->persistenceManager->persistAll();
 
         return $translation;
-    }
-
-    /**
-     * Get the extension configuration.
-     *
-     * @return mixed
-     */
-    protected function getExtensionConfiguration()
-    {
-        return \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(
-            \TYPO3\CMS\Core\COnfiguration\ExtensionConfiguration::class
-        )->get('nr_textdb');
-    }
-
-    /**
-     * Get the configured pid from extension configuration.
-     *
-     * @return mixed
-     */
-    protected function getConfiguredPageId()
-    {
-        $configuration = $this->getExtensionConfiguration();
-        return $configuration['textDbPid'];
     }
 }

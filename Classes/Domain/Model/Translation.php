@@ -60,6 +60,11 @@ class Translation extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     protected $hidden;
 
     /**
+     * @var int
+     */
+    protected $l10nParent;
+
+    /**
      * __construct
      */
     public function __construct()
@@ -190,5 +195,59 @@ class Translation extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     public function getHidden()
     {
         return $this->hidden;
+    }
+
+    /**
+     * Return the language uid
+     *
+     * @return int
+     */
+    public function getLanguageUid()
+    {
+        return $this->_languageUid;
+    }
+
+    /**
+     * Set the language UID
+     *
+     * @param int $languageUid
+     *
+     * @return void
+     */
+    public function setLanguageUid($languageUid)
+    {
+        $this->_languageUid = $languageUid;
+    }
+
+    /**
+     * @param int $localizedUid
+     */
+    public function setLocalizedUid($localizedUid)
+    {
+        $this->_localizedUid = $localizedUid;
+    }
+
+    /**
+     * @return int
+     */
+    public function getLocalizedUid()
+    {
+        return $this->_localizedUid;
+    }
+
+    /**
+     * @return int
+     */
+    public function getL10nParent(): int
+    {
+        return $this->l10nParent;
+    }
+
+    /**
+     * @param int $l10nParent
+     */
+    public function setL10nParent(int $l10nParent): void
+    {
+        $this->l10nParent = $l10nParent;
     }
 }
