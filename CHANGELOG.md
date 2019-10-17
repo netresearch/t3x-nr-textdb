@@ -1,3 +1,8 @@
+# 0.0.4
+
+## MISC
+- MFAG-300: Implement Translation and Editing via Backendmodule f20f717
+
 # 0.0.3
 
 ## MISC
