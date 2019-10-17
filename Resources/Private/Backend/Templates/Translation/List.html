@@ -1,41 +1,38 @@
 <html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
 	  xmlns:be="http://typo3.org/ns/TYPO3/CMS/Backend/ViewHelpers"
+	  xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
 	  data-namespace-typo3-fluid="true">
 <f:layout name="Default" />
 <f:section name="content">
-	<be:link.newRecord table="tx_nrtextdb_domain_model_translation" pid="{textDbPid}" returnUrl="" class="btn btn-default">Neue Übersetzung</be:link.newRecord>
-	<h1>Listing for Translation</h1>
 	<f:be.widget.paginate objects="{translations}" as="paginatedtranslations" configuration="{itemsPerPage: 15, insertBelow: 1}">
-	<table  id="tx_nrtextdb" class="table table-hover" >
-		<tr>
-			<th>Environment</th>
-			<th>Component</th>
-			<th>Type</th>
-			<th>Placeholder</th>
-			<th>Hidden</th>
-			<th>Value</th>
-			<th>Funktionen</th>
-		</tr>
-		<f:for each="{paginatedtranslations}" as="translation">
+		<table  id="tx_nrtextdb" class="table table-hover" >
 			<tr>
-				<td>{translation.environment.name}</td>
-				<td>{translation.component.name}</td>
-				<td>{translation.type.name}</td>
-				<td>{translation.placeholder}</td>
-				<td>{translation.hidden}</td>
-				<td>{translation.value}</td>
-				<td>
-					<be:link.editRecord uid="{translation.uid}" table="tx_nrtextdb_domain_model_translation" returnUrl="" class="btn btn-default">
-						Bearbeiten
-					</be:link.editRecord>
-					<f:link.action action="delete" arguments="{translation: translation}" class="btn btn-default">
-						Löschen
-					</f:link.action>
-				</td>
-
+				<td></td>
+				<th>Component</th>
+				<th>Type</th>
+				<th>Placeholder</th>
+				<th>Value</th>
 			</tr>
-		</f:for>
-	</table>
+			<f:for each="{paginatedtranslations}" as="translation">
+				<tr>
+					<td>
+						<f:link.action action="translated"
+									   additionalAttributes="{data-uid:'{translation.uid}'}"
+									   arguments="{uid: '{translation.uid}'}"
+									   class="translated-link-open">
+							<core:icon identifier="flags-multiple" /> <core:icon identifier="actions-view-list-expand" />
+						</f:link.action>
+						<a href="#" data-uid="{translation.uid}" class="translated-link-close" style="display: none">
+							<core:icon identifier="flags-multiple" /> <core:icon identifier="actions-view-list-collapse" />
+						</a>
+					</td>
+					<td>{translation.component.name}</td>
+					<td>{translation.type.name}</td>
+					<td>{translation.placeholder}</td>
+					<td>{translation.value}</td>
+				</tr>
+			</f:for>
+		</table>
 	</f:be.widget.paginate>
 </f:section>
 </html>

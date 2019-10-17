@@ -7,6 +7,7 @@ use Netresearch\NrTextdb\Domain\Model\Translation;
 use Netresearch\NrTextdb\Domain\Model\Type;
 use TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings;
 use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
+use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
 
 /***
  *
@@ -211,5 +212,46 @@ class TranslationRepository extends AbstractRepository
         $this->persistenceManager->persistAll();
 
         return $translation;
+    }
+
+    /**
+     * Returns a array with translations for a record
+     *
+     * @param int $uid Uid of original
+     *
+     * @return array
+     */
+    public function getTranslatedRecords(int $uid)
+    {
+        $query = $this->createQuery();
+
+        $query->getQuerySettings()->setRespectStoragePage(false);
+        $query->getQuerySettings()->setRespectSysLanguage(false);
+        $query->getQuerySettings()->setEnableFieldsToBeIgnored(true);
+        $query->matching(
+            $query->logicalAnd(
+                [
+                    $query->equals('l10nParent', $uid),
+                    $query->equals('pid', $this->getConfiguredPageId())
+                ]
+            )
+        );
+
+        return $query->execute()->toArray();
+    }
+
+    public function findRecordByUid(int $uid)
+    {
+        $query = $this->createQuery();
+
+        $query->getQuerySettings()->setRespectSysLanguage(false);
+        $query->getQuerySettings()->setRespectStoragePage(false);
+        $query->getQuerySettings()->setEnableFieldsToBeIgnored(true);
+
+        $query->matching(
+            $query->equals('uid', $uid)
+        );
+
+        return $query->execute()->getFirst();
     }
 }
