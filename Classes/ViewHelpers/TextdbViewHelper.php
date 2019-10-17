@@ -19,7 +19,7 @@ class TextdbViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelper\AbstractTagBased
     /**
      * Translation service instance
      *
-     * @var \Netresearch\NrTextdb\Service\Translation
+     * @var \Netresearch\NrTextdb\Service\TranslationService
      */
     protected $translationService;
 
@@ -77,14 +77,14 @@ class TextdbViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelper\AbstractTagBased
     /**
      * Getter for translationService
      *
-     * @return \Netresearch\NrTextdb\Service\Translation
+     * @return \Netresearch\NrTextdb\Service\TranslationService
      */
     public function getTranslationService()
     {
         if (!isset($this->translationService)) {
             $this->translationService = GeneralUtility::makeInstance(
                 'TYPO3\CMS\Extbase\Object\ObjectManager'
-            )->get('Netresearch\NrTextdb\Service\Translation');
+            )->get('Netresearch\NrTextdb\Service\TranslationService');
         }
 
         return $this->translationService;

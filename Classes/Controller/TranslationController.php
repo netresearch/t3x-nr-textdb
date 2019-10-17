@@ -1,8 +1,12 @@
 <?php
 namespace Netresearch\NrTextdb\Controller;
 
+use Netresearch\NrTextdb\Domain\Model\Translation;
+use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
+use Netresearch\NrTextdb\Service\TranslationService;
 use TYPO3\CMS\Backend\View\BackendTemplateView;
 use TYPO3\CMS\Extbase\Mvc\View\ViewInterface;
+use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
 
 /***
  *
@@ -21,10 +25,36 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
 {
 
     /**
-     * @var \Netresearch\NrTextdb\Domain\Repository\TranslationRepository
-     * @inject
+     * @var TranslationRepository
      */
     private $translationRepository = null;
+
+    /**
+     * @var TranslationService
+     */
+    private $translationService;
+
+    /**
+     * @var PersistenceManager
+     */
+    private $persistenceManager;
+
+    /**
+     * TranslationController constructor.
+     *
+     * @param TranslationRepository $translationRepository
+     * @param TranslationService    $translationService
+     * @param PersistenceManager    $persistenceManager
+     */
+    public function __construct(
+        TranslationRepository $translationRepository,
+        TranslationService $translationService,
+        PersistenceManager $persistenceManager
+    ) {
+        $this->translationRepository = $translationRepository;
+        $this->translationService    = $translationService;
+        $this->persistenceManager    = $persistenceManager;
+    }
 
     /**
      * action list
@@ -34,70 +64,75 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
     public function listAction()
     {
         $translations = $this->translationRepository->findAllWithHidden();
+
         $this->view->assign('translations', $translations);
         $this->view->assign('textDbPid', $this->getConfiguredPageId());
     }
 
     /**
-     * action show
-     *
-     * @param \Netresearch\NrTextdb\Domain\Model\Translation $translation
-     * @return void
+     * @param int $uid
      */
-    public function showAction(\Netresearch\NrTextdb\Domain\Model\Translation $translation)
+    public function translatedAction(int $uid)
     {
-        $this->view->assign('translation', $translation);
+        $translated = array_merge(
+            [
+                $this->translationRepository->findRecordByUid($uid)
+            ],
+            $this->translationRepository->getTranslatedRecords($uid)
+        );
+
+        $languages  = $this->translationService->getAllLanguages();
+        $untranslated = $languages;
+        /** @var Translation $translation */
+        foreach ($translated as $translation) {
+            unset($untranslated[$translation->getLanguageUid()]);
+        }
+        $this->view->assign('originalUid', $uid);
+        $this->view->assign('translated', $translated);
+        $this->view->assign('untranslated', $untranslated);
+        $this->view->assign('languages', $languages);
+
+        echo $this->view->render();
+        exit;
     }
 
     /**
-     * action create
+     * @param int   $parent
+     * @param array $new
+     * @param array $update
      *
-     * @param \Netresearch\NrTextdb\Domain\Model\Translation $newTranslation
-     * @return void
+     * @throws \TYPO3\CMS\Extbase\Mvc\Exception\StopActionException
+     * @throws \TYPO3\CMS\Extbase\Mvc\Exception\UnsupportedRequestTypeException
+     * @throws \TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException
+     * @throws \TYPO3\CMS\Extbase\Persistence\Exception\UnknownObjectException
      */
-    public function createAction(\Netresearch\NrTextdb\Domain\Model\Translation $newTranslation)
+    public function translateRecordAction(int $parent, array $new = [], array $update = [])
     {
-        $this->addFlashMessage('The object was created. Please be aware that this action is publicly accessible unless you implement an access check. See https://docs.typo3.org/typo3cms/extensions/extension_builder/User/Index.html', '', \TYPO3\CMS\Core\Messaging\AbstractMessage::WARNING);
-        $this->translationRepository->add($newTranslation);
-        $this->redirect('list');
-    }
+        $this->translationRepository->injectPersistenceManager($this->persistenceManager);
 
-    /**
-     * action edit
-     *
-     * @param \Netresearch\NrTextdb\Domain\Model\Translation $translation
-     * @ignorevalidation $translation
-     * @return void
-     */
-    public function editAction(\Netresearch\NrTextdb\Domain\Model\Translation $translation)
-    {
-        $this->view->assign('translation', $translation);
-    }
+        /** @var Translation $originalTranslation */
+        $originalTranslation = $this->translationRepository->findByUid($parent);
 
-    /**
-     * action update
-     *
-     * @param \Netresearch\NrTextdb\Domain\Model\Translation $translation
-     * @return void
-     */
-    public function updateAction(\Netresearch\NrTextdb\Domain\Model\Translation $translation)
-    {
-        $this->addFlashMessage('The object was updated. Please be aware that this action is publicly accessible unless you implement an access check. See https://docs.typo3.org/typo3cms/extensions/extension_builder/User/Index.html', '', \TYPO3\CMS\Core\Messaging\AbstractMessage::WARNING);
-        $this->translationRepository->update($translation);
-        $this->redirect('list');
-    }
+        foreach ($new as $language => $value) {
+            $this->translationRepository->createTranslation(
+                $originalTranslation->getComponent(),
+                $originalTranslation->getEnvironment(),
+                $originalTranslation->getType(),
+                $originalTranslation->getPlaceholder(),
+                $language,
+                $value
+            );
+        }
 
-    /**
-     * action delete
-     *
-     * @param \Netresearch\NrTextdb\Domain\Model\Translation $translation
-     * @return void
-     */
-    public function deleteAction(\Netresearch\NrTextdb\Domain\Model\Translation $translation)
-    {
-        $this->addFlashMessage('The object was deleted. Please be aware that this action is publicly accessible unless you implement an access check. See https://docs.typo3.org/typo3cms/extensions/extension_builder/User/Index.html', '', \TYPO3\CMS\Core\Messaging\AbstractMessage::WARNING);
-        $this->translationRepository->remove($translation);
-        $this->redirect('list');
+        foreach ($update as $translationUid => $value) {
+            /** @var Translation $translation */
+            $translation = $this->translationRepository->findRecordByUid($translationUid);
+            $translation->setValue($value);
+            $this->translationRepository->update($translation);
+            $this->persistenceManager->persistAll();
+        }
+
+        $this->forward('translated', 'Translation', 'NrTextdb', ['uid' => $parent]);
     }
 
     /**

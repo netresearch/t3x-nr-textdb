@@ -13,13 +13,15 @@ call_user_func(
                 'textdb', // Submodule key
                 '', // Position
                 [
-                    'Translation' => 'list, show, create, edit, delete',
-                    
+                    'Translation' => 'list, translated, translateRecord',
+
                 ],
                 [
                     'access' => 'user,group',
                     'icon'   => 'EXT:nr_textdb/Resources/Public/Icons/user_mod_textdb.svg',
                     'labels' => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang_textdb.xlf',
+                    'navigationComponentId' => '',
+                    'inheritNavigationComponentFromMainModule' => false
                 ]
             );
 
