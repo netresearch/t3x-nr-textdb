@@ -1,3 +1,8 @@
+# 0.1.0
+
+## MISC
+- TYPO-305: add possibility to filter in BE module 71f1616
+
 # 0.0.6
 
 ## MISC
