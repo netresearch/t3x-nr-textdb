@@ -1,3 +1,10 @@
+# 0.0.6
+
+## MISC
+- MFAG-315: Add ui improvement 6cfed90
+- MFAG-315: Refactor repository so it uses joins for getting trasnlation. 9ec0e0c
+- MFAG-315: Add new Indices. 4f8d5fc
+
 # 0.0.5
 
 ## MISC
