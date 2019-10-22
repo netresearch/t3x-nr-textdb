@@ -17,6 +17,7 @@ use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
  * LICENSE.txt file that was distributed with this source code.
  *
  *  (c) 2019 Thomas Schöne <thomas.schoene@netresearch.de>, Netresearch
+ *  (c) 2019 Axel Seemann <axel.seemann@netresearch.de>, Netresearch
  *
  ***/
 class TranslationRepository extends AbstractRepository
@@ -45,6 +46,11 @@ class TranslationRepository extends AbstractRepository
      * @var integer
      */
     private $languageUid;
+
+    /**
+     * @var Translation[]
+     */
+    static $localCache = [];
 
     /**
      * TranslationRepository constructor.
@@ -117,8 +123,6 @@ class TranslationRepository extends AbstractRepository
         return $this;
     }
 
-    static $localCache = [];
-
     /**
      * Returns a translation.
      *
@@ -187,6 +191,14 @@ class TranslationRepository extends AbstractRepository
         );
     }
 
+    /**
+     * Set a translation to cache and return the translation
+     *
+     * @param string      $key         Cache key
+     * @param Translation $translation Translation to cache
+     *
+     * @return Translation
+     */
     private function setToCache(string $key, Translation $translation): Translation
     {
         static::$localCache[$key] = $translation;
@@ -194,6 +206,13 @@ class TranslationRepository extends AbstractRepository
         return $translation;
     }
 
+    /**
+     * Returns a cached translation
+     *
+     * @param string $key Cache key
+     *
+     * @return Translation|null
+     */
     private function getFromCache(string $key): ?Translation
     {
         if (isset(static::$localCache[$key])) {

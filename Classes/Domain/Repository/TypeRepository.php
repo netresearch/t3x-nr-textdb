@@ -12,13 +12,21 @@ use TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings;
  * LICENSE.txt file that was distributed with this source code.
  *
  *  (c) 2019 Thomas Schöne <thomas.schoene@netresearch.de>, Netresearch
+ *  (c) 2019 Axel Seemann <axel.seemann@netresearch.de>, Netresearch
  *
  ***/
 class TypeRepository extends AbstractRepository
 {
+    /**
+     * @var Type[] Local Type Cache
+     */
     static $localCache = [];
 
-
+    /**
+     * TypeRepository constructor.
+     *
+     * @param \TYPO3\CMS\Extbase\Object\ObjectManagerInterface $objectManager Object Manager
+     */
     public function __construct(\TYPO3\CMS\Extbase\Object\ObjectManagerInterface $objectManager)
     {
         parent::__construct($objectManager);
@@ -30,14 +38,12 @@ class TypeRepository extends AbstractRepository
     }
 
     /**
-     * Returns a translation.
+     * Find type by name and return it. If no type is found it will be created.
      *
-     * @param string $component   Component of the translation
-     * @param string $environment Environment of the translation
-     * @param string $type        Type of the translation
-     * @param string $placeholder Value of the translation
+     * @param string $name Name of type
      *
-     * @return Type
+     * @return Type|null
+     * @throws \TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException
      */
     public function findByName(string $name)
     {
@@ -70,6 +76,14 @@ class TypeRepository extends AbstractRepository
         return $this->setToCache($name, $queryResult->getFirst());
     }
 
+    /**
+     * Set a type to cache and return it
+     *
+     * @param string $key  Cache key
+     * @param Type   $type Type to cache
+     *
+     * @return Type
+     */
     private function setToCache(string $key, Type $type): Type
     {
         static::$localCache[$key] = $type;
@@ -77,6 +91,13 @@ class TypeRepository extends AbstractRepository
         return $type;
     }
 
+    /**
+     * Return a cached type
+     *
+     * @param string $key Cache key
+     *
+     * @return Type|null
+     */
     private function getFromCache(string $key): ?Type
     {
         if (isset(static::$localCache[$key])) {
