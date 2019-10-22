@@ -146,20 +146,13 @@ class TranslationRepository extends AbstractRepository
         $query->getQuerySettings()->setIgnoreEnableFields(true);
         $query->getQuerySettings()->setLanguageUid($languageUid);
 
-        /** @var Component $component */
-        $component   = $this->componentRepository->findByName($component);
-        /** @var Environment $environment */
-        $environment = $this->environmentRepository->findByName($environment);
-        /** @var Type $type */
-        $type        = $this->typeRepository->findByName($type);
-
         $query->matching(
             $query->logicalAnd(
                 [
                     $query->equals('placeholder', $placeholder),
                     $query->equals('pid', $this->getConfiguredPageId()),
-                    $query->equals('type', $type->getUid()),
-                    $query->equals('component', $component->getUid()),
+                    $query->equals('type.name', $type),
+                    $query->equals('component.name', $component),
                 ]
             )
         );
@@ -170,7 +163,7 @@ class TranslationRepository extends AbstractRepository
 
         /** @var Translation $translation */
         foreach ($queryResult as $result) {
-            if ($result->getEnvironment()->getName() === $environment->getName()) {
+            if ($result->getEnvironment()->getName() === $environment) {
                 $translation = $result;
             } elseif ($result->getEnvironment()->getName() === 'default') {
                 $translation = $result;
@@ -225,30 +218,30 @@ class TranslationRepository extends AbstractRepository
     /**
      * Create a new translation.
      *
-     * @param Component   $component   Component of the translation
-     * @param Environment $environment Environment of the translation
-     * @param Type        $type        Type of the translation
-     * @param string      $placeholder Placeholder of the translation
-     * @param int         $languageUid the uid of the language
-     * @param string      $value       Value of the translation
+     * @param string $component   Component of the translation
+     * @param string $environment Environment of the translation
+     * @param string $type        Type of the translation
+     * @param string $placeholder Placeholder of the translation
+     * @param int    $languageUid the uid of the language
+     * @param string $value       Value of the translation
      *
      * @return Translation
      */
-    public function createTranslation($component, $environment, $type, $placeholder, $languageUid, $value = '')
+    public function createTranslation(string $component, string $environment, string $type, string $placeholder, int $languageUid, string $value = '')
     {
         $pid = $this->getConfiguredPageId();
 
-        $translation = new \Netresearch\NrTextdb\Domain\Model\Translation();
+        $translation = new Translation();
         $translation->setPid($pid);
-        $translation->setComponent($component);
-        $translation->setEnvironment($environment);
-        $translation->setType($type);
+        $translation->setComponent($this->componentRepository->findByName($component));
+        $translation->setEnvironment($this->environmentRepository->findByName($environment));
+        $translation->setType($this->typeRepository->findByName($type));
         $translation->setPlaceholder($placeholder);
         $translation->setValue($value);
         $translation->setLanguageUid($languageUid);
 
         if ($languageUid != 0) {
-            $origTranslation = $this->findEntry($component->getName(), $environment->getName(), $type->getName(), $placeholder, 0);
+            $origTranslation = $this->findEntry($component, $environment, $type, $placeholder, 0);
             $translation->setL10nParent($origTranslation->getUid());
         }
 

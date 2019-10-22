@@ -62,6 +62,7 @@ class TranslationService
         if (empty($placeholder)) {
             return  $placeholder;
         }
+
         $this->translationRepository
             ->setUseLanguageFilter()
             ->setLanguageUid(

@@ -115,9 +115,9 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
 
         foreach ($new as $language => $value) {
             $this->translationRepository->createTranslation(
-                $originalTranslation->getComponent(),
-                $originalTranslation->getEnvironment(),
-                $originalTranslation->getType(),
+                $originalTranslation->getComponent()->getName(),
+                $originalTranslation->getEnvironment()->getName(),
+                $originalTranslation->getType()->getName(),
                 $originalTranslation->getPlaceholder(),
                 $language,
                 $value

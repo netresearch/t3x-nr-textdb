@@ -148,9 +148,9 @@ class ImportCommand extends Command
                         $this->translationRepository->injectPersistenceManager($persistenceManager);
 
                         $this->translationRepository->createTranslation(
-                            $this->componentRepository->findByName($this->getComponentFromKey($key)),
-                            $this->environmentRepository->findByName('default'),
-                            $this->typeRepository->findByName($this->getTypeFromKey($key)),
+                            $this->getComponentFromKey($key),
+                            'default',
+                            $this->getTypeFromKey($key),
                             $this->getPlaceholderFromKey($key),
                             $languageId,
                             $record[0]['target']
