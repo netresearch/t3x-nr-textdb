@@ -5,6 +5,7 @@ use Netresearch\NrTextdb\Domain\Model\Component;
 use Netresearch\NrTextdb\Domain\Model\Environment;
 use Netresearch\NrTextdb\Domain\Model\Translation;
 use Netresearch\NrTextdb\Domain\Model\Type;
+use TYPO3\CMS\Backend\Exception;
 use TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings;
 use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
@@ -132,6 +133,8 @@ class TranslationRepository extends AbstractRepository
      * @param string $placeholder Value of the translation
      * @param int    $languageUid uid of the language
      *
+     * @throws \Exception
+     *
      * @return Translation
      */
     public function findEntry(string $component, string $environment, string $type, string $placeholder, int $languageUid): Translation
@@ -225,6 +228,8 @@ class TranslationRepository extends AbstractRepository
      * @param int    $languageUid the uid of the language
      * @param string $value       Value of the translation
      *
+     * @throws \Exception
+     *
      * @return Translation
      */
     public function createTranslation(string $component, string $environment, string $type, string $placeholder, int $languageUid, string $value = '')
@@ -277,6 +282,13 @@ class TranslationRepository extends AbstractRepository
         return $query->execute()->toArray();
     }
 
+    /**
+     * Returns a record found by its uid without any restrictions
+     *
+     * @param int $uid UID
+     *
+     * @return object
+     */
     public function findRecordByUid(int $uid)
     {
         $query = $this->createQuery();
@@ -290,5 +302,40 @@ class TranslationRepository extends AbstractRepository
         );
 
         return $query->execute()->getFirst();
+    }
+
+    /**
+     * Returns all records by given filters
+     *
+     * @param int    $component   Component ID
+     * @param int    $type        Type ID
+     * @param string $placeholder Placeholder to search for
+     *
+     * @return array|QueryResultInterface
+     * @throws \TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException
+     */
+    public function getAllRecordsByIdentifier(int $component = null, int $type = null, string $placeholder = null)
+    {
+        $query = $this->createQuery();
+        $query->getQuerySettings()->setIgnoreEnableFields(true);
+
+        $constraints = [];
+        if (!empty($component)) {
+            $constraints[] = $query->equals('component', $component);
+        }
+        if (!empty($type)) {
+            $constraints[] = $query->equals('type', $type);
+        }
+        if (!empty($placeholder)) {
+            $constraints[] = $query->like('placeholder', '%' . $placeholder . '%');
+        }
+        if (!empty($constraints)) {
+            $query->matching(
+                $query->logicalAnd($constraints)
+            );
+        }
+
+        return $query->execute();
+
     }
 }

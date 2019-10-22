@@ -2,11 +2,15 @@
 namespace Netresearch\NrTextdb\Controller;
 
 use Netresearch\NrTextdb\Domain\Model\Translation;
+use Netresearch\NrTextdb\Domain\Repository\ComponentRepository;
+use Netresearch\NrTextdb\Domain\Repository\EnvironmentRepository;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
+use Netresearch\NrTextdb\Domain\Repository\TypeRepository;
 use Netresearch\NrTextdb\Service\TranslationService;
 use TYPO3\CMS\Backend\View\BackendTemplateView;
 use TYPO3\CMS\Extbase\Mvc\View\ViewInterface;
 use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
+use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
 
 /***
  *
@@ -30,6 +34,16 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
     private $translationRepository = null;
 
     /**
+     * @var TranslationRepository
+     */
+    private $componentRepository = null;
+
+    /**
+     * @var TranslationRepository
+     */
+    private $typeRepository = null;
+
+    /**
      * @var TranslationService
      */
     private $translationService;
@@ -45,15 +59,21 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
      * @param TranslationRepository $translationRepository
      * @param TranslationService    $translationService
      * @param PersistenceManager    $persistenceManager
+     * @param ComponentRepository $componentRepository
+     * @param TranslationRepository $translationRepository
      */
     public function __construct(
         TranslationRepository $translationRepository,
         TranslationService $translationService,
-        PersistenceManager $persistenceManager
+        PersistenceManager $persistenceManager,
+        ComponentRepository $componentRepository,
+        TypeRepository $typeRepository
     ) {
         $this->translationRepository = $translationRepository;
         $this->translationService    = $translationService;
         $this->persistenceManager    = $persistenceManager;
+        $this->componentRepository   = $componentRepository;
+        $this->typeRepository        = $typeRepository;
     }
 
     /**
@@ -63,8 +83,32 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
      */
     public function listAction()
     {
-        $translations = $this->translationRepository->findAllWithHidden();
+        $defaultComponent = '';
+        $defaultType = '';
+        $defaultPlaceholder = '';
 
+        if ($this->request->hasArgument('component')) {
+            $componentId = (int) $this->request->getArgument('component');
+            $defaultComponent = $this->componentRepository->findByUid($componentId);
+        }
+        if ($this->request->hasArgument('type')) {
+            $typeId = (int) $this->request->getArgument('type');
+            $defaultType = $this->typeRepository->findByUid($typeId);
+        }
+        if ($this->request->hasArgument('placeholder')) {
+            $placeholder = (string) trim($this->request->getArgument('placeholder'));
+            $defaultPlaceholder = $placeholder;
+        }
+
+        DebuggerUtility::var_dump($typeId);
+
+        $translations = $this->translationRepository->getAllRecordsByIdentifier($componentId, $typeId, $placeholder);
+
+        $this->view->assign('defaultComponent', $defaultComponent);
+        $this->view->assign('defaultType', $defaultType);
+        $this->view->assign('defaultPlaceholder', $defaultPlaceholder);
+        $this->view->assign('components', $this->componentRepository->findAll()->toArray());
+        $this->view->assign('types', $this->typeRepository->findAll()->toArray());
         $this->view->assign('translations', $translations);
         $this->view->assign('textDbPid', $this->getConfiguredPageId());
     }

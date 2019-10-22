@@ -27,6 +27,9 @@
 			<trans-unit id="tx_nrtextdb_domain_model_translation.value">
 				<source>Value</source>
 			</trans-unit>
+			<trans-unit id="tx_nrtextdb_domain_model_translation.placeholder">
+				<source>Placeholder</source>
+			</trans-unit>
 			<trans-unit id="tx_nrtextdb_domain_model_translation.environment">
 				<source>Environment</source>
 			</trans-unit>
@@ -38,33 +41,7 @@
 			</trans-unit>
 			<trans-unit id="no-entries">
 				<source>No entries found</source>
-			</trans-unit>
-			<trans-unit id="no-translation">
-				<source>No translations available</source>
-			</trans-unit>
-			<trans-unit id="translation">
-				<source>Translation</source>
-			</trans-unit>
-			<trans-unit id="save">
-				<source>Save</source>
-			</trans-unit>
-			<trans-unit id="component">
-				<source>Component</source>
-			</trans-unit>
-			<trans-unit id="type">
-				<source>Type</source>
-			</trans-unit>
-			<trans-unit id="environment">
-				<source>Environment</source>
-			</trans-unit>
-			<trans-unit id="placeholder">
-				<source>Placholder</source>
-			</trans-unit>
-			<trans-unit id="value">
-				<source>Value</source>
-			</trans-unit>
-			<trans-unit id="search">
-				<source>Search</source>
+				<target>Es wurden keine Einträge gefunden.</target>
 			</trans-unit>
 		</body>
 	</file>
