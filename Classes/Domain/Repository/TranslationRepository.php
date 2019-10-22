@@ -117,7 +117,8 @@ class TranslationRepository extends AbstractRepository
         return $this;
     }
 
-    static $call = 0;
+    static $localCache = [];
+
     /**
      * Returns a translation.
      *
@@ -131,7 +132,11 @@ class TranslationRepository extends AbstractRepository
      */
     public function findEntry(string $component, string $environment, string $type, string $placeholder, int $languageUid): Translation
     {
-        static::$call++;
+        $cacheKey = md5(json_encode(func_get_args()));
+
+        if ($translation = $this->getFromCache($cacheKey)) {
+            return $translation;
+        }
 
         $query = $this->createQuery();
         $query->getQuerySettings()->setIgnoreEnableFields(true);
@@ -170,12 +175,32 @@ class TranslationRepository extends AbstractRepository
 
         if ($translation instanceof Translation) {
             if ($translation->getHidden() || $translation->_getProperty('deleted')) {
-                return new Translation();
+                return $this->setToCache($cacheKey, new Translation());
             }
-            return $translation;
+
+            return $this->setToCache($cacheKey, $translation);
         }
 
-        return $this->createTranslation($component, $environment, $type, $placeholder, $languageUid, $placeholder);
+        return $this->setToCache(
+            $cacheKey,
+            $this->createTranslation($component, $environment, $type, $placeholder, $languageUid, $placeholder)
+        );
+    }
+
+    private function setToCache(string $key, Translation $translation): Translation
+    {
+        static::$localCache[$key] = $translation;
+
+        return $translation;
+    }
+
+    private function getFromCache(string $key): ?Translation
+    {
+        if (isset(static::$localCache[$key])) {
+            return static::$localCache[$key];
+        }
+
+        return null;
     }
 
     /**
