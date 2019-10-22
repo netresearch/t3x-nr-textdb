@@ -38,33 +38,43 @@
 			</trans-unit>
 			<trans-unit id="no-entries">
 				<source>No entries found</source>
+				<target>Es wurden keine Einträge gefunden.</target>
 			</trans-unit>
 			<trans-unit id="no-translation">
 				<source>No translations available</source>
+				<target>Keine Übersetzungen verfügbar.</target>
 			</trans-unit>
 			<trans-unit id="translation">
 				<source>Translation</source>
+				<target>Übersetzung</target>
 			</trans-unit>
 			<trans-unit id="save">
 				<source>Save</source>
+				<target>Speichern</target>
 			</trans-unit>
 			<trans-unit id="component">
 				<source>Component</source>
+				<target>Komponente</target>
 			</trans-unit>
 			<trans-unit id="type">
 				<source>Type</source>
+				<target>Typ</target>
 			</trans-unit>
 			<trans-unit id="environment">
 				<source>Environment</source>
+				<target>Umgebung</target>
 			</trans-unit>
 			<trans-unit id="placeholder">
 				<source>Placholder</source>
+				<target>Platzhalter</target>
 			</trans-unit>
 			<trans-unit id="value">
 				<source>Value</source>
+				<target>Wert</target>
 			</trans-unit>
 			<trans-unit id="search">
 				<source>Search</source>
+				<target>Suchen</target>
 			</trans-unit>
 		</body>
 	</file>
