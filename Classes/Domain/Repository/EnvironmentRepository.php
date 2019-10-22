@@ -16,6 +16,8 @@ use TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings;
  ***/
 class EnvironmentRepository extends AbstractRepository
 {
+    static $localCache = [];
+
     /**
      * EnvironmentRepository constructor.
      *
@@ -43,6 +45,10 @@ class EnvironmentRepository extends AbstractRepository
      */
     public function findByName(string $name)
     {
+        if ($environment = $this->getFromCache($name)) {
+            return $environment;
+        }
+
         $query = $this->createQuery();
 
         $query->matching(
@@ -57,14 +63,30 @@ class EnvironmentRepository extends AbstractRepository
         $queryResult = $query->execute();
 
         if ($queryResult->count() === 0) {
-            $environment = new \Netresearch\NrTextdb\Domain\Model\Environment();
+            $environment = new Environment();
             $environment->setName($name);
             $environment->setPid($this->getConfiguredPageId());
             $this->add($environment);
             $this->persistenceManager->persistAll();
-            return $environment;
+            return $this->setToCache($name, $environment);
         }
 
-        return $queryResult->getFirst();
+        return $this->setToCache($name, $queryResult->getFirst());
+    }
+
+    private function setToCache(string $key, Environment $environment): Environment
+    {
+        static::$localCache[$key] = $environment;
+
+        return $environment;
+    }
+
+    private function getFromCache(string $key): ?Environment
+    {
+        if (isset(static::$localCache[$key])) {
+            return static::$localCache[$key];
+        }
+
+        return null;
     }
 }

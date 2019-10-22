@@ -16,6 +16,9 @@ use TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings;
  ***/
 class TypeRepository extends AbstractRepository
 {
+    static $localCache = [];
+
+
     public function __construct(\TYPO3\CMS\Extbase\Object\ObjectManagerInterface $objectManager)
     {
         parent::__construct($objectManager);
@@ -38,6 +41,10 @@ class TypeRepository extends AbstractRepository
      */
     public function findByName(string $name)
     {
+        if ($type = $this->getFromCache($name)) {
+            return $type;
+        }
+
         $query = $this->createQuery();
 
         $query->matching(
@@ -52,16 +59,30 @@ class TypeRepository extends AbstractRepository
         $queryResult = $query->execute();
 
         if ($queryResult->count() === 0) {
-            $type = new \Netresearch\NrTextdb\Domain\Model\Type();
+            $type = new Type();
             $type->setName($name);
             $type->setPid($this->getConfiguredPageId());
             $this->add($type);
             $this->persistenceManager->persistAll();
-            return $type;
+            return $this->setToCache($name, $type);
         }
 
-        return $queryResult->getFirst();
+        return $this->setToCache($name, $queryResult->getFirst());
     }
 
+    private function setToCache(string $key, Type $type): Type
+    {
+        static::$localCache[$key] = $type;
 
+        return $type;
+    }
+
+    private function getFromCache(string $key): ?Type
+    {
+        if (isset(static::$localCache[$key])) {
+            return static::$localCache[$key];
+        }
+
+        return null;
+    }
 }
