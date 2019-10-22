@@ -12,14 +12,20 @@ use TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings;
  * LICENSE.txt file that was distributed with this source code.
  *
  *  (c) 2019 Thomas Schöne <thomas.schoene@netresearch.de>, Netresearch
+ *  (c) 2019 Axel Seemann <axel.seemann@netresearch.de>, Netresearch
  *
  ***/
 class ComponentRepository extends AbstractRepository
 {
     /**
+     * @var Component[] Local component cache
+     */
+    static $localCache = [];
+
+    /**
      * ComponentRepository constructor.
      *
-     * @param \TYPO3\CMS\Extbase\Object\ObjectManagerInterface $objectManager
+     * @param \TYPO3\CMS\Extbase\Object\ObjectManagerInterface $objectManager ObjectManager instance
      */
     public function __construct(\TYPO3\CMS\Extbase\Object\ObjectManagerInterface $objectManager)
     {
@@ -32,17 +38,19 @@ class ComponentRepository extends AbstractRepository
     }
 
     /**
-     * Returns a translation.
+     * Find a Component by name and create one if not found.
      *
-     * @param string $component   Component of the translation
-     * @param string $environment Environment of the translation
-     * @param string $type        Type of the translation
-     * @param string $placeholder Value of the translation
+     * @param string $name Name of Component
      *
-     * @return Component
+     * @return Component|null
+     * @throws \TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException
      */
     public function findByName(string $name)
     {
+        if ($component = $this->getFromCache($name)) {
+            return $component;
+        }
+
         $query = $this->createQuery();
 
         $query->matching(
@@ -57,14 +65,45 @@ class ComponentRepository extends AbstractRepository
         $queryResult = $query->execute();
 
         if ($queryResult->count() === 0) {
-            $component = new \Netresearch\NrTextdb\Domain\Model\Component();
+            $component = new Component();
             $component->setName($name);
             $component->setPid($this->getConfiguredPageId());
             $this->add($component);
             $this->persistenceManager->persistAll();
-            return $component;
+            return $this->setToCache($name, $component);
         }
 
-        return $queryResult->getFirst();
+        return $this->setToCache($name, $queryResult->getFirst());
+    }
+
+    /**
+     * Set a Component to Cache and return it.
+     *
+     * @param string    $key       CacheKey
+     * @param Component $component Component to cache
+     *
+     * @return Component
+     */
+    private function setToCache(string $key, Component $component): Component
+    {
+        static::$localCache[$key] = $component;
+
+        return $component;
+    }
+
+    /**
+     * Returns a component from cache
+     *
+     * @param string $key Cache Key
+     *
+     * @return Component|null
+     */
+    private function getFromCache(string $key): ?Component
+    {
+        if (isset(static::$localCache[$key])) {
+            return static::$localCache[$key];
+        }
+
+        return null;
     }
 }
