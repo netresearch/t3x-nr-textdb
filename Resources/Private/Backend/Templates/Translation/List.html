@@ -15,7 +15,7 @@
 			</tr>
 			<f:for each="{paginatedtranslations}" as="translation">
 				<tr>
-					<td>
+					<td id="entry-{translation.uid}" style="width: 100px;">
 						<f:link.action action="translated"
 									   additionalAttributes="{data-uid:'{translation.uid}'}"
 									   arguments="{uid: '{translation.uid}'}"
@@ -25,6 +25,12 @@
 						<a href="#" data-uid="{translation.uid}" class="translated-link-close" style="display: none">
 							<core:icon identifier="flags-multiple" /> <core:icon identifier="actions-view-list-collapse" />
 						</a>
+					<span class="t3js-icon icon icon-size-small icon-state-default icon-provider-fontawesome-spinner icon-spin loading-animation" data-identifier="provider-fontawesome-spinner" style="display: none">
+						<span class="icon-markup">
+							<span class="icon-unify"><i class="fa fa-spinner"></i></span>
+						</span>
+					</span>
+
 					</td>
 					<td>{translation.component.name}</td>
 					<td>{translation.type.name}</td>
