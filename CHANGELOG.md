@@ -1,3 +1,10 @@
+# 0.0.5
+
+## MISC
+- MFAG-315: Cleanup comments and DocBlocks 2848ab9
+- MFAG-315: Add local caches to all repositories 7a2b46b
+- MFAG-315: Implement local cache e651548
+
 # 0.0.4
 
 ## MISC
