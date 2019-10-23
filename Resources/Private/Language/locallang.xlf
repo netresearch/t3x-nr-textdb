@@ -66,6 +66,27 @@
 			<trans-unit id="search">
 				<source>Search</source>
 			</trans-unit>
+			<trans-unit id="import">
+				<source>Import</source>
+			</trans-unit>
+			<trans-unit id="info.import">
+				<source>Please select a file top import.</source>
+			</trans-unit>
+			<trans-unit id="override existing">
+				<source>Override existing</source>
+			</trans-unit>
+			<trans-unit id="message.import">
+				<source>Import done for Language:</source>
+			</trans-unit>
+			<trans-unit id="message.updated">
+				<source>Translations updated:</source>
+			</trans-unit>
+			<trans-unit id="message.imported">
+				<source>Translations imported:</source>
+			</trans-unit>
+			<trans-unit id="message.errors">
+				<source>The following errors occurs:</source>
+			</trans-unit>
 		</body>
 	</file>
 </xliff>

@@ -3,14 +3,12 @@ namespace Netresearch\NrTextdb\Controller;
 
 use Netresearch\NrTextdb\Domain\Model\Translation;
 use Netresearch\NrTextdb\Domain\Repository\ComponentRepository;
-use Netresearch\NrTextdb\Domain\Repository\EnvironmentRepository;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
 use Netresearch\NrTextdb\Domain\Repository\TypeRepository;
 use Netresearch\NrTextdb\Service\TranslationService;
 use TYPO3\CMS\Backend\View\BackendTemplateView;
 use TYPO3\CMS\Extbase\Mvc\View\ViewInterface;
 use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
-use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
 
 /***
  *
@@ -118,7 +116,7 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
     {
         $translated = array_merge(
             [
-                $this->translationRepository->findRecordByUid($uid)
+                $this->translationRepository->findRecordByUid($uid),
             ],
             $this->translationRepository->getTranslatedRecords($uid)
         );
@@ -175,6 +173,89 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
         }
 
         $this->forward('translated', 'Translation', 'NrTextdb', ['uid' => $parent]);
+    }
+
+    /**
+     * Import translations from file
+     *
+     * @param array $translationFile File to import
+     * @param bool  $update          check if entries should be updated
+     *
+     * @return void
+     */
+    public function importAction(array $translationFile = null, bool $update = false)
+    {
+        if (empty($translationFile)) {
+            return;
+        }
+
+        $fileName = $translationFile['name'];
+        $filePath = $translationFile['tmp_name'];
+
+        $matches = [];
+        if (false === (bool) preg_match('/^([a-z]{2,2}\.)?(textdb_import\.xlf)$/', $fileName, $matches)) {
+            throw new \Exception('File name does not match the expected pattern');
+        }
+
+        $languageCode = trim($matches[1],'.');
+        $languageCode = (empty($languageCode)) ? 'en' : $languageCode;
+        $languageId   = 0;
+        foreach ($this->translationService->getAllLanguages() as $language) {
+            if ($language->getTwoLetterIsoCode() !== $languageCode) {
+                continue;
+            }
+
+            $languageId    = $language->getLanguageId();
+            $languageTitle = $language->getTitle();
+        }
+
+        $data = simplexml_load_file($filePath);
+        /** @var \SimpleXMLElement $translation */
+        $imported = 0;
+        $updated  = 0;
+        $errors = [];
+
+        foreach ($data->file->body->children() as $translation) {
+            $id = reset($translation->attributes()['id']);
+            $parts = explode('|', $id);
+
+            $component   = $parts[0];
+            $type        = $parts[1];
+            $placeholder = $parts[2];
+            $value       = (empty($translation->target)) ? reset($translation->source) : reset($translation->target);
+
+            try {
+                if ($update) {
+                    $updated++;
+                    $persistenceManager = $this->objectManager->get(PersistenceManager::class);
+                    $this->translationRepository->injectPersistenceManager($persistenceManager);
+                    $translationRecord = $this->translationRepository->findEntry(
+                        $component,
+                        'default',
+                        $type,
+                        $placeholder,
+                        $languageId
+                    );
+                    $translationRecord->setValue($value);
+                    $this->translationRepository->update($translationRecord);
+                    $persistenceManager->persistAll();
+                } else {
+                    $imported++;
+                    $this->translationRepository->createTranslation(
+                        $component,
+                        'default',
+                        $type,
+                        $placeholder,
+                        $languageId,
+                        $value
+                    );
+                }
+            } catch (\Exception $exception) {
+                $errors[] = $exception->getMessage();
+            }
+        }
+
+        $this->view->assignMultiple(['updated' => $updated, 'imported' => $imported, 'errors' => $errors, 'language' => $languageTitle]);
     }
 
     /**

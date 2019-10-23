@@ -76,6 +76,33 @@
 				<source>Search</source>
 				<target>Suchen</target>
 			</trans-unit>
+			<trans-unit id="import">
+				<source>Import</source>
+				<target>Importieren</target>
+			</trans-unit>
+			<trans-unit id="info.import">
+				<source>Please select a file top import.</source>
+				<target>Bitte wählen Sie eine Datei zum Import aus.</target>
+			</trans-unit>
+			<trans-unit id="override existing">
+				<source>Override existing</source>
+				<target>Überschreibe existierende übersetzungen</target>
+			</trans-unit>
+			<trans-unit id="message.import">
+				<source>Import done for Language:</source>
+				<target>Import abgeschlossen für:</target>
+			</trans-unit>
+			<trans-unit id="message.updated">
+				<source>Translations updated:</source>
+				<target>Übersetzungen aktualisiert:</target>
+			</trans-unit>
+			<trans-unit id="message.imported">
+				<source>Translations imported:</source>
+				<target>Übersetungen Importiert:</target>
+			</trans-unit>
+			<trans-unit id="message.errors">
+				<source>Folgende Fehler gab es beim Import:</source>
+			</trans-unit>
 		</body>
 	</file>
 </xliff>
