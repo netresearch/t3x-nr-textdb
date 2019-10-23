@@ -100,8 +100,6 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
             $defaultPlaceholder = $placeholder;
         }
 
-        DebuggerUtility::var_dump($typeId);
-
         $translations = $this->translationRepository->getAllRecordsByIdentifier($componentId, $typeId, $placeholder);
 
         $this->view->assign('defaultComponent', $defaultComponent);

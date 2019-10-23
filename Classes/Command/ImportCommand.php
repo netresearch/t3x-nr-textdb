@@ -86,6 +86,7 @@ class ImportCommand extends Command
         $this->setDescription('Imports textdb records from language files');
         $this->setHelp('If you want to add textdb records to your extension. Create a file languagecode.textdb_import.xlf');
         $this->addArgument('extensionKey', InputArgument::REQUIRED, 'Extension with language file');
+        $this->addOption('override', 'o');
     }
 
     /**
@@ -109,7 +110,7 @@ class ImportCommand extends Command
             $languageFileRecords[$sysLanguageUid] = $xliffParser->getParsedData($file, $languageKey);
         }
         ksort($languageFileRecords);
-        $this->addLanguageRecords($languageFileRecords);
+        $this->addLanguageRecords($languageFileRecords, (bool) $input->getOption('override'));
     }
 
     /**
@@ -136,9 +137,10 @@ class ImportCommand extends Command
     /**
      * Add the language records.
      *
-     * @param $languageFileRecords
+     * @param array $languageFileRecords
+     * @param bool  $override
      */
-    private function addLanguageRecords($languageFileRecords)
+    private function addLanguageRecords($languageFileRecords, $override = false)
     {
         foreach ($languageFileRecords as $languageId => $fileRecords) {
             foreach ($fileRecords as $language => $records) {
@@ -147,16 +149,30 @@ class ImportCommand extends Command
                         $persistenceManager = $this->objectManager->get(PersistenceManager::class);
                         $this->translationRepository->injectPersistenceManager($persistenceManager);
 
-                        $this->translationRepository->createTranslation(
-                            $this->getComponentFromKey($key),
-                            'default',
-                            $this->getTypeFromKey($key),
-                            $this->getPlaceholderFromKey($key),
-                            $languageId,
-                            $record[0]['target']
-                        );
+                        if ($override) {
+                            $translation = $this->translationRepository->findEntry(
+                                $this->getComponentFromKey($key),
+                                'default',
+                                $this->getTypeFromKey($key),
+                                $this->getPlaceholderFromKey($key),
+                                $languageId
+                            );
+
+                            $translation->setValue($record[0]['target']);
+                            $this->translationRepository->update($translation);
+                            $persistenceManager->persistAll();
+
+                        } else {
+                            $this->translationRepository->createTranslation(
+                                $this->getComponentFromKey($key),
+                                'default',
+                                $this->getTypeFromKey($key),
+                                $this->getPlaceholderFromKey($key),
+                                $languageId,
+                                $record[0]['target']
+                            );
+                        }
                     } catch (\Exception $exception) {
-                        echo $exception->getMessage();
                     }
                 }
             }
