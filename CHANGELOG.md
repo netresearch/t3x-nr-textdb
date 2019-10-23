@@ -1,3 +1,9 @@
+# 0.2.0
+
+## MISC
+- NRTEXTDB-0: Implement Import action. 4e88f36
+- MFAG-310: Add overwride option to import command. Remove debugcode. 718b189
+
 # 0.1.0
 
 ## MISC
