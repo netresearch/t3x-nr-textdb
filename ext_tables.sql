@@ -41,7 +41,7 @@ CREATE TABLE tx_nrtextdb_domain_model_translation (
     component int(11) unsigned DEFAULT '0',
     type int(11) unsigned DEFAULT '0',
     placeholder varchar(255) DEFAULT '' NULL,
-	value varchar(255) DEFAULT '' NOT NULL,
+	value varchar(1000) DEFAULT '' NOT NULL,
 
 	UNIQUE KEY translation(sys_language_uid, pid, environment, component, type, placeholder, deleted),
 	INDEX default_index(placeholder,pid,type,component,sys_language_uid,deleted),
