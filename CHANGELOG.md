@@ -1,3 +1,8 @@
+# 0.2.1
+
+## MISC
+- MFAG-355: Increase limit of value field in database. 286e66a
+
 # 0.2.0
 
 ## MISC
