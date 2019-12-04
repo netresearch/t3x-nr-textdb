@@ -310,12 +310,17 @@ class TranslationRepository extends AbstractRepository
      * @param int    $component   Component ID
      * @param int    $type        Type ID
      * @param string $placeholder Placeholder to search for
+     * @param string $value       Value to search for
      *
      * @return array|QueryResultInterface
      * @throws \TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException
      */
-    public function getAllRecordsByIdentifier(int $component = null, int $type = null, string $placeholder = null)
-    {
+    public function getAllRecordsByIdentifier(
+        int $component = null,
+        int $type = null,
+        string $placeholder = null,
+        string $value = null
+    ) {
         $query = $this->createQuery();
         $query->getQuerySettings()->setIgnoreEnableFields(true);
 
@@ -328,6 +333,9 @@ class TranslationRepository extends AbstractRepository
         }
         if (!empty($placeholder)) {
             $constraints[] = $query->like('placeholder', '%' . $placeholder . '%');
+        }
+        if (!empty($value)) {
+            $constraints[] = $query->like('value', '%' . $value . '%');
         }
         if (!empty($constraints)) {
             $query->matching(

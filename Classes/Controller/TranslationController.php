@@ -84,6 +84,7 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
         $defaultComponent = '';
         $defaultType = '';
         $defaultPlaceholder = '';
+        $defaultValue = '';
 
         if ($this->request->hasArgument('component')) {
             $componentId = (int) $this->request->getArgument('component');
@@ -97,12 +98,22 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
             $placeholder = (string) trim($this->request->getArgument('placeholder'));
             $defaultPlaceholder = $placeholder;
         }
+        if ($this->request->hasArgument('value')) {
+            $value = (string) trim($this->request->getArgument('value'));
+            $defaultValue = $value;
+        }
 
-        $translations = $this->translationRepository->getAllRecordsByIdentifier($componentId, $typeId, $placeholder);
+        $translations = $this->translationRepository->getAllRecordsByIdentifier(
+            $componentId,
+            $typeId,
+            $placeholder,
+            $value
+        );
 
         $this->view->assign('defaultComponent', $defaultComponent);
         $this->view->assign('defaultType', $defaultType);
         $this->view->assign('defaultPlaceholder', $defaultPlaceholder);
+        $this->view->assign('defaultValue', $defaultValue);
         $this->view->assign('components', $this->componentRepository->findAll()->toArray());
         $this->view->assign('types', $this->typeRepository->findAll()->toArray());
         $this->view->assign('translations', $translations);

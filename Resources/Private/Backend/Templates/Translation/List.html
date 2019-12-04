@@ -19,6 +19,10 @@
 			<f:form.textfield name="placeholder" class="form-control input-sm" value="{defaultPlaceholder}"/>
 		</div>
 		<div class="form-group">
+			<label for="value"><f:translate key="value">Value</f:translate></label>
+			<f:form.textfield name="value" class="form-control input-sm" value="{defaultValue}"/>
+		</div>
+		<div class="form-group">
 			<f:form.submit value="{f:translate(key: 'search', default: 'Search')}" class="btn btn-default btn-sm"/>
 		</div>
 	</f:form>
