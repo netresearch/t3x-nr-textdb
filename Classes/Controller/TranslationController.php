@@ -86,20 +86,39 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
         $defaultPlaceholder = '';
         $defaultValue = '';
 
+        $config = $this->getConfigFromBeUserData();
+
         if ($this->request->hasArgument('component')) {
             $componentId = (int) $this->request->getArgument('component');
+            $defaultComponent = $this->componentRepository->findByUid($componentId);
+        }
+        if (empty($componentId) && !$this->request->hasArgument('component')) {
+            $componentId = $config['component'];
             $defaultComponent = $this->componentRepository->findByUid($componentId);
         }
         if ($this->request->hasArgument('type')) {
             $typeId = (int) $this->request->getArgument('type');
             $defaultType = $this->typeRepository->findByUid($typeId);
         }
+        if (empty($typeId) && !$this->request->hasArgument('type')) {
+            $typeId = $config['type'];
+            $defaultType = $this->typeRepository->findByUid($typeId);
+        }
+
         if ($this->request->hasArgument('placeholder')) {
             $placeholder = (string) trim($this->request->getArgument('placeholder'));
             $defaultPlaceholder = $placeholder;
         }
+        if (empty($placeholder) && !$this->request->hasArgument('placeholder')) {
+            $placeholder = $config['placeholder'];
+            $defaultPlaceholder = $placeholder;
+        }
         if ($this->request->hasArgument('value')) {
             $value = (string) trim($this->request->getArgument('value'));
+            $defaultValue = $value;
+        }
+        if (empty($value) && !$this->request->hasArgument('value')) {
+            $value = $config['value'];
             $defaultValue = $value;
         }
 
@@ -109,6 +128,13 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
             $placeholder,
             $value
         );
+
+        $config['component'] = $componentId;
+        $config['type'] = $typeId;
+        $config['placeholder'] = $placeholder;
+        $config['value'] = $value;
+
+        $this->persistConfigInBeUserData($config);
 
         $this->view->assign('defaultComponent', $defaultComponent);
         $this->view->assign('defaultType', $defaultType);
@@ -304,4 +330,29 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
         $configuration = $this->getExtensionConfiguration();
         return $configuration['textDbPid'];
     }
+    /**
+     * Get module config from user data
+     *
+     * @return array
+     */
+    protected function getConfigFromBeUserData()
+    {
+        $serializedConfig = $GLOBALS['BE_USER']->getModuleData(static::class);
+        $config = array();
+        if (is_string($serializedConfig) && !empty($serializedConfig)) {
+            $config = @unserialize($serializedConfig);
+        }
+        return $config;
+    }
+
+    /**
+     * Save current config in be user settings
+     *
+     * @param array $config
+     */
+    protected function persistConfigInBeUserData(array $config)
+    {
+        $GLOBALS['BE_USER']->pushModuleData(static::class, serialize($config));
+    }
+
 }
