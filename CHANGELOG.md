@@ -1,3 +1,9 @@
+# 0.3.0
+
+## MISC
+- MFAG-476: store module config in BE user data 6e6c43f
+- MFAG-476: add search for values to be module 16bbe3a
+
 # 0.2.1
 
 ## MISC
