@@ -1,3 +1,9 @@
+# 0.3.1
+
+## MISC
+- OPS-0: Fix import command to prevent that helhum/console does not work as expected d1660a9
+- Add LICENSE 6a774bc
+
 # 0.3.0
 
 ## MISC
