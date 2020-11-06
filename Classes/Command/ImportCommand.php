@@ -8,6 +8,8 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use TYPO3\CMS\Core\Core\Bootstrap;
+use TYPO3\CMS\Core\Package\Exception\UnknownPackageException;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Object\ObjectManager;
@@ -57,24 +59,10 @@ class ImportCommand extends Command
      */
     private $objectManager;
 
-    private $ids = [];
-
     /**
-     * ImportCommand constructor.
-     *
-     * @param string|null $name
+     * @var array IDS
      */
-    public function __construct(string $name = null)
-    {
-        \TYPO3\CMS\Core\Core\Bootstrap::initializeBackendUser();
-        $this->objectManager = GeneralUtility::makeInstance(ObjectManager::class);
-        $this->typeRepository = $this->objectManager->get(TypeRepository::class);
-        $this->componentRepository = $this->objectManager->get(ComponentRepository::class);
-        $this->environmentRepository = $this->objectManager->get(EnvironmentRepository::class);
-        $this->translationRepository = $this->getTranslationRepository();
-        $this->listUtility = $this->objectManager->get(ListUtility::class);
-        parent::__construct($name);
-    }
+    private $ids = [];
 
     /**
      * Configures the command.
@@ -90,16 +78,16 @@ class ImportCommand extends Command
     }
 
     /**
-     * Execute the command.
-     *
-     * @param InputInterface $input
+     * @param InputInterface  $input
      * @param OutputInterface $output
      *
-     * @return int|void|null
-     * @throws \TYPO3\CMS\Core\Package\Exception\UnknownPackageException
+     * @return int|void
+     * @throws UnknownPackageException
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $this->initializeCommand();
+
         $this->extension = $this->listUtility->getExtension($input->getArgument('extensionKey'));
         $languageFiles = glob($this->extension->getPackagePath() . $this->languagePath . '*textdb_import.xlf');
         $xliffParser = $this->getXliffParser();
@@ -284,5 +272,21 @@ class ImportCommand extends Command
     private function getTranslationRepository()
     {
         return $this->objectManager->get('Netresearch\NrTextdb\Domain\Repository\TranslationRepository');
+    }
+
+    /**
+     * Initializesz all needed repos
+     *
+     * @return void
+     */
+    private function initializeCommand(): void
+    {
+        Bootstrap::initializeBackendUser();
+        $this->objectManager         = GeneralUtility::makeInstance(ObjectManager::class);
+        $this->typeRepository        = $this->objectManager->get(TypeRepository::class);
+        $this->componentRepository   = $this->objectManager->get(ComponentRepository::class);
+        $this->environmentRepository = $this->objectManager->get(EnvironmentRepository::class);
+        $this->translationRepository = $this->getTranslationRepository();
+        $this->listUtility           = $this->objectManager->get(ListUtility::class);
     }
 }
