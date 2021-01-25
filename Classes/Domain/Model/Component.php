@@ -2,6 +2,8 @@
 namespace Netresearch\NrTextdb\Domain\Model;
 
 
+use TYPO3\CMS\Extbase\Annotation\Validate;
+
 /***
  *
  * This file is part of the "Netresearch TextDB" Extension for TYPO3 CMS.
@@ -22,7 +24,7 @@ class Component extends \TYPO3\CMS\Extbase\DomainObject\AbstractValueObject
      * name
      * 
      * @var string
-     * @validate NotEmpty
+     * @validate ("TYPO3\CMS\Extbase\Validation\Validator\NotEmptyValidator")
      */
     protected $name = '';
 

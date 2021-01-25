@@ -9,6 +9,7 @@ use Netresearch\NrTextdb\Service\TranslationService;
 use TYPO3\CMS\Backend\View\BackendTemplateView;
 use TYPO3\CMS\Extbase\Mvc\View\ViewInterface;
 use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
+use TYPO3\CMS\Backend\Utility\BackendUtility;
 
 /***
  *
@@ -50,6 +51,20 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
      * @var PersistenceManager
      */
     private $persistenceManager;
+
+    /**
+     * BackendTemplateContainer
+     *
+     * @var BackendTemplateView
+     */
+    protected $view;
+
+    /**
+     * Backend Template Container
+     *
+     * @var string
+     */
+    protected $defaultViewObjectName = BackendTemplateView::class;
 
     /**
      * TranslationController constructor.

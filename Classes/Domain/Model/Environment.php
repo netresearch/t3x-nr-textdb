@@ -2,6 +2,8 @@
 namespace Netresearch\NrTextdb\Domain\Model;
 
 
+use TYPO3\CMS\Extbase\Annotation\Validate;
+
 /***
  *
  * This file is part of the "Netresearch TextDB" Extension for TYPO3 CMS.

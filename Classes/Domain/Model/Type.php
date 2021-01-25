@@ -1,6 +1,7 @@
 <?php
 namespace Netresearch\NrTextdb\Domain\Model;
 
+use TYPO3\CMS\Extbase\Annotation\Validate;
 
 /***
  *
@@ -22,7 +23,7 @@ class Type extends \TYPO3\CMS\Extbase\DomainObject\AbstractValueObject
      * name
      * 
      * @var string
-     * @validate NotEmpty
+     * @validate ("TYPO3\CMS\Extbase\Validation\Validator\NotEmptyValidator")
      */
     protected $name = '';
 

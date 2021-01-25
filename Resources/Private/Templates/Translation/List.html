@@ -1,0 +1,72 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+	  xmlns:be="http://typo3.org/ns/TYPO3/CMS/Backend/ViewHelpers"
+	  xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
+	  data-namespace-typo3-fluid="true">
+
+<f:layout name="Default" />
+<f:section name="content">
+	<f:form class="form-inline form-inline-spaced">
+		<div class="form-group">
+			<label for="component"><f:translate key="component">Component</f:translate></label>
+			<f:form.select name="component" class="form-control input-sm" options="{components}" value="{defaultComponent.uid}" optionValueField="uid" optionLabelField="name" prependOptionLabel=""/>
+		</div>
+		<div class="form-group">
+			<label for="type"><f:translate key="type">Type</f:translate></label>
+			<f:form.select name="type" class="form-control input-sm" options="{types}" value="{defaultType.uid}" optionValueField="uid" optionLabelField="name" prependOptionLabel=""/>
+		</div>
+		<div class="form-group">
+			<label for="placeholder"><f:translate key="placeholder">Placeholder</f:translate></label>
+			<f:form.textfield name="placeholder" class="form-control input-sm" value="{defaultPlaceholder}"/>
+		</div>
+		<div class="form-group">
+			<label for="value"><f:translate key="value">Value</f:translate></label>
+			<f:form.textfield name="value" class="form-control input-sm" value="{defaultValue}"/>
+		</div>
+		<div class="form-group">
+			<f:form.submit value="{f:translate(key: 'search', default: 'Search')}" class="btn btn-default btn-sm"/>
+		</div>
+	</f:form>
+	<f:if condition="{translations}">
+		<f:then>
+			<f:be.widget.paginate objects="{translations}" as="paginatedtranslations" configuration="{itemsPerPage: 15, insertBelow: 1}">
+				<table  id="tx_nrtextdb" class="table table-hover" >
+					<tr>
+						<td></td>
+						<th><f:translate key="component">Component</f:translate></th>
+						<th><f:translate key="type">Type</f:translate></th>
+						<th><f:translate key="placeholder">Placeholder</f:translate></th>
+						<th><f:translate key="value">Value</f:translate></th>
+					</tr>
+					<f:for each="{paginatedtranslations}" as="translation">
+						<tr>
+							<td id="entry-{translation.uid}" style="width: 100px;">
+								<f:link.action action="translated"
+											   additionalAttributes="{data-uid:'{translation.uid}'}"
+											   arguments="{uid: '{translation.uid}'}"
+											   class="translated-link-open">
+									<core:icon identifier="flags-multiple" /> <core:icon identifier="actions-view-list-expand" />
+								</f:link.action>
+								<a href="#" data-uid="{translation.uid}" class="translated-link-close" style="display: none">
+									<core:icon identifier="flags-multiple" /> <core:icon identifier="actions-view-list-collapse" />
+								</a>
+								<span class="t3js-icon icon icon-size-small icon-state-default icon-provider-fontawesome-spinner icon-spin loading-animation" data-identifier="provider-fontawesome-spinner" style="display: none">
+									<span class="icon-markup">
+										<span class="icon-unify"><i class="fa fa-spinner"></i></span>
+									</span>
+								</span>
+							</td>
+							<td>{translation.component.name}</td>
+							<td>{translation.type.name}</td>
+							<td>{translation.placeholder}</td>
+							<td>{translation.value}</td>
+						</tr>
+					</f:for>
+				</table>
+			</f:be.widget.paginate>
+		</f:then>
+		<f:else>
+			<f:be.infobox state="1"><f:translate key="no-entries">No entries found.</f:translate></f:be.infobox>
+		</f:else>
+	</f:if>
+</f:section>
+</html>
