@@ -1,7 +1,11 @@
 <?php
 namespace Netresearch\NrTextdb\ViewHelpers;
 
+use Netresearch\NrTextdb\Service\TranslationService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Object\Exception;
+use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
+use TYPO3\CMS\Extbase\Object\ObjectManager;
 
 /**
  * Fluid <a:textdb/> implementation
@@ -13,24 +17,24 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  * @author     Thomas Schöne <thomas.schoene@netresearch.de>
  * @license    Netresearch
  */
-class TextdbViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelper\AbstractTagBasedViewHelper
+class TextdbViewHelper extends AbstractViewHelper
 {
-
     /**
      * Translation service instance
      *
-     * @var \Netresearch\NrTextdb\Service\TranslationService
+     * @var TranslationService
      */
     protected $translationService;
-
 
     /**
      * Initializes arguments (attributes)
      *
      * @return void
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
+        parent::initializeArguments();
+
         $this->registerArgument(
             'placeholder',
             'string',
@@ -41,7 +45,8 @@ class TextdbViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelper\AbstractTagBased
             'type',
             'string',
             'TextDB type',
-            true
+            true,
+            'P'
         );
         $this->registerArgument(
             'component',
@@ -62,8 +67,10 @@ class TextdbViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelper\AbstractTagBased
      * Render translated string
      *
      * @return string The translated key or tag body if key doesn't exist
+     *
+     * @throws Exception
      */
-    public function render()
+    public function render(): string
     {
         return $this->getTranslationService()
             ->translate(
@@ -75,16 +82,17 @@ class TextdbViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelper\AbstractTagBased
     }
 
     /**
-     * Getter for translationService
+     * Getter for translationService.
      *
-     * @return \Netresearch\NrTextdb\Service\TranslationService
+     * @return TranslationService
+     *
+     * @throws Exception
      */
-    public function getTranslationService()
+    public function getTranslationService(): TranslationService
     {
         if (!isset($this->translationService)) {
-            $this->translationService = GeneralUtility::makeInstance(
-                'TYPO3\CMS\Extbase\Object\ObjectManager'
-            )->get('Netresearch\NrTextdb\Service\TranslationService');
+            $this->translationService = GeneralUtility::makeInstance(ObjectManager::class)
+                ->get(TranslationService::class);
         }
 
         return $this->translationService;
