@@ -34,11 +34,11 @@ class AbstractRepository extends Repository
     /**
      * Get the configured pid from extension configuration.
      *
-     * @return mixed
+     * @return int
      */
-    public function getConfiguredPageId()
+    public function getConfiguredPageId(): int
     {
         $configuration = $this->getExtensionConfiguration();
-        return $configuration['textDbPid'];
+        return (int) $configuration['textDbPid'];
     }
 }
