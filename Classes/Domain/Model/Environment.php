@@ -22,15 +22,15 @@ class Environment extends \TYPO3\CMS\Extbase\DomainObject\AbstractValueObject
 
     /**
      * name
-     * 
+     *
      * @var string
-     * @validate NotEmpty
+     * @Validate("NotEmpty")
      */
     protected $name = '';
 
     /**
      * Returns the name
-     * 
+     *
      * @return string name
      */
     public function getName()
@@ -40,7 +40,7 @@ class Environment extends \TYPO3\CMS\Extbase\DomainObject\AbstractValueObject
 
     /**
      * Sets the name
-     * 
+     *
      * @param string $name
      * @return void
      */

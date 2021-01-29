@@ -43,7 +43,7 @@ class Translation extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
      * Placeholder
      *
      * @var string
-     * @validate ("TYPO3\CMS\Extbase\Validation\Validator\NotEmptyValidator")
+     * @Validate("TYPO3\CMS\Extbase\Validation\Validator\NotEmptyValidator")
      */
     protected $placeholder;
 
@@ -51,7 +51,7 @@ class Translation extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
      * value
      *
      * @var string
-     * @validate ("TYPO3\CMS\Extbase\Validation\Validator\NotEmptyValidator")
+     * @Validate("TYPO3\CMS\Extbase\Validation\Validator\NotEmptyValidator")
      */
     protected $value = '';
 

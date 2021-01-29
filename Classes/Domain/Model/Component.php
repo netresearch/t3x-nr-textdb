@@ -22,15 +22,15 @@ class Component extends \TYPO3\CMS\Extbase\DomainObject\AbstractValueObject
 
     /**
      * name
-     * 
+     *
      * @var string
-     * @validate ("TYPO3\CMS\Extbase\Validation\Validator\NotEmptyValidator")
+     * @Validate("TYPO3\CMS\Extbase\Validation\Validator\NotEmptyValidator")
      */
     protected $name = '';
 
     /**
      * Returns the name
-     * 
+     *
      * @return string name
      */
     public function getName()
@@ -40,7 +40,7 @@ class Component extends \TYPO3\CMS\Extbase\DomainObject\AbstractValueObject
 
     /**
      * Sets the name
-     * 
+     *
      * @param string $name
      * @return void
      */
