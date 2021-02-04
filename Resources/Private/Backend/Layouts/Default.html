@@ -1,37 +1,35 @@
 <html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
-	<f:be.pageRenderer includeRequireJsModules="{0:'TYPO3/CMS/NrTextdb/TextDbModule'}" includeCssFiles="{stylesheets}" />
-	<f:be.container>
-		<div class="module" data-module-name="web_NrTextdb_textdb">
-			<div class="module-loading-indicator"></div>
-			<div class="module-docheader t3js-module-docheader" style="height: auto">
-				<div class="module-docheader-bar module-docheader-bar-navigation t3js-module-docheader-bar t3js-module-docheader-bar-navigation row">
-					<div class="module-docheader-bar-column-left">
-						<f:be.buttons.csh />
-					</div>
-					<div class="module-docheader-bar-column-right">
-						<f:be.pagePath />
-						<f:be.pageInfo />
-					</div>
+	<f:be.pageRenderer includeRequireJsModules="{0:'bootstrap', 1:'TYPO3/CMS/NrTextdb/TextDbModule'}" includeCssFiles="{stylesheets}"/>
+	<div class="module" data-module-name="web_NrTextdb_textdb">
+		<div class="module-loading-indicator"></div>
+		<div class="module-docheader t3js-module-docheader" style="height: auto">
+			<div class="module-docheader-bar module-docheader-bar-navigation t3js-module-docheader-bar t3js-module-docheader-bar-navigation row">
+				<div class="module-docheader-bar-column-left">
+					<f:be.buttons.csh />
 				</div>
-				<div class="module-docheader-bar module-docheader-bar-buttons t3js-module-docheader-bar t3js-module-docheader-bar-buttons">
-					<div class="module-docheader-bar-column-left">
-						<f:be.menus.actionMenu>
-							<f:be.menus.actionMenuItem controller="Translation" label="List" action="list"></f:be.menus.actionMenuItem>
-							<f:be.menus.actionMenuItem controller="Translation" label="Import" action="import"></f:be.menus.actionMenuItem>
-						</f:be.menus.actionMenu>
-					</div>
-					<div class="module-docheader-bar-column-right">
-						<f:be.buttons.shortcut />
-					</div>
+				<div class="module-docheader-bar-column-right">
+					<f:be.pagePath />
+					<f:be.pageInfo />
 				</div>
 			</div>
-			<div id="module-body t3js-module-body" style="padding: 10px; padding-top: 73px;">
-				<div id="module-body">
-					<f:flashMessages />
-					<h1>Text Datenbank</h1>
-					<f:render section="content" />
+			<div class="module-docheader-bar module-docheader-bar-buttons t3js-module-docheader-bar t3js-module-docheader-bar-buttons">
+				<div class="module-docheader-bar-column-left">
+					<f:be.menus.actionMenu>
+						<f:be.menus.actionMenuItem controller="Translation" label="List" action="list"></f:be.menus.actionMenuItem>
+						<f:be.menus.actionMenuItem controller="Translation" label="Import" action="import"></f:be.menus.actionMenuItem>
+					</f:be.menus.actionMenu>
+				</div>
+				<div class="module-docheader-bar-column-right">
+					<f:be.buttons.shortcut />
 				</div>
 			</div>
 		</div>
-	</f:be.container>
+		<div id="module-body t3js-module-body" style="padding: 10px; padding-top: 73px;">
+			<div id="module-body">
+				<f:flashMessages />
+				<h1>Text Datenbank</h1>
+				<f:render section="content" />
+			</div>
+		</div>
+	</div>
 </html>
