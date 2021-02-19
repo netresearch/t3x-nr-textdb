@@ -5,6 +5,7 @@
 		<div class="module-docheader t3js-module-docheader" style="height: auto">
 			<div class="module-docheader-bar module-docheader-bar-navigation t3js-module-docheader-bar t3js-module-docheader-bar-navigation row">
 				<div class="module-docheader-bar-column-left">
+					<h1 style="margin-left: 12px;margin-top: 10px;margin-bottom: 3px;">Text Datenbank</h1>
 					<f:be.buttons.csh />
 				</div>
 				<div class="module-docheader-bar-column-right">
@@ -14,20 +15,31 @@
 			</div>
 			<div class="module-docheader-bar module-docheader-bar-buttons t3js-module-docheader-bar t3js-module-docheader-bar-buttons">
 				<div class="module-docheader-bar-column-left">
-					<f:be.menus.actionMenu>
-						<f:be.menus.actionMenuItem controller="Translation" label="List" action="list"></f:be.menus.actionMenuItem>
-						<f:be.menus.actionMenuItem controller="Translation" label="Import" action="import"></f:be.menus.actionMenuItem>
-					</f:be.menus.actionMenu>
+					<f:if condition="{action} == 'list'">
+						<f:then>
+							<span class="btn btn-primary">List</span>
+						</f:then>
+						<f:else>
+							<f:link.action controller="Translation" action="list" class="btn btn-default">List</f:link.action>
+						</f:else>
+					</f:if>
+					<f:if condition="{action} == 'import'">
+						<f:then>
+							<span class="btn btn-primary">Import</span>
+						</f:then>
+						<f:else>
+							<f:link.action controller="Translation" action="import" class="btn btn-default">Import</f:link.action>
+						</f:else>
+					</f:if>
 				</div>
 				<div class="module-docheader-bar-column-right">
 					<f:be.buttons.shortcut />
 				</div>
 			</div>
 		</div>
-		<div id="module-body t3js-module-body" style="padding: 10px; padding-top: 73px;">
+		<div id="module-body t3js-module-body">
 			<div id="module-body">
 				<f:flashMessages />
-				<h1>Text Datenbank</h1>
 				<f:render section="content" />
 			</div>
 		</div>

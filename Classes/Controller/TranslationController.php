@@ -159,6 +159,7 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
         $this->view->assign('types', $this->typeRepository->findAll()->toArray());
         $this->view->assign('translations', $translations);
         $this->view->assign('textDbPid', $this->getConfiguredPageId());
+        $this->view->assign('action', 'list');
     }
 
     /**
@@ -237,6 +238,8 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
      */
     public function importAction(array $translationFile = null, bool $update = false)
     {
+        $this->view->assign('action', 'import');
+
         if (empty($translationFile)) {
             return;
         }
