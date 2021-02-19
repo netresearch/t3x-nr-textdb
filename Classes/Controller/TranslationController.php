@@ -10,6 +10,7 @@ use TYPO3\CMS\Backend\View\BackendTemplateView;
 use TYPO3\CMS\Extbase\Mvc\View\ViewInterface;
 use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
+use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
 
 /***
  *
@@ -248,7 +249,7 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
         $filePath = $translationFile['tmp_name'];
 
         $matches = [];
-        if (false === (bool) preg_match('/^([a-z]{2,2}\.)?(textdb_import\.xlf)$/', $fileName, $matches)) {
+        if (false === (bool) preg_match('/^([a-z]{2,2}\.)?(textdb_(.*)\.xlf)$/', $fileName, $matches)) {
             throw new \Exception('File name does not match the expected pattern');
         }
 
@@ -264,11 +265,27 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
             $languageTitle = $language->getTitle();
         }
 
+        $errors = [];
+
+        libxml_use_internal_errors(true);
         $data = simplexml_load_file($filePath);
+        $xmlErrors = libxml_get_errors();
+        if (!empty($xmlErrors)) {
+            foreach ($xmlErrors as $error) {
+                $errors[] = $error->message;
+            }
+
+            $this->view->assign('errors', $errors);
+            return;
+        }
+
         /** @var \SimpleXMLElement $translation */
         $imported = 0;
         $updated  = 0;
-        $errors = [];
+
+
+        $persistenceManager = $this->objectManager->get(PersistenceManager::class);
+        $this->translationRepository->injectPersistenceManager($persistenceManager);
 
         foreach ($data->file->body->children() as $translation) {
             $id = reset($translation->attributes()['id']);
@@ -279,18 +296,23 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
             $placeholder = $parts[2];
             $value       = (empty($translation->target)) ? reset($translation->source) : reset($translation->target);
 
+            $translationRecord = $this->translationRepository->findEntry(
+                $component,
+                'default',
+                $type,
+                $placeholder,
+                $languageId,
+                false
+            );
+
+            /** Skip if translation exists and update is not requested */
+            if ($translationRecord instanceof Translation && $update === false) {
+                continue;
+            }
+
             try {
                 if ($update) {
                     $updated++;
-                    $persistenceManager = $this->objectManager->get(PersistenceManager::class);
-                    $this->translationRepository->injectPersistenceManager($persistenceManager);
-                    $translationRecord = $this->translationRepository->findEntry(
-                        $component,
-                        'default',
-                        $type,
-                        $placeholder,
-                        $languageId
-                    );
                     $translationRecord->setValue($value);
                     $this->translationRepository->update($translationRecord);
                     $persistenceManager->persistAll();
@@ -304,6 +326,7 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
                         $languageId,
                         $value
                     );
+                    $persistenceManager->persistAll();
                 }
             } catch (\Exception $exception) {
                 $errors[] = $exception->getMessage();

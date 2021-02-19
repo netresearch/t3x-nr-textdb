@@ -132,12 +132,13 @@ class TranslationRepository extends AbstractRepository
      * @param string $type        Type of the translation
      * @param string $placeholder Value of the translation
      * @param int    $languageUid uid of the language
+     * @param bool   $create      If set to true, translation will be automatically created if it is missing.
      *
      * @throws \Exception
      *
-     * @return Translation
+     * @return ?Translation
      */
-    public function findEntry(string $component, string $environment, string $type, string $placeholder, int $languageUid): Translation
+    public function findEntry(string $component, string $environment, string $type, string $placeholder, int $languageUid, bool $create = true): ?Translation
     {
         $cacheKey = md5(json_encode(func_get_args()));
 
@@ -171,6 +172,10 @@ class TranslationRepository extends AbstractRepository
             } elseif ($result->getEnvironment()->getName() === 'default') {
                 $translation = $result;
             }
+        }
+
+        if ($create === false) {
+            return $translation;
         }
 
         if ($translation instanceof Translation) {
