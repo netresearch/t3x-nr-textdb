@@ -311,7 +311,7 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
             }
 
             try {
-                if ($update) {
+                if ($update && $translationRecord instanceof Translation) {
                     $updated++;
                     $translationRecord->setValue($value);
                     $this->translationRepository->update($translationRecord);
