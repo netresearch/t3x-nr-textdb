@@ -256,84 +256,88 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
         $languageCode = trim($matches[1],'.');
         $languageCode = (empty($languageCode)) ? 'en' : $languageCode;
         $languageId   = 0;
+
+        /** @var \SimpleXMLElement $translation */
+        $imported = 0;
+        $updated  = 0;
+        $languages = [];
         foreach ($this->translationService->getAllLanguages() as $language) {
-            if ($language->getTwoLetterIsoCode() !== $languageCode) {
+            if ($language->getTypo3Language() !== $languageCode) {
                 continue;
             }
 
             $languageId    = $language->getLanguageId();
             $languageTitle = $language->getTitle();
-        }
+            $languages[] = $languageTitle;
 
-        $errors = [];
+            $errors = [];
 
-        libxml_use_internal_errors(true);
-        $data = simplexml_load_file($filePath);
-        $xmlErrors = libxml_get_errors();
-        if (!empty($xmlErrors)) {
-            foreach ($xmlErrors as $error) {
-                $errors[] = $error->message;
-            }
-
-            $this->view->assign('errors', $errors);
-            return;
-        }
-
-        /** @var \SimpleXMLElement $translation */
-        $imported = 0;
-        $updated  = 0;
-
-
-        $persistenceManager = $this->objectManager->get(PersistenceManager::class);
-        $this->translationRepository->injectPersistenceManager($persistenceManager);
-
-        foreach ($data->file->body->children() as $translation) {
-            $id = reset($translation->attributes()['id']);
-            $parts = explode('|', $id);
-
-            $component   = $parts[0];
-            $type        = $parts[1];
-            $placeholder = $parts[2];
-            $value       = (empty($translation->target)) ? reset($translation->source) : reset($translation->target);
-
-            $translationRecord = $this->translationRepository->findEntry(
-                $component,
-                'default',
-                $type,
-                $placeholder,
-                $languageId,
-                false
-            );
-
-            /** Skip if translation exists and update is not requested */
-            if ($translationRecord instanceof Translation && $update === false) {
-                continue;
-            }
-
-            try {
-                if ($update && $translationRecord instanceof Translation) {
-                    $updated++;
-                    $translationRecord->setValue($value);
-                    $this->translationRepository->update($translationRecord);
-                    $persistenceManager->persistAll();
-                } else {
-                    $imported++;
-                    $this->translationRepository->createTranslation(
-                        $component,
-                        'default',
-                        $type,
-                        $placeholder,
-                        $languageId,
-                        $value
-                    );
-                    $persistenceManager->persistAll();
+            libxml_use_internal_errors(true);
+            $data = simplexml_load_file($filePath);
+            $xmlErrors = libxml_get_errors();
+            if (!empty($xmlErrors)) {
+                foreach ($xmlErrors as $error) {
+                    $errors[] = $error->message;
                 }
-            } catch (\Exception $exception) {
-                $errors[] = $exception->getMessage();
+
+                $this->view->assign('errors', $errors);
+                return;
+            }
+
+
+
+            /** @var PersistenceManager $persistenceManager */
+            $persistenceManager = $this->objectManager->get(PersistenceManager::class);
+            $this->translationRepository->injectPersistenceManager($persistenceManager);
+
+            foreach ($data->file->body->children() as $translation) {
+                $id = reset($translation->attributes()['id']);
+                $parts = explode('|', $id);
+
+                $component   = $parts[0];
+                $type        = $parts[1];
+                $placeholder = $parts[2];
+                $value       = (empty($translation->target)) ? reset($translation->source) : reset($translation->target);
+
+                $translationRecord = $this->translationRepository->findEntry(
+                    $component,
+                    'default',
+                    $type,
+                    $placeholder,
+                    $languageId,
+                    false
+                );
+
+                /** Skip if translation exists and update is not requested */
+                if ($translationRecord instanceof Translation && $update === false) {
+                    continue;
+                }
+
+                try {
+                    if ($update && $translationRecord instanceof Translation) {
+                        $updated++;
+                        $translationRecord->setValue($value);
+                        $this->translationRepository->update($translationRecord);
+                        $persistenceManager->persistAll();
+                    } else {
+                        $imported++;
+                        $this->translationRepository->createTranslation(
+                            $component,
+                            'default',
+                            $type,
+                            $placeholder,
+                            $languageId,
+                            $value
+                        );
+                        $persistenceManager->persistAll();
+                    }
+                } catch (\Exception $exception) {
+                    $errors[] = $exception->getMessage();
+                }
             }
         }
 
-        $this->view->assignMultiple(['updated' => $updated, 'imported' => $imported, 'errors' => $errors, 'language' => $languageTitle]);
+        $this->view->assignMultiple(['updated' => $updated, 'imported' => $imported, 'errors' => $errors, 'language' => implode(',', $languages)]);
     }
 
     /**
