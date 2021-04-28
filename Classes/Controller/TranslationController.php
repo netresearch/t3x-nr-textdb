@@ -261,8 +261,9 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
         $imported = 0;
         $updated  = 0;
         $languages = [];
+
         foreach ($this->translationService->getAllLanguages() as $language) {
-            if ($language->getTypo3Language() !== $languageCode) {
+            if ($language->getTwoLetterIsoCode() !== $languageCode) {
                 continue;
             }
 
