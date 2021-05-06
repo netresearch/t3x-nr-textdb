@@ -1,36 +1,36 @@
 {
-  "name": "netresearch/nr-textdb",
-  "type": "typo3-cms-extension",
-  "description": "",
-  "authors": [
-    {
-      "name": "Thomas Schöne",
-      "role": "Developer"
-    }
-  ],
-  "require": {
-    "typo3/cms-core": "^9.5 || ^10.4.12"
-  },
-  "autoload": {
-    "psr-4": {
-      "Netresearch\\NrTextdb\\": "Classes"
-    }
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "Netresearch\\NrTextdb\\Tests\\": "Tests"
-    }
-  },
-  "replace": {
-    "nr_textdb": "self.version",
-    "typo3-ter/nr-textdb": "self.version"
-  },
-  "extra": {
-    "branch-alias": {
-      "dev-master": "0.4.x-dev"
+    "name": "netresearch/nr-textdb",
+    "type": "typo3-cms-extension",
+    "description": "",
+    "authors": [
+        {
+            "name": "Thomas Schöne",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "typo3/cms-core": "^9.5 || ^10.4.12"
     },
-    "typo3/cms": {
-      "extension-key": "nr_textdb"
+    "autoload": {
+        "psr-4": {
+            "Netresearch\\NrTextdb\\": "Classes"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Netresearch\\NrTextdb\\Tests\\": "Tests"
+        }
+    },
+    "replace": {
+        "nr_textdb": "self.version",
+        "typo3-ter/nr-textdb": "self.version"
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.4.x-dev"
+        },
+        "typo3/cms": {
+            "extension-key": "nr_textdb"
+        }
     }
-  }
 }

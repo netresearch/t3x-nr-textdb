@@ -1,3 +1,13 @@
+# 0.4.2
+
+## MISC
+
+- FIX-1: Cast translations to string. So they are correctly importet. 6d15c4f
+- ADKP-823: Fix import. 967ff2e
+- ADKP-823: Add services.yml c930b39
+- master: Import labels for all languages with same typoe3language 0d4d073
+- Added missing extension-key in composer.json feaf3bf
+
 # 0.4.1
 
 ## MISC
