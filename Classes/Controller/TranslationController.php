@@ -298,7 +298,7 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
                 $component   = $parts[0];
                 $type        = $parts[1];
                 $placeholder = $parts[2];
-                $value       = (empty($translation->target)) ? reset($translation->source) : reset($translation->target);
+                $value       = (empty($translation->target)) ? (string) $translation->source : (string) $translation->target;
 
                 $translationRecord = $this->translationRepository->findEntry(
                     $component,
