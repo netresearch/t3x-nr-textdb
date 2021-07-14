@@ -11,6 +11,9 @@
     "require": {
         "typo3/cms-core": "^9.5 || ^10.4.12"
     },
+    "suggest": {
+        "netresearch/nr-sync": "dev-master"
+    },
     "autoload": {
         "psr-4": {
             "Netresearch\\NrTextdb\\": "Classes"

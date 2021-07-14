@@ -1,4 +1,5 @@
 <?php
+
 defined('TYPO3_MODE') || die('Access denied.');
 
 call_user_func(
@@ -6,6 +7,11 @@ call_user_func(
     {
 
         if (TYPO3_MODE === 'BE') {
+            // Sync
+            if (\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('nr_sync')) {
+                $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['nr_sync/mod1/index.php']['hookClass'][1624345948]
+                    = Netresearch\NrTextdb\Hooks\Sync::class;
+            }
 
             \TYPO3\CMS\Extbase\Utility\ExtensionUtility::registerModule(
                 'Netresearch.NrTextdb',
