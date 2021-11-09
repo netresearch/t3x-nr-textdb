@@ -20,15 +20,22 @@ use TYPO3\CMS\Extbase\Persistence\Repository;
 class AbstractRepository extends Repository
 {
     /**
+     * @var bool
+     */
+    private $createIfMissing = false;
+
+    /**
      * Get the extension configuration.
+     *
+     * @param string $path Path to get the config for
      *
      * @return mixed
      */
-    private function getExtensionConfiguration()
+    private function getExtensionConfiguration(string $path)
     {
         return GeneralUtility::makeInstance(
             ExtensionConfiguration::class
-        )->get('nr_textdb');
+        )->get('nr_textdb', $path);
     }
 
     /**
@@ -38,7 +45,33 @@ class AbstractRepository extends Repository
      */
     public function getConfiguredPageId(): int
     {
-        $configuration = $this->getExtensionConfiguration();
-        return (int) $configuration['textDbPid'];
+        return (int) $this->getExtensionConfiguration('textDbPid');
+    }
+
+    /**
+     * Set to true if a translation part should automatically be created if it is missing in database.
+     * This will override the extension setting if its set to true.
+     *
+     * @param bool $createIfMissing
+     *
+     * @return $this
+     */
+    public function setCreateIfMissing(bool $createIfMissing): self
+    {
+        $this->createIfMissing = $createIfMissing;
+        return $this;
+    }
+
+    /**
+     * Returns true if the placeholder or parts of the translation should be created if it is missing.
+     *
+     * @return bool
+     */
+    protected function getCreateIfMissing(): bool
+    {
+        if ($this->createIfMissing) {
+            return $this->createIfMissing;
+        }
+        return (bool) $this->getExtensionConfiguration('createIfMissing');
     }
 }

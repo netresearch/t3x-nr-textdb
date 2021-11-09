@@ -64,7 +64,7 @@ class TypeRepository extends AbstractRepository
 
         $queryResult = $query->execute();
 
-        if ($queryResult->count() === 0) {
+        if ($queryResult->count() === 0 && $this->getCreateIfMissing()) {
             $type = new Type();
             $type->setName($name);
             $type->setPid($this->getConfiguredPageId());
@@ -80,11 +80,11 @@ class TypeRepository extends AbstractRepository
      * Set a type to cache and return it
      *
      * @param string $key  Cache key
-     * @param Type   $type Type to cache
+     * @param ?Type   $type Type to cache
      *
-     * @return Type
+     * @return ?Type
      */
-    private function setToCache(string $key, Type $type): Type
+    private function setToCache(string $key, ?Type $type): ?Type
     {
         static::$localCache[$key] = $type;
 

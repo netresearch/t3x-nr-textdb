@@ -62,7 +62,7 @@ class EnvironmentRepository extends AbstractRepository
 
         $queryResult = $query->execute();
 
-        if ($queryResult->count() === 0) {
+        if ($queryResult->count() === 0 && $this->getCreateIfMissing()) {
             $environment = new Environment();
             $environment->setName($name);
             $environment->setPid($this->getConfiguredPageId());
@@ -78,11 +78,11 @@ class EnvironmentRepository extends AbstractRepository
      * Set environment to local cache
      *
      * @param string      $key         Cache Key
-     * @param Environment $environment Environment which is set to cache
+     * @param ?Environment $environment Environment which is set to cache
      *
-     * @return Environment
+     * @return ?Environment
      */
-    private function setToCache(string $key, Environment $environment): Environment
+    private function setToCache(string $key, ?Environment $environment): ?Environment
     {
         static::$localCache[$key] = $environment;
 

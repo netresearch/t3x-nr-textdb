@@ -1,13 +1,14 @@
 <?php
 namespace Netresearch\NrTextdb\Service;
 
+use Netresearch\NrTextdb\Domain\Repository\ComponentRepository;
+use Netresearch\NrTextdb\Domain\Repository\EnvironmentRepository;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
+use Netresearch\NrTextdb\Domain\Repository\TypeRepository;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
-
 
 /**
  * The translation service
@@ -21,6 +22,21 @@ use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
  */
 class TranslationService
 {
+    /**
+     * @var EnvironmentRepository
+     */
+    private $environmentRepository;
+
+    /**
+     * @var ComponentRepository
+     */
+    private $componentRepository;
+
+    /**
+     * @var TypeRepository
+     */
+    private $typeRepository;
+
     /**
      * @var TranslationRepository
      */
@@ -37,8 +53,16 @@ class TranslationService
      * @param TranslationRepository $translationRepository
      * @param SiteFinder            $siteFinder
      */
-    public function __construct(TranslationRepository $translationRepository, SiteFinder $siteFinder)
-    {
+    public function __construct(
+        EnvironmentRepository $environmentRepository,
+        ComponentRepository $componentRepository,
+        TypeRepository $typeRepository,
+        TranslationRepository $translationRepository,
+        SiteFinder $siteFinder
+    ) {
+        $this->environmentRepository = $environmentRepository;
+        $this->componentRepository   = $componentRepository;
+        $this->typeRepository        = $typeRepository;
         $this->translationRepository = $translationRepository;
         $this->siteFinder            = $siteFinder;
     }
@@ -63,21 +87,26 @@ class TranslationService
             return  $placeholder;
         }
 
-        $this->translationRepository
-            ->setUseLanguageFilter()
-            ->setLanguageUid(
-                $this->getCurrentLanguage()
-            );
+        $environment = $this->environmentRepository->findByName($environment);
+        $component   = $this->componentRepository->findByName($component);
+        $type        = $this->typeRepository->findByName($type);
 
-        $translation = $this->translationRepository->findEntry(
-            $component,
+        if (!$environment || !$component || !$type) {
+            return "$placeholder";
+        }
+
+        $translation = $this->translationRepository->find(
             $environment,
+            $component,
             $type,
             $placeholder,
             $this->getCurrentLanguage()
         );
 
-        return $translation->getValue();
+        if (empty($translation)) {
+            return $placeholder;
+        }
+        return $translation->getValue() ?? $translation->getPlaceholder();
     }
 
     /**
