@@ -64,7 +64,7 @@ class ComponentRepository extends AbstractRepository
 
         $queryResult = $query->execute();
 
-        if ($queryResult->count() === 0) {
+        if ($queryResult->count() === 0 && $this->getCreateIfMissing()) {
             $component = new Component();
             $component->setName($name);
             $component->setPid($this->getConfiguredPageId());
@@ -80,11 +80,11 @@ class ComponentRepository extends AbstractRepository
      * Set a Component to Cache and return it.
      *
      * @param string    $key       CacheKey
-     * @param Component $component Component to cache
+     * @param ?Component $component Component to cache
      *
-     * @return Component
+     * @return ?Component
      */
-    private function setToCache(string $key, Component $component): Component
+    private function setToCache(string $key, ?Component $component): ?Component
     {
         static::$localCache[$key] = $component;
 

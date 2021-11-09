@@ -1,6 +1,7 @@
 <?php
 namespace Netresearch\NrTextdb\Domain\Model;
 
+use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
 use TYPO3\CMS\Extbase\Annotation\Validate;
 
 /***
@@ -176,6 +177,10 @@ class Translation extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
      */
     public function getValue()
     {
+        if ($this->isAutoCreated()) {
+            return $this->placeholder;
+        }
+
         return $this->value;
     }
 
@@ -250,5 +255,14 @@ class Translation extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     public function setL10nParent(int $l10nParent): void
     {
         $this->l10nParent = $l10nParent;
+    }
+
+    /**
+     * Returns true if the entry was auto-created by the repository
+     * @return bool
+     */
+    public function isAutoCreated(): bool
+    {
+        return $this->value === TranslationRepository::AUTO_CREATE_IDENTIFIER;
     }
 }

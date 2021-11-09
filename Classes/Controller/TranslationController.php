@@ -3,14 +3,17 @@ namespace Netresearch\NrTextdb\Controller;
 
 use Netresearch\NrTextdb\Domain\Model\Translation;
 use Netresearch\NrTextdb\Domain\Repository\ComponentRepository;
+use Netresearch\NrTextdb\Domain\Repository\EnvironmentRepository;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
 use Netresearch\NrTextdb\Domain\Repository\TypeRepository;
 use Netresearch\NrTextdb\Service\TranslationService;
 use TYPO3\CMS\Backend\View\BackendTemplateView;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Mvc\Exception\StopActionException;
 use TYPO3\CMS\Extbase\Mvc\View\ViewInterface;
+use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
+use TYPO3\CMS\Extbase\Persistence\Exception\UnknownObjectException;
 use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
-use TYPO3\CMS\Backend\Utility\BackendUtility;
-use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
 
 /***
  *
@@ -27,6 +30,10 @@ use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
  */
 class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
 {
+    /**
+     * @var EnvironmentRepository
+     */
+    private $environmentRepository;
 
     /**
      * @var TranslationRepository
@@ -34,12 +41,12 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
     private $translationRepository = null;
 
     /**
-     * @var TranslationRepository
+     * @var ComponentRepository
      */
     private $componentRepository = null;
 
     /**
-     * @var TranslationRepository
+     * @var TypeRepository
      */
     private $typeRepository = null;
 
@@ -70,6 +77,7 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
     /**
      * TranslationController constructor.
      *
+     * @param EnvironmentRepository $environmentRepository
      * @param TranslationRepository $translationRepository
      * @param TranslationService    $translationService
      * @param PersistenceManager    $persistenceManager
@@ -77,17 +85,24 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
      * @param TranslationRepository $translationRepository
      */
     public function __construct(
+        EnvironmentRepository $environmentRepository,
         TranslationRepository $translationRepository,
         TranslationService $translationService,
         PersistenceManager $persistenceManager,
         ComponentRepository $componentRepository,
         TypeRepository $typeRepository
     ) {
+        $this->environmentRepository = $environmentRepository;
         $this->translationRepository = $translationRepository;
         $this->translationService    = $translationService;
         $this->persistenceManager    = $persistenceManager;
         $this->componentRepository   = $componentRepository;
         $this->typeRepository        = $typeRepository;
+
+        $this->environmentRepository->setCreateIfMissing(true);
+        $this->typeRepository->setCreateIfMissing(true);
+        $this->componentRepository->setCreateIfMissing(true);
+        $this->translationRepository->setCreateIfMissing(true);
     }
 
     /**
@@ -195,10 +210,10 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
      * @param array $new
      * @param array $update
      *
-     * @throws \TYPO3\CMS\Extbase\Mvc\Exception\StopActionException
-     * @throws \TYPO3\CMS\Extbase\Mvc\Exception\UnsupportedRequestTypeException
-     * @throws \TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException
-     * @throws \TYPO3\CMS\Extbase\Persistence\Exception\UnknownObjectException
+     * @throws StopActionException
+     * @throws IllegalObjectTypeException
+     * @throws UnknownObjectException
+     * @throws \Exception
      */
     public function translateRecordAction(int $parent, array $new = [], array $update = [])
     {
@@ -219,7 +234,6 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
         }
 
         foreach ($update as $translationUid => $value) {
-            /** @var Translation $translation */
             $translation = $this->translationRepository->findRecordByUid($translationUid);
             $translation->setValue($value);
             $this->translationRepository->update($translation);
@@ -232,7 +246,7 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
     /**
      * Import translations from file
      *
-     * @param array $translationFile File to import
+     * @param ?array $translationFile File to import
      * @param bool  $update          check if entries should be updated
      *
      * @return void
@@ -255,7 +269,6 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
 
         $languageCode = trim($matches[1],'.');
         $languageCode = (empty($languageCode)) ? 'en' : $languageCode;
-        $languageId   = 0;
 
         /** @var \SimpleXMLElement $translation */
         $imported = 0;
@@ -269,7 +282,7 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
 
             $languageId    = $language->getLanguageId();
             $languageTitle = $language->getTitle();
-            $languages[] = $languageTitle;
+            $languages[]   = $languageTitle;
 
             $errors = [];
 
@@ -285,8 +298,6 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
                 return;
             }
 
-
-
             /** @var PersistenceManager $persistenceManager */
             $persistenceManager = $this->objectManager->get(PersistenceManager::class);
             $this->translationRepository->injectPersistenceManager($persistenceManager);
@@ -295,19 +306,24 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
                 $id = reset($translation->attributes()['id']);
                 $parts = explode('|', $id);
 
-                $component   = $parts[0];
-                $type        = $parts[1];
+                $environment = $this->environmentRepository->findByName('default');
+                $component   = $this->componentRepository->findByName($parts[0]);
+                $type        = $this->typeRepository->findByName($parts[1]);
                 $placeholder = $parts[2];
                 $value       = (empty($translation->target)) ? (string) $translation->source : (string) $translation->target;
 
-                $translationRecord = $this->translationRepository->findEntry(
+                $translationRecord = $this->translationRepository->find(
+                    $environment,
                     $component,
-                    'default',
                     $type,
                     $placeholder,
                     $languageId,
-                    false
+                    true
                 );
+
+                if ($translationRecord instanceof Translation && $translationRecord->isAutoCreated()) {
+                    $update = true;
+                }
 
                 /** Skip if translation exists and update is not requested */
                 if ($translationRecord instanceof Translation && $update === false) {
@@ -322,14 +338,31 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
                         $persistenceManager->persistAll();
                     } else {
                         $imported++;
-                        $this->translationRepository->createTranslation(
-                            $component,
-                            'default',
-                            $type,
-                            $placeholder,
-                            $languageId,
-                            $value
-                        );
+                        if ($languageId !== 0) {
+                            ## If then language id is not 0 first get the default langauge translation.
+                            $defaultTranslation = $this->translationRepository->find(
+                                $environment,
+                                $component,
+                                $type,
+                                $placeholder,
+                                0,
+                                false,
+                                false
+                            );
+                        }
+
+                        $translation = GeneralUtility::makeInstance(Translation::class);
+                        $translation->setEnvironment($environment);
+                        $translation->setComponent($component);
+                        $translation->setType($type);
+                        $translation->setPlaceholder($placeholder);
+                        $translation->setValue($value);
+                        $translation->setPid($this->getConfiguredPageId());
+                        $translation->setLanguageUid($languageId);
+                        if ($defaultTranslation instanceof Translation) {
+                            $translation->setL10nParent($defaultTranslation->getUid());
+                        }
+                        $this->translationRepository->add($translation);
                         $persistenceManager->persistAll();
                     }
                 } catch (\Exception $exception) {
@@ -381,7 +414,7 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
      *
      * @return array
      */
-    protected function getConfigFromBeUserData()
+    protected function getConfigFromBeUserData(): array
     {
         $serializedConfig = $GLOBALS['BE_USER']->getModuleData(static::class);
         $config = array();

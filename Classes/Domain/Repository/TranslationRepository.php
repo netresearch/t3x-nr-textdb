@@ -6,9 +6,12 @@ use Netresearch\NrTextdb\Domain\Model\Environment;
 use Netresearch\NrTextdb\Domain\Model\Translation;
 use Netresearch\NrTextdb\Domain\Model\Type;
 use TYPO3\CMS\Backend\Exception;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Object\ObjectManagerInterface;
+use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
+use TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException;
 use TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings;
 use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
-use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
 
 /***
  *
@@ -53,12 +56,14 @@ class TranslationRepository extends AbstractRepository
      */
     static $localCache = [];
 
+    public const AUTO_CREATE_IDENTIFIER='auto-created-by-repository';
+
     /**
      * TranslationRepository constructor.
      *
-     * @param \TYPO3\CMS\Extbase\Object\ObjectManagerInterface $objectManager
+     * @param ObjectManagerInterface $objectManager
      */
-    public function __construct(\TYPO3\CMS\Extbase\Object\ObjectManagerInterface $objectManager)
+    public function __construct(ObjectManagerInterface $objectManager)
     {
         parent::__construct($objectManager);
 
@@ -107,7 +112,7 @@ class TranslationRepository extends AbstractRepository
      *
      * @return self
      */
-    public function setUseLanguageFilter($useLanguageFilter = true)
+    public function setUseLanguageFilter($useLanguageFilter = true): self
     {
         $this->useLanguageFilter = $useLanguageFilter;
         return $this;
@@ -118,7 +123,7 @@ class TranslationRepository extends AbstractRepository
      *
      * @return self
      */
-    public function setLanguageUid($languageUid)
+    public function setLanguageUid($languageUid): self
     {
         $this->languageUid = $languageUid;
         return $this;
@@ -193,6 +198,85 @@ class TranslationRepository extends AbstractRepository
     }
 
     /**
+     * Find a translation record
+     *
+     * @param Environment $environment
+     * @param Component   $component
+     * @param Type        $type
+     * @param string      $placeholder
+     * @param int         $languageUid
+     * @param boolean     $skipCreation
+     * @param bool        $fallback
+     *
+     * @return ?Translation
+     * @throws IllegalObjectTypeException
+     */
+    public function find(
+        Environment $environment,
+        Component   $component,
+        Type        $type,
+        string      $placeholder,
+        int         $languageUid,
+        bool        $skipCreation = false,
+        bool        $fallback = true
+    ): ?Translation {
+
+        $cacheKey = md5(json_encode(func_get_args()));
+
+        if ($translation = $this->getFromCache($cacheKey)) {
+            return $translation;
+        }
+
+        $query = $this->createQuery();
+        $query->getQuerySettings()->setLanguageUid($languageUid);
+        if ($fallback === true) {
+            $query->getQuerySettings()->setLanguageMode('content_fallback');
+            $query->getQuerySettings()->setLanguageOverlayMode('content_fallback');
+        }
+
+
+        $query->matching(
+            $query->logicalAnd(
+                [
+                    $query->equals('environment', $environment->getUid()),
+                    $query->equals('placeholder', $placeholder),
+                    $query->equals('pid', $this->getConfiguredPageId()),
+                    $query->equals('type', $type->getUid()),
+                    $query->equals('component', $component->getUid()),
+                ]
+            )
+        );
+
+        $translations = $query->execute()->toArray();
+
+        if ((empty($translations) || false === $translations) && $skipCreation) {
+            return null;
+        }
+
+        if (empty($translations) && $this->getCreateIfMissing() && false === $skipCreation) {
+            $translation = GeneralUtility::makeInstance(Translation::class);
+            $translation->setEnvironment($environment);
+            $translation->setComponent($component);
+            $translation->setType($type);
+            $translation->setPlaceholder($placeholder);
+            $translation->setValue(self::AUTO_CREATE_IDENTIFIER);
+            $translation->setPid($this->getConfiguredPageId());
+            $translation->setLanguageUid(0);
+
+            $this->add($translation);
+            $this->persistenceManager->persistAll();
+
+            return $this->setToCache($cacheKey, $translation);
+        }
+
+        if (false === reset($translations)) {
+            return null;
+        }
+
+        return $this->setToCache($cacheKey, reset($translations));
+    }
+
+    /**
      * Set a translation to cache and return the translation
      *
      * @param string      $key         Cache key
@@ -237,7 +321,7 @@ class TranslationRepository extends AbstractRepository
      *
      * @return Translation
      */
-    public function createTranslation(string $component, string $environment, string $type, string $placeholder, int $languageUid, string $value = '')
+    public function createTranslation(string $component, string $environment, string $type, string $placeholder, int $languageUid, string $value = ''): Translation
     {
         $pid = $this->getConfiguredPageId();
 
@@ -262,13 +346,13 @@ class TranslationRepository extends AbstractRepository
     }
 
     /**
-     * Returns a array with translations for a record
+     * Returns an array with translations for a record
      *
      * @param int $uid Uid of original
      *
      * @return array
      */
-    public function getTranslatedRecords(int $uid)
+    public function getTranslatedRecords(int $uid): array
     {
         $query = $this->createQuery();
 
@@ -292,9 +376,9 @@ class TranslationRepository extends AbstractRepository
      *
      * @param int $uid UID
      *
-     * @return object
+     * @return Translation
      */
-    public function findRecordByUid(int $uid)
+    public function findRecordByUid(int $uid):  Translation
     {
         $query = $this->createQuery();
 
@@ -312,13 +396,13 @@ class TranslationRepository extends AbstractRepository
     /**
      * Returns all records by given filters
      *
-     * @param int    $component   Component ID
-     * @param int    $type        Type ID
-     * @param string $placeholder Placeholder to search for
-     * @param string $value       Value to search for
+     * @param ?int    $component   Component ID
+     * @param ?int    $type        Type ID
+     * @param ?string $placeholder Placeholder to search for
+     * @param ?string $value       Value to search for
      *
      * @return array|QueryResultInterface
-     * @throws \TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException
+     * @throws InvalidQueryException
      */
     public function getAllRecordsByIdentifier(
         int $component = null,
@@ -349,6 +433,5 @@ class TranslationRepository extends AbstractRepository
         }
 
         return $query->execute();
-
     }
 }

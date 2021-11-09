@@ -1,2 +1,5 @@
-# cat=General; typoe=string; label=PID for the TextDB translations
+# cat=General; type=string; label=PID for the TextDB translations
 textDbPid =
+
+# cat=General; type=boolean; label=Create if missing.
+createIfMissing = 1
