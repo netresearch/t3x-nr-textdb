@@ -178,7 +178,7 @@ class TranslateViewHelper extends AbstractViewHelper
     {
         $textdbTranslation = $this->getTranslationRepository()->findEntry(
             static::$component,
-            $this->arguments['arguments'],
+            $this->arguments['environment'],
             'label',
             $placeholder,
             $this->getLanguageUid(),
