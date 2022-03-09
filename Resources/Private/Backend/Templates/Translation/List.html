@@ -25,6 +25,7 @@
 			<f:form.submit value="{f:translate(key: 'search', default: 'Search')}" class="btn btn-default btn-sm"/>
 		</div>
 	</f:form>
+
 	<f:if condition="{translations}">
 		<f:then>
 			<f:be.widget.paginate objects="{translations}" as="paginatedtranslations" configuration="{itemsPerPage: 15, insertBelow: 1}">
@@ -62,6 +63,11 @@
 					</f:for>
 				</table>
 			</f:be.widget.paginate>
+
+			<f:link.action controller="Translation" action="export" class="btn btn-default">
+				<f:translate key="button.label.export">Export current view</f:translate>
+			</f:link.action>
+
 		</f:then>
 		<f:else>
 			<f:be.infobox state="1"><f:translate key="no-entries">No entries found.</f:translate></f:be.infobox>

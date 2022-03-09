@@ -101,7 +101,18 @@
 				<target>Übersetungen Importiert:</target>
 			</trans-unit>
 			<trans-unit id="message.errors">
-				<source>Folgende Fehler gab es beim Import:</source>
+				<target>Folgende Fehler gab es beim Import:</target>
+			</trans-unit>
+			<trans-unit id="button.label.export">
+				<target>Mit aktuellem Filter exportieren</target>
+			</trans-unit>
+			<trans-unit id="message.error.filter">
+				<source>Please specify minimum a component or type filter in order to create a export</source>
+				<target>Bitte wählen Sie mindestens einen Typ oder eine Komponente aus um einen Export zu erstellen</target>
+			</trans-unit>
+			<trans-unit id="message.error.archive">
+				<source>Archive cloud not be created.</source>
+				<target>Archiv konnte nicht erstellt werden</target>
 			</trans-unit>
 		</body>
 	</file>

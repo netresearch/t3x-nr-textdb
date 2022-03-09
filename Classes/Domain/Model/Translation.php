@@ -67,6 +67,11 @@ class Translation extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     protected $l10nParent;
 
     /**
+     * @var int
+     */
+    protected $sysLanguageUid;
+
+    /**
      * __construct
      */
     public function __construct()
@@ -255,6 +260,25 @@ class Translation extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     public function setL10nParent(int $l10nParent): void
     {
         $this->l10nParent = $l10nParent;
+    }
+
+    /**
+     * @return int
+     */
+    public function getSysLanguageUid(): int
+    {
+        return $this->sysLanguageUid;
+    }
+
+    /**
+     * @param int $sysLanguageUid
+     *
+     * @return Translation
+     */
+    public function setSysLanguageUid(int $sysLanguageUid): Translation
+    {
+        $this->sysLanguageUid = $sysLanguageUid;
+        return $this;
     }
 
     /**
