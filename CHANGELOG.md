@@ -1,3 +1,10 @@
+# 0.6.0
+
+## MISC
+
+- Implement export of TextDB entries into XLF files. 31286ee
+- FX-131: Use the right array key for the environment in translate view helper 7d94a8b
+
 # 0.5.0
 
 ## MISC
