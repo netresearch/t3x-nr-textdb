@@ -8,12 +8,18 @@ use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
 use Netresearch\NrTextdb\Domain\Repository\TypeRepository;
 use Netresearch\NrTextdb\Service\TranslationService;
 use TYPO3\CMS\Backend\View\BackendTemplateView;
+use TYPO3\CMS\Core\Localization\LanguageService;
+use TYPO3\CMS\Core\Messaging\FlashMessage;
+use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
+use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use TYPO3\CMS\Extbase\Mvc\Exception\StopActionException;
 use TYPO3\CMS\Extbase\Mvc\View\ViewInterface;
 use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
 use TYPO3\CMS\Extbase\Persistence\Exception\UnknownObjectException;
 use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
+use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 
 /***
  *
@@ -28,7 +34,7 @@ use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
 /**
  * TranslationController
  */
-class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
+class TranslationController extends ActionController
 {
     /**
      * @var EnvironmentRepository
@@ -61,6 +67,11 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
     private $persistenceManager;
 
     /**
+     * @var LanguageService
+     */
+    private $languageService;
+
+    /**
      * BackendTemplateContainer
      *
      * @var BackendTemplateView
@@ -81,8 +92,9 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
      * @param TranslationRepository $translationRepository
      * @param TranslationService    $translationService
      * @param PersistenceManager    $persistenceManager
-     * @param ComponentRepository $componentRepository
-     * @param TranslationRepository $translationRepository
+     * @param ComponentRepository   $componentRepository
+     * @param TypeRepository        $typeRepository
+     * @param LanguageService       $languageService
      */
     public function __construct(
         EnvironmentRepository $environmentRepository,
@@ -90,7 +102,8 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
         TranslationService $translationService,
         PersistenceManager $persistenceManager,
         ComponentRepository $componentRepository,
-        TypeRepository $typeRepository
+        TypeRepository $typeRepository,
+        LanguageService $languageService
     ) {
         $this->environmentRepository = $environmentRepository;
         $this->translationRepository = $translationRepository;
@@ -98,6 +111,7 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
         $this->persistenceManager    = $persistenceManager;
         $this->componentRepository   = $componentRepository;
         $this->typeRepository        = $typeRepository;
+        $this->languageService       = $languageService;
 
         $this->environmentRepository->setCreateIfMissing(true);
         $this->typeRepository->setCreateIfMissing(true);
@@ -106,7 +120,7 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
     }
 
     /**
-     * action list
+     * Shows the textDB entires
      *
      * @return void
      */
@@ -179,6 +193,108 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
     }
 
     /**
+     * Create an export of the current filtered textDB entries to import it safely into a other system.
+     *
+     * @return void
+     * @throws StopActionException
+     * @throws \TYPO3\CMS\Extbase\Mvc\Exception\UnsupportedRequestTypeException
+     * @throws \TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException
+     */
+    public function exportAction()
+    {
+        $exportKey = md5(uniqid().time()) . '-textdb-export';
+        $exportDir = "/tmp/" . $exportKey;
+        $archivePath = $exportDir . "/export.zip";
+
+        if (! is_dir($exportDir)) {
+            mkdir($exportDir, 0700, true);
+        }
+
+        [
+            "component"   => $component,
+            "type"        => $type,
+            "placeholder" => $placeholder,
+            "value"       => $value,
+        ] = $this->getConfigFromBeUserData();
+
+        if (empty($component) && empty($type)) {
+            $this->addFlashMessage(
+                $this->languageService->sL('LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.error.filter'),
+                "Export",
+                FlashMessage::WARNING
+            );
+            $this->redirect('list');
+            return;
+        }
+
+        $languages = $this->translationService->getAllLanguages();
+
+        $originals = [];
+
+        foreach ($languages as $language) {
+            $targetFileName = $this->getExportFileNameForLanguage($language);
+            $enableTargetMarker = $language->getTwoLetterIsoCode() !== "en";
+            if ($language->getLanguageId() === 0) {
+                $translations = $this->translationRepository->getAllRecordsByIdentifier(
+                    $component,
+                    $type,
+                    $placeholder,
+                    $value
+                );
+                $originals = $this->writeTranslationExportFile($translations, $exportDir, $targetFileName, $enableTargetMarker);
+            } else {
+                $translations = $this->translationRepository->getTranslatedRecordsForLanguage(
+                    $originals, $language->getLanguageId()
+                );
+                $this->writeTranslationExportFile($translations, $exportDir, $targetFileName, $enableTargetMarker);
+            }
+
+        }
+
+        $archive = GeneralUtility::makeInstance(\ZipArchive::class);
+        if ($archive->open($archivePath, \ZipArchive::CREATE) !== true) {
+            unlink($archivePath);
+            $this->addFlashMessage(
+                $this->languageService->sL('LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.error.archive'),
+                "Export",
+                FlashMessage::ERROR
+            );
+            $this->redirect('list');
+            return;
+        }
+
+        foreach (glob($exportDir . "/*") as $translationFile) {
+            $archive->addFile($translationFile, basename($translationFile));
+        }
+
+        $archive->close();
+
+        header('Content-Disposition: attachment; filename="textdb_export.zip";' );
+        header('Content-Transfer-Encoding: binary');
+        header('Content-Length: ' . filesize($archivePath) );
+        header('Content-Type: application/zip; charset=utf-8');
+        readfile($archivePath);
+        shell_exec("rm -rf " . $exportDir);
+        exit;
+    }
+
+    /**
+     * Returns the name of the File fo a given language.
+     *
+     * @param SiteLanguage $language
+     *
+     * @return string
+     */
+    private function getExportFileNameForLanguage(SiteLanguage $language): string
+    {
+        if ($language->getTwoLetterIsoCode() === 'en') {
+            return "textdb_import.xlf";
+        }
+
+        return $language->getTwoLetterIsoCode() .  ".textdb_import.xlf";
+    }
+
+    /**
      * @param int $uid
      */
     public function translatedAction(int $uid)
@@ -246,7 +362,7 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
     /**
      * Import translations from file
      *
-     * @param ?array $translationFile File to import
+     * @param array $translationFile File to import
      * @param bool  $update          check if entries should be updated
      *
      * @return void
@@ -432,6 +548,49 @@ class TranslationController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
     protected function persistConfigInBeUserData(array $config)
     {
         $GLOBALS['BE_USER']->pushModuleData(static::class, serialize($config));
+    }
+
+    /**
+     * Write the translation file for export and returns the uid of entries written to file
+     *
+     * @param QueryResultInterface $translations
+     * @param string               $exportDir
+     * @param string               $fileName
+     * @param bool                 $enableTargetMarker
+     *
+     * @return array
+     */
+    protected function writeTranslationExportFile(QueryResultInterface $translations, string $exportDir, string $fileName, bool $enableTargetMarker = false): array
+    {
+        if (empty($translations) || $translations->count() === 0) {
+            return [];
+        }
+
+        $markup                = file_get_contents(ExtensionManagementUtility::extPath('nr_textdb', 'Resources/Private/template.xlf'));
+        $entries               = "";
+        $writtenTranslationIds = [];
+
+        $maker = ($enableTargetMarker === true) ? "target" : "source";
+
+        /** @var Translation $translation */
+        foreach ($translations as $translation) {
+            $writtenTranslationIds[] = $translation->getUid();
+            $entries     .= sprintf(
+                '<trans-unit id="%s|%s|%s">
+                    <%s><![CDATA[%s]]></%s>
+                </trans-unit>' . PHP_EOL,
+                $translation->getComponent()->getName(),
+                $translation->getType()->getName(),
+                $translation->getPlaceholder(),
+                $maker,
+                $translation->getValue(),
+                $maker
+            );
+        }
+
+        $fileContent = sprintf($markup, $entries);
+        file_put_contents($exportDir . '/' . $fileName, $fileContent);
+        return $writtenTranslationIds;
     }
 
 }

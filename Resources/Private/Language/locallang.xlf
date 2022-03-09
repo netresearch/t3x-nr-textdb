@@ -87,6 +87,15 @@
 			<trans-unit id="message.errors">
 				<source>The following errors occurs:</source>
 			</trans-unit>
+			<trans-unit id="button.label.export">
+				<source>Export with current filter</source>
+			</trans-unit>
+			<trans-unit id="message.error.filter">
+				<source>Please specify minimum a component or type filter in order to create a export</source>
+			</trans-unit>
+			<trans-unit id="message.error.archive">
+				<source>Archive cloud not be created.</source>
+			</trans-unit>
 		</body>
 	</file>
 </xliff>

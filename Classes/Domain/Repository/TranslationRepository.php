@@ -5,7 +5,6 @@ use Netresearch\NrTextdb\Domain\Model\Component;
 use Netresearch\NrTextdb\Domain\Model\Environment;
 use Netresearch\NrTextdb\Domain\Model\Translation;
 use Netresearch\NrTextdb\Domain\Model\Type;
-use TYPO3\CMS\Backend\Exception;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Object\ObjectManagerInterface;
 use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
@@ -400,6 +399,7 @@ class TranslationRepository extends AbstractRepository
      * @param ?int    $type        Type ID
      * @param ?string $placeholder Placeholder to search for
      * @param ?string $value       Value to search for
+     * @param int     $langaugeId  Language ID
      *
      * @return array|QueryResultInterface
      * @throws InvalidQueryException
@@ -408,7 +408,8 @@ class TranslationRepository extends AbstractRepository
         int $component = null,
         int $type = null,
         string $placeholder = null,
-        string $value = null
+        string $value = null,
+        int $langaugeId = 0
     ) {
         $query = $this->createQuery();
         $query->getQuerySettings()->setIgnoreEnableFields(true);
@@ -426,11 +427,40 @@ class TranslationRepository extends AbstractRepository
         if (!empty($value)) {
             $constraints[] = $query->like('value', '%' . $value . '%');
         }
+        if (!empty($langaugeId)) {
+            $constraints[] = $query->equals('_languageUid', $langaugeId);
+        }
+
         if (!empty($constraints)) {
             $query->matching(
                 $query->logicalAnd($constraints)
             );
         }
+
+        return $query->execute();
+    }
+
+    /**
+     * @param array $originals
+     * @param int   $languageId
+     *
+     * @return array|QueryResultInterface
+     * @throws InvalidQueryException
+     */
+    public function getTranslatedRecordsForLanguage(array $originals, int $languageId)
+    {
+        $query = $this->createQuery();
+        $query->getQuerySettings()->setIgnoreEnableFields(true);
+        $query->getQuerySettings()->setRespectStoragePage(false);
+        $query->getQuerySettings()->setLanguageUid($languageId);
+
+        $query->matching(
+            $query->logicalAnd(
+                [
+                    $query->in('l10nParent', $originals)
+                ]
+            )
+        );
 
         return $query->execute();
     }

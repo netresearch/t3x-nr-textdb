@@ -19,8 +19,7 @@ call_user_func(
                 'textdb', // Submodule key
                 '', // Position
                 [
-                    'Translation' => 'list, translated, translateRecord, import',
-
+                    'Translation' => 'list, translated, translateRecord, import, export',
                 ],
                 [
                     'access' => 'user,group',
