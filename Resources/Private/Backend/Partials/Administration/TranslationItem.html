@@ -1,0 +1,47 @@
+<html data-namespace-typo3-fluid="true"
+      xmlns="http://www.w3.org/1999/xhtml" lang="en"
+      xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+      xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
+>
+    <f:comment><!-- List item partial for List template --></f:comment>
+
+    <tr>
+        <td id="entry-{translation.uid}" style="width: 100px;">
+            <f:link.action action="translated"
+                           additionalAttributes="{data-uid: translation.uid}"
+                           arguments="{uid: translation.uid}"
+                           class="translated-link-open"
+            >
+                <core:icon identifier="flags-multiple"/>
+                <core:icon identifier="actions-view-list-expand"/>
+            </f:link.action>
+
+            <a href="#" data-uid="{translation.uid}" class="translated-link-close"
+               style="display: none">
+                <core:icon identifier="flags-multiple"/>
+                <core:icon identifier="actions-view-list-collapse"/>
+            </a>
+
+            <span class="t3js-icon icon icon-size-small icon-state-default icon-provider-fontawesome-spinner icon-spin loading-animation"
+                  data-identifier="provider-fontawesome-spinner"
+                  style="display: none;"
+            >
+                <span class="icon-markup">
+                    <span class="icon-unify"><i class="fa fa-spinner"></i></span>
+                </span>
+            </span>
+        </td>
+        <td>
+            {translation.component.name}
+        </td>
+        <td>
+            {translation.type.name}
+        </td>
+        <td>
+            {translation.placeholder}
+        </td>
+        <td>
+            {translation.value}
+        </td>
+    </tr>
+</html>

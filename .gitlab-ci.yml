@@ -1,0 +1,99 @@
+stages:
+    - preparation
+    - 'PHP 8.1'
+
+
+default:
+    before_script:
+        - apt-get update -yqq
+        - apt-get install -yqq git libxml2-dev libzip-dev zip unzip
+
+        # Install PHP extensions
+        - docker-php-ext-install xml zip
+
+
+# Job template
+.composer:
+    stage: preparation
+    script:
+        - php --version
+        # Install composer
+        - curl -sS https://getcomposer.org/installer | php
+        # Install all project dependencies
+        - php composer.phar install --prefer-dist --no-ansi --no-interaction --no-progress --no-scripts
+    artifacts:
+        paths:
+            - vendor/
+            - public/
+        expire_in: 1 days
+        when: always
+    cache:
+        paths:
+            - vendor/
+            - public/
+
+
+# Job template: Run code sniffer
+.phpcs:
+    script:
+        - php --version
+        - vendor/bin/phpcs Classes/ --standard=PSR12 --extensions=php --report=junit > phpcs-report.xml
+    artifacts:
+        reports:
+            junit:
+                - phpcs-report.xml
+
+
+# Job template: Run static analysis
+.phpstan:
+    script:
+        - php --version
+        - vendor/bin/phpstan analyse --error-format=junit --no-progress -c ./phpstan.neon > phpstan-report.xml
+    artifacts:
+        reports:
+            junit:
+                - phpstan-report.xml
+
+
+# Job template: Rector PHP 8.1 and TYPO3 v11
+.rector:
+    script:
+        - php --version
+        - vendor/bin/rector process --dry-run
+
+
+# PHP 8.1
+.php8.1:
+    image: php:8.1
+    stage: 'PHP 8.1'
+    before_script:
+        - !reference [ default, before_script ]
+        # Install & enable Xdebug for code coverage reports
+        - pecl install xdebug-3.2.1
+        - docker-php-ext-enable xdebug
+
+composer:8.1:
+    extends:
+        - .php8.1
+        - .composer
+
+.php8.1-test:
+    extends:
+        - .php8.1
+    needs: [ 'composer:8.1' ]
+
+phpcs:8.1:
+    extends:
+        - .php8.1-test
+        - .phpcs
+
+phpstan:8.1:
+    extends:
+        - .php8.1-test
+        - .phpstan
+
+rector:8.1:
+    extends:
+        - .php8.1-test
+        - .rector
+

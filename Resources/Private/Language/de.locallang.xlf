@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0">
+    <file target-language="de" datatype="plaintext" original="messages" date="2019-09-11T10:31:41Z" product-name="nr_textdb">
+        <header/>
+        <body>
+            <trans-unit id="tx_nrtextdb_domain_model_environment">
+                <target>Environment</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_environment.name">
+                <target>Name</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_component">
+                <target>Component</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_component.name">
+                <target>Name</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_type">
+                <target>Type</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_type.name">
+                <target>Name</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_translation">
+                <target>Translation</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_translation.value">
+                <target>Value</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
+                <target>Environment</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_translation.component">
+                <target>Component</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_translation.type">
+                <target>Type</target>
+            </trans-unit>
+            <trans-unit id="no-entries">
+                <target>Es wurden keine Einträge gefunden.</target>
+            </trans-unit>
+            <trans-unit id="no-translation">
+                <target>Keine Übersetzungen verfügbar.</target>
+            </trans-unit>
+            <trans-unit id="translation">
+                <target>Übersetzung</target>
+            </trans-unit>
+            <trans-unit id="save">
+                <target>Speichern</target>
+            </trans-unit>
+            <trans-unit id="component">
+                <target>Komponente</target>
+            </trans-unit>
+            <trans-unit id="type">
+                <target>Typ</target>
+            </trans-unit>
+            <trans-unit id="environment">
+                <target>Umgebung</target>
+            </trans-unit>
+            <trans-unit id="placeholder">
+                <target>Platzhalter</target>
+            </trans-unit>
+            <trans-unit id="value">
+                <target>Wert</target>
+            </trans-unit>
+            <trans-unit id="search">
+                <target>Suchen</target>
+            </trans-unit>
+            <trans-unit id="import">
+                <target>Importieren</target>
+            </trans-unit>
+            <trans-unit id="button.label.list">
+                <target>Liste</target>
+            </trans-unit>
+            <trans-unit id="info.import">
+                <target>Bitte wählen Sie eine Datei zum Import aus.</target>
+            </trans-unit>
+            <trans-unit id="override existing">
+                <target>Überschreibe existierende übersetzungen</target>
+            </trans-unit>
+            <trans-unit id="message.import">
+                <target>Import abgeschlossen für:</target>
+            </trans-unit>
+            <trans-unit id="message.updated">
+                <target>Übersetzungen aktualisiert:</target>
+            </trans-unit>
+            <trans-unit id="message.imported">
+                <target>Übersetungen importiert:</target>
+            </trans-unit>
+            <trans-unit id="message.errors">
+                <target>Folgende Fehler gab es beim Import:</target>
+            </trans-unit>
+            <trans-unit id="button.label.export">
+                <target>Mit aktuellem Filter exportieren</target>
+            </trans-unit>
+            <trans-unit id="message.error.filter">
+                <target>Bitte wählen Sie mindestens einen Typ oder eine Komponente aus um einen Export zu erstellen.</target>
+            </trans-unit>
+            <trans-unit id="message.error.archive">
+                <target>Archiv konnte nicht erstellt werden.</target>
+            </trans-unit>
+            <trans-unit id="message.error.import">
+                <target>Der Dateiname stimmt nicht mit dem erwarteten Muster überein.</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

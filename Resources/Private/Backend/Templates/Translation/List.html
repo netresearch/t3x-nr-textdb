@@ -1,0 +1,104 @@
+<html data-namespace-typo3-fluid="true"
+      xmlns="http://www.w3.org/1999/xhtml" lang="en"
+      xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+      xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
+>
+    <f:layout name="Default"/>
+
+    <f:section name="content">
+        <h1>Text Datenbank</h1>
+
+        <f:form class="form-inline form-inline-spaced settings">
+            <div class="row mb-3">
+                <div class="col-md-2">
+                    <label for="component" class="form-label">
+                        <f:translate key="component">Component</f:translate>
+                    </label>
+                    <f:form.select name="component" class="form-select" options="{components}"
+                                   value="{defaultComponent.uid}" optionValueField="uid" optionLabelField="name"
+                                   prependOptionLabel=""/>
+                </div>
+
+                <div class="col-md-2">
+                    <label for="type" class="form-label">
+                        <f:translate key="type">Type</f:translate>
+                    </label>
+                    <f:form.select name="type" class="form-select" options="{types}" value="{defaultType.uid}"
+                                   optionValueField="uid" optionLabelField="name" prependOptionLabel=""/>
+                </div>
+
+                <div class="col-md-2">
+                    <label for="placeholder" class="form-label">
+                        <f:translate key="placeholder">Placeholder</f:translate>
+                    </label>
+                    <f:form.textfield name="placeholder" class="form-control" value="{defaultPlaceholder}"/>
+                </div>
+
+                <div class="col-md-2">
+                    <label for="value" class="form-label">
+                        <f:translate key="value">Value</f:translate>
+                    </label>
+                    <f:form.textfield name="value" class="form-control" value="{defaultValue}"/>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-12">
+                    <button class="btn btn-light" type="submit" name="search">
+                        <core:icon identifier="actions-search" size="small" />
+                        <f:translate key="LLL:EXT:core/Resources/Private/Language/locallang_common.xlf:search" />
+                    </button>
+                </div>
+            </div>
+        </f:form>
+
+        <f:if condition="{translations}">
+            <f:then>
+                <table id="tx_nrtextdb" class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>
+                                <f:translate key="language">Language</f:translate>
+                            </th>
+                            <th>
+                                <f:translate key="component">Component</f:translate>
+                            </th>
+                            <th>
+                                <f:translate key="type">Type</f:translate>
+                            </th>
+                            <th>
+                                <f:translate key="placeholder">Placeholder</f:translate>
+                            </th>
+                            <th>
+                                <f:translate key="value">Value</f:translate>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <f:if condition="{pagination}">
+                            <f:then>
+                                <f:for each="{pagination.paginator.paginatedItems}" as="translation" iteration="iterator">
+                                    <f:render partial="Administration/TranslationItem" arguments="{translation: translation}" />
+                                </f:for>
+                            </f:then>
+                            <f:else>
+                                <f:for each="{translations}" as="translation">
+                                    <f:render partial="Administration/TranslationItem" arguments="{translation: translation}" />
+                                </f:for>
+                            </f:else>
+                        </f:if>
+                    </tbody>
+                </table>
+
+                <f:if condition="{pagination}">
+                    <f:render partial="Administration/Pagination" arguments="{pagination: pagination.pagination, paginator: pagination.paginator, actionName: 'list'}" />
+                </f:if>
+            </f:then>
+            <f:else>
+                <f:be.infobox state="1">
+                    <f:translate key="no-entries">No entries found.</f:translate>
+                </f:be.infobox>
+            </f:else>
+        </f:if>
+    </f:section>
+</html>

@@ -1,0 +1,59 @@
+<html data-namespace-typo3-fluid="true"
+      xmlns="http://www.w3.org/1999/xhtml" lang="en"
+      xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+      xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
+>
+    <f:layout name="Default"/>
+
+    <f:section name="content">
+        <f:be.infobox state="-1">
+            <f:translate key="info.import">Please select a file top import.</f:translate>
+        </f:be.infobox>
+
+        <f:form action="import" method="post" enctype="multipart/form-data" class="form-inline form-inline-spaced">
+            <div class="form-group">
+                <f:form.upload name="translationFile" class="form-control"/>
+            </div>
+            <div class="form-group form-check">
+                <f:form.checkbox value="1" name="update" id="update"/>
+                <label class="form-check-label" for="update">
+                    <f:translate key="override existing">Override existing</f:translate>
+                </label>
+            </div>
+            <div class="form-group">
+                <f:form.button type="submit" class="btn btn-primary">
+                    <f:translate key="import">Import</f:translate>
+                </f:form.button>
+            </div>
+        </f:form>
+
+        <f:if condition="{language}">
+            <f:be.infobox state="-1">
+                <f:translate key="message.import">Import done for Language:</f:translate>
+                {language}
+            </f:be.infobox>
+        </f:if>
+
+        <f:if condition="{updated}">
+            <f:be.infobox state="0">
+                <f:translate key="message.updated">Translations updated:</f:translate>
+                {updated}
+            </f:be.infobox>
+        </f:if>
+
+        <f:if condition="{imported}">
+            <f:be.infobox state="0">
+                <f:translate key="message.imported">Translations imported:</f:translate>
+                {imported}
+            </f:be.infobox>
+        </f:if>
+
+        <f:if condition="{errors}">
+            <f:be.infobox state="3">
+                <f:translate key="message.errors">The following errors occurs:</f:translate>
+                <br><br>
+                <f:for as="error" each="{errors}">{error}<br></f:for>
+            </f:be.infobox>
+        </f:if>
+    </f:section>
+</html>
