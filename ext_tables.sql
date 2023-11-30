@@ -88,8 +88,8 @@ CREATE TABLE tx_nrtextdb_domain_model_translation
     environment      int(10) unsigned     DEFAULT '0',
     component        int(10) unsigned     DEFAULT '0',
     type             int(10) unsigned     DEFAULT '0',
-    placeholder      varchar(255)         DEFAULT ''  NULL,
-    value            varchar(1000)        DEFAULT ''  NOT NULL,
+    placeholder      varchar(255)         DEFAULT '' NOT NULL,
+    value            varchar(1000)        DEFAULT '' NOT NULL,
 
     PRIMARY KEY (uid),
     UNIQUE KEY translation (sys_language_uid, pid, environment, component, type, placeholder, deleted),
