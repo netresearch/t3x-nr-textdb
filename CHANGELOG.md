@@ -1,3 +1,13 @@
+# 1.0.2
+
+## MISC
+
+- d41386a Increase character limit for translation to 2000.
+
+## Contributors
+
+- Axel Seemann
+
 # 1.0.1
 
 ## MISC
