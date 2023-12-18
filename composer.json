@@ -46,9 +46,9 @@
     },
     "require-dev": {
         "typo3/testing-framework": "^6.0",
-        "squizlabs/php_codesniffer": "^3.7",
-        "phpro/grumphp": "^1.0",
-        "ssch/typo3-rector": "^1.2"
+        "phpcsstandards/php_codesniffer": "^3.7",
+        "phpro/grumphp": "^2.3",
+        "ssch/typo3-rector": "^1.5"
     },
     "suggest": {
         "netresearch/nr-sync": "dev-master"
