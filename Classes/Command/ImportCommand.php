@@ -145,7 +145,7 @@ class ImportCommand extends Command implements LoggerAwareInterface
         $this
             ->setDescription('Imports textdb records from language files')
             ->setHelp(
-            'If you want to add textdb records to your extension. Create a file languagecode.textdb_import.xlf'
+                'If you want to add textdb records to your extension. Create a file languagecode.textdb_import.xlf'
             )
             ->addArgument(
                 'extensionKey',

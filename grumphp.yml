@@ -33,7 +33,9 @@ grumphp:
             encoding: ~
             ignore_patterns:
                 - /^ext_emconf\.php/
+                - /^ext_tables\.php/
                 - /^Configuration\/TCA/
+                - /^Tests/
             sniffs: []
             triggered_by:
                 - php

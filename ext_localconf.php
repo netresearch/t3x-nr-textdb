@@ -7,11 +7,15 @@
  * LICENSE file that was distributed with this source code.
  */
 
+declare(strict_types=1);
+
+use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
+
 // Add default TypoScript
-TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTypoScriptConstants(
+ExtensionManagementUtility::addTypoScriptConstants(
     "@import 'EXT:nr_textdb/Configuration/TypoScript/constants.typoscript'"
 );
 
-TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTypoScriptSetup(
+ExtensionManagementUtility::addTypoScriptSetup(
     "@import 'EXT:nr_textdb/Configuration/TypoScript/setup.typoscript'"
 );
