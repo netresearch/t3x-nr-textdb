@@ -31,7 +31,9 @@ grumphp:
             tab_width: ~
             whitelist_patterns: []
             encoding: ~
-            ignore_patterns: []
+            ignore_patterns:
+                - /^ext_emconf\.php/
+                - /^Configuration\/TCA/
             sniffs: []
             triggered_by:
                 - php
