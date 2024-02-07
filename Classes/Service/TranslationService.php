@@ -151,8 +151,9 @@ class TranslationService
     protected function getCurrentLanguage(): int
     {
         try {
-            $languageAspect = GeneralUtility::makeInstance(Context::class)
-                ->getAspect('language');
+            /** @var Context $context */
+            $context        = GeneralUtility::makeInstance(Context::class);
+            $languageAspect = $context->getAspect('language');
         } catch (AspectNotFoundException) {
             return 0;
         }

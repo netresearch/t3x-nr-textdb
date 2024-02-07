@@ -15,7 +15,6 @@ return [
         'label'                    => 'value',
         'tstamp'                   => 'tstamp',
         'crdate'                   => 'crdate',
-        'cruser_id'                => 'cruser_id',
         'sortby'                   => 'sorting',
         'languageField'            => 'sys_language_uid',
         'transOrigPointerField'    => 'l10n_parent',
@@ -50,8 +49,8 @@ return [
                 'default'             => 0,
                 'items'               => [
                     [
-                        '',
-                        0,
+                        'label' => '',
+                        'value' => 0,
                     ],
                 ],
                 'foreign_table'       => 'tx_nrtextdb_domain_model_translation',
@@ -72,8 +71,7 @@ return [
                 'renderType' => 'checkboxToggle',
                 'items'      => [
                     [
-                        0                    => '',
-                        1                    => '',
+                        'label'              => '',
                         'invertStateDisplay' => true,
                     ],
                 ],
@@ -120,18 +118,20 @@ return [
             'l10n_mode' => 'exclude',
             'label'     => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang_db.xlf:tx_nrtextdb_domain_model_translation.placeholder',
             'config'    => [
-                'type' => 'input',
-                'size' => 30,
-                'eval' => 'trim,required',
+                'type'     => 'input',
+                'size'     => 30,
+                'eval'     => 'trim',
+                'required' => true,
             ],
         ],
         'value'            => [
             'exclude' => true,
             'label'   => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang_db.xlf:tx_nrtextdb_domain_model_translation.value',
             'config'  => [
-                'type' => 'input',
-                'size' => 30,
-                'eval' => 'trim,required',
+                'type'     => 'input',
+                'size'     => 30,
+                'eval'     => 'trim',
+                'required' => true,
             ],
         ],
     ],

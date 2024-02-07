@@ -25,6 +25,8 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use TYPO3\CMS\Core\Authentication\CommandLineUserAuthentication;
+use TYPO3\CMS\Core\Configuration\Exception\ExtensionConfigurationExtensionNotConfiguredException;
+use TYPO3\CMS\Core\Configuration\Exception\ExtensionConfigurationPathDoesNotExistException;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Core\Bootstrap;
 use TYPO3\CMS\Core\Localization\Parser\XliffParser;
@@ -33,6 +35,7 @@ use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
 use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
 use TYPO3\CMS\Extensionmanager\Utility\ListUtility;
 
@@ -164,6 +167,7 @@ class ImportCommand extends Command implements LoggerAwareInterface
      *
      * @return int
      *
+     * @throws IllegalObjectTypeException
      * @throws UnknownPackageException
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -359,7 +363,7 @@ class ImportCommand extends Command implements LoggerAwareInterface
             $languageCode = 'en';
         }
         foreach ($this->getAllLanguages() as $localLanguage) {
-            if ($languageCode === $localLanguage->getTwoLetterIsoCode()) {
+            if ($languageCode === $localLanguage->getLocale()->getLanguageCode()) {
                 return $localLanguage->getLanguageId();
             }
         }
@@ -431,8 +435,9 @@ class ImportCommand extends Command implements LoggerAwareInterface
     protected function getExtensionConfiguration(string $path): mixed
     {
         try {
-            return GeneralUtility::makeInstance(ExtensionConfiguration::class)
-                ->get('nr_textdb', $path);
+            /** @var ExtensionConfiguration $extensionConfiguration */
+            $extensionConfiguration = GeneralUtility::makeInstance(ExtensionConfiguration::class);
+            return $extensionConfiguration->get('nr_textdb', $path);
         } catch (Exception) {
             return null;
         }
@@ -442,6 +447,8 @@ class ImportCommand extends Command implements LoggerAwareInterface
      * Get the configured page ID, used to store the translation in, from extension configuration.
      *
      * @return int
+     * @throws ExtensionConfigurationExtensionNotConfiguredException
+     * @throws ExtensionConfigurationPathDoesNotExistException
      */
     protected function getConfiguredPageId(): int
     {
@@ -471,6 +478,7 @@ class ImportCommand extends Command implements LoggerAwareInterface
      * @param bool            $forceUpdate
      *
      * @return void
+     * @throws IllegalObjectTypeException
      */
     protected function importTranslationsFromFiles(OutputInterface $output, bool $forceUpdate = false): void
     {

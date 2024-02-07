@@ -33,8 +33,8 @@ return static function (RectorConfig $rectorConfig): void {
 
     // Define what rule sets will be applied
     $rectorConfig->sets([
-        LevelSetList::UP_TO_PHP_81,
-        Typo3LevelSetList::UP_TO_TYPO3_11,
+        LevelSetList::UP_TO_PHP_82,
+        Typo3LevelSetList::UP_TO_TYPO3_12,
 
         Typo3SetList::UNDERSCORE_TO_NAMESPACE,
         Typo3SetList::DATABASE_TO_DBAL,

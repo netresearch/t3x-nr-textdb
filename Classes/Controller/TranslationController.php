@@ -31,18 +31,17 @@ use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Imaging\Icon;
 use TYPO3\CMS\Core\Imaging\IconFactory;
 use TYPO3\CMS\Core\Localization\LanguageService;
-use TYPO3\CMS\Core\Messaging\AbstractMessage;
 use TYPO3\CMS\Core\Messaging\FlashMessage;
 use TYPO3\CMS\Core\Messaging\FlashMessageService;
 use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Pagination\SimplePagination;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
+use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Http\ForwardResponse;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use TYPO3\CMS\Extbase\Mvc\Exception\NoSuchArgumentException;
-use TYPO3\CMS\Extbase\Mvc\Exception\StopActionException;
 use TYPO3\CMS\Extbase\Pagination\QueryResultPaginator;
 use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
 use TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException;
@@ -67,6 +66,11 @@ class TranslationController extends ActionController
      * @var ModuleTemplateFactory
      */
     protected readonly ModuleTemplateFactory $moduleTemplateFactory;
+
+    /**
+     * @var ExtensionConfiguration
+     */
+    protected ExtensionConfiguration $extensionConfiguration;
 
     /**
      * @var PageRenderer
@@ -116,19 +120,21 @@ class TranslationController extends ActionController
     /**
      * TranslationController constructor.
      *
-     * @param ModuleTemplateFactory $moduleTemplateFactory
-     * @param PageRenderer          $pageRenderer
-     * @param IconFactory           $iconFactory
-     * @param EnvironmentRepository $environmentRepository
-     * @param TranslationRepository $translationRepository
-     * @param TranslationService    $translationService
-     * @param PersistenceManager    $persistenceManager
-     * @param ComponentRepository   $componentRepository
-     * @param TypeRepository        $typeRepository
+     * @param ModuleTemplateFactory  $moduleTemplateFactory
+     * @param PageRenderer           $pageRenderer
+     * @param ExtensionConfiguration $extensionConfiguration
+     * @param IconFactory            $iconFactory
+     * @param EnvironmentRepository  $environmentRepository
+     * @param TranslationRepository  $translationRepository
+     * @param TranslationService     $translationService
+     * @param PersistenceManager     $persistenceManager
+     * @param ComponentRepository    $componentRepository
+     * @param TypeRepository         $typeRepository
      */
     public function __construct(
         ModuleTemplateFactory $moduleTemplateFactory,
         PageRenderer $pageRenderer,
+        ExtensionConfiguration $extensionConfiguration,
         IconFactory $iconFactory,
         EnvironmentRepository $environmentRepository,
         TranslationRepository $translationRepository,
@@ -137,6 +143,7 @@ class TranslationController extends ActionController
         ComponentRepository $componentRepository,
         TypeRepository $typeRepository
     ) {
+        $this->extensionConfiguration = $extensionConfiguration;
         $this->environmentRepository = $environmentRepository;
         $this->translationRepository = $translationRepository;
         $this->translationService = $translationService;
@@ -147,8 +154,8 @@ class TranslationController extends ActionController
         $this->iconFactory = $iconFactory;
 
         $this->pageRenderer = $pageRenderer;
-        $this->pageRenderer->loadRequireJsModule('TYPO3/CMS/Backend/Modal');
-        $this->pageRenderer->loadRequireJsModule('TYPO3/CMS/NrTextdb/TextDbModule');
+        $this->pageRenderer->loadJavaScriptModule('@typo3/backend/modal.js');
+        $this->pageRenderer->loadJavaScriptModule('@vendor/nr-textdb/TextDbModule.js');
 
         $this->environmentRepository->setCreateIfMissing(true);
         $this->typeRepository->setCreateIfMissing(true);
@@ -190,7 +197,6 @@ class TranslationController extends ActionController
      * @return ResponseInterface
      *
      * @throws InvalidQueryException
-     * @throws NoSuchArgumentException
      */
     public function listAction(): ResponseInterface
     {
@@ -265,7 +271,6 @@ class TranslationController extends ActionController
      *
      * @throws RuntimeException
      * @throws InvalidQueryException
-     * @throws StopActionException
      */
     public function exportAction(): ResponseInterface
     {
@@ -312,7 +317,7 @@ class TranslationController extends ActionController
 
         foreach ($languages as $language) {
             $targetFileName     = $this->getExportFileNameForLanguage($language);
-            $enableTargetMarker = $language->getTwoLetterIsoCode() !== 'en';
+            $enableTargetMarker = $language->getLocale()->getLanguageCode() !== 'en';
 
             if ($language->getLanguageId() === 0) {
                 $translations = $this->translationRepository
@@ -413,11 +418,11 @@ class TranslationController extends ActionController
      */
     private function getExportFileNameForLanguage(SiteLanguage $language): string
     {
-        if ($language->getTwoLetterIsoCode() === 'en') {
+        if ($language->getLocale()->getLanguageCode() === 'en') {
             return 'textdb_import.xlf';
         }
 
-        return $language->getTwoLetterIsoCode() . '.textdb_import.xlf';
+        return $language->getLocale()->getLanguageCode() . '.textdb_import.xlf';
     }
 
     /**
@@ -550,7 +555,7 @@ class TranslationController extends ActionController
         $errors = [];
 
         foreach ($this->translationService->getAllLanguages() as $language) {
-            if ($language->getTwoLetterIsoCode() !== $languageCode) {
+            if ($language->getLocale()->getLanguageCode() !== $languageCode) {
                 continue;
             }
 
@@ -689,8 +694,7 @@ class TranslationController extends ActionController
      */
     protected function getExtensionConfiguration(): mixed
     {
-        return GeneralUtility::makeInstance(ExtensionConfiguration::class)
-            ->get('nr_textdb');
+        return $this->extensionConfiguration->get('nr_textdb');
     }
 
     /**
@@ -884,8 +888,6 @@ class TranslationController extends ActionController
      * @param array                $settings
      *
      * @return array
-     *
-     * @throws NoSuchArgumentException
      */
     protected function getPagination(QueryResultInterface $items, array $settings): array
     {
@@ -914,16 +916,16 @@ class TranslationController extends ActionController
     /**
      * Adds a flash message to the queue.
      *
-     * @param string $messageTitle
-     * @param string $messageText
-     * @param int    $severity
+     * @param string                     $messageTitle
+     * @param string                     $messageText
+     * @param ContextualFeedbackSeverity $severity
      *
      * @return void
      */
     protected function addFlashMessageToQueue(
         string $messageTitle,
         string $messageText,
-        int $severity = AbstractMessage::ERROR
+        ContextualFeedbackSeverity $severity = ContextualFeedbackSeverity::ERROR
     ): void {
         /** @var FlashMessage $message */
         $message = GeneralUtility::makeInstance(
@@ -934,7 +936,10 @@ class TranslationController extends ActionController
             true
         );
 
-        GeneralUtility::makeInstance(FlashMessageService::class)
+        /** @var FlashMessageService $flashMessageService */
+        $flashMessageService = GeneralUtility::makeInstance(FlashMessageService::class);
+
+        $flashMessageService
             ->getMessageQueueByIdentifier()
             ->addMessage($message);
     }

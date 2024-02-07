@@ -16,8 +16,8 @@ use Netresearch\NrTextdb\Domain\Model\Component;
 use Netresearch\NrTextdb\Domain\Model\Environment;
 use Netresearch\NrTextdb\Domain\Model\Translation;
 use Netresearch\NrTextdb\Domain\Model\Type;
+use TYPO3\CMS\Core\Context\LanguageAspect;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Object\ObjectManagerInterface;
 use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
 use TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException;
 use TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings;
@@ -62,18 +62,16 @@ class TranslationRepository extends AbstractRepository
     /**
      * TranslationRepository constructor.
      *
-     * @param ObjectManagerInterface $objectManager
-     * @param ComponentRepository    $componentRepository
-     * @param EnvironmentRepository  $environmentRepository
-     * @param TypeRepository         $typeRepository
+     * @param ComponentRepository   $componentRepository
+     * @param EnvironmentRepository $environmentRepository
+     * @param TypeRepository        $typeRepository
      */
     public function __construct(
-        ObjectManagerInterface $objectManager,
         ComponentRepository $componentRepository,
         EnvironmentRepository $environmentRepository,
         TypeRepository $typeRepository
     ) {
-        parent::__construct($objectManager);
+        parent::__construct();
 
         $this->componentRepository   = $componentRepository;
         $this->environmentRepository = $environmentRepository;
@@ -117,7 +115,16 @@ class TranslationRepository extends AbstractRepository
     public function findAllByLanguage(int $languageUid): QueryResultInterface
     {
         $query = $this->createQuery();
-        $query->getQuerySettings()->setLanguageUid($languageUid);
+
+        $query
+            ->getQuerySettings()
+            ->setLanguageAspect(
+                new LanguageAspect(
+                    $languageUid,
+                    $languageUid,
+                    $query->getQuerySettings()->getLanguageAspect()->getOverlayType()
+                )
+            );
 
         return $query->execute();
     }
@@ -157,17 +164,27 @@ class TranslationRepository extends AbstractRepository
         }
 
         $query = $this->createQuery();
-        $query->getQuerySettings()->setIgnoreEnableFields(true);
-        $query->getQuerySettings()->setLanguageUid($languageUid);
+
+        $query
+            ->getQuerySettings()
+            ->setIgnoreEnableFields(true);
+
+        $query
+            ->getQuerySettings()
+            ->setLanguageAspect(
+                new LanguageAspect(
+                    $languageUid,
+                    $languageUid,
+                    $query->getQuerySettings()->getLanguageAspect()->getOverlayType()
+                )
+            );
 
         $query->matching(
             $query->logicalAnd(
-                [
-                    $query->equals('placeholder', $placeholder),
-                    $query->equals('pid', $this->getConfiguredPageId()),
-                    $query->equals('type.name', $type),
-                    $query->equals('component.name', $component),
-                ]
+                $query->equals('placeholder', $placeholder),
+                $query->equals('pid', $this->getConfiguredPageId()),
+                $query->equals('type.name', $type),
+                $query->equals('component.name', $component)
             )
         );
 
@@ -245,22 +262,30 @@ class TranslationRepository extends AbstractRepository
             return $translation;
         }
 
-        $query = $this->createQuery();
-        $query->getQuerySettings()->setLanguageUid($languageUid);
+        $query       = $this->createQuery();
+        $overlayType = $query->getQuerySettings()->getLanguageAspect()->getOverlayType();
 
         if ($fallback === true) {
-            $query->getQuerySettings()->setLanguageOverlayMode('content_fallback');
+            $overlayType = 'content_fallback';
         }
+
+        $query
+            ->getQuerySettings()
+            ->setLanguageAspect(
+                new LanguageAspect(
+                    $languageUid,
+                    $languageUid,
+                    $overlayType
+                )
+            );
 
         $query->matching(
             $query->logicalAnd(
-                [
-                    $query->equals('environment', $environment->getUid()),
-                    $query->equals('placeholder', $placeholder),
-                    $query->equals('pid', $this->getConfiguredPageId()),
-                    $query->equals('type', $type->getUid()),
-                    $query->equals('component', $component->getUid()),
-                ]
+                $query->equals('environment', $environment->getUid()),
+                $query->equals('placeholder', $placeholder),
+                $query->equals('pid', $this->getConfiguredPageId()),
+                $query->equals('type', $type->getUid()),
+                $query->equals('component', $component->getUid())
             )
         );
 
@@ -390,10 +415,8 @@ class TranslationRepository extends AbstractRepository
 
         $query->matching(
             $query->logicalAnd(
-                [
-                    $query->equals('l10nParent', $uid),
-                    $query->equals('pid', $this->getConfiguredPageId())
-                ]
+                $query->equals('l10nParent', $uid),
+                $query->equals('pid', $this->getConfiguredPageId())
             )
         );
 
@@ -471,7 +494,7 @@ class TranslationRepository extends AbstractRepository
 
         if (count($constraints) > 0) {
             $query->matching(
-                $query->logicalAnd($constraints)
+                $query->logicalAnd(...$constraints)
             );
         }
 
@@ -480,24 +503,37 @@ class TranslationRepository extends AbstractRepository
 
     /**
      * @param array $originals
-     * @param int   $languageId
+     * @param int   $languageUid
      *
      * @return QueryResultInterface
      *
      * @throws InvalidQueryException
      */
-    public function getTranslatedRecordsForLanguage(array $originals, int $languageId): QueryResultInterface
+    public function getTranslatedRecordsForLanguage(array $originals, int $languageUid): QueryResultInterface
     {
         $query = $this->createQuery();
-        $query->getQuerySettings()->setIgnoreEnableFields(true);
-        $query->getQuerySettings()->setRespectStoragePage(false);
-        $query->getQuerySettings()->setLanguageUid($languageId);
+
+        $query
+            ->getQuerySettings()
+            ->setIgnoreEnableFields(true);
+
+        $query
+            ->getQuerySettings()
+            ->setRespectStoragePage(false);
+
+        $query
+            ->getQuerySettings()
+            ->setLanguageAspect(
+                new LanguageAspect(
+                    $languageUid,
+                    $languageUid,
+                    $query->getQuerySettings()->getLanguageAspect()->getOverlayType()
+                )
+            );
 
         $query->matching(
             $query->logicalAnd(
-                [
-                    $query->in('l10nParent', $originals)
-                ]
+                $query->in('l10nParent', $originals)
             )
         );
 

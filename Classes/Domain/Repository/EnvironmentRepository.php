@@ -64,10 +64,8 @@ class EnvironmentRepository extends AbstractRepository
 
         $query->matching(
             $query->logicalAnd(
-                [
-                    $query->equals('name', $name),
-                    $query->equals('pid', $this->getConfiguredPageId())
-                ]
+                $query->equals('name', $name),
+                $query->equals('pid', $this->getConfiguredPageId())
             )
         );
 

@@ -41,8 +41,9 @@ class AbstractRepository extends Repository
     private function getExtensionConfiguration(string $path): mixed
     {
         try {
-            return GeneralUtility::makeInstance(ExtensionConfiguration::class)
-                ->get('nr_textdb', $path);
+            /** @var ExtensionConfiguration $extensionConfiguration */
+            $extensionConfiguration = GeneralUtility::makeInstance(ExtensionConfiguration::class);
+            return $extensionConfiguration->get('nr_textdb', $path);
         } catch (Exception) {
             return null;
         }

@@ -1,6 +1,7 @@
 stages:
     - preparation
     - 'PHP 8.1'
+    - 'PHP 8.2'
 
 
 default:
@@ -55,7 +56,7 @@ default:
                 - phpstan-report.xml
 
 
-# Job template: Rector PHP 8.1 and TYPO3 v11
+# Job template: Rector PHP 8.2 and TYPO3 v12
 .rector:
     script:
         - php --version
@@ -95,5 +96,41 @@ phpstan:8.1:
 rector:8.1:
     extends:
         - .php8.1-test
+        - .rector
+
+
+# PHP 8.2
+.php8.2:
+    image: php:8.2
+    stage: 'PHP 8.2'
+    before_script:
+        - !reference [ default, before_script ]
+        # Install & enable Xdebug for code coverage reports
+        - pecl install xdebug-3.2.1
+        - docker-php-ext-enable xdebug
+
+composer:8.2:
+    extends:
+        - .php8.2
+        - .composer
+
+.php8.2-test:
+    extends:
+        - .php8.2
+    needs: [ 'composer:8.2' ]
+
+phpcs:8.2:
+    extends:
+        - .php8.2-test
+        - .phpcs
+
+phpstan:8.2:
+    extends:
+        - .php8.2-test
+        - .phpstan
+
+rector:8.2:
+    extends:
+        - .php8.2-test
         - .rector
 
