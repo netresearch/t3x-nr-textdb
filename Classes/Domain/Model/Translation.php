@@ -59,6 +59,7 @@ class Translation extends AbstractEntity
      * value
      *
      * @var string
+     *
      * @Validate("TYPO3\CMS\Extbase\Validation\Validator\NotEmptyValidator")
      */
     protected string $value = '';
@@ -67,6 +68,11 @@ class Translation extends AbstractEntity
      * @var bool
      */
     protected bool $hidden = false;
+
+    /**
+     * @var bool
+     */
+    protected bool $deleted = false;
 
     /**
      * @var int
@@ -192,9 +198,17 @@ class Translation extends AbstractEntity
     /**
      * @return bool
      */
-    public function getHidden(): bool
+    public function isHidden(): bool
     {
         return $this->hidden;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDeleted(): bool
+    {
+        return $this->deleted;
     }
 
     /**

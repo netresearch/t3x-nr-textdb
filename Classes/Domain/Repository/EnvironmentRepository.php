@@ -56,7 +56,9 @@ class EnvironmentRepository extends AbstractRepository
      */
     public function findByName(string $name): ?Environment
     {
-        if ($environment = $this->getFromCache($name)) {
+        $environment = $this->getFromCache($name);
+
+        if ($environment !== null) {
             return $environment;
         }
 
@@ -82,7 +84,10 @@ class EnvironmentRepository extends AbstractRepository
             return $this->setToCache($name, $environment);
         }
 
-        return $this->setToCache($name, $queryResult->getFirst());
+        /** @var null|Environment $environment */
+        $environment = $queryResult->getFirst();
+
+        return $this->setToCache($name, $environment);
     }
 
     /**

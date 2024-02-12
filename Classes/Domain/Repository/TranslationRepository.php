@@ -22,7 +22,7 @@ use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
 use TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException;
 use TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings;
 use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
-
+use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
 use function count;
 use function func_get_args;
 
@@ -34,6 +34,9 @@ use function func_get_args;
  * @author  Rico Sonntag <rico.sonntag@netresearch.de>
  * @license Netresearch https://www.netresearch.de
  * @link    https://www.netresearch.de
+ *
+ * @template T of \Netresearch\NrTextdb\Domain\Model\Translation
+ * @extends AbstractRepository<T>
  */
 class TranslationRepository extends AbstractRepository
 {
@@ -159,7 +162,9 @@ class TranslationRepository extends AbstractRepository
             )
         );
 
-        if ($translation = $this->getFromCache($cacheKey)) {
+        $translation = $this->getFromCache($cacheKey);
+
+        if ($translation !== null) {
             return $translation;
         }
 
@@ -193,6 +198,7 @@ class TranslationRepository extends AbstractRepository
         /** @var null|Translation $translation */
         $translation = null;
 
+        /** @var Translation $result */
         foreach ($queryResult as $result) {
             if ($result->getEnvironment()->getName() === $environment) {
                 $translation = $result;
@@ -206,7 +212,10 @@ class TranslationRepository extends AbstractRepository
         }
 
         if ($translation instanceof Translation) {
-            if ($translation->getHidden() || $translation->_getProperty('deleted')) {
+            if (
+                $translation->isHidden()
+                || $translation->isDeleted()
+            ) {
                 return $this->setToCache($cacheKey, new Translation());
             }
 
@@ -258,7 +267,9 @@ class TranslationRepository extends AbstractRepository
             )
         );
 
-        if ($translation = $this->getFromCache($cacheKey)) {
+        $translation = $this->getFromCache($cacheKey);
+
+        if ($translation !== null) {
             return $translation;
         }
 
@@ -291,11 +302,18 @@ class TranslationRepository extends AbstractRepository
 
         $translations = $query->execute()->toArray();
 
-        if (empty($translations) && $skipCreation) {
+        if (
+            $skipCreation
+            && (count($translations) === 0)
+        ) {
             return null;
         }
 
-        if (($skipCreation === false) && empty($translations) && $this->getCreateIfMissing()) {
+        if (
+            ($skipCreation === false)
+            && (count($translations) === 0)
+            && $this->getCreateIfMissing()
+        ) {
             $translation = GeneralUtility::makeInstance(Translation::class);
             $translation->setEnvironment($environment);
             $translation->setComponent($component);
@@ -311,11 +329,14 @@ class TranslationRepository extends AbstractRepository
             return $this->setToCache($cacheKey, $translation);
         }
 
-        if (reset($translations) === false) {
+        /** @var false|Translation $translation */
+        $translation = reset($translations);
+
+        if ($translation === false) {
             return null;
         }
 
-        return $this->setToCache($cacheKey, reset($translations));
+        return $this->setToCache($cacheKey, $translation);
     }
 
     /**
@@ -403,7 +424,7 @@ class TranslationRepository extends AbstractRepository
      *
      * @param int $uid Uid of original
      *
-     * @return array
+     * @return Translation[]
      */
     public function getTranslatedRecords(int $uid): array
     {
@@ -413,6 +434,16 @@ class TranslationRepository extends AbstractRepository
         $query->getQuerySettings()->setRespectSysLanguage(false);
         $query->getQuerySettings()->setIgnoreEnableFields(true);
 
+//        $languageAspect = $query->getQuerySettings()->getLanguageAspect();
+
+//        $languageAspect = new LanguageAspect(
+//            $languageAspect->getId(),
+//            $languageAspect->getContentId(),
+//            LanguageAspect::OVERLAYS_OFF
+//        );
+//DebuggerUtility::var_dump($languageAspect);
+//        $query->getQuerySettings()->setLanguageAspect($languageAspect);
+
         $query->matching(
             $query->logicalAnd(
                 $query->equals('l10nParent', $uid),
@@ -420,7 +451,9 @@ class TranslationRepository extends AbstractRepository
             )
         );
 
-        return $query->execute()->toArray();
+        return $query
+            ->execute()
+            ->toArray();
     }
 
     /**
@@ -430,7 +463,7 @@ class TranslationRepository extends AbstractRepository
      *
      * @return null|Translation
      */
-    public function findRecordByUid(int $uid): ?object
+    public function findRecordByUid(int $uid): ?Translation
     {
         $query = $this->createQuery();
 
@@ -442,7 +475,10 @@ class TranslationRepository extends AbstractRepository
             $query->equals('uid', $uid)
         );
 
-        return $query->execute()->getFirst();
+        /** @var null|Translation $translation */
+        $translation = $query->execute()->getFirst();
+
+        return $translation;
     }
 
     /**
@@ -502,7 +538,7 @@ class TranslationRepository extends AbstractRepository
     }
 
     /**
-     * @param array $originals
+     * @param int[] $originals
      * @param int   $languageUid
      *
      * @return QueryResultInterface

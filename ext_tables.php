@@ -9,10 +9,7 @@
 
 declare(strict_types=1);
 
-use Netresearch\NrTextdb\Controller\TranslationController;
-use Netresearch\NrTextdb\Hooks\Sync;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
-use TYPO3\CMS\Extbase\Utility\ExtensionUtility;
 
 defined('TYPO3') || die('Access denied.');
 
@@ -20,25 +17,8 @@ call_user_func(static function () {
     // Sync
     if (ExtensionManagementUtility::isLoaded('nr_sync')) {
         $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['nr_sync/mod1/index.php']['hookClass'][1_624_345_948]
-            = Sync::class;
+            = \Netresearch\NrTextdb\Hooks\Sync::class;
     }
-
-    ExtensionUtility::registerModule(
-        'NrTextdb',
-        'web',
-        'textdb',
-        '',
-        [
-            TranslationController::class => 'list, translated, translateRecord, import, export',
-        ],
-        [
-            'access'                                   => 'user,group',
-            'icon'                                     => 'EXT:nr_textdb/Resources/Public/Icons/user_mod_textdb.svg',
-            'labels'                                   => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang_textdb.xlf',
-            'navigationComponentId'                    => '',
-            'inheritNavigationComponentFromMainModule' => false,
-        ]
-    );
 
     ExtensionManagementUtility::addLLrefForTCAdescr(
         'tx_nrtextdb_domain_model_environment',

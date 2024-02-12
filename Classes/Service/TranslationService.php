@@ -18,6 +18,7 @@ use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
 use Netresearch\NrTextdb\Domain\Repository\TypeRepository;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\Exception\AspectNotFoundException;
+use TYPO3\CMS\Core\Context\LanguageAspect;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -152,7 +153,9 @@ class TranslationService
     {
         try {
             /** @var Context $context */
-            $context        = GeneralUtility::makeInstance(Context::class);
+            $context = GeneralUtility::makeInstance(Context::class);
+
+            /** @var LanguageAspect $languageAspect */
             $languageAspect = $context->getAspect('language');
         } catch (AspectNotFoundException) {
             return 0;

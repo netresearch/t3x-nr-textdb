@@ -15,6 +15,7 @@ use Netresearch\NrTextdb\Domain\Model\Type;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
 use TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings;
+use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
 
 /**
  * TypeRepository
@@ -58,7 +59,9 @@ class TypeRepository extends AbstractRepository
      */
     public function findByName(string $name): ?Type
     {
-        if ($type = $this->getFromCache($name)) {
+        $type = $this->getFromCache($name);
+
+        if ($type !== null) {
             return $type;
         }
 
@@ -73,7 +76,10 @@ class TypeRepository extends AbstractRepository
 
         $queryResult = $query->execute();
 
-        if ($queryResult->count() === 0 && $this->getCreateIfMissing()) {
+        if (
+            ($queryResult->count() === 0)
+            && $this->getCreateIfMissing()
+        ) {
             $type = new Type();
             $type->setName($name);
             $type->setPid($this->getConfiguredPageId());
@@ -84,7 +90,10 @@ class TypeRepository extends AbstractRepository
             return $this->setToCache($name, $type);
         }
 
-        return $this->setToCache($name, $queryResult->getFirst());
+        /** @var null|Type $type */
+        $type = $queryResult->getFirst();
+
+        return $this->setToCache($name, $type);
     }
 
     /**

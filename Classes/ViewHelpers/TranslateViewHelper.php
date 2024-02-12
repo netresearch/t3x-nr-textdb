@@ -17,6 +17,7 @@ use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
 use RuntimeException;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\Exception\AspectNotFoundException;
+use TYPO3\CMS\Core\Context\LanguageAspect;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
@@ -104,7 +105,7 @@ class TranslateViewHelper extends AbstractViewHelper
         }
 
         $placeholder = $this->arguments['key'];
-        $extension   = $this->arguments['extensionName'] ?: null;
+        $extension   = $this->arguments['extensionName'] ?? null;
         $environment = $this->arguments['environment'];
 
         $translationRequested = LocalizationUtility::translate(
@@ -176,7 +177,9 @@ class TranslateViewHelper extends AbstractViewHelper
     {
         try {
             /** @var Context $context */
-            $context        = GeneralUtility::makeInstance(Context::class);
+            $context = GeneralUtility::makeInstance(Context::class);
+
+            /** @var LanguageAspect $languageAspect */
             $languageAspect = $context->getAspect('language');
         } catch (AspectNotFoundException) {
             return 0;

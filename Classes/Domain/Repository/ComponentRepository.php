@@ -58,7 +58,9 @@ class ComponentRepository extends AbstractRepository
      */
     public function findByName(string $name): ?Component
     {
-        if ($component = $this->getFromCache($name)) {
+        $component = $this->getFromCache($name);
+
+        if ($component !== null) {
             return $component;
         }
 
@@ -84,7 +86,10 @@ class ComponentRepository extends AbstractRepository
             return $this->setToCache($name, $component);
         }
 
-        return $this->setToCache($name, $queryResult->getFirst());
+        /** @var null|Component $component */
+        $component = $queryResult->getFirst();
+
+        return $this->setToCache($name, $component);
     }
 
     /**

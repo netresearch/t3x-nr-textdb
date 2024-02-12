@@ -74,7 +74,7 @@
                 <source>List</source>
             </trans-unit>
             <trans-unit id="info.import">
-                <source>Please select a file top import.</source>
+                <source>Please select a file to import.</source>
             </trans-unit>
             <trans-unit id="override existing">
                 <source>Override existing</source>

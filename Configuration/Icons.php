@@ -9,12 +9,11 @@
 
 declare(strict_types=1);
 
+use TYPO3\CMS\Core\Imaging\IconProvider\SvgIconProvider;
+
 return [
-    'dependencies' => [
-        'core',
-        'backend',
-    ],
-    'imports'      => [
-        '@netresearch/nr-textdb/' => 'EXT:nr_textdb/Resources/Public/JavaScript/',
+    'tx-textdb-module-web' => [
+        'provider' => SvgIconProvider::class,
+        'source' => 'EXT:nr_textdb/Resources/Public/Icons/Extension.svg',
     ],
 ];

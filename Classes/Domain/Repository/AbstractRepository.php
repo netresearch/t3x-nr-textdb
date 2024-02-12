@@ -23,6 +23,9 @@ use TYPO3\CMS\Extbase\Persistence\Repository;
  * @author  Rico Sonntag <rico.sonntag@netresearch.de>
  * @license Netresearch https://www.netresearch.de
  * @link    https://www.netresearch.de
+ *
+ * @template T of \TYPO3\CMS\Extbase\DomainObject\DomainObjectInterface
+ * @extends Repository<T>
  */
 class AbstractRepository extends Repository
 {
