@@ -434,16 +434,6 @@ class TranslationRepository extends AbstractRepository
         $query->getQuerySettings()->setRespectSysLanguage(false);
         $query->getQuerySettings()->setIgnoreEnableFields(true);
 
-//        $languageAspect = $query->getQuerySettings()->getLanguageAspect();
-
-//        $languageAspect = new LanguageAspect(
-//            $languageAspect->getId(),
-//            $languageAspect->getContentId(),
-//            LanguageAspect::OVERLAYS_OFF
-//        );
-//DebuggerUtility::var_dump($languageAspect);
-//        $query->getQuerySettings()->setLanguageAspect($languageAspect);
-
         $query->matching(
             $query->logicalAnd(
                 $query->equals('l10nParent', $uid),
