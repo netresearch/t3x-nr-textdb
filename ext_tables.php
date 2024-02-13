@@ -20,26 +20,6 @@ call_user_func(static function () {
             = \Netresearch\NrTextdb\Hooks\Sync::class;
     }
 
-    ExtensionManagementUtility::addLLrefForTCAdescr(
-        'tx_nrtextdb_domain_model_environment',
-        'EXT:nr_textdb/Resources/Private/Language/locallang_csh_tx_nrtextdb_domain_model_environment.xlf'
-    );
-
-    ExtensionManagementUtility::addLLrefForTCAdescr(
-        'tx_nrtextdb_domain_model_component',
-        'EXT:nr_textdb/Resources/Private/Language/locallang_csh_tx_nrtextdb_domain_model_component.xlf'
-    );
-
-    ExtensionManagementUtility::addLLrefForTCAdescr(
-        'tx_nrtextdb_domain_model_type',
-        'EXT:nr_textdb/Resources/Private/Language/locallang_csh_tx_nrtextdb_domain_model_type.xlf'
-    );
-
-    ExtensionManagementUtility::addLLrefForTCAdescr(
-        'tx_nrtextdb_domain_model_translation',
-        'EXT:nr_textdb/Resources/Private/Language/locallang_csh_tx_nrtextdb_domain_model_translation.xlf'
-    );
-
     ExtensionManagementUtility::allowTableOnStandardPages('tx_nrtextdb_domain_model_environment');
     ExtensionManagementUtility::allowTableOnStandardPages('tx_nrtextdb_domain_model_component');
     ExtensionManagementUtility::allowTableOnStandardPages('tx_nrtextdb_domain_model_type');
