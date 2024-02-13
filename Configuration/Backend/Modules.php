@@ -18,7 +18,7 @@ return [
         'access'                                   => 'user',
         'iconIdentifier'                           => 'tx-textdb-module-web',
         'path'                                     => '/module/web/textdb',
-        'labels'                                   => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang_textdb.xlf',
+        'labels'                                   => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang_be.xlf',
         'extensionName'                            => 'NrTextdb',
         'inheritNavigationComponentFromMainModule' => false,
         'navigationComponentId'                    => '',
