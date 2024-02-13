@@ -20,6 +20,8 @@ grumphp:
                 - php
             metadata:
                 priority: 600
+            ignore_patterns:
+                - /Sync\.php/
         phpcs:
             metadata:
                 priority: 500

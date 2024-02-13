@@ -17,6 +17,6 @@ call_user_func(static function () {
     ExtensionManagementUtility::addStaticFile(
         'nr_textdb',
         'Configuration/TypoScript/',
-        'Netresearch TextDB'
+        'Netresearch: TextDB'
     );
 });

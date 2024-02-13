@@ -36,7 +36,6 @@
         }
     },
     "require": {
-        "php": "^8.1",
         "ext-zip": "*",
         "ext-simplexml": "*",
         "ext-libxml": "*",

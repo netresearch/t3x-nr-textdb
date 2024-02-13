@@ -3,13 +3,11 @@
 declare(strict_types=1);
 
 use Rector\Config\RectorConfig;
-use Rector\DeadCode\Rector\StaticCall\RemoveParentCallWithoutParentRector;
-use Rector\Php73\Rector\ConstFetch\SensitiveConstantNameRector;
 use Rector\Php80\Rector\Class_\ClassPropertyAssignToConstructorPromotionRector;
 use Rector\Php80\Rector\FunctionLike\MixedTypeRector;
-use Rector\Php80\Rector\FunctionLike\UnionTypesRector;
+use Rector\Php81\Rector\Property\ReadOnlyPropertyRector;
 use Rector\Set\ValueObject\LevelSetList;
-use Ssch\TYPO3Rector\Rector\v11\v0\ExtbaseControllerActionsMustReturnResponseInterfaceRector;
+use Ssch\TYPO3Rector\Rector\v9\v0\QueryLogicalOrAndLogicalAndToArrayParameterRector;
 use Ssch\TYPO3Rector\Set\Typo3LevelSetList;
 use Ssch\TYPO3Rector\Set\Typo3SetList;
 
@@ -45,10 +43,8 @@ return static function (RectorConfig $rectorConfig): void {
     // Skip some rules
     $rectorConfig->skip([
         ClassPropertyAssignToConstructorPromotionRector::class,
-        ExtbaseControllerActionsMustReturnResponseInterfaceRector::class,
         MixedTypeRector::class,
-        SensitiveConstantNameRector::class,
-        UnionTypesRector::class,
-        RemoveParentCallWithoutParentRector::class,
+        QueryLogicalOrAndLogicalAndToArrayParameterRector::class,
+        ReadOnlyPropertyRector::class,
     ]);
 };

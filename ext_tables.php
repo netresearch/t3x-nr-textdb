@@ -9,6 +9,7 @@
 
 declare(strict_types=1);
 
+use Netresearch\NrTextdb\Hooks\Sync;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 
 defined('TYPO3') || die('Access denied.');
@@ -17,7 +18,7 @@ call_user_func(static function () {
     // Sync
     if (ExtensionManagementUtility::isLoaded('nr_sync')) {
         $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['nr_sync/mod1/index.php']['hookClass'][1_624_345_948]
-            = \Netresearch\NrTextdb\Hooks\Sync::class;
+            = Sync::class;
     }
 
     ExtensionManagementUtility::allowTableOnStandardPages('tx_nrtextdb_domain_model_environment');

@@ -51,6 +51,7 @@ use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
 use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use ZipArchive;
+
 use function is_string;
 
 /**
@@ -376,6 +377,7 @@ class TranslationController extends ActionController
             );
         }
 
+        /** @var string $translationFile */
         foreach (glob($exportDir . '/*') as $translationFile) {
             $archive->addFile($translationFile, basename($translationFile));
         }
