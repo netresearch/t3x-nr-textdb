@@ -20,10 +20,8 @@ if (PHP_SAPI !== 'cli') {
     die('This script supports command line usage only. Please check your command.');
 }
 
-$repositoryName = basename(dirname(__DIR__));
-
 $header = <<<EOF
-This file is part of the package netresearch/$repositoryName.
+This file is part of the package netresearch/nr-textdb.
 
 For the full copyright and license information, please read the
 LICENSE file that was distributed with this source code.
@@ -32,46 +30,60 @@ EOF;
 return (new PhpCsFixer\Config())
     ->setRiskyAllowed(true)
     ->setRules([
-        // PSR-12
-        '@PSR12'                                     => true,
+        '@PSR12'                          => true,
+        '@PER-CS2.0'                      => true,
+        '@Symfony'                        => true,
 
         // Additional custom rules
-        'declare_strict_types'                       => true,
-        'header_comment'                             => [
+        'declare_strict_types'            => true,
+        'concat_space'                    => [
+            'spacing' => 'one',
+        ],
+        'header_comment'                  => [
             'header'       => $header,
             'comment_type' => 'PHPDoc',
             'location'     => 'after_open',
             'separate'     => 'both',
         ],
-        'no_singleline_whitespace_before_semicolons' => true,
-        'no_unused_imports'                          => true,
-        'concat_space'                               => [
-            'spacing' => 'one',
-        ],
-        'single_quote'                               => true,
-        'no_empty_statement'                         => true,
-        'no_extra_blank_lines'                       => [
-            'tokens' => [
-                'extra',
+        'phpdoc_to_comment'               => false,
+        'phpdoc_no_alias_tag'             => false,
+        'no_superfluous_phpdoc_tags'      => false,
+        'phpdoc_separation'               => [
+            'groups' => [
+                [
+                    'author',
+                    'license',
+                    'link',
+                ],
             ],
         ],
-        'phpdoc_no_package'                          => true,
-        'phpdoc_scalar'                              => true,
-        'no_blank_lines_after_phpdoc'                => true,
-        'array_syntax'                               => [
-            'syntax' => 'short',
-        ],
-        'whitespace_after_comma_in_array'            => [
+        'no_alias_functions'              => true,
+        'whitespace_after_comma_in_array' => [
             'ensure_single_space' => true,
         ],
-        'type_declaration_spaces'                    => true,
-        'single_line_comment_style'                  => true,
-        'no_alias_functions'                         => true,
-        'no_leading_namespace_whitespace'            => true,
-        'native_function_casing'                     => true,
-        'self_accessor'                              => false,
-        'no_short_bool_cast'                         => true,
-        'no_unneeded_control_parentheses'            => true,
+        'single_line_throw'               => false,
+        'self_accessor'                   => false,
+        'global_namespace_import'         => [
+            'import_classes'   => true,
+            'import_constants' => true,
+            'import_functions' => true,
+        ],
+        'function_declaration'            => [
+            'closure_function_spacing' => 'one',
+            'closure_fn_spacing'       => 'one',
+        ],
+        'binary_operator_spaces'          => [
+            'operators' => [
+                '='  => 'align_single_space_minimal',
+                '=>' => 'align_single_space_minimal',
+            ],
+        ],
+        'yoda_style'                      => [
+            'equal'                => false,
+            'identical'            => false,
+            'less_and_greater'     => false,
+            'always_move_variable' => false,
+        ],
     ])
     ->setFinder(
         PhpCsFixer\Finder::create()

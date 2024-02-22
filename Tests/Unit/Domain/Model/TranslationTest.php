@@ -1,34 +1,48 @@
 <?php
 
+/**
+ * This file is part of the package netresearch/nr-textdb.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
+
 namespace Netresearch\NrTextdb\Tests\Unit\Domain\Model;
+
+use Netresearch\NrTextdb\Domain\Model\Component;
+use Netresearch\NrTextdb\Domain\Model\Environment;
+use Netresearch\NrTextdb\Domain\Model\Translation;
+use Netresearch\NrTextdb\Domain\Model\Type;
+use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 /**
  * Test case.
  *
  * @author Thomas Schöne <thomas.schoene@netresearch.de>
  */
-class TranslationTest extends \TYPO3\TestingFramework\Core\Unit\UnitTestCase
+class TranslationTest extends UnitTestCase
 {
     /**
-     * @var \Netresearch\NrTextdb\Domain\Model\Translation
+     * @var Translation
      */
-    protected $subject = null;
+    protected Translation $subject;
 
-    protected function setUp()
+    /**
+     * @return void
+     */
+    protected function setUp(): void
     {
         parent::setUp();
-        $this->subject = new \Netresearch\NrTextdb\Domain\Model\Translation();
-    }
 
-    protected function tearDown()
-    {
-        parent::tearDown();
+        $this->subject = new Translation();
     }
 
     /**
      * @test
      */
-    public function getValueReturnsInitialValueForString()
+    public function getValueReturnsInitialValueForString(): void
     {
         self::assertSame(
             '',
@@ -39,21 +53,20 @@ class TranslationTest extends \TYPO3\TestingFramework\Core\Unit\UnitTestCase
     /**
      * @test
      */
-    public function setValueForStringSetsValue()
+    public function setValueForStringSetsValue(): void
     {
         $this->subject->setValue('Conceived at T3CON10');
 
-        self::assertAttributeEquals(
+        self::assertSame(
             'Conceived at T3CON10',
-            'value',
-            $this->subject
+            $this->subject->getValue()
         );
     }
 
     /**
      * @test
      */
-    public function getEnvironmentReturnsInitialValueForEnvironment()
+    public function getEnvironmentReturnsInitialValueForEnvironment(): void
     {
         self::assertEquals(
             null,
@@ -64,22 +77,21 @@ class TranslationTest extends \TYPO3\TestingFramework\Core\Unit\UnitTestCase
     /**
      * @test
      */
-    public function setEnvironmentForEnvironmentSetsEnvironment()
+    public function setEnvironmentForEnvironmentSetsEnvironment(): void
     {
-        $environmentFixture = new \Netresearch\NrTextdb\Domain\Model\Environment();
+        $environmentFixture = new Environment();
         $this->subject->setEnvironment($environmentFixture);
 
-        self::assertAttributeEquals(
+        self::assertSame(
             $environmentFixture,
-            'environment',
-            $this->subject
+            $this->subject->getEnvironment()
         );
     }
 
     /**
      * @test
      */
-    public function getComponentReturnsInitialValueForComponent()
+    public function getComponentReturnsInitialValueForComponent(): void
     {
         self::assertEquals(
             null,
@@ -90,22 +102,21 @@ class TranslationTest extends \TYPO3\TestingFramework\Core\Unit\UnitTestCase
     /**
      * @test
      */
-    public function setComponentForComponentSetsComponent()
+    public function setComponentForComponentSetsComponent(): void
     {
-        $componentFixture = new \Netresearch\NrTextdb\Domain\Model\Component();
+        $componentFixture = new Component();
         $this->subject->setComponent($componentFixture);
 
-        self::assertAttributeEquals(
+        self::assertSame(
             $componentFixture,
-            'component',
-            $this->subject
+            $this->subject->getComponent()
         );
     }
 
     /**
      * @test
      */
-    public function getTypeReturnsInitialValueForType()
+    public function getTypeReturnsInitialValueForType(): void
     {
         self::assertEquals(
             null,
@@ -116,15 +127,14 @@ class TranslationTest extends \TYPO3\TestingFramework\Core\Unit\UnitTestCase
     /**
      * @test
      */
-    public function setTypeForTypeSetsType()
+    public function setTypeForTypeSetsType(): void
     {
-        $typeFixture = new \Netresearch\NrTextdb\Domain\Model\Type();
+        $typeFixture = new Type();
         $this->subject->setType($typeFixture);
 
-        self::assertAttributeEquals(
+        self::assertSame(
             $typeFixture,
-            'type',
-            $this->subject
+            $this->subject->getType()
         );
     }
 }

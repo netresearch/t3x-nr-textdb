@@ -16,3 +16,4 @@ composer.lock
 # Cache
 .php-cs-fixer.cache
 .phplint.cache
+.phpunit.result.cache

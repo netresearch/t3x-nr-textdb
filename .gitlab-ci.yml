@@ -5,8 +5,8 @@ stages:
 .parallel-hidden-job:
     parallel:
         matrix:
-            -   TYPO3: [ '^11', '^12' ]
-                PHP: [ '8.1', '8.2' ]
+            -   TYPO3: [ '^12.0' ]
+                PHP: [ '8.1', '8.2', '8.3' ]
 
 default:
     before_script:
@@ -38,6 +38,9 @@ composer:
         - echo "Install dependencies with typo3/cms-core:$TYPO3"
         - php composer.phar config -g gitlab-oauth.git.netresearch.de $GITLAB_ACCESS_TOKEN
         - php composer.phar require typo3/cms-core:$TYPO3 --no-progress --no-update
+        - php composer.phar require typo3/cms-backend:$TYPO3 --no-progress --no-update
+        - php composer.phar require typo3/cms-extbase:$TYPO3 --no-progress --no-update
+        - php composer.phar require typo3/cms-extensionmanager:$TYPO3 --no-progress --no-update
         - php composer.phar install --prefer-dist --no-ansi --no-interaction --no-progress --no-scripts
         - git checkout composer.json
     artifacts:
