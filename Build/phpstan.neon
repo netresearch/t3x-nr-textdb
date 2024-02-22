@@ -1,0 +1,31 @@
+includes:
+    - %currentWorkingDirectory%/.build/vendor/phpstan/phpstan-strict-rules/rules.neon
+    - %currentWorkingDirectory%/.build/vendor/phpstan/phpstan-deprecation-rules/rules.neon
+    - %currentWorkingDirectory%/.build/vendor/friendsoftypo3/phpstan-typo3/extension.neon
+#    - %currentWorkingDirectory%/Build/phpstan-baseline.neon
+
+parameters:
+    # You can currently choose from 10 levels (0 is the loosest and 9 is the strictest).
+    level: 6
+
+    paths:
+        # Seems no other way to ignore \Netresearch\NrTextdb\Hooks\Sync from analyse
+        - %currentWorkingDirectory%/Classes/Command/
+        - %currentWorkingDirectory%/Classes/Controller/
+        - %currentWorkingDirectory%/Classes/Domain/
+        - %currentWorkingDirectory%/Classes/Service/
+        - %currentWorkingDirectory%/Classes/ViewHelpers/
+        - %currentWorkingDirectory%/Configuration/
+        - %currentWorkingDirectory%/Resources/
+        - %currentWorkingDirectory%/Tests/
+        - %currentWorkingDirectory%/ext_localconf.php
+        - %currentWorkingDirectory%/ext_tables.php
+        - %currentWorkingDirectory%/ext_emconf.php
+
+    excludePaths:
+        - %currentWorkingDirectory%/.build/*
+
+    checkGenericClassInNonGenericObjectType: false
+
+    # Ignore error, mainly due invalid PHP in TYPO3
+    ignoreErrors:

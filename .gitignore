@@ -1,4 +1,18 @@
-/.idea
-/public
-/vendor
+# PHPStorm
+.idea
+
+# OSX
+.DS_Store
+
+# Composer
+vendor/
+bin/
+logs/
 composer.lock
+
+# Build stuff
+.build/
+
+# Cache
+.php-cs-fixer.cache
+.phplint.cache

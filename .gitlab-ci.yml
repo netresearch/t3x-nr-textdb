@@ -1,136 +1,93 @@
 stages:
     - preparation
-    - 'PHP 8.1'
-    - 'PHP 8.2'
+    - testing
 
+.parallel-hidden-job:
+    parallel:
+        matrix:
+            -   TYPO3: [ '^11', '^12' ]
+                PHP: [ '8.1', '8.2' ]
 
 default:
     before_script:
+        # Update image
         - apt-get update -yqq
-        - apt-get install -yqq git libxml2-dev libzip-dev zip unzip
+        - apt-get install -yqq git libxml2-dev libzip-dev zip unzip gnupg2
 
         # Install PHP extensions
-        - docker-php-ext-install xml zip
-
-
-# Job template
-.composer:
-    stage: preparation
-    script:
+        - docker-php-ext-install intl xml zip
         - php --version
+
         # Install composer
         - curl -sS https://getcomposer.org/installer | php
+
+.php:
+    extends: .parallel-hidden-job
+    image: php:$PHP
+    before_script:
+        - !reference [ default, before_script ]
+
+composer:
+    stage: preparation
+    extends:
+        - .php
+    variables:
+        COMPOSER_AUTH: |
+    script:
         # Install all project dependencies
+        - echo "Install dependencies with typo3/cms-core:$TYPO3"
+        - php composer.phar config -g gitlab-oauth.git.netresearch.de $GITLAB_ACCESS_TOKEN
+        - php composer.phar require typo3/cms-core:$TYPO3 --no-progress --no-update
         - php composer.phar install --prefer-dist --no-ansi --no-interaction --no-progress --no-scripts
+        - git checkout composer.json
     artifacts:
         paths:
-            - vendor/
-            - public/
+            - .build/
         expire_in: 1 days
         when: always
     cache:
         paths:
-            - vendor/
-            - public/
+            - .build/
 
-
-# Job template: Run code sniffer
-.phpcs:
+phplint:
+    stage: testing
+    extends:
+        - .php
+    needs:
+        - composer
     script:
-        - php --version
-        - vendor/bin/phpcs Classes/ --standard=PSR12 --extensions=php --report=junit > phpcs-report.xml
+        - php composer.phar ci:test:php:lint
+
+phpstan:
+    stage: testing
+    extends:
+        - .php
+    needs:
+        - composer
+    script:
+        - php composer.phar ci:test:php:phpstan -- --memory-limit=-1 --error-format=gitlab > phpstan-report.json
     artifacts:
+        paths:
+            - "phpstan-report.json"
+        expire_in: 1 days
+        when: always
         reports:
-            junit:
-                - phpcs-report.xml
+            codequality: "./phpstan-report.json"
 
-
-# Job template: Run static analysis
-.phpstan:
+rector:
+    stage: testing
+    extends:
+        - .php
+    needs:
+        - composer
     script:
-        - php --version
-        - vendor/bin/phpstan analyse --error-format=junit --no-progress -c ./phpstan.neon > phpstan-report.xml
-    artifacts:
-        reports:
-            junit:
-                - phpstan-report.xml
+        - php composer.phar ci:test:php:rector
 
-
-# Job template: Rector PHP 8.2 and TYPO3 v12
-.rector:
+coding-style:
+    stage: testing
+    extends:
+        - .php
+    needs:
+        - composer
     script:
-        - php --version
-        - vendor/bin/rector process --dry-run
-
-
-# PHP 8.1
-.php8.1:
-    image: php:8.1
-    stage: 'PHP 8.1'
-    before_script:
-        - !reference [ default, before_script ]
-        # Install & enable Xdebug for code coverage reports
-        - pecl install xdebug-3.2.1
-        - docker-php-ext-enable xdebug
-
-composer:8.1:
-    extends:
-        - .php8.1
-        - .composer
-
-.php8.1-test:
-    extends:
-        - .php8.1
-    needs: [ 'composer:8.1' ]
-
-phpcs:8.1:
-    extends:
-        - .php8.1-test
-        - .phpcs
-
-phpstan:8.1:
-    extends:
-        - .php8.1-test
-        - .phpstan
-
-rector:8.1:
-    extends:
-        - .php8.1-test
-        - .rector
-
-
-# PHP 8.2
-.php8.2:
-    image: php:8.2
-    stage: 'PHP 8.2'
-    before_script:
-        - !reference [ default, before_script ]
-        # Install & enable Xdebug for code coverage reports
-        - pecl install xdebug-3.2.1
-        - docker-php-ext-enable xdebug
-
-composer:8.2:
-    extends:
-        - .php8.2
-        - .composer
-
-.php8.2-test:
-    extends:
-        - .php8.2
-    needs: [ 'composer:8.2' ]
-
-phpcs:8.2:
-    extends:
-        - .php8.2-test
-        - .phpcs
-
-phpstan:8.2:
-    extends:
-        - .php8.2-test
-        - .phpstan
-
-rector:8.2:
-    extends:
-        - .php8.2-test
-        - .rector
-
+        - php composer.phar ci:cgl -- --dry-run

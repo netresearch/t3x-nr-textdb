@@ -28,29 +28,25 @@
             "homepage": "https://www.netresearch.de/"
         }
     ],
-    "config": {
-        "allow-plugins": {
-            "typo3/cms-composer-installers": true,
-            "typo3/class-alias-loader": true,
-            "phpro/grumphp": true
-        }
-    },
     "require": {
         "ext-zip": "*",
         "ext-simplexml": "*",
         "ext-libxml": "*",
-        "typo3/cms-backend": "^12.4",
         "typo3/cms-core": "^12.4",
-        "typo3/cms-extbase": "^12.4",
-        "typo3/cms-extensionmanager": "^12.4"
+        "typo3/cms-backend": "*",
+        "typo3/cms-extbase": "*",
+        "typo3/cms-extensionmanager": "*"
     },
     "require-dev": {
-        "typo3/testing-framework": "^8.0",
+        "typo3/testing-framework": "^6.0 || ^7.0 || ^8.0",
+        "friendsofphp/php-cs-fixer": "^3.1",
+        "friendsoftypo3/phpstan-typo3": "^0.9",
+        "overtrue/phplint": "^3.4 || ^9.0",
+        "phpspec/prophecy-phpunit": "^2.0",
         "phpstan/phpstan": "^1.10",
+        "phpstan/phpstan-phpunit": "^1.3",
         "phpstan/phpstan-strict-rules": "^1.5",
         "phpstan/phpstan-deprecation-rules": "^1.1",
-        "squizlabs/php_codesniffer": "^3.8",
-        "phpro/grumphp": "^2.4",
         "ssch/typo3-rector": "^1.8"
     },
     "suggest": {
@@ -66,12 +62,55 @@
             "Netresearch\\NrTextdb\\Tests\\": "Tests"
         }
     },
+    "config": {
+        "bin-dir": ".build/bin",
+        "vendor-dir": ".build/vendor",
+        "discard-changes": true,
+        "sort-packages": true,
+        "optimize-autoloader": true,
+        "allow-plugins": {
+            "typo3/cms-composer-installers": true,
+            "typo3/class-alias-loader": true,
+            "phpro/grumphp": true
+        }
+    },
     "extra": {
+        "typo3/cms": {
+            "extension-key": "nr_textdb",
+            "web-dir": ".build/public"
+        },
         "branch-alias": {
             "dev-master": "1.0.x-dev"
-        },
-        "typo3/cms": {
-            "extension-key": "nr_textdb"
         }
+    },
+    "scripts": {
+        "post-autoload-dump": [
+            "[ -d .build/public/_assets ] || mkdir -p .build/public/typo3conf/ext/",
+            "[ -d .build/public/_assets ] || [ -L .build/public/typo3conf/ext/nr_textdb ] || ln -snvf ../../../../. .build/public/typo3conf/ext/nr_textdb"
+        ],
+        "ci:test:php:lint": [
+            "phplint --configuration Build/.phplint.yml"
+        ],
+        "ci:test:php:unit": [
+            "phpunit -c Build/UnitTests.xml"
+        ],
+        "ci:test:php:phpstan": [
+            "phpstan analyze --configuration Build/phpstan.neon"
+        ],
+        "ci:test:php:phpstan:baseline": [
+            "phpstan analyze --configuration Build/phpstan.neon --generate-baseline Build/phpstan-baseline.neon --allow-empty-baseline"
+        ],
+        "ci:test:php:rector": [
+            "rector process --config Build/rector.php --dry-run"
+        ],
+        "ci:test": [
+            "@ci:test:php:lint",
+            "@ci:test:php:phpstan",
+            "@ci:test:php:rector",
+            "@ci:test:php:unit"
+        ],
+        "ci:cgl": [
+            "php-cs-fixer fix --config Build/.php-cs-fixer.dist.php --diff --verbose --cache-file .build/.php-cs-fixer.cache"
+        ]
     }
 }
