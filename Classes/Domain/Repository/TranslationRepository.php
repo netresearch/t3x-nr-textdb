@@ -27,7 +27,7 @@ use function count;
 use function func_get_args;
 
 /**
- * TranslationRepository
+ * TranslationRepository.
  *
  * @author  Thomas Schöne <thomas.schoene@netresearch.de>
  * @author  Axel Seemann <axel.seemann@netresearch.de>
@@ -36,6 +36,7 @@ use function func_get_args;
  * @link    https://www.netresearch.de
  *
  * @template T of \Netresearch\NrTextdb\Domain\Model\Translation
+ *
  * @extends AbstractRepository<T>
  */
 class TranslationRepository extends AbstractRepository
@@ -140,9 +141,9 @@ class TranslationRepository extends AbstractRepository
      * @param string $type        Type of the translation
      * @param string $placeholder Value of the translation
      * @param int    $languageUid uid of the language
-     * @param bool   $create      If set to true, translation will be automatically created if it is missing.
+     * @param bool   $create      if set to true, translation will be automatically created if it is missing
      *
-     * @return null|Translation
+     * @return Translation|null
      *
      * @throws IllegalObjectTypeException
      * @throws JsonException
@@ -195,7 +196,7 @@ class TranslationRepository extends AbstractRepository
 
         $queryResult = $query->execute();
 
-        /** @var null|Translation $translation */
+        /** @var Translation|null $translation */
         $translation = null;
 
         /** @var Translation $result */
@@ -236,7 +237,7 @@ class TranslationRepository extends AbstractRepository
     }
 
     /**
-     * Find a translation record
+     * Find a translation record.
      *
      * @param Environment $environment
      * @param Component   $component
@@ -246,7 +247,7 @@ class TranslationRepository extends AbstractRepository
      * @param bool        $skipCreation
      * @param bool        $fallback
      *
-     * @return null|Translation
+     * @return Translation|null
      *
      * @throws IllegalObjectTypeException
      * @throws JsonException
@@ -340,7 +341,7 @@ class TranslationRepository extends AbstractRepository
     }
 
     /**
-     * Set a translation to cache and return the translation
+     * Set a translation to cache and return the translation.
      *
      * @param string      $key         Cache key
      * @param Translation $translation Translation to cache
@@ -350,15 +351,16 @@ class TranslationRepository extends AbstractRepository
     private function setToCache(string $key, Translation $translation): Translation
     {
         static::$localCache[$key] = $translation;
+
         return $translation;
     }
 
     /**
-     * Returns a cached translation
+     * Returns a cached translation.
      *
      * @param string $key Cache key
      *
-     * @return null|Translation
+     * @return Translation|null
      */
     private function getFromCache(string $key): ?Translation
     {
@@ -420,7 +422,7 @@ class TranslationRepository extends AbstractRepository
     }
 
     /**
-     * Returns an array with translations for a record
+     * Returns an array with translations for a record.
      *
      * @param int $uid Uid of original
      *
@@ -447,11 +449,11 @@ class TranslationRepository extends AbstractRepository
     }
 
     /**
-     * Returns a record found by its uid without any restrictions
+     * Returns a record found by its uid without any restrictions.
      *
      * @param int $uid UID
      *
-     * @return null|Translation
+     * @return Translation|null
      */
     public function findRecordByUid(int $uid): ?Translation
     {
@@ -465,19 +467,19 @@ class TranslationRepository extends AbstractRepository
             $query->equals('uid', $uid)
         );
 
-        /** @var null|Translation $translation */
+        /** @var Translation|null $translation */
         $translation = $query->execute()->getFirst();
 
         return $translation;
     }
 
     /**
-     * Returns all records by given filters
+     * Returns all records by given filters.
      *
      * @param int         $component   Component ID
      * @param int         $type        Type ID
-     * @param null|string $placeholder Placeholder to search for
-     * @param null|string $value       Value to search for
+     * @param string|null $placeholder Placeholder to search for
+     * @param string|null $value       Value to search for
      * @param int         $langaugeId  Language ID
      *
      * @return QueryResultInterface
@@ -487,8 +489,8 @@ class TranslationRepository extends AbstractRepository
     public function getAllRecordsByIdentifier(
         int $component = 0,
         int $type = 0,
-        string $placeholder = null,
-        string $value = null,
+        ?string $placeholder = null,
+        ?string $value = null,
         int $langaugeId = 0
     ): QueryResultInterface {
         $query = $this->createQuery();

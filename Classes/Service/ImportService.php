@@ -156,8 +156,8 @@ class ImportService implements LoggerAwareInterface
      * Imports a single entry into the database.
      *
      * @param int         $languageUid
-     * @param null|string $componentName
-     * @param null|string $typeName
+     * @param string|null $componentName
+     * @param string|null $typeName
      * @param string      $placeholder
      * @param string      $value
      * @param bool        $forceUpdate
@@ -292,7 +292,7 @@ class ImportService implements LoggerAwareInterface
     }
 
     /**
-     * Returns the sys_language_uid for a language code
+     * Returns the sys_language_uid for a language code.
      *
      * @param string $languageCode Language Code
      *
@@ -324,45 +324,49 @@ class ImportService implements LoggerAwareInterface
         $siteFinder = GeneralUtility::makeInstance(SiteFinder::class);
 
         $sites = $siteFinder->getAllSites();
+
         return reset($sites)->getAllLanguages();
     }
 
     /**
-     * Get the component from key
+     * Get the component from key.
      *
      * @param string $key
      *
-     * @return null|string
+     * @return string|null
      */
     private function getComponentFromKey(string $key): ?string
     {
         $parts = explode('|', $key);
+
         return $parts[0] ?? null;
     }
 
     /**
-     * Get the type from a key
+     * Get the type from a key.
      *
      * @param string $key
      *
-     * @return null|string
+     * @return string|null
      */
     private function getTypeFromKey(string $key): ?string
     {
         $parts = explode('|', $key);
+
         return $parts[1] ?? null;
     }
 
     /**
-     * Get the placeholder from key
+     * Get the placeholder from key.
      *
      * @param string $key
      *
-     * @return null|string
+     * @return string|null
      */
     private function getPlaceholderFromKey(string $key): ?string
     {
         $parts = explode('|', $key);
+
         return $parts[2] ?? null;
     }
 
@@ -378,6 +382,7 @@ class ImportService implements LoggerAwareInterface
         try {
             /** @var ExtensionConfiguration $extensionConfiguration */
             $extensionConfiguration = GeneralUtility::makeInstance(ExtensionConfiguration::class);
+
             return $extensionConfiguration->get('nr_textdb', $path);
         } catch (Exception) {
             return null;

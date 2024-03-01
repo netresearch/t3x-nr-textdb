@@ -27,7 +27,7 @@ use function count;
 
 /**
  * Fluid <a:translate/> implementation
- * Provides a way import LLL Keys from f:translate to textdb
+ * Provides a way import LLL Keys from f:translate to textdb.
  *
  * @author  Tobias Hein <tobias.hein@netresearch.de>
  * @author  Rico Sonntag <rico.sonntag@netresearch.de>
@@ -44,21 +44,21 @@ class TranslateViewHelper extends AbstractViewHelper
     final public const LANGUAGE_UID_EN = 1;
 
     /**
-     * Translation service instance
+     * Translation service instance.
      *
-     * @var null|TranslationRepository
+     * @var TranslationRepository|null
      */
     protected ?TranslationRepository $translationRepository = null;
 
     /**
-     * Component which can be used for a migration step
+     * Component which can be used for a migration step.
      *
      * @var string
      */
     public static string $component = '';
 
     /**
-     * Initializes arguments (attributes)
+     * Initializes arguments (attributes).
      *
      * @return void
      */
@@ -89,7 +89,7 @@ class TranslateViewHelper extends AbstractViewHelper
     }
 
     /**
-     * Render translated string
+     * Render translated string.
      *
      * @return string The translated key or tag body if key doesn't exist
      *
@@ -125,7 +125,7 @@ class TranslateViewHelper extends AbstractViewHelper
         }
 
         if ($this->hasTextDbEntry($placeholder)) {
-             return (string) $translationRequested;
+            return (string) $translationRequested;
         }
 
         try {
@@ -189,7 +189,7 @@ class TranslateViewHelper extends AbstractViewHelper
     }
 
     /**
-     * Returns true, if a textdb translation exisits
+     * Returns true, if a textdb translation exisits.
      *
      * @param string $placeholder
      *

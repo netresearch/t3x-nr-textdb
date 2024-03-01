@@ -17,7 +17,7 @@ use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
 use TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings;
 
 /**
- * TypeRepository
+ * TypeRepository.
  *
  * @author  Thomas Schöne <thomas.schoene@netresearch.de>
  * @author  Axel Seemann <axel.seemann@netresearch.de>
@@ -52,7 +52,7 @@ class TypeRepository extends AbstractRepository
      *
      * @param string $name Name of a type
      *
-     * @return null|Type
+     * @return Type|null
      *
      * @throws IllegalObjectTypeException
      */
@@ -89,32 +89,33 @@ class TypeRepository extends AbstractRepository
             return $this->setToCache($name, $type);
         }
 
-        /** @var null|Type $type */
+        /** @var Type|null $type */
         $type = $queryResult->getFirst();
 
         return $this->setToCache($name, $type);
     }
 
     /**
-     * Set a type to cache and return it
+     * Set a type to cache and return it.
      *
      * @param string    $key  Cache key
-     * @param null|Type $type Type to cache
+     * @param Type|null $type Type to cache
      *
-     * @return null|Type
+     * @return Type|null
      */
     private function setToCache(string $key, ?Type $type): ?Type
     {
         static::$localCache[$key] = $type;
+
         return $type;
     }
 
     /**
-     * Return a cached type
+     * Return a cached type.
      *
      * @param string $key Cache key
      *
-     * @return null|Type
+     * @return Type|null
      */
     private function getFromCache(string $key): ?Type
     {

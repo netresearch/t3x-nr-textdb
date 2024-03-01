@@ -29,14 +29,14 @@ use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 class TextdbViewHelper extends AbstractViewHelper
 {
     /**
-     * Translation service instance
+     * Translation service instance.
      *
-     * @var null|TranslationService
+     * @var TranslationService|null
      */
     protected ?TranslationService $translationService = null;
 
     /**
-     * Initializes arguments (attributes)
+     * Initializes arguments (attributes).
      *
      * @return void
      */
@@ -76,7 +76,7 @@ class TextdbViewHelper extends AbstractViewHelper
     }
 
     /**
-     * Render translated string
+     * Render translated string.
      *
      * @return string The translated key or tag body if key doesn't exist
      *

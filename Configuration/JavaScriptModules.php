@@ -14,7 +14,7 @@ return [
         'core',
         'backend',
     ],
-    'imports'      => [
+    'imports' => [
         '@netresearch/nr-textdb/' => 'EXT:nr_textdb/Resources/Public/JavaScript/',
     ],
 ];

@@ -16,7 +16,7 @@ use TYPO3\CMS\Extbase\Annotation\Validate;
 use TYPO3\CMS\Extbase\DomainObject\AbstractEntity;
 
 /**
- * Translation
+ * Translation.
  *
  * @author  Thomas Schöne <thomas.schoene@netresearch.de>
  * @author  Rico Sonntag <rico.sonntag@netresearch.de>
@@ -26,28 +26,28 @@ use TYPO3\CMS\Extbase\DomainObject\AbstractEntity;
 class Translation extends AbstractEntity
 {
     /**
-     * environment
+     * environment.
      *
-     * @var null|Environment
+     * @var Environment|null
      */
     protected ?Environment $environment = null;
 
     /**
-     * component
+     * component.
      *
-     * @var null|Component
+     * @var Component|null
      */
     protected ?Component $component = null;
 
     /**
-     * type
+     * type.
      *
-     * @var null|Type
+     * @var Type|null
      */
     protected ?Type $type = null;
 
     /**
-     * Placeholder
+     * Placeholder.
      *
      * @var string
      *
@@ -56,7 +56,7 @@ class Translation extends AbstractEntity
     protected string $placeholder = '';
 
     /**
-     * value
+     * value.
      *
      * @var string
      *
@@ -85,9 +85,9 @@ class Translation extends AbstractEntity
     protected int $sysLanguageUid = 0;
 
     /**
-     * Returns the environment
+     * Returns the environment.
      *
-     * @return null|Environment
+     * @return Environment|null
      */
     public function getEnvironment(): ?Environment
     {
@@ -95,9 +95,9 @@ class Translation extends AbstractEntity
     }
 
     /**
-     * Sets the environment
+     * Sets the environment.
      *
-     * @param null|Environment $environment
+     * @param Environment|null $environment
      *
      * @return void
      */
@@ -107,9 +107,9 @@ class Translation extends AbstractEntity
     }
 
     /**
-     * Returns the component
+     * Returns the component.
      *
-     * @return null|Component
+     * @return Component|null
      */
     public function getComponent(): ?Component
     {
@@ -117,9 +117,9 @@ class Translation extends AbstractEntity
     }
 
     /**
-     * Sets the component
+     * Sets the component.
      *
-     * @param null|Component $component
+     * @param Component|null $component
      *
      * @return void
      */
@@ -129,9 +129,9 @@ class Translation extends AbstractEntity
     }
 
     /**
-     * Returns the type
+     * Returns the type.
      *
-     * @return null|Type
+     * @return Type|null
      */
     public function getType(): ?Type
     {
@@ -139,9 +139,9 @@ class Translation extends AbstractEntity
     }
 
     /**
-     * Sets the type
+     * Sets the type.
      *
-     * @param null|Type $type
+     * @param Type|null $type
      *
      * @return void
      */
@@ -166,11 +166,12 @@ class Translation extends AbstractEntity
     public function setPlaceholder(string $placeholder): Translation
     {
         $this->placeholder = $placeholder;
+
         return $this;
     }
 
     /**
-     * Returns the value
+     * Returns the value.
      *
      * @return string
      */
@@ -184,7 +185,7 @@ class Translation extends AbstractEntity
     }
 
     /**
-     * Sets the value
+     * Sets the value.
      *
      * @param string $value
      *
@@ -212,7 +213,7 @@ class Translation extends AbstractEntity
     }
 
     /**
-     * Return the language uid
+     * Return the language uid.
      *
      * @return int
      */
@@ -222,7 +223,7 @@ class Translation extends AbstractEntity
     }
 
     /**
-     * Set the language UID
+     * Set the language UID.
      *
      * @param int $languageUid
      *
@@ -281,11 +282,13 @@ class Translation extends AbstractEntity
     public function setSysLanguageUid(int $sysLanguageUid): Translation
     {
         $this->sysLanguageUid = $sysLanguageUid;
+
         return $this;
     }
 
     /**
-     * Returns true if the entry was auto-created by the repository
+     * Returns true if the entry was auto-created by the repository.
+     *
      * @return bool
      */
     public function isAutoCreated(): bool

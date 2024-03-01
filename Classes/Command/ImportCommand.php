@@ -33,7 +33,7 @@ use TYPO3\CMS\Extensionmanager\Utility\ListUtility;
 use function count;
 
 /**
- * Class ImportCommand
+ * Class ImportCommand.
  *
  * @author  Rico Sonntag <rico.sonntag@netresearch.de>
  * @license Netresearch https://www.netresearch.de
@@ -170,7 +170,7 @@ class ImportCommand extends Command implements LoggerAwareInterface
     }
 
     /**
-     * Returns the sys_language_uid for a language code
+     * Returns the sys_language_uid for a language code.
      *
      * @param string $languageCode Language Code
      *
@@ -228,6 +228,7 @@ class ImportCommand extends Command implements LoggerAwareInterface
      * @param bool            $forceUpdate
      *
      * @return void
+     *
      * @throws IllegalObjectTypeException
      */
     protected function importTranslationsFromFiles(OutputInterface $output, bool $forceUpdate = false): void

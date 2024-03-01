@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 
-defined('TYPO3') || die('Access denied.');
+defined('TYPO3') || exit('Access denied.');
 
 call_user_func(static function () {
     ExtensionManagementUtility::addStaticFile(

@@ -25,7 +25,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
 
 /**
- * The translation service
+ * The translation service.
  *
  * @author  Thomas Schöne <thomas.schoene@netresearch.de>
  * @author  Rico Sonntag <rico.sonntag@netresearch.de>
@@ -83,7 +83,7 @@ class TranslationService
     }
 
     /**
-     * Translate method
+     * Translate method.
      *
      * @param string $placeholder The translation key
      * @param string $type        List of parameters for translation string

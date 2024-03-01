@@ -14,6 +14,6 @@ use TYPO3\CMS\Core\Imaging\IconProvider\SvgIconProvider;
 return [
     'tx-textdb-module-web' => [
         'provider' => SvgIconProvider::class,
-        'source' => 'EXT:nr_textdb/Resources/Public/Icons/Extension.svg',
+        'source'   => 'EXT:nr_textdb/Resources/Public/Icons/Extension.svg',
     ],
 ];

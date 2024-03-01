@@ -19,12 +19,12 @@ $EM_CONF['nr_textdb'] = [
     'state'          => 'stable',
     'version'        => '1.0.3',
     'constraints'    => [
-        'depends'   => [
+        'depends' => [
             'typo3' => '12.4.0-12.99.99',
         ],
         'conflicts' => [
         ],
-        'suggests'  => [
+        'suggests' => [
         ],
     ],
 ];

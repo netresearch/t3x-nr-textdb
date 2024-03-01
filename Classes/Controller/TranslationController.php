@@ -55,7 +55,7 @@ use ZipArchive;
 use function is_string;
 
 /**
- * TranslationController
+ * TranslationController.
  *
  * @author  Thomas Schöne <thomas.schoene@netresearch.de>
  * @license Netresearch https://www.netresearch.de
@@ -152,14 +152,14 @@ class TranslationController extends ActionController
         ImportService $importService
     ) {
         $this->extensionConfiguration = $extensionConfiguration;
-        $this->environmentRepository = $environmentRepository;
-        $this->translationRepository = $translationRepository;
-        $this->translationService = $translationService;
-        $this->persistenceManager = $persistenceManager;
-        $this->componentRepository = $componentRepository;
-        $this->typeRepository = $typeRepository;
-        $this->moduleTemplateFactory = $moduleTemplateFactory;
-        $this->iconFactory = $iconFactory;
+        $this->environmentRepository  = $environmentRepository;
+        $this->translationRepository  = $translationRepository;
+        $this->translationService     = $translationService;
+        $this->persistenceManager     = $persistenceManager;
+        $this->componentRepository    = $componentRepository;
+        $this->typeRepository         = $typeRepository;
+        $this->moduleTemplateFactory  = $moduleTemplateFactory;
+        $this->iconFactory            = $iconFactory;
 
         $this->pageRenderer = $pageRenderer;
         $this->pageRenderer->loadJavaScriptModule('@typo3/backend/modal.js');
@@ -174,7 +174,7 @@ class TranslationController extends ActionController
     }
 
     /**
-     * Initialize Action
+     * Initialize Action.
      *
      * @return void
      *
@@ -202,7 +202,7 @@ class TranslationController extends ActionController
     }
 
     /**
-     * Shows the textDB entires
+     * Shows the textDB entires.
      *
      * @return ResponseInterface
      *
@@ -249,10 +249,10 @@ class TranslationController extends ActionController
                 $value
             );
 
-        $config['component'] = $componentId;
-        $config['type'] = $typeId;
+        $config['component']   = $componentId;
+        $config['type']        = $typeId;
         $config['placeholder'] = $placeholder;
-        $config['value'] = $value;
+        $config['value']       = $value;
 
         $this->persistConfigInBeUserData($config);
 
@@ -533,7 +533,7 @@ class TranslationController extends ActionController
     {
         $this->view->assign('action', 'import');
 
-        /** @var null|UploadedFile $translationFile */
+        /** @var UploadedFile|null $translationFile */
         $translationFile = $this->request->getUploadedFiles()['translationFile'] ?? null;
 
         if (
@@ -594,6 +594,7 @@ class TranslationController extends ActionController
                 }
 
                 $this->view->assign('errors', $errors);
+
                 return $this->moduleResponse();
             }
 
@@ -653,41 +654,44 @@ class TranslationController extends ActionController
     }
 
     /**
-     * Get the component from key
+     * Get the component from key.
      *
      * @param string $key
      *
-     * @return null|string
+     * @return string|null
      */
     private function getComponentFromKey(string $key): ?string
     {
         $parts = explode('|', $key);
+
         return $parts[0] ?? null;
     }
 
     /**
-     * Get the type from a key
+     * Get the type from a key.
      *
      * @param string $key
      *
-     * @return null|string
+     * @return string|null
      */
     private function getTypeFromKey(string $key): ?string
     {
         $parts = explode('|', $key);
+
         return $parts[1] ?? null;
     }
 
     /**
-     * Get the placeholder from key
+     * Get the placeholder from key.
      *
      * @param string $key
      *
-     * @return null|string
+     * @return string|null
      */
     private function getPlaceholderFromKey(string $key): ?string
     {
         $parts = explode('|', $key);
+
         return $parts[2] ?? null;
     }
 
@@ -705,7 +709,7 @@ class TranslationController extends ActionController
     }
 
     /**
-     * Get module config from user data
+     * Get module config from user data.
      *
      * @return array<array-key, int|string>
      */
@@ -730,7 +734,7 @@ class TranslationController extends ActionController
     }
 
     /**
-     * Save current config in backend user settings
+     * Save current config in backend user settings.
      *
      * @param array<array-key, int|string> $config
      */
@@ -740,7 +744,7 @@ class TranslationController extends ActionController
     }
 
     /**
-     * Write the translation file for export and returns the uid of entries written to file
+     * Write the translation file for export and returns the uid of entries written to file.
      *
      * @param QueryResultInterface $translations
      * @param string               $exportDir
@@ -821,22 +825,22 @@ class TranslationController extends ActionController
         // Prepare an array for the button definitions
         $buttons = [
             [
-                'label'     => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:button.label.list',
-                'action'    => 'list',
-                'icon'      => 'actions-list-alternative',
-                'group'     => 1,
+                'label'  => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:button.label.list',
+                'action' => 'list',
+                'icon'   => 'actions-list-alternative',
+                'group'  => 1,
             ],
             [
-                'label'     => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:button.label.export',
-                'action'    => 'export',
-                'icon'      => 'actions-database-export',
-                'group'     => 1,
+                'label'  => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:button.label.export',
+                'action' => 'export',
+                'icon'   => 'actions-database-export',
+                'group'  => 1,
             ],
             [
-                'label'     => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:import',
-                'action'    => 'import',
-                'icon'      => 'actions-database-import',
-                'group'     => 1,
+                'label'  => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:import',
+                'action' => 'import',
+                'icon'   => 'actions-database-import',
+                'group'  => 1,
             ],
         ];
 
@@ -955,7 +959,7 @@ class TranslationController extends ActionController
     }
 
     /**
-     * Shorthand functionality for fetching the language service
+     * Shorthand functionality for fetching the language service.
      *
      * @return LanguageService
      */

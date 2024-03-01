@@ -12,7 +12,7 @@ declare(strict_types=1);
 use Netresearch\NrTextdb\Hooks\Sync;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 
-defined('TYPO3') || die('Access denied.');
+defined('TYPO3') || exit('Access denied.');
 
 call_user_func(static function () {
     // Sync
