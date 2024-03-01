@@ -20,9 +20,4 @@ call_user_func(static function () {
         $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['nr_sync/mod1/index.php']['hookClass'][1_624_345_948]
             = Sync::class;
     }
-
-    ExtensionManagementUtility::allowTableOnStandardPages('tx_nrtextdb_domain_model_environment');
-    ExtensionManagementUtility::allowTableOnStandardPages('tx_nrtextdb_domain_model_component');
-    ExtensionManagementUtility::allowTableOnStandardPages('tx_nrtextdb_domain_model_type');
-    ExtensionManagementUtility::allowTableOnStandardPages('tx_nrtextdb_domain_model_translation');
 });

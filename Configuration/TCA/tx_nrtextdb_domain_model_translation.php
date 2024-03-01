@@ -10,7 +10,7 @@
 declare(strict_types=1);
 
 return [
-    'ctrl'    => [
+    'ctrl' => [
         'title'                    => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang_db.xlf:tx_nrtextdb_domain_model_translation',
         'label'                    => 'value',
         'tstamp'                   => 'tstamp',
@@ -23,10 +23,13 @@ return [
         'enablecolumns'            => [
             'disabled' => 'hidden',
         ],
-        'searchFields'             => 'value',
-        'iconfile'                 => 'EXT:nr_textdb/Resources/Public/Icons/tx_nrtextdb_domain_model_translation.gif',
+        'searchFields' => 'value',
+        'iconfile'     => 'EXT:nr_textdb/Resources/Public/Icons/tx_nrtextdb_domain_model_translation.gif',
+        'security'     => [
+            'ignorePageTypeRestriction' => true,
+        ],
     ],
-    'types'   => [
+    'types' => [
         '1' => [
             'showitem' => 'sys_language_uid, l10n_parent, l10n_diffsource, hidden, environment, component, type, placeholder, value',
         ],
@@ -40,14 +43,14 @@ return [
                 'type' => 'language',
             ],
         ],
-        'l10n_parent'      => [
+        'l10n_parent' => [
             'displayCond' => 'FIELD:sys_language_uid:>:0',
             'label'       => 'LLL:EXT:core/Resources/Private/Language/locallang_general.xlf:LGL.l18n_parent',
             'config'      => [
-                'type'                => 'select',
-                'renderType'          => 'selectSingle',
-                'default'             => 0,
-                'items'               => [
+                'type'       => 'select',
+                'renderType' => 'selectSingle',
+                'default'    => 0,
+                'items'      => [
                     [
                         'label' => '',
                         'value' => 0,
@@ -57,12 +60,12 @@ return [
                 'foreign_table_where' => 'AND {#tx_nrtextdb_domain_model_translation}.{#pid}=###CURRENT_PID### AND {#tx_nrtextdb_domain_model_translation}.{#sys_language_uid} IN (-1,0)',
             ],
         ],
-        'l10n_diffsource'  => [
+        'l10n_diffsource' => [
             'config' => [
                 'type' => 'passthrough',
             ],
         ],
-        'hidden'           => [
+        'hidden' => [
             'l10n_mode' => 'exclude',
             'exclude'   => true,
             'label'     => 'LLL:EXT:core/Resources/Private/Language/locallang_general.xlf:LGL.visible',
@@ -77,7 +80,7 @@ return [
                 ],
             ],
         ],
-        'environment'      => [
+        'environment' => [
             'l10n_mode' => 'exclude',
             'exclude'   => true,
             'label'     => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang_db.xlf:tx_nrtextdb_domain_model_translation.environment',
@@ -89,7 +92,7 @@ return [
                 'maxitems'      => 1,
             ],
         ],
-        'component'        => [
+        'component' => [
             'l10n_mode' => 'exclude',
             'exclude'   => true,
             'label'     => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang_db.xlf:tx_nrtextdb_domain_model_translation.component',
@@ -101,7 +104,7 @@ return [
                 'maxitems'      => 1,
             ],
         ],
-        'type'             => [
+        'type' => [
             'l10n_mode' => 'exclude',
             'exclude'   => true,
             'label'     => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang_db.xlf:tx_nrtextdb_domain_model_translation.type',
@@ -113,7 +116,7 @@ return [
                 'maxitems'      => 1,
             ],
         ],
-        'placeholder'      => [
+        'placeholder' => [
             'exclude'   => true,
             'l10n_mode' => 'exclude',
             'label'     => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang_db.xlf:tx_nrtextdb_domain_model_translation.placeholder',
@@ -124,7 +127,7 @@ return [
                 'required' => true,
             ],
         ],
-        'value'            => [
+        'value' => [
             'exclude' => true,
             'label'   => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang_db.xlf:tx_nrtextdb_domain_model_translation.value',
             'config'  => [

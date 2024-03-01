@@ -10,7 +10,7 @@
 declare(strict_types=1);
 
 return [
-    'ctrl'    => [
+    'ctrl' => [
         'title'         => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang_db.xlf:tx_nrtextdb_domain_model_type',
         'label'         => 'name',
         'tstamp'        => 'tstamp',
@@ -22,16 +22,19 @@ return [
             'starttime' => 'starttime',
             'endtime'   => 'endtime',
         ],
-        'searchFields'  => 'name',
-        'iconfile'      => 'EXT:nr_textdb/Resources/Public/Icons/tx_nrtextdb_domain_model_type.gif',
+        'searchFields' => 'name',
+        'iconfile'     => 'EXT:nr_textdb/Resources/Public/Icons/tx_nrtextdb_domain_model_type.gif',
+        'security'     => [
+            'ignorePageTypeRestriction' => true,
+        ],
     ],
-    'types'   => [
+    'types' => [
         '1' => [
             'showitem' => 'hidden, name, --div--;LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:tabs.access, starttime, endtime',
         ],
     ],
     'columns' => [
-        'hidden'    => [
+        'hidden' => [
             'exclude' => true,
             'label'   => 'LLL:EXT:core/Resources/Private/Language/locallang_general.xlf:LGL.visible',
             'config'  => [
@@ -56,13 +59,13 @@ return [
                 ],
             ],
         ],
-        'endtime'   => [
+        'endtime' => [
             'exclude' => true,
             'label'   => 'LLL:EXT:core/Resources/Private/Language/locallang_general.xlf:LGL.endtime',
             'config'  => [
-                'type'      => 'datetime',
-                'default'   => 0,
-                'range'     => [
+                'type'    => 'datetime',
+                'default' => 0,
+                'range'   => [
                     'upper' => mktime(
                         0,
                         0,
