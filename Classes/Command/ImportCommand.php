@@ -181,6 +181,7 @@ class ImportCommand extends Command implements LoggerAwareInterface
         if ($languageCode === 'default') {
             $languageCode = 'en';
         }
+
         foreach ($this->getAllLanguages() as $localLanguage) {
             if ($languageCode === $localLanguage->getLocale()->getLanguageCode()) {
                 return $localLanguage->getLanguageId();
@@ -233,7 +234,7 @@ class ImportCommand extends Command implements LoggerAwareInterface
      */
     protected function importTranslationsFromFiles(OutputInterface $output, bool $forceUpdate = false): void
     {
-        foreach ($this->extensions as $extKey => $extensionKey) {
+        foreach (array_keys($this->extensions) as $extKey) {
             $folderPath = ExtensionManagementUtility::extPath($extKey) . self::LANG_FOLDER;
 
             if (
@@ -251,7 +252,7 @@ class ImportCommand extends Command implements LoggerAwareInterface
 
             $files = array_merge(...$files);
 
-            if (count($files) === 0) {
+            if ($files === []) {
                 continue;
             }
 
@@ -289,11 +290,11 @@ class ImportCommand extends Command implements LoggerAwareInterface
             );
 
             foreach ($errors as $error) {
-                $output->writeln("<error>{$error}</error>");
+                $output->writeln(sprintf('<error>%s</error>', $error));
             }
         }
 
-        $output->writeln("Imported: $imported, Updated: $updated");
+        $output->writeln(sprintf('Imported: %s, Updated: %s', $imported, $updated));
     }
 
     /**
@@ -317,7 +318,7 @@ class ImportCommand extends Command implements LoggerAwareInterface
         $languageKey = $this->getLanguageKeyFromFile($file);
         $languageUid = $this->getLanguageId($languageKey);
 
-        $output->writeln("Import translations from file $file for langauge $languageKey ($languageUid)");
+        $output->writeln(sprintf('Import translations from file %s for langauge %s (%d)', $file, $languageKey, $languageUid));
 
         $this->importService
             ->importFile(

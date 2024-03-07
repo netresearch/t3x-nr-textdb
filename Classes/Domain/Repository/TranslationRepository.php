@@ -165,7 +165,7 @@ class TranslationRepository extends AbstractRepository
 
         $translation = $this->getFromCache($cacheKey);
 
-        if ($translation !== null) {
+        if ($translation instanceof Translation) {
             return $translation;
         }
 
@@ -270,14 +270,14 @@ class TranslationRepository extends AbstractRepository
 
         $translation = $this->getFromCache($cacheKey);
 
-        if ($translation !== null) {
+        if ($translation instanceof Translation) {
             return $translation;
         }
 
         $query       = $this->createQuery();
         $overlayType = $query->getQuerySettings()->getLanguageAspect()->getOverlayType();
 
-        if ($fallback === true) {
+        if ($fallback) {
             $overlayType = 'content_fallback';
         }
 
@@ -410,7 +410,7 @@ class TranslationRepository extends AbstractRepository
                 0
             );
 
-            if ($origTranslation !== null) {
+            if ($origTranslation instanceof Translation) {
                 $translation->setL10nParent($origTranslation->getUid());
             }
         }
@@ -520,7 +520,7 @@ class TranslationRepository extends AbstractRepository
             $constraints[] = $query->equals('_languageUid', $langaugeId);
         }
 
-        if (count($constraints) > 0) {
+        if ($constraints !== []) {
             $query->matching(
                 $query->logicalAnd(...$constraints)
             );

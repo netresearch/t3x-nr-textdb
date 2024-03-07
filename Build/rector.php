@@ -9,14 +9,20 @@
 
 declare(strict_types=1);
 
+use Rector\CodingStyle\Rector\Catch_\CatchExceptionNameMatchingTypeRector;
 use Rector\Config\RectorConfig;
+use Rector\DeadCode\Rector\ClassMethod\RemoveUselessParamTagRector;
+use Rector\DeadCode\Rector\ClassMethod\RemoveUselessReturnTagRector;
+use Rector\DeadCode\Rector\Property\RemoveUselessVarTagRector;
+use Rector\EarlyReturn\Rector\If_\ChangeOrIfContinueToMultiContinueRector;
 use Rector\Php80\Rector\Class_\ClassPropertyAssignToConstructorPromotionRector;
 use Rector\Php80\Rector\FunctionLike\MixedTypeRector;
-use Rector\Php81\Rector\Property\ReadOnlyPropertyRector;
+use Rector\Php81\Rector\FuncCall\NullToStrictStringFuncCallArgRector;
 use Rector\Set\ValueObject\LevelSetList;
-use Ssch\TYPO3Rector\Rector\v9\v0\QueryLogicalOrAndLogicalAndToArrayParameterRector;
+use Rector\Set\ValueObject\SetList;
+use Rector\TypeDeclaration\Rector\Property\TypedPropertyFromAssignsRector;
+use Rector\TypeDeclaration\Rector\Property\TypedPropertyFromStrictConstructorRector;
 use Ssch\TYPO3Rector\Set\Typo3LevelSetList;
-use Ssch\TYPO3Rector\Set\Typo3SetList;
 
 return static function (RectorConfig $rectorConfig): void {
     $rectorConfig->paths([
@@ -38,20 +44,27 @@ return static function (RectorConfig $rectorConfig): void {
 
     // Define what rule sets will be applied
     $rectorConfig->sets([
+        SetList::EARLY_RETURN,
+        SetList::TYPE_DECLARATION,
+        SetList::CODING_STYLE,
+        SetList::CODE_QUALITY,
+        // SetList::DEAD_CODE,
+
         LevelSetList::UP_TO_PHP_82,
         Typo3LevelSetList::UP_TO_TYPO3_12,
-
-        Typo3SetList::UNDERSCORE_TO_NAMESPACE,
-        Typo3SetList::DATABASE_TO_DBAL,
-        Typo3SetList::EXTBASE_COMMAND_CONTROLLERS_TO_SYMFONY_COMMANDS,
-        Typo3SetList::REGISTER_ICONS_TO_ICON,
     ]);
 
     // Skip some rules
     $rectorConfig->skip([
+        CatchExceptionNameMatchingTypeRector::class,
+        ChangeOrIfContinueToMultiContinueRector::class,
         ClassPropertyAssignToConstructorPromotionRector::class,
         MixedTypeRector::class,
-        QueryLogicalOrAndLogicalAndToArrayParameterRector::class,
-        ReadOnlyPropertyRector::class,
+        NullToStrictStringFuncCallArgRector::class,
+        RemoveUselessParamTagRector::class,
+        RemoveUselessReturnTagRector::class,
+        RemoveUselessVarTagRector::class,
+        TypedPropertyFromAssignsRector::class,
+        TypedPropertyFromStrictConstructorRector::class,
     ]);
 };

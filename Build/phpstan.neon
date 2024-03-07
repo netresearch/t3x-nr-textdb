@@ -26,6 +26,6 @@ parameters:
         - %currentWorkingDirectory%/ext_emconf.php
 
     checkGenericClassInNonGenericObjectType: false
+    treatPhpDocTypesAsCertain: false
 
-    # Ignore error, mainly due invalid PHP in TYPO3
     ignoreErrors:

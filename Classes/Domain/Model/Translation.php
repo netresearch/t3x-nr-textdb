@@ -14,6 +14,7 @@ namespace Netresearch\NrTextdb\Domain\Model;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
 use TYPO3\CMS\Extbase\Annotation\Validate;
 use TYPO3\CMS\Extbase\DomainObject\AbstractEntity;
+use TYPO3\CMS\Extbase\Validation\Validator\NotEmptyValidator;
 
 /**
  * Translation.
@@ -50,18 +51,16 @@ class Translation extends AbstractEntity
      * Placeholder.
      *
      * @var string
-     *
-     * @Validate("TYPO3\CMS\Extbase\Validation\Validator\NotEmptyValidator")
      */
+    #[Validate(['validator' => NotEmptyValidator::class])]
     protected string $placeholder = '';
 
     /**
      * value.
      *
      * @var string
-     *
-     * @Validate("TYPO3\CMS\Extbase\Validation\Validator\NotEmptyValidator")
      */
+    #[Validate(['validator' => NotEmptyValidator::class])]
     protected string $value = '';
 
     /**

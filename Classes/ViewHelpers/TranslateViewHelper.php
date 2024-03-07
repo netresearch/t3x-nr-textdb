@@ -13,6 +13,7 @@ namespace Netresearch\NrTextdb\ViewHelpers;
 
 use Exception;
 use JsonException;
+use Netresearch\NrTextdb\Domain\Model\Translation;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
 use RuntimeException;
 use TYPO3\CMS\Core\Context\Context;
@@ -161,7 +162,7 @@ class TranslateViewHelper extends AbstractViewHelper
      */
     public function getTranslationRepository(): TranslationRepository
     {
-        if (!isset($this->translationRepository)) {
+        if (!$this->translationRepository instanceof TranslationRepository) {
             $this->translationRepository = GeneralUtility::makeInstance(TranslationRepository::class);
         }
 
@@ -209,6 +210,6 @@ class TranslateViewHelper extends AbstractViewHelper
             false
         );
 
-        return $textdbTranslation !== null;
+        return $textdbTranslation instanceof Translation;
     }
 }

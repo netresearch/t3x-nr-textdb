@@ -60,7 +60,7 @@ class TypeRepository extends AbstractRepository
     {
         $type = $this->getFromCache($name);
 
-        if ($type !== null) {
+        if ($type instanceof Type) {
             return $type;
         }
 

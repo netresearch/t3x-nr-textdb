@@ -12,6 +12,10 @@ declare(strict_types=1);
 namespace Netresearch\NrTextdb\Service;
 
 use JsonException;
+use Netresearch\NrTextdb\Domain\Model\Component;
+use Netresearch\NrTextdb\Domain\Model\Environment;
+use Netresearch\NrTextdb\Domain\Model\Translation;
+use Netresearch\NrTextdb\Domain\Model\Type;
 use Netresearch\NrTextdb\Domain\Repository\ComponentRepository;
 use Netresearch\NrTextdb\Domain\Repository\EnvironmentRepository;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
@@ -110,9 +114,9 @@ class TranslationService
         $typeFound        = $this->typeRepository->findByName($type);
 
         if (
-            ($environmentFound === null)
-            || ($componentFound === null)
-            || ($typeFound === null)
+            (!$environmentFound instanceof Environment)
+            || (!$componentFound instanceof Component)
+            || (!$typeFound instanceof Type)
         ) {
             return $placeholder;
         }
@@ -125,7 +129,7 @@ class TranslationService
             $this->getCurrentLanguage()
         );
 
-        if ($translation === null) {
+        if (!$translation instanceof Translation) {
             return $placeholder;
         }
 

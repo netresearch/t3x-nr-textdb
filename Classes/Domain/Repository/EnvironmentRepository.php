@@ -58,7 +58,7 @@ class EnvironmentRepository extends AbstractRepository
     {
         $environment = $this->getFromCache($name);
 
-        if ($environment !== null) {
+        if ($environment instanceof Environment) {
             return $environment;
         }
 

@@ -60,7 +60,7 @@ class ComponentRepository extends AbstractRepository
     {
         $component = $this->getFromCache($name);
 
-        if ($component !== null) {
+        if ($component instanceof Component) {
             return $component;
         }
 

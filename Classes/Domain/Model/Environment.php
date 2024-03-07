@@ -28,9 +28,8 @@ class Environment extends AbstractValueObject
      * name.
      *
      * @var string
-     *
-     * @Validate("NotEmpty")
      */
+    #[Validate(['validator' => 'NotEmpty'])]
     protected string $name = '';
 
     /**

@@ -116,7 +116,7 @@ class TranslationController extends ActionController
     /**
      * @var ImportService
      */
-    private ImportService $importService;
+    private readonly ImportService $importService;
 
     /**
      * @var int
@@ -210,30 +210,26 @@ class TranslationController extends ActionController
      */
     public function listAction(): ResponseInterface
     {
-        $config = $this->getConfigFromBeUserData();
+        $config      = $this->getConfigFromBeUserData();
+        $componentId = $config['component'] ?? 0;
+        $typeId      = $config['type'] ?? 0;
+        $placeholder = $config['placeholder'] ?? null;
+        $value       = $config['value'] ?? null;
 
         if ($this->request->hasArgument('component')) {
             $componentId = (int) $this->request->getArgument('component');
-        } else {
-            $componentId = $config['component'] ?? 0;
         }
 
         if ($this->request->hasArgument('type')) {
             $typeId = (int) $this->request->getArgument('type');
-        } else {
-            $typeId = $config['type'] ?? 0;
         }
 
         if ($this->request->hasArgument('placeholder')) {
             $placeholder = trim((string) $this->request->getArgument('placeholder'));
-        } else {
-            $placeholder = $config['placeholder'] ?? null;
         }
 
         if ($this->request->hasArgument('value')) {
             $value = trim((string) $this->request->getArgument('value'));
-        } else {
-            $value = $config['value'] ?? null;
         }
 
         $defaultComponent   = $this->componentRepository->findByUid($componentId);
@@ -508,7 +504,7 @@ class TranslationController extends ActionController
         foreach ($update as $translationUid => $value) {
             $translation = $this->translationRepository->findRecordByUid($translationUid);
 
-            if ($translation !== null) {
+            if ($translation instanceof Translation) {
                 $translation->setValue($value);
                 $this->translationRepository->update($translation);
             }
@@ -588,7 +584,7 @@ class TranslationController extends ActionController
             $data      = simplexml_load_string(file_get_contents($uploadedFile));
             $xmlErrors = libxml_get_errors();
 
-            if (count($xmlErrors) !== 0) {
+            if ($xmlErrors !== []) {
                 foreach ($xmlErrors as $error) {
                     $errors[] = $error->message;
                 }
@@ -716,13 +712,9 @@ class TranslationController extends ActionController
     protected function getConfigFromBeUserData(): array
     {
         $serializedConfig = $this->getBackendUser()->getModuleData(static::class);
-        $config           = [];
-
-        if (
-            is_string($serializedConfig)
-            && ($serializedConfig !== '')
-        ) {
-            $config = unserialize(
+        if (is_string($serializedConfig)
+        && ($serializedConfig !== '')) {
+            return unserialize(
                 $serializedConfig,
                 [
                     'allowed_classes' => true,
@@ -730,7 +722,7 @@ class TranslationController extends ActionController
             );
         }
 
-        return $config;
+        return [];
     }
 
     /**
@@ -773,7 +765,7 @@ class TranslationController extends ActionController
         $entries               = '';
         $writtenTranslationIds = [];
 
-        $maker = $enableTargetMarker === true ? 'target' : 'source';
+        $maker = $enableTargetMarker ? 'target' : 'source';
 
         /** @var Translation $translation */
         foreach ($translations as $translation) {

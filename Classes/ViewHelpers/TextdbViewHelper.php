@@ -101,7 +101,7 @@ class TextdbViewHelper extends AbstractViewHelper
      */
     public function getTranslationService(): TranslationService
     {
-        if (!isset($this->translationService)) {
+        if (!$this->translationService instanceof TranslationService) {
             $this->translationService = GeneralUtility::makeInstance(TranslationService::class);
         }
 

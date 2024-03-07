@@ -13,7 +13,7 @@ use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 
 defined('TYPO3') || exit('Access denied.');
 
-call_user_func(static function () {
+call_user_func(static function (): void {
     ExtensionManagementUtility::addStaticFile(
         'nr_textdb',
         'Configuration/TypoScript/',
