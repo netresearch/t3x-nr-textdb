@@ -12,16 +12,23 @@ declare(strict_types=1);
 use Netresearch\NrTextdb\Controller\TranslationController;
 
 return [
-    'web_NrTextdbMod1' => [
-        'parent'                                   => 'web',
+    'netresearch_module' => [
+        'labels'         => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang_mod.xlf',
+        'iconIdentifier' => 'extension-netresearch-module',
+        'position'       => [
+            'after' => 'web',
+        ],
+    ],
+    'netresearch_textdb' => [
+        'parent'                                   => 'netresearch_module',
         'position'                                 => [],
         'access'                                   => 'user',
-        'iconIdentifier'                           => 'tx-textdb-module-web',
-        'path'                                     => '/module/web/textdb',
-        'labels'                                   => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang_be.xlf',
+        'iconIdentifier'                           => 'extension-netresearch-textdb',
+        'path'                                     => '/module/netresearch/textdb',
+        'labels'                                   => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang_mod_textdb.xlf',
         'extensionName'                            => 'NrTextdb',
         'inheritNavigationComponentFromMainModule' => false,
-        'navigationComponentId'                    => '',
+        'navigationComponent'                      => '',
         'controllerActions'                        => [
             TranslationController::class => [
                 'list',

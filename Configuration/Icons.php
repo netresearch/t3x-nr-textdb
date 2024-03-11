@@ -12,7 +12,11 @@ declare(strict_types=1);
 use TYPO3\CMS\Core\Imaging\IconProvider\SvgIconProvider;
 
 return [
-    'tx-textdb-module-web' => [
+    'extension-netresearch-module' => [
+        'provider' => SvgIconProvider::class,
+        'source'   => 'EXT:nr_textdb/Resources/Public/Icons/Module.svg',
+    ],
+    'extension-netresearch-textdb' => [
         'provider' => SvgIconProvider::class,
         'source'   => 'EXT:nr_textdb/Resources/Public/Icons/Extension.svg',
     ],
