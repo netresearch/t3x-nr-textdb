@@ -9,12 +9,7 @@ parameters:
     level: 6
 
     paths:
-        # Seems no other way to ignore \Netresearch\NrTextdb\Hooks\Sync from analyse
-        - %currentWorkingDirectory%/Classes/Command/
-        - %currentWorkingDirectory%/Classes/Controller/
-        - %currentWorkingDirectory%/Classes/Domain/
-        - %currentWorkingDirectory%/Classes/Service/
-        - %currentWorkingDirectory%/Classes/ViewHelpers/
+        - %currentWorkingDirectory%/Classes/
         - %currentWorkingDirectory%/Configuration/
         - %currentWorkingDirectory%/Resources/
         - %currentWorkingDirectory%/Tests/

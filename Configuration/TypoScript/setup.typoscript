@@ -1,11 +1,11 @@
 # Module configuration
 module.tx_nrtextdb {
     view {
-        templateRootPaths{
+        templateRootPaths {
             0 = EXT:nr_textdb/Resources/Private/Backend/Templates/
         }
 
-        partialRootPaths{
+        partialRootPaths {
             0 = EXT:nr_textdb/Resources/Private/Backend/Partials/
         }
 

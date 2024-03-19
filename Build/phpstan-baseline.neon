@@ -1,6 +1,11 @@
 parameters:
 	ignoreErrors:
 		-
+			message: "#^Class Netresearch\\\\Sync\\\\Controller\\\\BaseSyncModuleController not found\\.$#"
+			count: 1
+			path: ../Configuration/Backend/Modules.php
+
+		-
 			message: "#^Unreachable statement \\- code above always terminates\\.$#"
 			count: 1
 			path: ../Tests/Unit/Controller/TranslationControllerTest.php

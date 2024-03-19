@@ -10,8 +10,11 @@
 declare(strict_types=1);
 
 use Netresearch\NrTextdb\Controller\TranslationController;
+use Netresearch\Sync\Controller\BaseSyncModuleController;
+use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 
-return [
+// Caution, variable name must not exist within \TYPO3\CMS\Core\Package\AbstractServiceProvider::configureBackendModules
+$backendModulesConfiguration = [
     'netresearch_module' => [
         'labels'         => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang_mod.xlf',
         'iconIdentifier' => 'extension-netresearch-module',
@@ -40,3 +43,31 @@ return [
         ],
     ],
 ];
+
+if (ExtensionManagementUtility::isLoaded('netresearch/nr-sync')) {
+    $backendModulesConfiguration['netresearch_sync_textdb'] = [
+        'parent'         => 'netresearch_sync',
+        'access'         => 'user',
+        'path'           => '/module/netresearch/sync/textdb',
+        'iconIdentifier' => 'extension-netresearch-sync',
+        'labels'         => [
+            'title' => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang_mod_sync.xlf:mod_textdb',
+        ],
+        'routes' => [
+            '_default' => [
+                'target' => BaseSyncModuleController::class . '::indexAction',
+            ],
+        ],
+        'moduleData' => [
+            'dumpFile' => 'nr-textdb.sql',
+            'tables'   => [
+                'tx_nrtextdb_domain_model_component',
+                'tx_nrtextdb_domain_model_environment',
+                'tx_nrtextdb_domain_model_translation',
+                'tx_nrtextdb_domain_model_type',
+            ],
+        ],
+    ];
+}
+
+return $backendModulesConfiguration;
