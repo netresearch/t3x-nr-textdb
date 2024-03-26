@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Netresearch\NrTextdb\Tests\Unit\Domain\Model;
 
 use Netresearch\NrTextdb\Domain\Model\Type;
+use PHPUnit\Framework\Attributes\CoversClass;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 /**
@@ -19,7 +20,8 @@ use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
  *
  * @author Thomas Schöne <thomas.schoene@netresearch.de>
  */
-class TypeTest extends UnitTestCase
+#[CoversClass(Type::class)]
+final class TypeTest extends UnitTestCase
 {
     /**
      * @var Type

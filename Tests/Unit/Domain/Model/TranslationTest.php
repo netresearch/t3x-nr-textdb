@@ -15,6 +15,8 @@ use Netresearch\NrTextdb\Domain\Model\Component;
 use Netresearch\NrTextdb\Domain\Model\Environment;
 use Netresearch\NrTextdb\Domain\Model\Translation;
 use Netresearch\NrTextdb\Domain\Model\Type;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 /**
@@ -22,7 +24,11 @@ use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
  *
  * @author Thomas Schöne <thomas.schoene@netresearch.de>
  */
-class TranslationTest extends UnitTestCase
+#[CoversClass(Translation::class)]
+#[UsesClass(Component::class)]
+#[UsesClass(Environment::class)]
+#[UsesClass(Type::class)]
+final class TranslationTest extends UnitTestCase
 {
     /**
      * @var Translation

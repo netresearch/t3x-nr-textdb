@@ -13,6 +13,8 @@ namespace Netresearch\NrTextdb\Tests\Unit\Controller;
 
 use Netresearch\NrTextdb\Controller\TranslationController;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 use TYPO3Fluid\Fluid\View\ViewInterface;
@@ -22,6 +24,8 @@ use TYPO3Fluid\Fluid\View\ViewInterface;
  *
  * @author Thomas Schöne <thomas.schoene@netresearch.de>
  */
+#[CoversClass(TranslationController::class)]
+#[UsesClass(TranslationRepository::class)]
 class TranslationControllerTest extends UnitTestCase
 {
     /**

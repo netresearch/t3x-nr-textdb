@@ -13,7 +13,10 @@ composer.lock
 # Build stuff
 .build/
 
+# PHPUnit
+phpunit-report.xml
+coverage/
+
 # Cache
 .php-cs-fixer.cache
 .phplint.cache
-.phpunit.result.cache
