@@ -90,7 +90,7 @@
             "phplint --configuration Build/.phplint.yml"
         ],
         "ci:test:php:unit": [
-            "phpunit -c Build/UnitTests.xml"
+            "XDEBUG_MODE=coverage phpunit -c Build/UnitTests.xml"
         ],
         "ci:test:php:phpstan": [
             "phpstan analyze --configuration Build/phpstan.neon"
