@@ -52,6 +52,9 @@ use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use ZipArchive;
 
+
+use TYPO3\CMS\Core\Database\ConnectionPool;
+
 use function is_string;
 
 /**
@@ -454,7 +457,7 @@ class TranslationController extends ActionController
 
         /** @var Translation $translation */
         foreach ($translated as $translation) {
-            unset($untranslated[$translation->getLanguageUid()]);
+            unset($untranslated[$translation["sys_language_uid"]]);
         }
 
         $this->view->assign('originalUid', $uid);
@@ -502,12 +505,7 @@ class TranslationController extends ActionController
         }
 
         foreach ($update as $translationUid => $value) {
-            $translation = $this->translationRepository->findRecordByUid($translationUid);
-
-            if ($translation instanceof Translation) {
-                $translation->setValue($value);
-                $this->translationRepository->update($translation);
-            }
+            $this->updateValueInDatabase($translationUid, $value);
         }
 
         $this->persistenceManager->persistAll();
@@ -516,6 +514,17 @@ class TranslationController extends ActionController
             ->withControllerName('Translation')
             ->withExtensionName('NrTextdb')
             ->withArguments(['uid' => $parent]);
+    }
+
+    private function updateValueInDatabase(int $uid, string $newValue)
+    {
+        $connection = GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getConnectionForTable('tx_nrtextdb_domain_model_translation');
+
+        $connection->executeStatement(
+            'UPDATE tx_nrtextdb_domain_model_translation SET value = ? WHERE uid = ?',
+            [$newValue, $uid]
+        );
     }
 
     /**
@@ -713,7 +722,7 @@ class TranslationController extends ActionController
     {
         $serializedConfig = $this->getBackendUser()->getModuleData(static::class);
         if (is_string($serializedConfig)
-        && ($serializedConfig !== '')) {
+            && ($serializedConfig !== '')) {
             return unserialize(
                 $serializedConfig,
                 [

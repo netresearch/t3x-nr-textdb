@@ -23,6 +23,10 @@ use TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException;
 use TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings;
 use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 
+
+use TYPO3\CMS\Core\Database\ConnectionPool;
+use Doctrine\DBAL\ParameterType;
+
 use function count;
 use function func_get_args;
 
@@ -291,17 +295,42 @@ class TranslationRepository extends AbstractRepository
                 )
             );
 
-        $query->matching(
-            $query->logicalAnd(
-                $query->equals('environment', $environment->getUid()),
-                $query->equals('placeholder', $placeholder),
-                $query->equals('pid', $this->getConfiguredPageId()),
-                $query->equals('type', $type->getUid()),
-                $query->equals('component', $component->getUid())
-            )
-        );
 
-        $translations = $query->execute()->toArray();
+        $connection = GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getConnectionForTable('tx_nrtextdb_domain_model_translation');
+
+        $translationArray = $connection->executeQuery(
+            'SELECT * FROM tx_nrtextdb_domain_model_translation 
+            WHERE sys_language_uid = ?
+            AND placeholder = ?
+            AND pid = ?
+            AND type = ?
+            AND component = ?
+            AND environment = ?',
+            [$languageUid, $placeholder, $this->getConfiguredPageId(), $type->getUid(), $component->getUid(), $environment->getUid()]
+        )->fetchAllAssociative();
+
+
+        $translations = [];
+        if ($translationArray) {
+            foreach ($translationArray as $translationRecord) {
+                $translation = new Translation();
+                $translation->setUid((int)$translationRecord['uid']);
+                $translation->setPlaceholder($translationRecord['placeholder']);
+                $translation->setValue($translationRecord['value']);
+                $translation->setL10nParent((int)$translationRecord['l10n_parent']);
+                $translation->setSysLanguageUid((int)$translationRecord['sys_language_uid']);
+                $translation->setLanguageUid((int)$translationRecord['sys_language_uid']);
+                $translation->setLocalizedUid((int)$translationRecord['uid']);
+
+                $translation->setType($type);
+                $translation->setEnvironment($environment);
+                $translation->setComponent($component);
+                $translation->setPid($this->getConfiguredPageId());
+
+                $translations[] = $translation;
+            }
+        }
 
         if (
             $skipCreation
@@ -330,8 +359,8 @@ class TranslationRepository extends AbstractRepository
             return $this->setToCache($cacheKey, $translation);
         }
 
-        /** @var false|Translation $translation */
-        $translation = reset($translations);
+//        /** @var false|Translation $translation */
+//        $translation = reset($translations);
 
         if ($translation === false) {
             return null;
@@ -430,22 +459,23 @@ class TranslationRepository extends AbstractRepository
      */
     public function getTranslatedRecords(int $uid): array
     {
-        $query = $this->createQuery();
+        $connection = GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getConnectionForTable('tx_nrtextdb_domain_model_translation');
 
-        $query->getQuerySettings()->setRespectStoragePage(false);
-        $query->getQuerySettings()->setRespectSysLanguage(false);
-        $query->getQuerySettings()->setIgnoreEnableFields(true);
-
-        $query->matching(
-            $query->logicalAnd(
-                $query->equals('l10nParent', $uid),
-                $query->equals('pid', $this->getConfiguredPageId())
+        $queryBuilder = $connection->createQueryBuilder();
+        $queryBuilder
+            ->select('*')
+            ->from('tx_nrtextdb_domain_model_translation')
+            ->where(
+                $queryBuilder->expr()->eq('l10n_parent', ':uid'),
+                $queryBuilder->expr()->eq('pid', ':pid')
             )
-        );
+            ->setParameter('uid', $uid, ParameterType::INTEGER)
+            ->setParameter('pid', $this->getConfiguredPageId(), ParameterType::INTEGER);
 
-        return $query
-            ->execute()
-            ->toArray();
+        $translatedRecords = $queryBuilder->execute()->fetchAllAssociative();
+
+        return $translatedRecords;
     }
 
     /**
@@ -455,22 +485,23 @@ class TranslationRepository extends AbstractRepository
      *
      * @return Translation|null
      */
-    public function findRecordByUid(int $uid): ?Translation
+    public function findRecordByUid(int $uid): array
     {
-        $query = $this->createQuery();
+        $connection = GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getConnectionForTable('tx_nrtextdb_domain_model_translation');
 
-        $query->getQuerySettings()->setRespectSysLanguage(false);
-        $query->getQuerySettings()->setRespectStoragePage(false);
-        $query->getQuerySettings()->setIgnoreEnableFields(true);
+        $queryBuilder = $connection->createQueryBuilder();
+        $queryBuilder
+            ->select('*')
+            ->from('tx_nrtextdb_domain_model_translation')
+            ->where(
+                $queryBuilder->expr()->eq('uid', ':uid'),
+            )
+            ->setParameter('uid', $uid, ParameterType::INTEGER);
 
-        $query->matching(
-            $query->equals('uid', $uid)
-        );
+        $translatedRecord = $queryBuilder->execute()->fetchAssociative();
 
-        /** @var Translation|null $translation */
-        $translation = $query->execute()->getFirst();
-
-        return $translation;
+        return $translatedRecord;
     }
 
     /**

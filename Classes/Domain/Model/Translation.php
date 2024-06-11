@@ -195,6 +195,10 @@ class Translation extends AbstractEntity
         $this->value = $value;
     }
 
+    public function setUid(int $uid): void
+    {
+        $this->uid = $uid;
+    }
     /**
      * @return bool
      */
