@@ -20,7 +20,6 @@ use Netresearch\NrTextdb\Domain\Repository\TypeRepository;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\Console\Exception\RuntimeException;
-use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Localization\Parser\XliffParser;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
@@ -232,37 +231,14 @@ class ImportService implements LoggerAwareInterface
 
                 ++$updated;
             } else {
-                $defaultTranslation = null;
-
-                if ($languageUid !== 0) {
-                    // If then language id is not 0, get the default language translation
-                    $defaultTranslation = $this->translationRepository->find(
-                        $environmentFound,
-                        $componentFound,
-                        $typeFound,
-                        $placeholder,
-                        0,
-                        false,
-                        false
-                    );
-                }
-
-                /** @var Translation $translation */
-                $translation = GeneralUtility::makeInstance(Translation::class);
-                $translation->setEnvironment($environmentFound);
-                $translation->setComponent($componentFound);
-                $translation->setType($typeFound);
-                $translation->setPlaceholder($placeholder);
-                $translation->setValue($value);
-                $translation->setPid($this->getConfiguredPageId());
-                $translation->setLanguageUid($languageUid);
-
-                if ($defaultTranslation instanceof Translation) {
-                    $translation->setL10nParent($defaultTranslation->getUid());
-                }
-
-                $this->translationRepository
-                    ->add($translation);
+                $this->translationRepository->createTranslation(
+                    $componentFound->getName(),
+                    $environmentFound->getName(),
+                    $typeFound->getName(),
+                    $placeholder,
+                    $languageUid,
+                    $value
+                );
 
                 ++$imported;
             }
@@ -368,34 +344,5 @@ class ImportService implements LoggerAwareInterface
         $parts = explode('|', $key);
 
         return $parts[2] ?? null;
-    }
-
-    /**
-     * Get the extension configuration.
-     *
-     * @param string $path Path to get the config for
-     *
-     * @return mixed
-     */
-    private function getExtensionConfiguration(string $path): mixed
-    {
-        try {
-            /** @var ExtensionConfiguration $extensionConfiguration */
-            $extensionConfiguration = GeneralUtility::makeInstance(ExtensionConfiguration::class);
-
-            return $extensionConfiguration->get('nr_textdb', $path);
-        } catch (Exception) {
-            return null;
-        }
-    }
-
-    /**
-     * Get the configured page ID, used to store the translation in, from extension configuration.
-     *
-     * @return int
-     */
-    private function getConfiguredPageId(): int
-    {
-        return (int) ($this->getExtensionConfiguration('textDbPid') ?? 0);
     }
 }

@@ -318,7 +318,7 @@ class ImportCommand extends Command implements LoggerAwareInterface
         $languageKey = $this->getLanguageKeyFromFile($file);
         $languageUid = $this->getLanguageId($languageKey);
 
-        $output->writeln(sprintf('Import translations from file %s for langauge %s (%d)', $file, $languageKey, $languageUid));
+        $output->writeln(sprintf('Import translations from file %s for language %s (%d)', $file, $languageKey, $languageUid));
 
         $this->importService
             ->importFile(
