@@ -90,8 +90,9 @@ class TranslationRepository extends AbstractRepository
     public function initializeObject(): void
     {
         $querySettings = GeneralUtility::makeInstance(Typo3QuerySettings::class);
-        $querySettings->setRespectStoragePage(false);
-        $querySettings->setRespectSysLanguage(true);
+        $querySettings
+            ->setRespectStoragePage(false)
+            ->setRespectSysLanguage(true);
 
         $this->setDefaultQuerySettings($querySettings);
     }
@@ -136,15 +137,12 @@ class TranslationRepository extends AbstractRepository
 
         $query
             ->getQuerySettings()
-            ->setIgnoreEnableFields(true);
-
-        $query
-            ->getQuerySettings()
+            ->setIgnoreEnableFields(true)
             ->setLanguageAspect(
                 new LanguageAspect(
                     $languageUid,
                     $languageUid,
-                    $query->getQuerySettings()->getLanguageAspect()->getOverlayType()
+                    LanguageAspect::OVERLAYS_OFF
                 )
             );
 
@@ -237,22 +235,17 @@ class TranslationRepository extends AbstractRepository
             return $translation;
         }
 
-        $query       = $this->createQuery();
-        $overlayType = $query->getQuerySettings()->getLanguageAspect()->getOverlayType();
-
-        if ($fallback) {
-            $overlayType = 'content_fallback';
-        }
-
+        $query = $this->createQuery();
         $query
             ->getQuerySettings()
             ->setLanguageAspect(
                 new LanguageAspect(
                     $languageUid,
-                    $languageUid,
-                    $overlayType
+                    null,
+                    LanguageAspect::OVERLAYS_OFF
                 )
-            );
+            )
+        ;
 
         $query->matching(
             $query->logicalAnd(
@@ -529,7 +522,7 @@ class TranslationRepository extends AbstractRepository
                 new LanguageAspect(
                     $languageUid,
                     $languageUid,
-                    $query->getQuerySettings()->getLanguageAspect()->getOverlayType()
+                    LanguageAspect::OVERLAYS_OFF
                 )
             );
 
