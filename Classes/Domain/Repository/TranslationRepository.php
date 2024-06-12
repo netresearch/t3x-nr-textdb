@@ -97,43 +97,6 @@ class TranslationRepository extends AbstractRepository
     }
 
     /**
-     * Returns all objects of this repository.
-     *
-     * @return QueryResultInterface
-     */
-    public function findAllWithHidden(): QueryResultInterface
-    {
-        $query = $this->createQuery();
-        $query->getQuerySettings()->setIgnoreEnableFields(true);
-
-        return $query->execute();
-    }
-
-    /**
-     * Find all records for a given language.
-     *
-     * @param int $languageUid
-     *
-     * @return QueryResultInterface
-     */
-    public function findAllByLanguage(int $languageUid): QueryResultInterface
-    {
-        $query = $this->createQuery();
-
-        $query
-            ->getQuerySettings()
-            ->setLanguageAspect(
-                new LanguageAspect(
-                    $languageUid,
-                    $languageUid,
-                    $query->getQuerySettings()->getLanguageAspect()->getOverlayType()
-                )
-            );
-
-        return $query->execute();
-    }
-
-    /**
      * Returns a translation.
      *
      * @param string $component   Component of the translation
