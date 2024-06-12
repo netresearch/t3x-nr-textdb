@@ -600,7 +600,7 @@ class TranslationController extends ActionController
 
             /** @var SimpleXMLElement $translation */
             foreach ($data->file->body->children() as $translation) {
-                $key = reset($translation->attributes()['id']);
+                $key = (string) $translation->attributes()['id'];
 
                 $componentName = $this->getComponentFromKey($key);
                 if ($componentName === null) {
