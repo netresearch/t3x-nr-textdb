@@ -627,7 +627,7 @@ class TranslationController extends ActionController
                         $componentName,
                         $typeName,
                         $placeholder,
-                        $value,
+                        trim($value),
                         $forceUpdate,
                         $imported,
                         $updated,
