@@ -432,9 +432,17 @@ class TranslationRepository extends AbstractRepository
     {
         $query = $this->createQuery();
 
-        $query->getQuerySettings()->setRespectStoragePage(false);
-        $query->getQuerySettings()->setRespectSysLanguage(false);
-        $query->getQuerySettings()->setIgnoreEnableFields(true);
+        $query->getQuerySettings()
+            ->setRespectStoragePage(false)
+            ->setRespectSysLanguage(false)
+            ->setIgnoreEnableFields(true)
+            ->setLanguageAspect(
+                new LanguageAspect(
+                    0,
+                    null,
+                    LanguageAspect::OVERLAYS_OFF
+                )
+            );
 
         $query->matching(
             $query->logicalAnd(
@@ -449,7 +457,7 @@ class TranslationRepository extends AbstractRepository
     }
 
     /**
-     * Returns a record found by its uid without any restrictions.
+     * Returns a record found by its UID without any restrictions.
      *
      * @param int $uid UID
      *
@@ -459,16 +467,26 @@ class TranslationRepository extends AbstractRepository
     {
         $query = $this->createQuery();
 
-        $query->getQuerySettings()->setRespectSysLanguage(false);
-        $query->getQuerySettings()->setRespectStoragePage(false);
-        $query->getQuerySettings()->setIgnoreEnableFields(true);
+        $query->getQuerySettings()
+            ->setRespectSysLanguage(false)
+            ->setRespectStoragePage(false)
+            ->setIgnoreEnableFields(true)
+            ->setLanguageAspect(
+                new LanguageAspect(
+                    0,
+                    null,
+                    LanguageAspect::OVERLAYS_OFF
+                )
+            );
 
         $query->matching(
             $query->equals('uid', $uid)
         );
 
         /** @var Translation|null $translation */
-        $translation = $query->execute()->getFirst();
+        $translation = $query
+            ->execute()
+            ->getFirst();
 
         return $translation;
     }
@@ -480,7 +498,7 @@ class TranslationRepository extends AbstractRepository
      * @param int         $type        Type ID
      * @param string|null $placeholder Placeholder to search for
      * @param string|null $value       Value to search for
-     * @param int         $langaugeId  Language ID
+     * @param int         $languageId  Language ID
      *
      * @return QueryResultInterface
      *
@@ -491,7 +509,7 @@ class TranslationRepository extends AbstractRepository
         int $type = 0,
         ?string $placeholder = null,
         ?string $value = null,
-        int $langaugeId = 0
+        int $languageId = 0
     ): QueryResultInterface {
         $query = $this->createQuery();
 
@@ -516,8 +534,8 @@ class TranslationRepository extends AbstractRepository
             $constraints[] = $query->like('value', '%' . $value . '%');
         }
 
-        if ($langaugeId !== 0) {
-            $constraints[] = $query->equals('_languageUid', $langaugeId);
+        if ($languageId !== 0) {
+            $constraints[] = $query->equals('_languageUid', $languageId);
         }
 
         if ($constraints !== []) {
@@ -541,16 +559,9 @@ class TranslationRepository extends AbstractRepository
     {
         $query = $this->createQuery();
 
-        $query
-            ->getQuerySettings()
-            ->setIgnoreEnableFields(true);
-
-        $query
-            ->getQuerySettings()
-            ->setRespectStoragePage(false);
-
-        $query
-            ->getQuerySettings()
+        $query->getQuerySettings()
+            ->setIgnoreEnableFields(true)
+            ->setRespectStoragePage(false)
             ->setLanguageAspect(
                 new LanguageAspect(
                     $languageUid,
