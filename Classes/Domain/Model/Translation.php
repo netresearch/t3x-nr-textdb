@@ -116,6 +116,7 @@ class Translation extends AbstractEntity
     public function setCrdate(DateTime $crdate): Translation
     {
         $this->crdate = $crdate;
+
         return $this;
     }
 
@@ -135,6 +136,7 @@ class Translation extends AbstractEntity
     public function setTstamp(DateTime $tstamp): Translation
     {
         $this->tstamp = $tstamp;
+
         return $this;
     }
 
@@ -154,6 +156,7 @@ class Translation extends AbstractEntity
     public function setSysLanguageUid(int $sysLanguageUid): Translation
     {
         $this->_languageUid = $sysLanguageUid;
+
         return $this;
     }
 
@@ -173,6 +176,7 @@ class Translation extends AbstractEntity
     public function setL10nParent(int $l10nParent): Translation
     {
         $this->l10nParent = $l10nParent;
+
         return $this;
     }
 
@@ -192,6 +196,7 @@ class Translation extends AbstractEntity
     public function setHidden(bool $hidden): Translation
     {
         $this->hidden = $hidden;
+
         return $this;
     }
 
@@ -211,6 +216,7 @@ class Translation extends AbstractEntity
     public function setDeleted(bool $deleted): Translation
     {
         $this->deleted = $deleted;
+
         return $this;
     }
 
@@ -230,11 +236,12 @@ class Translation extends AbstractEntity
     public function setSorting(int $sorting): Translation
     {
         $this->sorting = $sorting;
+
         return $this;
     }
 
     /**
-     * @return null|Environment
+     * @return Environment|null
      */
     public function getEnvironment(): ?Environment
     {
@@ -242,18 +249,19 @@ class Translation extends AbstractEntity
     }
 
     /**
-     * @param null|Environment $environment
+     * @param Environment|null $environment
      *
      * @return Translation
      */
     public function setEnvironment(?Environment $environment): Translation
     {
         $this->environment = $environment;
+
         return $this;
     }
 
     /**
-     * @return null|Component
+     * @return Component|null
      */
     public function getComponent(): ?Component
     {
@@ -261,18 +269,19 @@ class Translation extends AbstractEntity
     }
 
     /**
-     * @param null|Component $component
+     * @param Component|null $component
      *
      * @return Translation
      */
     public function setComponent(?Component $component): Translation
     {
         $this->component = $component;
+
         return $this;
     }
 
     /**
-     * @return null|Type
+     * @return Type|null
      */
     public function getType(): ?Type
     {
@@ -280,13 +289,14 @@ class Translation extends AbstractEntity
     }
 
     /**
-     * @param null|Type $type
+     * @param Type|null $type
      *
      * @return Translation
      */
     public function setType(?Type $type): Translation
     {
         $this->type = $type;
+
         return $this;
     }
 
@@ -306,6 +316,7 @@ class Translation extends AbstractEntity
     public function setPlaceholder(string $placeholder): Translation
     {
         $this->placeholder = $placeholder;
+
         return $this;
     }
 
@@ -331,6 +342,7 @@ class Translation extends AbstractEntity
     public function setValue(string $value): Translation
     {
         $this->value = $value;
+
         return $this;
     }
 
@@ -350,5 +362,5 @@ class Translation extends AbstractEntity
     public function getLocalizedUid(): int
     {
         return $this->_localizedUid;
-     }
+    }
 }

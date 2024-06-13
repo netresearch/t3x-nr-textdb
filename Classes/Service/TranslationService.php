@@ -262,7 +262,7 @@ class TranslationService
     /**
      * Creates a new translation.
      *
-     * @param Environment $environment The environment of the translation
+     * @param Environment $environment    The environment of the translation
      * @param Component   $component      The component of the translation
      * @param Type        $type           The type of the translation
      * @param string      $placeholder    The placeholder of the translation

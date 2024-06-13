@@ -169,7 +169,7 @@ class TranslationRepository extends AbstractRepository
      * @param Type        $type
      * @param string      $placeholder
      *
-     * @return null|Translation
+     * @return Translation|null
      */
     public function findByEnvironmentComponentTypeAndPlaceholder(
         Environment $environment,

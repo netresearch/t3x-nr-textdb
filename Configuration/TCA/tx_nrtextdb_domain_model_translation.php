@@ -10,7 +10,7 @@
 declare(strict_types=1);
 
 return [
-    'ctrl'     => [
+    'ctrl' => [
         'title'                    => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang_db.xlf:tx_nrtextdb_domain_model_translation',
         'descriptionColumn'        => 'value',
         'label'                    => 'value',
@@ -27,24 +27,24 @@ return [
         'enablecolumns'            => [
             'disabled' => 'hidden',
         ],
-        'searchFields'             => 'value',
-        'iconfile'                 => 'EXT:nr_textdb/Resources/Public/Icons/tx_nrtextdb_domain_model_translation.gif',
-        'security'                 => [
+        'searchFields' => 'value',
+        'iconfile'     => 'EXT:nr_textdb/Resources/Public/Icons/tx_nrtextdb_domain_model_translation.gif',
+        'security'     => [
             'ignorePageTypeRestriction' => true,
         ],
     ],
     'palettes' => [
-        'paletteCore'     => [
+        'paletteCore' => [
             'showitem' => 'environment, --linebreak--, component, --linebreak--, type, --linebreak--, placeholder, --linebreak--, value',
         ],
-        'paletteHidden'   => [
+        'paletteHidden' => [
             'showitem' => 'hidden',
         ],
         'paletteLanguage' => [
             'showitem' => 'sys_language_uid;LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:sys_language_uid_formlabel, l10n_parent, l10n_diffsource',
         ],
     ],
-    'types'    => [
+    'types' => [
         '1' => [
             'showitem' => '
                     --palette--;;paletteCore,
@@ -54,7 +54,7 @@ return [
                     --palette--;;paletteHidden,',
         ],
     ],
-    'columns'  => [
+    'columns' => [
         'sys_language_uid' => [
             'displayCond' => 'REC:NEW:true',
             'exclude'     => true,
@@ -63,7 +63,7 @@ return [
                 'type' => 'language',
             ],
         ],
-        'l10n_parent'      => [
+        'l10n_parent' => [
             'displayCond' => 'FIELD:sys_language_uid:>:0',
             'label'       => 'LLL:EXT:core/Resources/Private/Language/locallang_general.xlf:LGL.l18n_parent',
             'config'      => [
@@ -75,18 +75,18 @@ return [
                 'default'  => 0,
             ],
         ],
-        'l10n_source'      => [
+        'l10n_source' => [
             'config' => [
                 'type' => 'passthrough',
             ],
         ],
-        'l10n_diffsource'  => [
+        'l10n_diffsource' => [
             'config' => [
                 'type'    => 'passthrough',
                 'default' => '',
             ],
         ],
-        'hidden'           => [
+        'hidden' => [
             'l10n_mode' => 'exclude',
             'exclude'   => true,
             'label'     => 'LLL:EXT:core/Resources/Private/Language/locallang_general.xlf:LGL.visible',
@@ -101,35 +101,31 @@ return [
                 ],
             ],
         ],
-        'pid'              => [
+        'pid' => [
             'label'  => 'pid',
             'config' => [
                 'type' => 'passthrough',
             ],
         ],
-        'crdate'           => [
+        'crdate' => [
             'label'  => 'crdate',
             'config' => [
-                'type'       => 'input',
-                'renderType' => 'inputDateTime',
-                'eval'       => 'datetime',
+                'type' => 'datetime',
             ],
         ],
-        'tstamp'           => [
+        'tstamp' => [
             'label'  => 'tstamp',
             'config' => [
-                'type'       => 'input',
-                'renderType' => 'inputDateTime',
-                'eval'       => 'datetime',
+                'type' => 'datetime',
             ],
         ],
-        'sorting'          => [
+        'sorting' => [
             'label'  => 'sorting',
             'config' => [
                 'type' => 'passthrough',
             ],
         ],
-        'environment'      => [
+        'environment' => [
             'l10n_mode' => 'exclude',
             'exclude'   => true,
             'label'     => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang_db.xlf:tx_nrtextdb_domain_model_translation.environment',
@@ -141,7 +137,7 @@ return [
                 'maxitems'      => 1,
             ],
         ],
-        'component'        => [
+        'component' => [
             'l10n_mode' => 'exclude',
             'exclude'   => true,
             'label'     => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang_db.xlf:tx_nrtextdb_domain_model_translation.component',
@@ -153,7 +149,7 @@ return [
                 'maxitems'      => 1,
             ],
         ],
-        'type'             => [
+        'type' => [
             'l10n_mode' => 'exclude',
             'exclude'   => true,
             'label'     => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang_db.xlf:tx_nrtextdb_domain_model_translation.type',
@@ -165,7 +161,7 @@ return [
                 'maxitems'      => 1,
             ],
         ],
-        'placeholder'      => [
+        'placeholder' => [
             'exclude'   => true,
             'l10n_mode' => 'exclude',
             'label'     => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang_db.xlf:tx_nrtextdb_domain_model_translation.placeholder',
@@ -176,7 +172,7 @@ return [
                 'required' => true,
             ],
         ],
-        'value'            => [
+        'value' => [
             'exclude' => true,
             'label'   => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang_db.xlf:tx_nrtextdb_domain_model_translation.value',
             'config'  => [
