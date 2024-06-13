@@ -6,8 +6,8 @@
     <f:layout name="Default"/>
 
     <f:section name="content">
-        <f:be.infobox state="-1">
-            <f:translate key="info.import">Please select a file to import.</f:translate>
+        <f:be.infobox state="-1" title="{f:translate(key: 'info.import.headline')}">
+            <f:translate key="info.import.message" />
         </f:be.infobox>
 
         <f:form action="import" method="post" enctype="multipart/form-data" class="form-inline form-inline-spaced">
@@ -17,7 +17,7 @@
             <div class="form-group">
                 <f:form.checkbox value="1" name="update" id="update"/>
                 <label class="form-check-label" for="update">
-                    <f:translate key="override existing">Override existing</f:translate>
+                    <f:translate key="override.existing">Override existing</f:translate>
                 </label>
             </div>
             <div class="form-group">

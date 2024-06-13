@@ -48,6 +48,11 @@ class ImportService implements LoggerAwareInterface
     private XliffParser $xliffParser;
 
     /**
+     * @var TranslationService
+     */
+    private TranslationService $translationService;
+
+    /**
      * @var TranslationRepository
      */
     private TranslationRepository $translationRepository;
@@ -72,6 +77,7 @@ class ImportService implements LoggerAwareInterface
      *
      * @param PersistenceManagerInterface $persistenceManager
      * @param XliffParser                 $xliffParser
+     * @param TranslationService          $translationService
      * @param TranslationRepository       $translationRepository
      * @param ComponentRepository         $componentRepository
      * @param TypeRepository              $typeRepository
@@ -80,6 +86,7 @@ class ImportService implements LoggerAwareInterface
     public function __construct(
         PersistenceManagerInterface $persistenceManager,
         XliffParser $xliffParser,
+        TranslationService $translationService,
         TranslationRepository $translationRepository,
         ComponentRepository $componentRepository,
         TypeRepository $typeRepository,
@@ -87,6 +94,7 @@ class ImportService implements LoggerAwareInterface
     ) {
         $this->persistenceManager    = $persistenceManager;
         $this->xliffParser           = $xliffParser;
+        $this->translationService    = $translationService;
         $this->translationRepository = $translationRepository;
         $this->componentRepository   = $componentRepository;
         $this->typeRepository        = $typeRepository;
@@ -178,67 +186,87 @@ class ImportService implements LoggerAwareInterface
         array &$errors
     ): void {
         try {
-            $environmentFound = $this->environmentRepository
+            $environment = $this->environmentRepository
                 ->setCreateIfMissing(true)
                 ->findByName('default');
 
-            $componentFound = $this->componentRepository
+            $component = $this->componentRepository
                 ->setCreateIfMissing(true)
                 ->findByName($componentName);
 
-            $typeFound = $this->typeRepository
+            $type = $this->typeRepository
                 ->setCreateIfMissing(true)
                 ->findByName($typeName);
 
             if (
-                ($environmentFound === null)
-                || ($componentFound === null)
-                || ($typeFound === null)
+                ($environment === null)
+                || ($component === null)
+                || ($type === null)
             ) {
                 return;
             }
 
-            $translationRecord = $this->translationRepository->find(
-                $environmentFound,
-                $componentFound,
-                $typeFound,
-                $placeholder,
-                $languageUid,
-                true,
-                false
-            );
+            // Find existing translation record
+            $translation = $this->translationRepository
+                ->findByEnvironmentComponentTypePlaceholderAndLanguage(
+                    $environment,
+                    $component,
+                    $type,
+                    $placeholder,
+                    $languageUid
+                );
 
             if (
-                ($translationRecord instanceof Translation)
-                && $translationRecord->isAutoCreated()
+                ($translation instanceof Translation)
+                && $translation->isAutoCreated()
             ) {
                 $forceUpdate = true;
             }
 
             // Skip if translation exists and update is not requested
             if (
-                ($translationRecord instanceof Translation)
+                ($translation instanceof Translation)
                 && ($forceUpdate === false)
             ) {
                 return;
             }
 
-            if ($translationRecord instanceof Translation) {
-                $translationRecord->setValue($value);
+            // TODO Add option to overwrite auto created records
+            // TODO Add parent record if not present, if option "overwrite auto created" is true
 
-                $this->translationRepository
-                    ->update($translationRecord);
+            if ($translation instanceof Translation) {
+                $translation->setValue($value);
+
+                if ($languageUid !== 0) {
+                    // Look up parent translation (sys_language_uid = 0)
+                    $parentTranslation = $this->translationRepository
+                        ->findByEnvironmentComponentTypeAndPlaceholder(
+                            $environment,
+                            $component,
+                            $type,
+                            $placeholder
+                        );
+
+                    if ($parentTranslation instanceof Translation) {
+                        $translation->setL10nParent($parentTranslation->getUid());
+                    }
+                }
+
+                $this->translationRepository->update($translation);
 
                 ++$updated;
             } else {
-                $this->translationRepository->createTranslation(
-                    $componentFound->getName(),
-                    $environmentFound->getName(),
-                    $typeFound->getName(),
-                    $placeholder,
-                    $languageUid,
-                    $value
-                );
+                $translation = $this->translationService
+                    ->createTranslation(
+                        $environment,
+                        $component,
+                        $type,
+                        $placeholder,
+                        $languageUid,
+                        $value
+                    );
+
+                $this->translationRepository->add($translation);
 
                 ++$imported;
             }

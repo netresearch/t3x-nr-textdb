@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace Netresearch\NrTextdb\Domain\Model;
 
-use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
+use DateTime;
 use TYPO3\CMS\Extbase\Annotation\Validate;
 use TYPO3\CMS\Extbase\DomainObject\AbstractEntity;
 use TYPO3\CMS\Extbase\Validation\Validator\NotEmptyValidator;
@@ -26,42 +26,27 @@ use TYPO3\CMS\Extbase\Validation\Validator\NotEmptyValidator;
  */
 class Translation extends AbstractEntity
 {
-    /**
-     * environment.
-     *
-     * @var Environment|null
-     */
-    protected ?Environment $environment = null;
+    final public const AUTO_CREATE_IDENTIFIER = 'auto-created-by-repository';
 
     /**
-     * component.
-     *
-     * @var Component|null
+     * @var DateTime
      */
-    protected ?Component $component = null;
+    protected DateTime $crdate;
 
     /**
-     * type.
-     *
-     * @var Type|null
+     * @var DateTime
      */
-    protected ?Type $type = null;
+    protected DateTime $tstamp;
 
     /**
-     * Placeholder.
-     *
-     * @var string
+     * @var int
      */
-    #[Validate(['validator' => NotEmptyValidator::class])]
-    protected string $placeholder = '';
+    protected int $sysLanguageUid = 0;
 
     /**
-     * value.
-     *
-     * @var string
+     * @var int
      */
-    #[Validate(['validator' => NotEmptyValidator::class])]
-    protected string $value = '';
+    protected int $l10nParent = 0;
 
     /**
      * @var bool
@@ -76,17 +61,180 @@ class Translation extends AbstractEntity
     /**
      * @var int
      */
-    protected int $l10nParent = 0;
+    protected int $sorting = 0;
 
     /**
-     * @var int
-     */
-    protected int $sysLanguageUid = 0;
-
-    /**
-     * Returns the environment.
+     * The environment.
      *
-     * @return Environment|null
+     * @var Environment|null
+     */
+    protected ?Environment $environment = null;
+
+    /**
+     * The component.
+     *
+     * @var Component|null
+     */
+    protected ?Component $component = null;
+
+    /**
+     * The type.
+     *
+     * @var Type|null
+     */
+    protected ?Type $type = null;
+
+    /**
+     * The placeholder.
+     *
+     * @var string
+     */
+    #[Validate(['validator' => NotEmptyValidator::class])]
+    protected string $placeholder = '';
+
+    /**
+     * The value.
+     *
+     * @var string
+     */
+    #[Validate(['validator' => NotEmptyValidator::class])]
+    protected string $value = '';
+
+    /**
+     * @return DateTime
+     */
+    public function getCrdate(): DateTime
+    {
+        return $this->crdate;
+    }
+
+    /**
+     * @param DateTime $crdate
+     *
+     * @return Translation
+     */
+    public function setCrdate(DateTime $crdate): Translation
+    {
+        $this->crdate = $crdate;
+        return $this;
+    }
+
+    /**
+     * @return DateTime
+     */
+    public function getTstamp(): DateTime
+    {
+        return $this->tstamp;
+    }
+
+    /**
+     * @param DateTime $tstamp
+     *
+     * @return Translation
+     */
+    public function setTstamp(DateTime $tstamp): Translation
+    {
+        $this->tstamp = $tstamp;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getSysLanguageUid(): int
+    {
+        return $this->_languageUid;
+    }
+
+    /**
+     * @param int $sysLanguageUid
+     *
+     * @return Translation
+     */
+    public function setSysLanguageUid(int $sysLanguageUid): Translation
+    {
+        $this->_languageUid = $sysLanguageUid;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getL10nParent(): int
+    {
+        return $this->l10nParent;
+    }
+
+    /**
+     * @param int $l10nParent
+     *
+     * @return Translation
+     */
+    public function setL10nParent(int $l10nParent): Translation
+    {
+        $this->l10nParent = $l10nParent;
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isHidden(): bool
+    {
+        return $this->hidden;
+    }
+
+    /**
+     * @param bool $hidden
+     *
+     * @return Translation
+     */
+    public function setHidden(bool $hidden): Translation
+    {
+        $this->hidden = $hidden;
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDeleted(): bool
+    {
+        return $this->deleted;
+    }
+
+    /**
+     * @param bool $deleted
+     *
+     * @return Translation
+     */
+    public function setDeleted(bool $deleted): Translation
+    {
+        $this->deleted = $deleted;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getSorting(): int
+    {
+        return $this->sorting;
+    }
+
+    /**
+     * @param int $sorting
+     *
+     * @return Translation
+     */
+    public function setSorting(int $sorting): Translation
+    {
+        $this->sorting = $sorting;
+        return $this;
+    }
+
+    /**
+     * @return null|Environment
      */
     public function getEnvironment(): ?Environment
     {
@@ -94,21 +242,18 @@ class Translation extends AbstractEntity
     }
 
     /**
-     * Sets the environment.
+     * @param null|Environment $environment
      *
-     * @param Environment|null $environment
-     *
-     * @return void
+     * @return Translation
      */
-    public function setEnvironment(?Environment $environment): void
+    public function setEnvironment(?Environment $environment): Translation
     {
         $this->environment = $environment;
+        return $this;
     }
 
     /**
-     * Returns the component.
-     *
-     * @return Component|null
+     * @return null|Component
      */
     public function getComponent(): ?Component
     {
@@ -116,21 +261,18 @@ class Translation extends AbstractEntity
     }
 
     /**
-     * Sets the component.
+     * @param null|Component $component
      *
-     * @param Component|null $component
-     *
-     * @return void
+     * @return Translation
      */
-    public function setComponent(?Component $component): void
+    public function setComponent(?Component $component): Translation
     {
         $this->component = $component;
+        return $this;
     }
 
     /**
-     * Returns the type.
-     *
-     * @return Type|null
+     * @return null|Type
      */
     public function getType(): ?Type
     {
@@ -138,15 +280,14 @@ class Translation extends AbstractEntity
     }
 
     /**
-     * Sets the type.
+     * @param null|Type $type
      *
-     * @param Type|null $type
-     *
-     * @return void
+     * @return Translation
      */
-    public function setType(?Type $type): void
+    public function setType(?Type $type): Translation
     {
         $this->type = $type;
+        return $this;
     }
 
     /**
@@ -165,7 +306,6 @@ class Translation extends AbstractEntity
     public function setPlaceholder(string $placeholder): Translation
     {
         $this->placeholder = $placeholder;
-
         return $this;
     }
 
@@ -177,111 +317,20 @@ class Translation extends AbstractEntity
     public function getValue(): string
     {
         if ($this->isAutoCreated()) {
-            return $this->placeholder;
+            return $this->getPlaceholder();
         }
 
         return $this->value;
     }
 
     /**
-     * Sets the value.
-     *
      * @param string $value
-     *
-     * @return void
-     */
-    public function setValue(string $value): void
-    {
-        $this->value = $value;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isHidden(): bool
-    {
-        return $this->hidden;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isDeleted(): bool
-    {
-        return $this->deleted;
-    }
-
-    /**
-     * Return the language uid.
-     *
-     * @return int
-     */
-    public function getLanguageUid(): int
-    {
-        return $this->_languageUid;
-    }
-
-    /**
-     * Set the language UID.
-     *
-     * @param int $languageUid
-     *
-     * @return void
-     */
-    public function setLanguageUid(int $languageUid): void
-    {
-        $this->_languageUid = $languageUid;
-    }
-
-    /**
-     * @param int $localizedUid
-     */
-    public function setLocalizedUid(int $localizedUid): void
-    {
-        $this->_localizedUid = $localizedUid;
-    }
-
-    /**
-     * @return int
-     */
-    public function getLocalizedUid(): int
-    {
-        return $this->_localizedUid;
-    }
-
-    /**
-     * @return int
-     */
-    public function getL10nParent(): int
-    {
-        return $this->l10nParent;
-    }
-
-    /**
-     * @param int $l10nParent
-     */
-    public function setL10nParent(int $l10nParent): void
-    {
-        $this->l10nParent = $l10nParent;
-    }
-
-    /**
-     * @return int
-     */
-    public function getSysLanguageUid(): int
-    {
-        return $this->sysLanguageUid;
-    }
-
-    /**
-     * @param int $sysLanguageUid
      *
      * @return Translation
      */
-    public function setSysLanguageUid(int $sysLanguageUid): Translation
+    public function setValue(string $value): Translation
     {
-        $this->sysLanguageUid = $sysLanguageUid;
-
+        $this->value = $value;
         return $this;
     }
 
@@ -292,6 +341,14 @@ class Translation extends AbstractEntity
      */
     public function isAutoCreated(): bool
     {
-        return $this->value === TranslationRepository::AUTO_CREATE_IDENTIFIER;
+        return $this->value === self::AUTO_CREATE_IDENTIFIER;
     }
+
+    /**
+     * @return int
+     */
+    public function getLocalizedUid(): int
+    {
+        return $this->_localizedUid;
+     }
 }

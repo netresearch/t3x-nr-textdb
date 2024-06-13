@@ -238,7 +238,7 @@ class TranslationController extends ActionController
         $defaultValue       = $value;
 
         $translations = $this->translationRepository
-            ->getAllRecordsByIdentifier(
+            ->findAllByComponentTypePlaceholderValueAndLanguage(
                 $componentId,
                 $typeId,
                 $placeholder,
@@ -269,6 +269,91 @@ class TranslationController extends ActionController
         ]);
 
         return $this->moduleResponse();
+    }
+
+    /**
+     * @param int $uid
+     *
+     * @return ResponseInterface
+     */
+    public function translatedAction(int $uid): ResponseInterface
+    {
+        $translated = array_merge(
+            [
+                $this->translationRepository->findByUid($uid),
+            ],
+            $this->translationRepository->findByPidAndLanguage($uid)
+        );
+
+        $languages    = $this->translationService->getAllLanguages();
+        $untranslated = $languages;
+
+        /** @var Translation $translation */
+        foreach ($translated as $translation) {
+            unset($untranslated[$translation->getSysLanguageUid()]);
+        }
+
+        $this->view->assign('originalUid', $uid);
+        $this->view->assign('translated', $translated);
+        $this->view->assign('untranslated', $untranslated);
+        $this->view->assign('languages', $languages);
+
+        return $this->moduleResponse();
+    }
+
+    /**
+     * @param int                $parent
+     * @param array<int, string> $new
+     * @param array<int, string> $update
+     *
+     * @return ResponseInterface
+     *
+     * @throws IllegalObjectTypeException
+     * @throws UnknownObjectException
+     * @throws Exception
+     */
+    public function translateRecordAction(int $parent, array $new = [], array $update = []): ResponseInterface
+    {
+        $this->translationRepository
+            ->injectPersistenceManager($this->persistenceManager);
+
+        /** @var Translation|null $parentTranslation */
+        $parentTranslation = $this->translationRepository->findByUid($parent);
+
+        if ($parentTranslation instanceof Translation) {
+            foreach ($new as $language => $value) {
+                $translation = $this->translationService
+                    ->createTranslationFromParent(
+                        $parentTranslation,
+                        $language,
+                        $value
+                    );
+
+                if ($translation instanceof Translation) {
+                    $this->translationRepository->add($translation);
+                }
+            }
+        }
+
+        foreach ($update as $translationUid => $value) {
+            /** @var Translation $translation */
+            $translation = $this->translationRepository->findByUid($translationUid);
+
+            if ($translation instanceof Translation) {
+                $translation->setValue($value);
+
+                $this->translationRepository->update($translation);
+            }
+        }
+
+        $this->persistenceManager->persistAll();
+
+        return (new ForwardResponse('translated'))
+            ->withControllerName('Translation')
+            ->withExtensionName('NrTextdb')
+            ->withArguments([
+                'uid' => $parent,
+            ]);
     }
 
     /**
@@ -327,7 +412,7 @@ class TranslationController extends ActionController
 
             if ($language->getLanguageId() === 0) {
                 $translations = $this->translationRepository
-                    ->getAllRecordsByIdentifier(
+                    ->findAllByComponentTypePlaceholderValueAndLanguage(
                         (int) $component,
                         (int) $type,
                         $placeholder,
@@ -335,6 +420,7 @@ class TranslationController extends ActionController
                     );
 
                 $originals = $this->writeTranslationExportFile(
+                    $language,
                     $translations,
                     $exportDir,
                     $targetFileName,
@@ -342,12 +428,13 @@ class TranslationController extends ActionController
                 );
             } else {
                 $translations = $this->translationRepository
-                    ->getTranslatedRecordsForLanguage(
+                    ->findByTranslationsAndLanguage(
                         $originals,
                         $language->getLanguageId()
                     );
 
                 $this->writeTranslationExportFile(
+                    $language,
                     $translations,
                     $exportDir,
                     $targetFileName,
@@ -436,89 +523,6 @@ class TranslationController extends ActionController
     }
 
     /**
-     * @param int $uid
-     *
-     * @return ResponseInterface
-     */
-    public function translatedAction(int $uid): ResponseInterface
-    {
-        $translated = array_merge(
-            [
-                $this->translationRepository->findRecordByUid($uid),
-            ],
-            $this->translationRepository->getTranslatedRecords($uid)
-        );
-
-        $languages    = $this->translationService->getAllLanguages();
-        $untranslated = $languages;
-
-        /** @var Translation $translation */
-        foreach ($translated as $translation) {
-            unset($untranslated[$translation->getLanguageUid()]);
-        }
-
-        $this->view->assign('originalUid', $uid);
-        $this->view->assign('translated', $translated);
-        $this->view->assign('untranslated', $untranslated);
-        $this->view->assign('languages', $languages);
-
-        return $this->moduleResponse();
-    }
-
-    /**
-     * @param int                $parent
-     * @param array<int, string> $new
-     * @param array<int, string> $update
-     *
-     * @return ResponseInterface
-     *
-     * @throws IllegalObjectTypeException
-     * @throws UnknownObjectException
-     * @throws Exception
-     */
-    public function translateRecordAction(int $parent, array $new = [], array $update = []): ResponseInterface
-    {
-        $this->translationRepository->injectPersistenceManager($this->persistenceManager);
-
-        /** @var Translation $originalTranslation */
-        $originalTranslation = $this->translationRepository->findByUid($parent);
-
-        if (
-            ($originalTranslation->getComponent() !== null)
-            && ($originalTranslation->getEnvironment() !== null)
-            && ($originalTranslation->getType() !== null)
-        ) {
-            foreach ($new as $language => $value) {
-                $this->translationRepository
-                    ->createTranslation(
-                        $originalTranslation->getComponent()->getName(),
-                        $originalTranslation->getEnvironment()->getName(),
-                        $originalTranslation->getType()->getName(),
-                        $originalTranslation->getPlaceholder(),
-                        $language,
-                        $value
-                    );
-            }
-        }
-
-        foreach ($update as $translationUid => $value) {
-            $translation = $this->translationRepository->findRecordByUid($translationUid);
-
-            if ($translation instanceof Translation) {
-                $translation->setValue($value);
-                $this->translationRepository->update($translation);
-            }
-        }
-
-        $this->persistenceManager->persistAll();
-
-        return (new ForwardResponse('translated'))
-            ->withControllerName('Translation')
-            ->withExtensionName('NrTextdb')
-            ->withArguments(['uid' => $parent]);
-    }
-
-    /**
      * Import translations from file.
      *
      * @param bool $update Check if entries should be updated
@@ -562,11 +566,10 @@ class TranslationController extends ActionController
         $languageCode = trim($matches[1], '.');
         $languageCode = $languageCode === '' ? 'en' : $languageCode;
 
-        $imported  = 0;
-        $updated   = 0;
-        $languages = [];
-        $errors    = [];
-
+        $imported    = 0;
+        $updated     = 0;
+        $languages   = [];
+        $errors      = [];
         $forceUpdate = $update;
 
         foreach ($this->translationService->getAllLanguages() as $language) {
@@ -699,7 +702,7 @@ class TranslationController extends ActionController
      * @throws ExtensionConfigurationExtensionNotConfiguredException
      * @throws ExtensionConfigurationPathDoesNotExistException
      */
-    protected function getExtensionConfiguration(): mixed
+    private function getExtensionConfiguration(): mixed
     {
         return $this->extensionConfiguration->get('nr_textdb');
     }
@@ -709,7 +712,7 @@ class TranslationController extends ActionController
      *
      * @return array<array-key, int|string>
      */
-    protected function getConfigFromBeUserData(): array
+    private function getConfigFromBeUserData(): array
     {
         $serializedConfig = $this->getBackendUser()->getModuleData(static::class);
         if (is_string($serializedConfig)
@@ -730,7 +733,7 @@ class TranslationController extends ActionController
      *
      * @param array<array-key, int|string> $config
      */
-    protected function persistConfigInBeUserData(array $config): void
+    private function persistConfigInBeUserData(array $config): void
     {
         $this->getBackendUser()->pushModuleData(static::class, serialize($config));
     }
@@ -738,6 +741,7 @@ class TranslationController extends ActionController
     /**
      * Write the translation file for export and returns the uid of entries written to file.
      *
+     * @param SiteLanguage         $language
      * @param QueryResultInterface $translations
      * @param string               $exportDir
      * @param string               $filename
@@ -745,7 +749,8 @@ class TranslationController extends ActionController
      *
      * @return int[]
      */
-    protected function writeTranslationExportFile(
+    private function writeTranslationExportFile(
+        SiteLanguage $language,
         QueryResultInterface $translations,
         string $exportDir,
         string $filename,
@@ -765,7 +770,7 @@ class TranslationController extends ActionController
         $entries               = '';
         $writtenTranslationIds = [];
 
-        $maker = $enableTargetMarker ? 'target' : 'source';
+        $marker = $enableTargetMarker ? 'target' : 'source';
 
         /** @var Translation $translation */
         foreach ($translations as $translation) {
@@ -789,13 +794,17 @@ class TranslationController extends ActionController
                 $translation->getComponent()->getName(),
                 $translation->getType()->getName(),
                 $translation->getPlaceholder(),
-                $maker,
+                $marker,
                 $translation->getValue(),
-                $maker
+                $marker
             );
         }
 
-        $fileContent = sprintf($markup, $entries);
+        $fileContent = sprintf(
+            $markup,
+            $language->getLocale()->getLanguageCode(),
+            $entries
+        );
 
         file_put_contents($exportDir . '/' . $filename, $fileContent);
 
@@ -809,7 +818,7 @@ class TranslationController extends ActionController
      *
      * @return void
      */
-    protected function registerDocHeaderButtons(ModuleTemplate $moduleTemplate): void
+    private function registerDocHeaderButtons(ModuleTemplate $moduleTemplate): void
     {
         // Instantiate required classes
         $buttonBar = $moduleTemplate->getDocHeaderComponent()->getButtonBar();
@@ -878,7 +887,7 @@ class TranslationController extends ActionController
     /**
      * @return BackendUserAuthentication
      */
-    protected function getBackendUser(): BackendUserAuthentication
+    private function getBackendUser(): BackendUserAuthentication
     {
         return $GLOBALS['BE_USER'];
     }
@@ -895,7 +904,7 @@ class TranslationController extends ActionController
      *
      * @return array<string, mixed>
      */
-    protected function getPagination(QueryResultInterface $items, array $settings): array
+    private function getPagination(QueryResultInterface $items, array $settings): array
     {
         $currentPage = $this->request->hasArgument('currentPage')
             ? (int) $this->request->getArgument('currentPage') : 1;
@@ -928,7 +937,7 @@ class TranslationController extends ActionController
      *
      * @return void
      */
-    protected function addFlashMessageToQueue(
+    private function addFlashMessageToQueue(
         string $messageTitle,
         string $messageText,
         ContextualFeedbackSeverity $severity = ContextualFeedbackSeverity::ERROR
@@ -955,7 +964,7 @@ class TranslationController extends ActionController
      *
      * @return LanguageService
      */
-    protected function getLanguageService(): LanguageService
+    private function getLanguageService(): LanguageService
     {
         return $GLOBALS['LANG'];
     }

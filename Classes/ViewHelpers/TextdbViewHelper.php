@@ -11,7 +11,6 @@ declare(strict_types=1);
 
 namespace Netresearch\NrTextdb\ViewHelpers;
 
-use JsonException;
 use Netresearch\NrTextdb\Service\TranslationService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
@@ -81,7 +80,6 @@ class TextdbViewHelper extends AbstractViewHelper
      * @return string The translated key or tag body if key doesn't exist
      *
      * @throws IllegalObjectTypeException
-     * @throws JsonException
      */
     public function render(): string
     {

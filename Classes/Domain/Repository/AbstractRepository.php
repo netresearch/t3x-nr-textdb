@@ -84,7 +84,7 @@ class AbstractRepository extends Repository
      *
      * @return bool
      */
-    protected function getCreateIfMissing(): bool
+    public function getCreateIfMissing(): bool
     {
         if ($this->createIfMissing) {
             return $this->createIfMissing;
