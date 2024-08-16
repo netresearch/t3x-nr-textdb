@@ -1,3 +1,13 @@
+# 2.0.1
+
+## MISC
+
+- e7fa644 Update rector configuration
+
+## Contributors
+
+- Rico Sonntag
+
 # 2.0.0
 
 ## MISC
