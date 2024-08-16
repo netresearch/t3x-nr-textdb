@@ -15,7 +15,7 @@ use TYPO3\CMS\Extbase\Annotation\Validate;
 use TYPO3\CMS\Extbase\DomainObject\AbstractValueObject;
 
 /**
- * Environment
+ * Environment.
  *
  * @author  Thomas Schöne <thomas.schoene@netresearch.de>
  * @author  Rico Sonntag <rico.sonntag@netresearch.de>
@@ -25,16 +25,15 @@ use TYPO3\CMS\Extbase\DomainObject\AbstractValueObject;
 class Environment extends AbstractValueObject
 {
     /**
-     * name
+     * name.
      *
      * @var string
-     *
-     * @Validate("NotEmpty")
      */
+    #[Validate(['validator' => 'NotEmpty'])]
     protected string $name = '';
 
     /**
-     * Returns the name
+     * Returns the name.
      *
      * @return string
      */
@@ -44,7 +43,7 @@ class Environment extends AbstractValueObject
     }
 
     /**
-     * Sets the name
+     * Sets the name.
      *
      * @param string $name
      *

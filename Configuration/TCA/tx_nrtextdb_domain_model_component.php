@@ -10,28 +10,30 @@
 declare(strict_types=1);
 
 return [
-    'ctrl'    => [
+    'ctrl' => [
         'title'         => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang_db.xlf:tx_nrtextdb_domain_model_component',
         'label'         => 'name',
         'tstamp'        => 'tstamp',
         'crdate'        => 'crdate',
-        'cruser_id'     => 'cruser_id',
         'delete'        => 'deleted',
         'enablecolumns' => [
             'disabled'  => 'hidden',
             'starttime' => 'starttime',
             'endtime'   => 'endtime',
         ],
-        'searchFields'  => 'name',
-        'iconfile'      => 'EXT:nr_textdb/Resources/Public/Icons/tx_nrtextdb_domain_model_component.gif',
+        'searchFields' => 'name',
+        'iconfile'     => 'EXT:nr_textdb/Resources/Public/Icons/tx_nrtextdb_domain_model_component.gif',
+        'security'     => [
+            'ignorePageTypeRestriction' => true,
+        ],
     ],
-    'types'   => [
+    'types' => [
         '1' => [
             'showitem' => 'hidden, name, --div--;LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:tabs.access, starttime, endtime',
         ],
     ],
     'columns' => [
-        'hidden'    => [
+        'hidden' => [
             'exclude' => true,
             'label'   => 'LLL:EXT:core/Resources/Private/Language/locallang_general.xlf:LGL.visible',
             'config'  => [
@@ -39,8 +41,7 @@ return [
                 'renderType' => 'checkboxToggle',
                 'items'      => [
                     [
-                        0                    => '',
-                        1                    => '',
+                        'label'              => '',
                         'invertStateDisplay' => true,
                     ],
                 ],
@@ -50,24 +51,20 @@ return [
             'exclude' => true,
             'label'   => 'LLL:EXT:core/Resources/Private/Language/locallang_general.xlf:LGL.starttime',
             'config'  => [
-                'type'       => 'input',
-                'renderType' => 'inputDateTime',
-                'eval'       => 'datetime,int',
-                'default'    => 0,
-                'behaviour'  => [
+                'type'      => 'datetime',
+                'default'   => 0,
+                'behaviour' => [
                     'allowLanguageSynchronization' => true,
                 ],
             ],
         ],
-        'endtime'   => [
+        'endtime' => [
             'exclude' => true,
             'label'   => 'LLL:EXT:core/Resources/Private/Language/locallang_general.xlf:LGL.endtime',
             'config'  => [
-                'type'       => 'input',
-                'renderType' => 'inputDateTime',
-                'eval'       => 'datetime,int',
-                'default'    => 0,
-                'range'      => [
+                'type'    => 'datetime',
+                'default' => 0,
+                'range'   => [
                     'upper' => mktime(
                         0,
                         0,
@@ -77,7 +74,7 @@ return [
                         2038
                     ),
                 ],
-                'behaviour'  => [
+                'behaviour' => [
                     'allowLanguageSynchronization' => true,
                 ],
             ],

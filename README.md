@@ -7,6 +7,12 @@ Require the package.
 composer require netresearch/nr-textdb
 ```
 
+
+- Datenorder anlegen
+-- Übersetzung für Datenordner anlegen (aktiviert Sprachumschalter im TCA)
+- Beschreibung der TCA-Komponenten hinzufügen
+
+
 ## Configuration
 You can set the PID for your translations in the extension configuration.
 You can also switch off the "create if missing feature" if you want.

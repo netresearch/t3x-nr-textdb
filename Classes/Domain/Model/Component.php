@@ -13,9 +13,10 @@ namespace Netresearch\NrTextdb\Domain\Model;
 
 use TYPO3\CMS\Extbase\Annotation\Validate;
 use TYPO3\CMS\Extbase\DomainObject\AbstractValueObject;
+use TYPO3\CMS\Extbase\Validation\Validator\NotEmptyValidator;
 
 /**
- * Component
+ * Component.
  *
  * @author  Thomas Schöne <thomas.schoene@netresearch.de>
  * @author  Rico Sonntag <rico.sonntag@netresearch.de>
@@ -25,16 +26,15 @@ use TYPO3\CMS\Extbase\DomainObject\AbstractValueObject;
 class Component extends AbstractValueObject
 {
     /**
-     * name
+     * name.
      *
      * @var string
-     *
-     * @Validate("TYPO3\CMS\Extbase\Validation\Validator\NotEmptyValidator")
      */
+    #[Validate(['validator' => NotEmptyValidator::class])]
     protected string $name = '';
 
     /**
-     * Returns the name
+     * Returns the name.
      *
      * @return string
      */
@@ -44,7 +44,7 @@ class Component extends AbstractValueObject
     }
 
     /**
-     * Sets the name
+     * Sets the name.
      *
      * @param string $name
      *

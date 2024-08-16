@@ -11,7 +11,6 @@ declare(strict_types=1);
 
 namespace Netresearch\NrTextdb\ViewHelpers;
 
-use JsonException;
 use Netresearch\NrTextdb\Service\TranslationService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
@@ -29,14 +28,14 @@ use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 class TextdbViewHelper extends AbstractViewHelper
 {
     /**
-     * Translation service instance
+     * Translation service instance.
      *
-     * @var null|TranslationService
+     * @var TranslationService|null
      */
     protected ?TranslationService $translationService = null;
 
     /**
-     * Initializes arguments (attributes)
+     * Initializes arguments (attributes).
      *
      * @return void
      */
@@ -76,12 +75,11 @@ class TextdbViewHelper extends AbstractViewHelper
     }
 
     /**
-     * Render translated string
+     * Render translated string.
      *
      * @return string The translated key or tag body if key doesn't exist
      *
      * @throws IllegalObjectTypeException
-     * @throws JsonException
      */
     public function render(): string
     {
@@ -101,7 +99,7 @@ class TextdbViewHelper extends AbstractViewHelper
      */
     public function getTranslationService(): TranslationService
     {
-        if (!isset($this->translationService)) {
+        if (!$this->translationService instanceof TranslationService) {
             $this->translationService = GeneralUtility::makeInstance(TranslationService::class);
         }
 

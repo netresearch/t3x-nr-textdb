@@ -12,13 +12,14 @@ declare(strict_types=1);
 namespace Netresearch\NrTextdb\ViewHelpers;
 
 use Exception;
-use JsonException;
+use Netresearch\NrTextdb\Domain\Model\Translation;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
+use Netresearch\NrTextdb\Service\TranslationService;
 use RuntimeException;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\Exception\AspectNotFoundException;
+use TYPO3\CMS\Core\Context\LanguageAspect;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
@@ -26,7 +27,7 @@ use function count;
 
 /**
  * Fluid <a:translate/> implementation
- * Provides a way import LLL Keys from f:translate to textdb
+ * Provides a way import LLL Keys from f:translate to textdb.
  *
  * @author  Tobias Hein <tobias.hein@netresearch.de>
  * @author  Rico Sonntag <rico.sonntag@netresearch.de>
@@ -43,21 +44,21 @@ class TranslateViewHelper extends AbstractViewHelper
     final public const LANGUAGE_UID_EN = 1;
 
     /**
-     * Translation service instance
+     * Translation service instance.
      *
-     * @var null|TranslationRepository
+     * @var TranslationRepository|null
      */
     protected ?TranslationRepository $translationRepository = null;
 
     /**
-     * Component which can be used for a migration step
+     * Component which can be used for a migration step.
      *
      * @var string
      */
     public static string $component = '';
 
     /**
-     * Initializes arguments (attributes)
+     * Initializes arguments (attributes).
      *
      * @return void
      */
@@ -88,35 +89,24 @@ class TranslateViewHelper extends AbstractViewHelper
     }
 
     /**
-     * Render translated string
+     * Render translated string.
      *
      * @return string The translated key or tag body if key doesn't exist
-     *
-     * @throws IllegalObjectTypeException
-     * @throws JsonException
      */
     public function render(): string
     {
         if (static::$component === '') {
             throw new RuntimeException(
-                'Please set a component in your controler via TranslateViewHelper::component="my-component".'
+                'Please set a component in your controller via TranslateViewHelper::$component = "my-component".'
             );
         }
 
         $placeholder = $this->arguments['key'];
-        $extension   = $this->arguments['extensionName'] ?: null;
+        $extension   = $this->arguments['extensionName'] ?? null;
         $environment = $this->arguments['environment'];
 
-        $translationRequested = LocalizationUtility::translate(
-            $placeholder,
-            $extension
-        );
-
-        $translationOriginal = LocalizationUtility::translate(
-            $placeholder,
-            $extension,
-            []
-        );
+        $translationRequested = LocalizationUtility::translate($placeholder, $extension);
+        $translationOriginal  = LocalizationUtility::translate($placeholder, $extension, []);
 
         $placeholderParts = explode(':', (string) $placeholder);
         if (count($placeholderParts) > 1) {
@@ -124,11 +114,13 @@ class TranslateViewHelper extends AbstractViewHelper
         }
 
         if ($this->hasTextDbEntry($placeholder)) {
-             return (string) $translationRequested;
+            return (string) $translationRequested;
         }
 
+        // TODO Need further rework to use the new methods
+
         try {
-            $this->getTranslationRepository()
+            $this->getTranslationService()
                 ->createTranslation(
                     static::$component,
                     $environment,
@@ -138,7 +130,7 @@ class TranslateViewHelper extends AbstractViewHelper
                     (string) $translationRequested
                 );
 
-            $this->getTranslationRepository()
+            $this->getTranslationService()
                 ->createTranslation(
                     static::$component,
                     $environment,
@@ -154,13 +146,23 @@ class TranslateViewHelper extends AbstractViewHelper
     }
 
     /**
+     * Returns the translation service.
+     *
+     * @return TranslationService
+     */
+    public function getTranslationService(): TranslationService
+    {
+        return GeneralUtility::makeInstance(TranslationRepository::class);
+    }
+
+    /**
      * Getter for translationRepository.
      *
      * @return TranslationRepository
      */
     public function getTranslationRepository(): TranslationRepository
     {
-        if (!isset($this->translationRepository)) {
+        if (!$this->translationRepository instanceof TranslationRepository) {
             $this->translationRepository = GeneralUtility::makeInstance(TranslationRepository::class);
         }
 
@@ -175,8 +177,11 @@ class TranslateViewHelper extends AbstractViewHelper
     private function getLanguageUid(): int
     {
         try {
-            $languageAspect = GeneralUtility::makeInstance(Context::class)
-                ->getAspect('language');
+            /** @var Context $context */
+            $context = GeneralUtility::makeInstance(Context::class);
+
+            /** @var LanguageAspect $languageAspect */
+            $languageAspect = $context->getAspect('language');
         } catch (AspectNotFoundException) {
             return 0;
         }
@@ -185,26 +190,23 @@ class TranslateViewHelper extends AbstractViewHelper
     }
 
     /**
-     * Returns true, if a textdb translation exisits
+     * Returns true, if a textdb translation exisits.
      *
      * @param string $placeholder
      *
      * @return bool
-     *
-     * @throws IllegalObjectTypeException
-     * @throws JsonException
      */
     private function hasTextDbEntry(string $placeholder): bool
     {
-        $textdbTranslation = $this->getTranslationRepository()->findEntry(
-            static::$component,
-            $this->arguments['environment'],
-            'label',
-            $placeholder,
-            $this->getLanguageUid(),
-            false
-        );
+        $textdbTranslation = $this->getTranslationRepository()
+            ->findByEnvironmentComponentTypePlaceholderAndLanguage(
+                static::$component,
+                $this->arguments['environment'],
+                'label',
+                $placeholder,
+                $this->getLanguageUid()
+            );
 
-        return $textdbTranslation !== null;
+        return $textdbTranslation instanceof Translation;
     }
 }

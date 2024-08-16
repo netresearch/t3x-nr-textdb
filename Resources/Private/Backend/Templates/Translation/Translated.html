@@ -21,19 +21,19 @@
                     class="translation-form"
                     additionalAttributes="{data-uid: originalUid}"
             >
-                <table class="table ">
+                <table class="table">
                     <f:for each="{translated}" as="translation">
-                        <tr class="untranslated">
+                        <tr class="translated">
                             <td>
                                 <f:for each="{languages}" as="language">
-                                    <f:if condition="{language.languageId} == {translation.languageUid}">
+                                    <f:if condition="{language.languageId} == {translation.sysLanguageUid}">
                                         <core:icon identifier="{language.flagIdentifier}"/>
                                         {language.title}
                                     </f:if>
                                 </f:for>
                             </td>
                             <td>
-                                <f:form.textarea name="update[{translation.uid}]"
+                                <f:form.textarea name="update[{translation.localizedUid}]"
                                                  value="{translation.value}"
                                                  class="form-control"
                                                  placeholder="{f:translate(key: 'translation', default: 'Translation')}"/>

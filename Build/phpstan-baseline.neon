@@ -1,0 +1,36 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Method Netresearch\\\\NrTextdb\\\\ViewHelpers\\\\TranslateViewHelper\\:\\:getTranslationService\\(\\) should return Netresearch\\\\NrTextdb\\\\Service\\\\TranslationService but returns Netresearch\\\\NrTextdb\\\\Domain\\\\Repository\\\\TranslationRepository\\.$#"
+			count: 1
+			path: ../Classes/ViewHelpers/TranslateViewHelper.php
+
+		-
+			message: "#^Parameter \\#1 \\$environment of method Netresearch\\\\NrTextdb\\\\Domain\\\\Repository\\\\TranslationRepository\\<Netresearch\\\\NrTextdb\\\\Domain\\\\Model\\\\Translation\\>\\:\\:findByEnvironmentComponentTypePlaceholderAndLanguage\\(\\) expects Netresearch\\\\NrTextdb\\\\Domain\\\\Model\\\\Environment, string given\\.$#"
+			count: 1
+			path: ../Classes/ViewHelpers/TranslateViewHelper.php
+
+		-
+			message: "#^Parameter \\#1 \\$environment of method Netresearch\\\\NrTextdb\\\\Service\\\\TranslationService\\:\\:createTranslation\\(\\) expects Netresearch\\\\NrTextdb\\\\Domain\\\\Model\\\\Environment, string given\\.$#"
+			count: 2
+			path: ../Classes/ViewHelpers/TranslateViewHelper.php
+
+		-
+			message: "#^Parameter \\#3 \\$type of method Netresearch\\\\NrTextdb\\\\Domain\\\\Repository\\\\TranslationRepository\\<Netresearch\\\\NrTextdb\\\\Domain\\\\Model\\\\Translation\\>\\:\\:findByEnvironmentComponentTypePlaceholderAndLanguage\\(\\) expects Netresearch\\\\NrTextdb\\\\Domain\\\\Model\\\\Type, string given\\.$#"
+			count: 1
+			path: ../Classes/ViewHelpers/TranslateViewHelper.php
+
+		-
+			message: "#^Parameter \\#3 \\$type of method Netresearch\\\\NrTextdb\\\\Service\\\\TranslationService\\:\\:createTranslation\\(\\) expects Netresearch\\\\NrTextdb\\\\Domain\\\\Model\\\\Type, string given\\.$#"
+			count: 2
+			path: ../Classes/ViewHelpers/TranslateViewHelper.php
+
+		-
+			message: "#^Class Netresearch\\\\Sync\\\\Controller\\\\BaseSyncModuleController not found\\.$#"
+			count: 1
+			path: ../Configuration/Backend/Modules.php
+
+		-
+			message: "#^Unreachable statement \\- code above always terminates\\.$#"
+			count: 1
+			path: ../Tests/Unit/Controller/TranslationControllerTest.php

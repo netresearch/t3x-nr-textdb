@@ -1,7 +1,22 @@
-/vendor/
-/public/
-/composer.lock
-.buildpath
+# PHPStorm
 .idea
-.project
-.settings
+
+# OSX
+.DS_Store
+
+# Composer
+vendor/
+bin/
+logs/
+composer.lock
+
+# Build stuff
+.build/
+
+# PHPUnit
+phpunit-report.xml
+coverage/
+
+# Cache
+.php-cs-fixer.cache
+.phplint.cache

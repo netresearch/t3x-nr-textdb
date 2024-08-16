@@ -11,20 +11,25 @@ declare(strict_types=1);
 
 namespace Netresearch\NrTextdb\Service;
 
-use JsonException;
+use Netresearch\NrTextdb\Domain\Model\Component;
+use Netresearch\NrTextdb\Domain\Model\Environment;
+use Netresearch\NrTextdb\Domain\Model\Translation;
+use Netresearch\NrTextdb\Domain\Model\Type;
 use Netresearch\NrTextdb\Domain\Repository\ComponentRepository;
 use Netresearch\NrTextdb\Domain\Repository\EnvironmentRepository;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
 use Netresearch\NrTextdb\Domain\Repository\TypeRepository;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\Exception\AspectNotFoundException;
+use TYPO3\CMS\Core\Context\LanguageAspect;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
+use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
 
 /**
- * The translation service
+ * The translation service.
  *
  * @author  Thomas Schöne <thomas.schoene@netresearch.de>
  * @author  Rico Sonntag <rico.sonntag@netresearch.de>
@@ -82,49 +87,102 @@ class TranslationService
     }
 
     /**
-     * Translate method
+     * Translate method.
      *
-     * @param string $placeholder The translation key
-     * @param string $type        List of parameters for translation string
-     * @param string $component   Flag if to escape html
-     * @param string $environment The type of translation is done
+     * @param string $placeholder
+     * @param string $typeName
+     * @param string $componentName
+     * @param string $environmentName
      *
      * @return string
      *
      * @throws IllegalObjectTypeException
-     * @throws JsonException
      */
     public function translate(
         string $placeholder,
-        string $type,
-        string $component,
-        string $environment
+        string $typeName,
+        string $componentName,
+        string $environmentName
     ): string {
         if ($placeholder === '') {
             return $placeholder;
         }
 
-        $environmentFound = $this->environmentRepository->findByName($environment);
-        $componentFound   = $this->componentRepository->findByName($component);
-        $typeFound        = $this->typeRepository->findByName($type);
+        $environment = $this->environmentRepository->findByName($environmentName);
+        $component   = $this->componentRepository->findByName($componentName);
+        $type        = $this->typeRepository->findByName($typeName);
+        $languageUid = $this->getCurrentLanguage();
 
         if (
-            ($environmentFound === null)
-            || ($componentFound === null)
-            || ($typeFound === null)
+            !($environment instanceof Environment)
+            || !($component instanceof Component)
+            || !($type instanceof Type)
         ) {
             return $placeholder;
         }
 
-        $translation = $this->translationRepository->find(
-            $environmentFound,
-            $componentFound,
-            $typeFound,
-            $placeholder,
-            $this->getCurrentLanguage()
-        );
+        $translation = $this->translationRepository
+            ->findByEnvironmentComponentTypePlaceholderAndLanguage(
+                $environment,
+                $component,
+                $type,
+                $placeholder,
+                $languageUid
+            );
 
-        if ($translation === null) {
+        // Create a new translation
+        if (
+            !($translation instanceof Translation)
+            && $this->translationRepository->getCreateIfMissing()
+        ) {
+            $translation = $this->createTranslation(
+                $environment,
+                $component,
+                $type,
+                $placeholder,
+                $languageUid,
+                Translation::AUTO_CREATE_IDENTIFIER
+            );
+
+            if ($languageUid !== 0) {
+                // Look up parent translation (sys_language_uid = 0)
+                $parentTranslation = $this->translationRepository
+                    ->findByEnvironmentComponentTypeAndPlaceholder(
+                        $environment,
+                        $component,
+                        $type,
+                        $placeholder
+                    );
+
+                // No parent so far, create one to maintain translation order
+                if (!($parentTranslation instanceof Translation)) {
+                    $parentTranslation = $this->createTranslation(
+                        $environment,
+                        $component,
+                        $type,
+                        $placeholder,
+                        0,
+                        Translation::AUTO_CREATE_IDENTIFIER
+                    );
+
+                    $this->translationRepository->add($parentTranslation);
+
+                    // Persist the new parent to ensure we got a valid UID for the new record
+                    GeneralUtility::makeInstance(PersistenceManagerInterface::class)
+                        ->persistAll();
+
+                    $translation->setL10nParent($parentTranslation->getUid());
+                }
+            }
+
+            $this->translationRepository->add($translation);
+
+            // Persist the new translation record
+            GeneralUtility::makeInstance(PersistenceManagerInterface::class)
+                ->persistAll();
+        }
+
+        if (!($translation instanceof Translation)) {
             return $placeholder;
         }
 
@@ -148,15 +206,102 @@ class TranslationService
      *
      * @return int
      */
-    protected function getCurrentLanguage(): int
+    private function getCurrentLanguage(): int
     {
         try {
-            $languageAspect = GeneralUtility::makeInstance(Context::class)
-                ->getAspect('language');
+            /** @var Context $context */
+            $context = GeneralUtility::makeInstance(Context::class);
+
+            /** @var LanguageAspect $languageAspect */
+            $languageAspect = $context->getAspect('language');
         } catch (AspectNotFoundException) {
             return 0;
         }
 
         return $languageAspect->getId();
+    }
+
+    /**
+     * Creates a new translation.
+     *
+     * @param Translation $parentTranslation The parent translation record
+     * @param int         $sysLanguageUid    The uid of the language
+     * @param string      $value             The value of the translation
+     *
+     * @return Translation|null
+     */
+    public function createTranslationFromParent(
+        Translation $parentTranslation,
+        int $sysLanguageUid,
+        string $value
+    ): ?Translation {
+        if (!($parentTranslation->getEnvironment() instanceof Environment)
+            || !($parentTranslation->getComponent() instanceof Component)
+            || !($parentTranslation->getType() instanceof Type)
+        ) {
+            return null;
+        }
+
+        $translation = GeneralUtility::makeInstance(Translation::class);
+        $translation
+            ->setEnvironment($parentTranslation->getEnvironment())
+            ->setComponent($parentTranslation->getComponent())
+            ->setType($parentTranslation->getType())
+            ->setPlaceholder($parentTranslation->getPlaceholder())
+            ->setValue($value)
+            ->setSysLanguageUid($sysLanguageUid)
+            ->setPid($this->environmentRepository->getConfiguredPageId());
+
+        if ($sysLanguageUid !== 0) {
+            $translation->setL10nParent($parentTranslation->getUid());
+        }
+
+        return $translation;
+    }
+
+    /**
+     * Creates a new translation.
+     *
+     * @param Environment $environment    The environment of the translation
+     * @param Component   $component      The component of the translation
+     * @param Type        $type           The type of the translation
+     * @param string      $placeholder    The placeholder of the translation
+     * @param int         $sysLanguageUid The uid of the language
+     * @param string      $value          The value of the translation
+     *
+     * @return Translation
+     */
+    public function createTranslation(
+        Environment $environment,
+        Component $component,
+        Type $type,
+        string $placeholder,
+        int $sysLanguageUid = 0,
+        string $value = ''
+    ): Translation {
+        $translation = GeneralUtility::makeInstance(Translation::class);
+        $translation
+            ->setEnvironment($environment)
+            ->setComponent($component)
+            ->setType($type)
+            ->setPlaceholder($placeholder)
+            ->setValue($value)
+            ->setSysLanguageUid($sysLanguageUid)
+            ->setPid($this->environmentRepository->getConfiguredPageId());
+
+        if ($sysLanguageUid !== 0) {
+            $parentTranslation = $this->translationRepository->findByEnvironmentComponentTypeAndPlaceholder(
+                $environment,
+                $component,
+                $type,
+                $placeholder
+            );
+
+            if ($parentTranslation instanceof Translation) {
+                $translation->setL10nParent($parentTranslation->getUid());
+            }
+        }
+
+        return $translation;
     }
 }

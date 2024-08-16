@@ -72,11 +72,14 @@
             <trans-unit id="button.label.list">
                 <target>Liste</target>
             </trans-unit>
-            <trans-unit id="info.import">
-                <target>Bitte wählen Sie eine Datei zum Import aus.</target>
+            <trans-unit id="info.import.headline">
+                <target>Datei für den Import auswählen</target>
             </trans-unit>
-            <trans-unit id="override existing">
-                <target>Überschreibe existierende übersetzungen</target>
+            <trans-unit id="info.import.message">
+                <target>Stellen Sie sicher, dass sie immer zuerst die Primärsprache (sys_language_uid = 0) importieren, bevor Sie etwaige Übersetzungen hinzufügen, da nur so sichergestellt ist, dass die Verknüpfungen der Datensätze untereinander korrekt erfolgt.</target>
+            </trans-unit>
+            <trans-unit id="override.existing">
+                <target>Überschreibe existierende Übersetzungen</target>
             </trans-unit>
             <trans-unit id="message.import">
                 <target>Import abgeschlossen für:</target>
@@ -85,7 +88,7 @@
                 <target>Übersetzungen aktualisiert:</target>
             </trans-unit>
             <trans-unit id="message.imported">
-                <target>Übersetungen importiert:</target>
+                <target>Übersetzungen importiert:</target>
             </trans-unit>
             <trans-unit id="message.errors">
                 <target>Folgende Fehler gab es beim Import:</target>

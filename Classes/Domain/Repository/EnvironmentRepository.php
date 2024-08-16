@@ -17,7 +17,7 @@ use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
 use TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings;
 
 /**
- * EnvironmentRepository
+ * EnvironmentRepository.
  *
  * @author  Thomas Schöne <thomas.schoene@netresearch.de>
  * @author  Axel Seemann <axel.seemann@netresearch.de>
@@ -50,13 +50,15 @@ class EnvironmentRepository extends AbstractRepository
     /**
      * @param string $name Name of environment
      *
-     * @return null|Environment
+     * @return Environment|null
      *
      * @throws IllegalObjectTypeException
      */
     public function findByName(string $name): ?Environment
     {
-        if ($environment = $this->getFromCache($name)) {
+        $environment = $this->getFromCache($name);
+
+        if ($environment instanceof Environment) {
             return $environment;
         }
 
@@ -64,10 +66,8 @@ class EnvironmentRepository extends AbstractRepository
 
         $query->matching(
             $query->logicalAnd(
-                [
-                    $query->equals('name', $name),
-                    $query->equals('pid', $this->getConfiguredPageId())
-                ]
+                $query->equals('name', $name),
+                $query->equals('pid', $this->getConfiguredPageId())
             )
         );
 
@@ -84,29 +84,33 @@ class EnvironmentRepository extends AbstractRepository
             return $this->setToCache($name, $environment);
         }
 
-        return $this->setToCache($name, $queryResult->getFirst());
+        /** @var Environment|null $environment */
+        $environment = $queryResult->getFirst();
+
+        return $this->setToCache($name, $environment);
     }
 
     /**
-     * Set environment to local cache
+     * Set environment to local cache.
      *
      * @param string           $key         Cache Key
-     * @param null|Environment $environment Environment which is set to cache
+     * @param Environment|null $environment Environment which is set to cache
      *
-     * @return null|Environment
+     * @return Environment|null
      */
     private function setToCache(string $key, ?Environment $environment): ?Environment
     {
         static::$localCache[$key] = $environment;
+
         return $environment;
     }
 
     /**
-     * Returns the environment from Cache
+     * Returns the environment from Cache.
      *
      * @param string $key Cache key
      *
-     * @return null|Environment
+     * @return Environment|null
      */
     private function getFromCache(string $key): ?Environment
     {

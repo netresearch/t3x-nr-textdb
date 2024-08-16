@@ -11,35 +11,29 @@ declare(strict_types=1);
 
 namespace Netresearch\NrTextdb\Command;
 
-use Exception;
-use Netresearch\NrTextdb\Domain\Model\Translation;
-use Netresearch\NrTextdb\Domain\Repository\ComponentRepository;
-use Netresearch\NrTextdb\Domain\Repository\EnvironmentRepository;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
-use Netresearch\NrTextdb\Domain\Repository\TypeRepository;
+use Netresearch\NrTextdb\Service\ImportService;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use TYPO3\CMS\Core\Authentication\CommandLineUserAuthentication;
-use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Core\Bootstrap;
-use TYPO3\CMS\Core\Localization\Parser\XliffParser;
 use TYPO3\CMS\Core\Package\Exception\UnknownPackageException;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
+use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
+use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
 use TYPO3\CMS\Extensionmanager\Utility\ListUtility;
 
 use function count;
 
 /**
- * Class ImportCommand
+ * Class ImportCommand.
  *
  * @author  Rico Sonntag <rico.sonntag@netresearch.de>
  * @license Netresearch https://www.netresearch.de
@@ -57,24 +51,14 @@ class ImportCommand extends Command implements LoggerAwareInterface
     private const LANG_FOLDER = 'Resources/Private/Language/';
 
     /**
+     * @var PersistenceManagerInterface
+     */
+    private PersistenceManagerInterface $persistenceManager;
+
+    /**
      * @var TranslationRepository
      */
     protected TranslationRepository $translationRepository;
-
-    /**
-     * @var ComponentRepository
-     */
-    protected ComponentRepository $componentRepository;
-
-    /**
-     * @var TypeRepository
-     */
-    protected TypeRepository $typeRepository;
-
-    /**
-     * @var EnvironmentRepository
-     */
-    protected EnvironmentRepository $environmentRepository;
 
     /**
      * @var ListUtility
@@ -82,46 +66,40 @@ class ImportCommand extends Command implements LoggerAwareInterface
     protected ListUtility $listUtility;
 
     /**
-     * @var XliffParser
-     */
-    protected XliffParser $xliffParser;
-
-    /**
      * @var string extension with the language file
      */
     protected string $extension = '';
 
     /**
-     * @var array
+     * @var array<array-key, mixed>
      */
     protected array $extensions = [];
 
     /**
+     * @var ImportService
+     */
+    private ImportService $importService;
+
+    /**
      * Constructor.
      *
-     * @param TranslationRepository $translationRepository
-     * @param ComponentRepository   $componentRepository
-     * @param TypeRepository        $typeRepository
-     * @param EnvironmentRepository $environmentRepository
-     * @param ListUtility           $listUtility
-     * @param XliffParser           $xliffParser
+     * @param PersistenceManagerInterface $persistenceManager
+     * @param TranslationRepository       $translationRepository
+     * @param ListUtility                 $listUtility
+     * @param ImportService               $importService
      */
     public function __construct(
+        PersistenceManagerInterface $persistenceManager,
         TranslationRepository $translationRepository,
-        ComponentRepository $componentRepository,
-        TypeRepository $typeRepository,
-        EnvironmentRepository $environmentRepository,
         ListUtility $listUtility,
-        XliffParser $xliffParser
+        ImportService $importService
     ) {
         parent::__construct();
 
+        $this->persistenceManager    = $persistenceManager;
         $this->translationRepository = $translationRepository;
-        $this->componentRepository   = $componentRepository;
-        $this->typeRepository        = $typeRepository;
-        $this->environmentRepository = $environmentRepository;
         $this->listUtility           = $listUtility;
-        $this->xliffParser           = $xliffParser;
+        $this->importService         = $importService;
     }
 
     /**
@@ -164,6 +142,7 @@ class ImportCommand extends Command implements LoggerAwareInterface
      *
      * @return int
      *
+     * @throws IllegalObjectTypeException
      * @throws UnknownPackageException
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -172,7 +151,7 @@ class ImportCommand extends Command implements LoggerAwareInterface
 
         $extensionKey = $input->getArgument('extensionKey');
 
-        if (empty($extensionKey)) {
+        if (($extensionKey === null) || ($extensionKey === '')) {
             $this->extensions = $this->listUtility->getAvailableAndInstalledExtensions(
                 $this->listUtility->getAvailableExtensions()
             );
@@ -191,163 +170,7 @@ class ImportCommand extends Command implements LoggerAwareInterface
     }
 
     /**
-     * Import the langauge into the database
-     *
-     * @param array           $files
-     * @param OutputInterface $output
-     * @param bool            $forceUpdate
-     */
-    protected function importLanguageFiles(array $files, OutputInterface $output, bool $forceUpdate = false): void
-    {
-        /** @var PersistenceManager $persistenceManager */
-        $persistenceManager = GeneralUtility::makeInstance(PersistenceManager::class);
-
-        $this->translationRepository
-            ->injectPersistenceManager($persistenceManager);
-
-        $imported = 0;
-        $updated  = 0;
-        $errors   = 0;
-
-        foreach ($files as $file) {
-            $languageKey = $this->getLanguageKeyFromFile($file);
-            $languageUid = $this->getLanguageId($languageKey);
-            $fileContent = $this->xliffParser->getParsedData($file, $languageKey);
-
-            $output->writeln("Import translations from file $file for langauge $languageKey ($languageUid)");
-
-            $entries = $fileContent[$languageKey];
-
-            foreach ($entries as $key => $data) {
-                try {
-                    $componentName = $this->getComponentFromKey($key);
-                    if ($componentName === null) {
-                        throw new RuntimeException('Missing component name in key: ' . $key);
-                    }
-
-                    $typeName = $this->getTypeFromKey($key);
-                    if ($typeName === null) {
-                        throw new RuntimeException('Missing type name in key: ' . $key);
-                    }
-
-                    $placeholder = $this->getPlaceholderFromKey($key);
-                    if ($placeholder === null) {
-                        throw new RuntimeException('Missing placeholder in key: ' . $key);
-                    }
-
-                    $value = $data[0]['target'] ?? null;
-                    if ($value === null) {
-                        throw new RuntimeException('Missing value in key: ' . $key);
-                    }
-
-                    $environmentFound = $this->environmentRepository
-                        ->setCreateIfMissing(true)
-                        ->findByName('default');
-
-                    $componentFound = $this->componentRepository
-                        ->setCreateIfMissing(true)
-                        ->findByName($componentName);
-
-                    $typeFound = $this->typeRepository
-                        ->setCreateIfMissing(true)
-                        ->findByName($typeName);
-
-                    $translationRecord = null;
-
-                    if (
-                        ($environmentFound !== null)
-                        && ($componentFound !== null)
-                        && ($typeFound !== null)
-                    ) {
-                        $translationRecord = $this->translationRepository
-                            ->find(
-                                $environmentFound,
-                                $componentFound,
-                                $typeFound,
-                                $placeholder,
-                                $languageUid,
-                                true,
-                                false
-                            );
-                    }
-
-                    if (
-                        ($translationRecord instanceof Translation)
-                        && $translationRecord->isAutoCreated()
-                    ) {
-                        $forceUpdate = true;
-                    }
-
-                    // Skip if translation exists and update is not requested
-                    if (
-                        ($translationRecord instanceof Translation)
-                        && ($forceUpdate === false)
-                    ) {
-                        continue;
-                    }
-
-                    $defaultTranslation = null;
-
-                    if (
-                        ($translationRecord instanceof Translation)
-                        && ($forceUpdate === true)
-                    ) {
-                        $translationRecord->setValue($value);
-                        $this->translationRepository->update($translationRecord);
-                        $persistenceManager->persistAll();
-                        $updated++;
-                    } else {
-                        if ($languageUid !== 0) {
-                            ## If then language id is not 0 first get the default langauge translation.
-                            $defaultTranslation = $this->translationRepository->find(
-                                $environmentFound,
-                                $componentFound,
-                                $typeFound,
-                                $placeholder,
-                                0,
-                                false
-                            );
-                            $persistenceManager->persistAll();
-                        }
-
-                        $translation = GeneralUtility::makeInstance(Translation::class);
-                        $translation->setEnvironment($environmentFound);
-                        $translation->setComponent($componentFound);
-                        $translation->setType($typeFound);
-                        $translation->setPlaceholder($placeholder);
-                        $translation->setValue($value);
-                        $translation->setPid($this->getConfiguredPageId());
-                        $translation->setLanguageUid($languageUid);
-
-                        if ($defaultTranslation instanceof Translation) {
-                            $translation->setL10nParent($defaultTranslation->getUid());
-                        }
-
-                        $this->translationRepository->add($translation);
-                        $persistenceManager->persistAll();
-
-                        $imported++;
-                    }
-                } catch (Exception $exception) {
-                    $output->writeln("<error>{$exception->getMessage()}</error>");
-
-                    $this->logger->error(
-                        $exception->getMessage(),
-                        [
-                            'exception' => $exception,
-                        ]
-                    );
-
-                    ++$errors;
-                }
-            }
-        }
-
-        $output->writeln("Imported: $imported, Updated: $updated, Errors: $errors");
-    }
-
-    /**
-     * Returns the sys_language_uid for a language code
+     * Returns the sys_language_uid for a language code.
      *
      * @param string $languageCode Language Code
      *
@@ -358,52 +181,14 @@ class ImportCommand extends Command implements LoggerAwareInterface
         if ($languageCode === 'default') {
             $languageCode = 'en';
         }
+
         foreach ($this->getAllLanguages() as $localLanguage) {
-            if ($languageCode === $localLanguage->getTwoLetterIsoCode()) {
+            if ($languageCode === $localLanguage->getLocale()->getLanguageCode()) {
                 return $localLanguage->getLanguageId();
             }
         }
 
         return 0;
-    }
-
-    /**
-     * Get the component from key
-     *
-     * @param string $key
-     *
-     * @return null|string
-     */
-    protected function getComponentFromKey(string $key): ?string
-    {
-        $parts = explode('|', $key);
-        return $parts[0] ?? null;
-    }
-
-    /**
-     * Get the type from a key
-     *
-     * @param string $key
-     *
-     * @return null|string
-     */
-    protected function getTypeFromKey(string $key): ?string
-    {
-        $parts = explode('|', $key);
-        return $parts[1] ?? null;
-    }
-
-    /**
-     * Get the placeholder from key
-     *
-     * @param string $key
-     *
-     * @return null|string
-     */
-    protected function getPlaceholderFromKey(string $key): ?string
-    {
-        $parts = explode('|', $key);
-        return $parts[2] ?? null;
     }
 
     /**
@@ -419,33 +204,6 @@ class ImportCommand extends Command implements LoggerAwareInterface
         $sites = $siteFinder->getAllSites();
 
         return reset($sites)->getAllLanguages();
-    }
-
-    /**
-     * Get the extension configuration.
-     *
-     * @param string $path Path to get the config for
-     *
-     * @return mixed
-     */
-    protected function getExtensionConfiguration(string $path): mixed
-    {
-        try {
-            return GeneralUtility::makeInstance(ExtensionConfiguration::class)
-                ->get('nr_textdb', $path);
-        } catch (Exception) {
-            return null;
-        }
-    }
-
-    /**
-     * Get the configured page ID, used to store the translation in, from extension configuration.
-     *
-     * @return int
-     */
-    protected function getConfiguredPageId(): int
-    {
-        return (int) ($this->getExtensionConfiguration('textDbPid') ?? 0);
     }
 
     /**
@@ -471,10 +229,12 @@ class ImportCommand extends Command implements LoggerAwareInterface
      * @param bool            $forceUpdate
      *
      * @return void
+     *
+     * @throws IllegalObjectTypeException
      */
     protected function importTranslationsFromFiles(OutputInterface $output, bool $forceUpdate = false): void
     {
-        foreach ($this->extensions as $extKey => $extensionKey) {
+        foreach (array_keys($this->extensions) as $extKey) {
             $folderPath = ExtensionManagementUtility::extPath($extKey) . self::LANG_FOLDER;
 
             if (
@@ -492,7 +252,7 @@ class ImportCommand extends Command implements LoggerAwareInterface
 
             $files = array_merge(...$files);
 
-            if (empty($files)) {
+            if ($files === []) {
                 continue;
             }
 
@@ -500,5 +260,73 @@ class ImportCommand extends Command implements LoggerAwareInterface
 
             $this->importLanguageFiles($files, $output, $forceUpdate);
         }
+    }
+
+    /**
+     * Import the language files into the database.
+     *
+     * @param string[]        $files
+     * @param OutputInterface $output
+     * @param bool            $forceUpdate
+     */
+    protected function importLanguageFiles(array $files, OutputInterface $output, bool $forceUpdate = false): void
+    {
+        $this->translationRepository
+            ->injectPersistenceManager($this->persistenceManager);
+
+        $imported = 0;
+        $updated  = 0;
+
+        foreach ($files as $file) {
+            $errors = [];
+
+            $this->importFile(
+                $output,
+                $file,
+                $forceUpdate,
+                $imported,
+                $updated,
+                $errors
+            );
+
+            foreach ($errors as $error) {
+                $output->writeln(sprintf('<error>%s</error>', $error));
+            }
+        }
+
+        $output->writeln(sprintf('Imported: %s, Updated: %s', $imported, $updated));
+    }
+
+    /**
+     * @param OutputInterface $output
+     * @param string          $file
+     * @param bool            $forceUpdate
+     * @param int             $imported
+     * @param int             $updated
+     * @param string[]        $errors
+     *
+     * @return void
+     */
+    protected function importFile(
+        OutputInterface $output,
+        string $file,
+        bool $forceUpdate,
+        int &$imported,
+        int &$updated,
+        array &$errors
+    ): void {
+        $languageKey = $this->getLanguageKeyFromFile($file);
+        $languageUid = $this->getLanguageId($languageKey);
+
+        $output->writeln(sprintf('Import translations from file %s for language %s (%d)', $file, $languageKey, $languageUid));
+
+        $this->importService
+            ->importFile(
+                $file,
+                $forceUpdate,
+                $imported,
+                $updated,
+                $errors
+            );
     }
 }

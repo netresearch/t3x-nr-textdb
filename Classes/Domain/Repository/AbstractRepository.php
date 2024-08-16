@@ -17,12 +17,16 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Persistence\Repository;
 
 /**
- * AbstractRepository
+ * AbstractRepository.
  *
  * @author  Axel Seemann <axel.seemann@netresearch.de>
  * @author  Rico Sonntag <rico.sonntag@netresearch.de>
  * @license Netresearch https://www.netresearch.de
  * @link    https://www.netresearch.de
+ *
+ * @template T of \TYPO3\CMS\Extbase\DomainObject\DomainObjectInterface
+ *
+ * @extends Repository<T>
  */
 class AbstractRepository extends Repository
 {
@@ -41,8 +45,10 @@ class AbstractRepository extends Repository
     private function getExtensionConfiguration(string $path): mixed
     {
         try {
-            return GeneralUtility::makeInstance(ExtensionConfiguration::class)
-                ->get('nr_textdb', $path);
+            /** @var ExtensionConfiguration $extensionConfiguration */
+            $extensionConfiguration = GeneralUtility::makeInstance(ExtensionConfiguration::class);
+
+            return $extensionConfiguration->get('nr_textdb', $path);
         } catch (Exception) {
             return null;
         }
@@ -69,6 +75,7 @@ class AbstractRepository extends Repository
     public function setCreateIfMissing(bool $createIfMissing): self
     {
         $this->createIfMissing = $createIfMissing;
+
         return $this;
     }
 
@@ -77,7 +84,7 @@ class AbstractRepository extends Repository
      *
      * @return bool
      */
-    protected function getCreateIfMissing(): bool
+    public function getCreateIfMissing(): bool
     {
         if ($this->createIfMissing) {
             return $this->createIfMissing;
