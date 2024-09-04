@@ -15,7 +15,7 @@ use TYPO3\CMS\Extbase\Annotation\Validate;
 use TYPO3\CMS\Extbase\DomainObject\AbstractValueObject;
 
 /**
- * Component
+ * Component.
  *
  * @author  Thomas Schöne <thomas.schoene@netresearch.de>
  * @author  Rico Sonntag <rico.sonntag@netresearch.de>
@@ -25,7 +25,7 @@ use TYPO3\CMS\Extbase\DomainObject\AbstractValueObject;
 class Component extends AbstractValueObject
 {
     /**
-     * name
+     * name.
      *
      * @var string
      *
@@ -34,7 +34,7 @@ class Component extends AbstractValueObject
     protected string $name = '';
 
     /**
-     * Returns the name
+     * Returns the name.
      *
      * @return string
      */
@@ -44,7 +44,7 @@ class Component extends AbstractValueObject
     }
 
     /**
-     * Sets the name
+     * Sets the name.
      *
      * @param string $name
      *

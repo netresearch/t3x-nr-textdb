@@ -1,26 +1,46 @@
 <?php
 
+/**
+ * This file is part of the package netresearch/nr-textdb.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
+
 namespace Netresearch\NrTextdb\Tests\Unit\Domain\Model;
+
+use Netresearch\NrTextdb\Domain\Model\Type;
+use PHPUnit\Framework\Attributes\CoversClass;
+use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 /**
  * Test case.
  *
  * @author Thomas Schöne <thomas.schoene@netresearch.de>
  */
-class TypeTest extends \TYPO3\TestingFramework\Core\Unit\UnitTestCase
+#[CoversClass(Type::class)]
+class TypeTest extends UnitTestCase
 {
     /**
-     * @var \Netresearch\NrTextdb\Domain\Model\Type
+     * @var Type
      */
-    protected $subject = null;
+    protected Type $subject;
 
-    protected function setUp()
+    /**
+     * @return void
+     */
+    protected function setUp(): void
     {
         parent::setUp();
-        $this->subject = new \Netresearch\NrTextdb\Domain\Model\Type();
+        $this->subject = new Type();
     }
 
-    protected function tearDown()
+    /**
+     * @return void
+     */
+    protected function tearDown(): void
     {
         parent::tearDown();
     }
@@ -28,7 +48,7 @@ class TypeTest extends \TYPO3\TestingFramework\Core\Unit\UnitTestCase
     /**
      * @test
      */
-    public function getNameReturnsInitialValueForString()
+    public function getNameReturnsInitialValueForString(): void
     {
         self::assertSame(
             '',
@@ -39,14 +59,13 @@ class TypeTest extends \TYPO3\TestingFramework\Core\Unit\UnitTestCase
     /**
      * @test
      */
-    public function setNameForStringSetsName()
+    public function setNameForStringSetsName(): void
     {
         $this->subject->setName('Conceived at T3CON10');
 
-        self::assertAttributeEquals(
+        self::assertSame(
             'Conceived at T3CON10',
-            'name',
-            $this->subject
+            $this->subject->getName()
         );
     }
 }

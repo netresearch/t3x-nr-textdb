@@ -2,6 +2,9 @@
     "name": "netresearch/nr-textdb",
     "type": "typo3-cms-extension",
     "description": "Allows you to edit the translations in the back end",
+    "license": [
+        "AGPL-3.0-or-later"
+    ],
     "authors": [
         {
             "name": "Thomas Schöne",
@@ -28,30 +31,29 @@
             "homepage": "https://www.netresearch.de/"
         }
     ],
-    "config": {
-        "allow-plugins": {
-            "typo3/cms-composer-installers": true,
-            "typo3/class-alias-loader": true,
-            "phpro/grumphp": true
-        }
-    },
     "require": {
         "php": "~8.1.0",
         "ext-zip": "*",
         "ext-simplexml": "*",
         "ext-libxml": "*",
         "typo3/cms-core": "^11.5",
+        "typo3/cms-backend": "^11.5",
         "typo3/cms-extbase": "^11.5",
         "typo3/cms-extensionmanager": "^11.5"
     },
     "require-dev": {
-        "typo3/testing-framework": "^6.0",
-        "squizlabs/php_codesniffer": "^3.8",
-        "phpro/grumphp": "^2.3",
-        "ssch/typo3-rector": "^1.5"
+        "typo3/testing-framework": "^6.0 || ^7.0 || ^8.0",
+        "friendsofphp/php-cs-fixer": "3.63.2",
+        "friendsoftypo3/phpstan-typo3": "^0.9",
+        "overtrue/phplint": "^3.4 || ^9.0",
+        "phpstan/phpstan": "^1.10",
+        "phpstan/phpstan-phpunit": "^1.3",
+        "phpstan/phpstan-strict-rules": "^1.5",
+        "phpstan/phpstan-deprecation-rules": "^1.1",
+        "ssch/typo3-rector": "^2.0"
     },
     "suggest": {
-        "netresearch/nr-sync": "dev-master"
+        "netresearch/nr-sync": "*"
     },
     "autoload": {
         "psr-4": {
@@ -63,12 +65,51 @@
             "Netresearch\\NrTextdb\\Tests\\": "Tests"
         }
     },
+    "config": {
+        "bin-dir": ".build/bin",
+        "vendor-dir": ".build/vendor",
+        "discard-changes": true,
+        "sort-packages": true,
+        "optimize-autoloader": true,
+        "platform-check": false,
+        "allow-plugins": {
+            "typo3/cms-composer-installers": true,
+            "typo3/class-alias-loader": true
+        }
+    },
     "extra": {
+        "typo3/cms": {
+            "extension-key": "nr_textdb",
+            "web-dir": ".build/public"
+        },
         "branch-alias": {
             "dev-master": "1.0.x-dev"
-        },
-        "typo3/cms": {
-            "extension-key": "nr_textdb"
         }
+    },
+    "scripts": {
+        "ci:test:php:lint": [
+            "phplint --configuration Build/.phplint.yml"
+        ],
+        "ci:test:php:unit": [
+            "XDEBUG_MODE=coverage phpunit -c Build/UnitTests.xml"
+        ],
+        "ci:test:php:phpstan": [
+            "phpstan analyze --configuration Build/phpstan.neon --memory-limit=-1"
+        ],
+        "ci:test:php:phpstan:baseline": [
+            "phpstan analyze --configuration Build/phpstan.neon --memory-limit=-1 --generate-baseline Build/phpstan-baseline.neon --allow-empty-baseline"
+        ],
+        "ci:test:php:rector": [
+            "rector process --config Build/rector.php --dry-run"
+        ],
+        "ci:test": [
+            "@ci:test:php:lint",
+            "@ci:test:php:phpstan",
+            "@ci:test:php:rector",
+            "@ci:test:php:unit"
+        ],
+        "ci:cgl": [
+            "php-cs-fixer fix --config Build/.php-cs-fixer.dist.php --diff --verbose --cache-file .build/.php-cs-fixer.cache"
+        ]
     }
 }

@@ -73,10 +73,13 @@
             <trans-unit id="button.label.list">
                 <source>List</source>
             </trans-unit>
-            <trans-unit id="info.import">
-                <source>Please select a file top import.</source>
+            <trans-unit id="info.import.headline">
+                <source>Select file for import</source>
             </trans-unit>
-            <trans-unit id="override existing">
+            <trans-unit id="info.import.message">
+                <source>Make sure that you always import the primary language (sys_language_uid = 0) first before adding any translations, as this is the only way to ensure that the links between the records are correct.</source>
+            </trans-unit>
+            <trans-unit id="override.existing">
                 <source>Override existing</source>
             </trans-unit>
             <trans-unit id="message.import">

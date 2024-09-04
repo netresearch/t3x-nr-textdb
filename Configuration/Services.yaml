@@ -6,6 +6,7 @@ services:
 
     Netresearch\NrTextdb\:
         resource: '../Classes/*'
+        exclude: '../Classes/Domain/Model/*'
 
     Netresearch\NrTextdb\Service\TranslationService:
         public: true

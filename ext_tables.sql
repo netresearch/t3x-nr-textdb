@@ -96,5 +96,6 @@ CREATE TABLE tx_nrtextdb_domain_model_translation
     KEY parent (pid, deleted, hidden),
     KEY default_index (placeholder, pid, type, component, sys_language_uid, deleted),
     KEY translated (placeholder, pid, type, component, sys_language_uid, deleted, l10n_parent),
-    KEY subquery (sys_language_uid, deleted, l10n_parent, hidden)
+    KEY subquery (sys_language_uid, deleted, l10n_parent, hidden),
+    KEY sys_language_uid_l10n_parent (sys_language_uid, l10n_parent)
 );

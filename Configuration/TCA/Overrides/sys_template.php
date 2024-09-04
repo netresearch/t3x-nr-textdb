@@ -11,10 +11,12 @@ declare(strict_types=1);
 
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 
-defined('TYPO3') || die('Access denied.');
+defined('TYPO3') || exit('Access denied.');
 
-ExtensionManagementUtility::addStaticFile(
-    'nr_textdb',
-    'Configuration/TypoScript/',
-    'Netresearch TextDB'
-);
+call_user_func(static function (): void {
+    ExtensionManagementUtility::addStaticFile(
+        'nr_textdb',
+        'Configuration/TypoScript/',
+        'Netresearch: TextDB'
+    );
+});

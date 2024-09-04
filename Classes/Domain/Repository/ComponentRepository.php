@@ -17,7 +17,7 @@ use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
 use TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings;
 
 /**
- * ComponentRepository
+ * ComponentRepository.
  *
  * @author  Thomas Schöne <thomas.schoene@netresearch.de>
  * @author  Axel Seemann <axel.seemann@netresearch.de>
@@ -52,25 +52,25 @@ class ComponentRepository extends AbstractRepository
      *
      * @param string $name Name of Component
      *
-     * @return null|Component
+     * @return Component|null
      *
      * @throws IllegalObjectTypeException
      */
     public function findByName(string $name): ?Component
     {
-        if ($component = $this->getFromCache($name)) {
+        $component = $this->getFromCache($name);
+
+        if ($component instanceof Component) {
             return $component;
         }
 
         $query = $this->createQuery();
 
         $query->matching(
-            $query->logicalAnd(
-                [
-                    $query->equals('name', $name),
-                    $query->equals('pid', $this->getConfiguredPageId())
-                ]
-            )
+            $query->logicalAnd([
+                $query->equals('name', $name),
+                $query->equals('pid', $this->getConfiguredPageId()),
+            ])
         );
 
         $queryResult = $query->execute();
@@ -86,29 +86,33 @@ class ComponentRepository extends AbstractRepository
             return $this->setToCache($name, $component);
         }
 
-        return $this->setToCache($name, $queryResult->getFirst());
+        /** @var Component|null $component */
+        $component = $queryResult->getFirst();
+
+        return $this->setToCache($name, $component);
     }
 
     /**
      * Set a Component to Cache and return it.
      *
      * @param string         $key       CacheKey
-     * @param null|Component $component Component to cache
+     * @param Component|null $component Component to cache
      *
-     * @return null|Component
+     * @return Component|null
      */
     private function setToCache(string $key, ?Component $component): ?Component
     {
         static::$localCache[$key] = $component;
+
         return $component;
     }
 
     /**
-     * Returns a component from cache
+     * Returns a component from cache.
      *
      * @param string $key Cache Key
      *
-     * @return null|Component
+     * @return Component|null
      */
     private function getFromCache(string $key): ?Component
     {

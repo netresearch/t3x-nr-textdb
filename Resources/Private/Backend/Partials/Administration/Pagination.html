@@ -4,11 +4,11 @@
       xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
 >
     <f:comment>
-    <!--
-        This is mainly a copy of typo3/sysext/beuser/Resources/Private/Partials/SimplePagination.html,
-        in addition, the attribute "actionName" was passed to the "f:uri.action" call, so that an action
-        can control in the controller.
-    -->
+        <!--
+            This is mainly a copy of typo3/sysext/beuser/Resources/Private/Partials/SimplePagination.html,
+            in addition, the attribute "actionName" was passed to the "f:uri.action" call, so that an action
+            can control in the controller.
+        -->
     </f:comment>
 
     <f:if condition="{paginator.numberOfPages} > 1">
@@ -49,19 +49,19 @@
                     <span class="page-link">
                         <f:translate key="pagination.page" />
                         <form style="display:inline;"
-                            data-global-event="submit"
-                            data-action-navigate="$form=~s/$value/"
-                            data-navigate-value="{f:uri.action(action: actionName, arguments:'{currentPage: \'$[value]\'}')}"
-                            data-value-selector="input[name='paginator-target-page']">
+                              data-global-event="submit"
+                              data-action-navigate="$form=~s/$value/"
+                              data-navigate-value="{f:uri.action(action: actionName, arguments:'{currentPage: \'$[value]\'}')}"
+                              data-value-selector="input[name='paginator-target-page']">
                             <input
-                                min="{pagination.firstPageNumber}"
-                                max="{pagination.lastPageNumber}"
-                                data-number-of-pages="{paginator.numberOfPages}"
-                                name="paginator-target-page"
-                                class="form-control form-control-sm paginator-input"
-                                size="5"
-                                value="{paginator.currentPageNumber}"
-                                type="number"
+                                    min="{pagination.firstPageNumber}"
+                                    max="{pagination.lastPageNumber}"
+                                    data-number-of-pages="{paginator.numberOfPages}"
+                                    name="paginator-target-page"
+                                    class="form-control form-control-sm paginator-input"
+                                    size="5"
+                                    value="{paginator.currentPageNumber}"
+                                    type="number"
                             />
                         </form>
                         / {pagination.lastPageNumber}
