@@ -1,6 +1,6 @@
-[![Latest version](https://img.shields.io/github/v/release/netresearch/nr-textdb?sort=semver)](https://github.com/netresearch/nr-textdb/releases/latest)
-[![License](https://img.shields.io/github/license/netresearch/nr-textdb)](https://github.com/netresearch/nr-textdb/blob/main/LICENSE)
-[![CI](https://github.com/netresearch/nr-textdb/actions/workflows/ci.yml/badge.svg)](https://github.com/netresearch/nr-textdb/actions/workflows/ci.yml)
+[![Latest version](https://img.shields.io/github/v/release/netresearch/t3x-nr-textdb?sort=semver)](https://github.com/netresearch/t3x-nr-textdb/releases/latest)
+[![License](https://img.shields.io/github/license/netresearch/t3x-nr-textdb)](https://github.com/netresearch/t3x-nr-textdb/blob/main/LICENSE)
+[![CI](https://github.com/netresearch/t3x-nr-textdb/actions/workflows/ci.yml/badge.svg)](https://github.com/netresearch/t3x-nr-textdb/actions/workflows/ci.yml)
 
 # Nr TextDB
 
