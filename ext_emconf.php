@@ -10,7 +10,7 @@
 declare(strict_types=1);
 
 $EM_CONF['nr_textdb'] = [
-    'title'          => 'Netresearch TextDB',
+    'title'          => 'Netresearch - TextDB',
     'description'    => 'Allows you to edit the translations in the back end',
     'category'       => 'module',
     'author'         => 'Thomas Schöne, Axel Seemann, Tobias Hein, Rico Sonntag',
