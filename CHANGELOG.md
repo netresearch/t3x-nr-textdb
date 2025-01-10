@@ -1,3 +1,13 @@
+# 2.0.2
+
+## MISC
+
+- 7225e7d Update ext_emconf.php
+
+## Contributors
+
+- Rico Sonntag
+
 # 2.0.1
 
 ## MISC
