@@ -1,3 +1,13 @@
+# 2.0.3
+
+## MISC
+
+- b85151f Apply php-cs-fixer rules
+
+## Contributors
+
+- Rico Sonntag
+
 # 2.0.2
 
 ## MISC
