@@ -117,7 +117,7 @@ class ImportService implements LoggerAwareInterface
         bool $forceUpdate,
         int &$imported,
         int &$updated,
-        array &$errors
+        array &$errors,
     ): void {
         $languageKey = $this->getLanguageKeyFromFile($file);
         $languageUid = $this->getLanguageId($languageKey);
@@ -183,7 +183,7 @@ class ImportService implements LoggerAwareInterface
         bool $forceUpdate,
         int &$imported,
         int &$updated,
-        array &$errors
+        array &$errors,
     ): void {
         try {
             $environment = $this->environmentRepository

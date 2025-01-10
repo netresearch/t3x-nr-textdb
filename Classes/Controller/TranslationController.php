@@ -149,7 +149,7 @@ class TranslationController extends ActionController
         PersistenceManager $persistenceManager,
         ComponentRepository $componentRepository,
         TypeRepository $typeRepository,
-        ImportService $importService
+        ImportService $importService,
     ) {
         $this->extensionConfiguration = $extensionConfiguration;
         $this->environmentRepository  = $environmentRepository;
@@ -754,7 +754,7 @@ class TranslationController extends ActionController
         QueryResultInterface $translations,
         string $exportDir,
         string $filename,
-        bool $enableTargetMarker = false
+        bool $enableTargetMarker = false,
     ): array {
         if ($translations->count() === 0) {
             return [];
@@ -940,7 +940,7 @@ class TranslationController extends ActionController
     private function addFlashMessageToQueue(
         string $messageTitle,
         string $messageText,
-        ContextualFeedbackSeverity $severity = ContextualFeedbackSeverity::ERROR
+        ContextualFeedbackSeverity $severity = ContextualFeedbackSeverity::ERROR,
     ): void {
         /** @var FlashMessage $message */
         $message = GeneralUtility::makeInstance(

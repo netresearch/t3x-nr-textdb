@@ -92,7 +92,7 @@ class ImportCommand extends Command implements LoggerAwareInterface
         PersistenceManagerInterface $persistenceManager,
         TranslationRepository $translationRepository,
         ListUtility $listUtility,
-        ImportService $importService
+        ImportService $importService,
     ) {
         parent::__construct();
 
@@ -313,7 +313,7 @@ class ImportCommand extends Command implements LoggerAwareInterface
         bool $forceUpdate,
         int &$imported,
         int &$updated,
-        array &$errors
+        array &$errors,
     ): void {
         $languageKey = $this->getLanguageKeyFromFile($file);
         $languageUid = $this->getLanguageId($languageKey);

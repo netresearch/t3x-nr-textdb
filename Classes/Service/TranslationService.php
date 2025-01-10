@@ -77,7 +77,7 @@ class TranslationService
         ComponentRepository $componentRepository,
         TypeRepository $typeRepository,
         TranslationRepository $translationRepository,
-        SiteFinder $siteFinder
+        SiteFinder $siteFinder,
     ) {
         $this->environmentRepository = $environmentRepository;
         $this->componentRepository   = $componentRepository;
@@ -102,7 +102,7 @@ class TranslationService
         string $placeholder,
         string $typeName,
         string $componentName,
-        string $environmentName
+        string $environmentName,
     ): string {
         if ($placeholder === '') {
             return $placeholder;
@@ -233,7 +233,7 @@ class TranslationService
     public function createTranslationFromParent(
         Translation $parentTranslation,
         int $sysLanguageUid,
-        string $value
+        string $value,
     ): ?Translation {
         if (!($parentTranslation->getEnvironment() instanceof Environment)
             || !($parentTranslation->getComponent() instanceof Component)
@@ -277,7 +277,7 @@ class TranslationService
         Type $type,
         string $placeholder,
         int $sysLanguageUid = 0,
-        string $value = ''
+        string $value = '',
     ): Translation {
         $translation = GeneralUtility::makeInstance(Translation::class);
         $translation

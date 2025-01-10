@@ -123,7 +123,7 @@ class TranslationRepository extends AbstractRepository
         int $type = 0,
         ?string $placeholder = null,
         ?string $value = null,
-        int $languageId = 0
+        int $languageId = 0,
     ): QueryResultInterface {
         $query = $this->createQuery();
         $query
@@ -215,7 +215,7 @@ class TranslationRepository extends AbstractRepository
         Component $component,
         Type $type,
         string $placeholder,
-        int $languageUid
+        int $languageUid,
     ): ?Translation {
         $query = $this->createQuery();
 
