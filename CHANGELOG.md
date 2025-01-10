@@ -1,3 +1,13 @@
+# 2.0.4
+
+## MISC
+
+- afac01b Fix README
+
+## Contributors
+
+- Rico Sonntag
+
 # 2.0.3
 
 ## MISC
