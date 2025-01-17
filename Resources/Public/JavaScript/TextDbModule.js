@@ -21,10 +21,12 @@ class TextDbModule
                         const parentTableRow = event.currentTarget.closest("tr");
 
                         // Show loading animation
-                        parentTableRow
-                            .querySelector(".loading-animation")
-                            .style
-                            .display = "";
+                        let loadingAnimation = parentTableRow
+                            .querySelector(".loading-animation");
+
+                        if (loadingAnimation !== null) {
+                            loadingAnimation.style.display = "";
+                        }
 
                         fetch(url)
                             .then(response => response.text())
@@ -32,28 +34,29 @@ class TextDbModule
                                 // Initialize the DOM parser and parse to response
                                 const parser = new DOMParser();
                                 const content = parser.parseFromString(html, "text/html");
+                                const contentReturn = content.querySelector('.return');
 
                                 parentTableRow.insertAdjacentHTML(
                                     "afterend",
                                     '<tr id="translation-' + uid+ '"><td colSpan="5">'
-                                    + content.querySelector('.return').innerHTML + '</td></tr>'
+                                    + (contentReturn !== null ? contentReturn.innerHTML : "") + '</td></tr>'
                                 );
 
                                 // Hide loading animation
-                                parentTableRow
-                                    .querySelector(".loading-animation")
-                                    .style
-                                    .display = "none";
+                                if (loadingAnimation !== null) {
+                                    loadingAnimation.style.display = "none";
+                                }
 
-                                parentTableRow
-                                    .querySelector(".translated-link-open")
-                                    .style
-                                    .display = "none";
+                                let translatedLinkOpen = parentTableRow.querySelector(".translated-link-open");
+                                let translatedLinkClose = parentTableRow.querySelector(".translated-link-close");
 
-                                parentTableRow
-                                    .querySelector(".translated-link-close")
-                                    .style
-                                    .display = "";
+                                if (translatedLinkOpen !== null) {
+                                    translatedLinkOpen.style.display = "none";
+                                }
+
+                                if (translatedLinkClose !== null) {
+                                    translatedLinkClose.style.display = "";
+                                }
                             });
                     })
             );
@@ -75,12 +78,14 @@ class TextDbModule
                             .display = "none";
 
                         // Show the open link
-                        event
+                        let translatedLinkOpen = event
                             .currentTarget
                             .parentNode
-                            .querySelector(".translated-link-open")
-                            .style
-                            .display = "";
+                            .querySelector(".translated-link-open");
+
+                        if (translatedLinkOpen !== null) {
+                            translatedLinkOpen.style.display = "";
+                        }
 
                         // Remove translated item
                         const translationRow = document
@@ -93,53 +98,63 @@ class TextDbModule
             );
 
         // Submit a translation form
-        document
-            .querySelector("table#tx_nrtextdb")
-            .addEventListener("submit", async (event) => {
-                if (event.target.classList.contains("translation-form")) {
-                    event.preventDefault();
+        let textdbTable = document
+            .querySelector("table#tx_nrtextdb");
 
-                    const action = event.target.getAttribute("action");
-                    const uid = event.target.getAttribute("data-uid");
+        if (textdbTable !== null) {
+            textdbTable
+                .addEventListener("submit", async (event) => {
+                    if (event.target.classList.contains("translation-form")) {
+                        event.preventDefault();
 
-                    // Show loading animation
-                    document
-                        .getElementById("entry-" + uid)
-                        .querySelector(".loading-animation")
-                        .style
-                        .display = "";
+                        const action = event.target.getAttribute("action");
+                        const uid = event.target.getAttribute("data-uid");
 
-                    try {
-                        const response = await fetch(
-                            action,
-                            {
-                                method: "POST",
-                                body: new FormData(event.target),
-                            }
-                        );
-
-                        const html = await response.text();
-
-                        // Initialize the DOM parser and parse to response
-                        const parser = new DOMParser();
-                        const content = parser.parseFromString(html, "text/html");
-
-                        document
-                            .getElementById("translation-" + uid)
-                            .querySelector("td")
-                            .innerHTML = content.querySelector('.return').innerHTML;
-
-                        // Hide loading animation
-                        document
+                        // Show loading animation
+                        let loadingAnimation = document
                             .getElementById("entry-" + uid)
-                            .querySelector(".loading-animation")
-                            .style
-                            .display = "none";
-                    } catch (e) {
-                        console.error(e);
+                            .querySelector(".loading-animation");
+
+                        if (loadingAnimation !== null) {
+                            loadingAnimation.style.display = "";
+                        }
+
+                        try {
+                            const response = await fetch(
+                                action,
+                                {
+                                    method: "POST",
+                                    body: new FormData(event.target),
+                                }
+                            );
+
+                            const html = await response.text();
+
+                            // Initialize the DOM parser and parse to response
+                            const parser = new DOMParser();
+                            const content = parser.parseFromString(html, "text/html");
+                            const contentReturn = content.querySelector('.return');
+
+                            if (contentReturn !== null) {
+                                let translationTableData = document
+                                    .getElementById("translation-" + uid)
+                                    .querySelector("td");
+
+                                if (translationTableData !== null) {
+                                    translationTableData.innerHTML = contentReturn.innerHTML;
+                                }
+                            }
+
+                            // Hide loading animation
+                            if (loadingAnimation !== null) {
+                                loadingAnimation.style.display = "none";
+                            }
+                        } catch (e) {
+                            console.error(e);
+                        }
                     }
-                }
-            });
+                });
+        }
     }
 }
 export default new TextDbModule;
