@@ -69,6 +69,11 @@ class TranslationController extends ActionController
     protected readonly ModuleTemplateFactory $moduleTemplateFactory;
 
     /**
+     * @var ModuleTemplate
+     */
+    protected ModuleTemplate $moduleTemplate;
+
+    /**
      * @var ExtensionConfiguration
      */
     protected ExtensionConfiguration $extensionConfiguration;
@@ -185,7 +190,22 @@ class TranslationController extends ActionController
     {
         parent::initializeAction();
 
-        $this->pid = (int) ($this->getExtensionConfiguration()['textDbPid'] ?? 0);
+        $this->moduleTemplate = $this->getModuleTemplate();
+        $this->pid            = (int) ($this->getExtensionConfiguration()['textDbPid'] ?? 0);
+    }
+
+    /**
+     * Returns the module template instance.
+     *
+     * @return ModuleTemplate
+     */
+    private function getModuleTemplate(): ModuleTemplate
+    {
+        $moduleTemplate = $this->moduleTemplateFactory->create($this->request);
+
+        $this->registerDocHeaderButtons($moduleTemplate);
+
+        return $moduleTemplate;
     }
 
     /**
@@ -193,12 +213,9 @@ class TranslationController extends ActionController
      */
     private function moduleResponse(): ResponseInterface
     {
-        $moduleTemplate = $this->moduleTemplateFactory->create($this->request);
-        $moduleTemplate->assign('content', $this->view->render());
+        $this->moduleTemplate->assign('content', $this->view->render());
 
-        $this->registerDocHeaderButtons($moduleTemplate);
-
-        return $moduleTemplate->renderResponse('Backend/BackendModule.html');
+        return $this->moduleTemplate->renderResponse('Backend/BackendModule.html');
     }
 
     /**
@@ -210,6 +227,14 @@ class TranslationController extends ActionController
      */
     public function listAction(): ResponseInterface
     {
+        if ($this->pid === 0) {
+            $this->moduleTemplate->addFlashMessage(
+                'Please configure a valid storage page ID in the extension configuration.',
+                'TextDb',
+                ContextualFeedbackSeverity::ERROR
+            );
+        }
+
         $config      = $this->getConfigFromBeUserData();
         $componentId = $config['component'] ?? 0;
         $typeId      = $config['type'] ?? 0;
