@@ -1,3 +1,16 @@
+# 2.0.5
+
+## MISC
+
+- 0999d1b Fix extension icon issues
+- 14d00f6 Show error message for not configured storage page ID as this will result in record loading mismatch if missing
+- 0397070 Check querySelector return value to prevent errors for not existing DOM objects
+- a8cc3cc Fix phpstan-baseline command
+
+## Contributors
+
+- Rico Sonntag
+
 # 2.0.4
 
 ## MISC
