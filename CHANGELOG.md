@@ -1,3 +1,15 @@
+# 1.1.0
+
+## MISC
+
+- 8ebdc62 Update dev tools
+- 7d8fb07 Allow more than 2000 chars in value field
+- 0101f39 Downgrade TYPO3 v12 version to TYPO3 v11
+
+## Contributors
+
+- Rico Sonntag
+
 # 1.0.3
 
 ## MISC
