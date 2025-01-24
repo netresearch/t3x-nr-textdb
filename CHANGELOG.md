@@ -1,3 +1,13 @@
+# 2.0.7
+
+## MISC
+
+- 1125ece Add symfony/console dependency, fixed RuntimeException usage
+
+## Contributors
+
+- Rico Sonntag
+
 # 2.0.6
 
 ## MISC
