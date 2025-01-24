@@ -1,3 +1,13 @@
+# 2.0.6
+
+## MISC
+
+- 8e47583 Update dev tools
+
+## Contributors
+
+- Rico Sonntag
+
 # 2.0.5
 
 ## MISC
