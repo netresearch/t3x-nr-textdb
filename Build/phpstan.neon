@@ -17,11 +17,6 @@ parameters:
 
     excludePaths:
         - %currentWorkingDirectory%/.build/*
-        - %currentWorkingDirectory%/ext_tables.php
         - %currentWorkingDirectory%/ext_emconf.php
 
     treatPhpDocTypesAsCertain: false
-
-    ignoreErrors:
-        -
-            identifier: missingType.generics

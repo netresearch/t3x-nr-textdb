@@ -19,12 +19,14 @@ use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
 use Netresearch\NrTextdb\Domain\Repository\TypeRepository;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
-use Symfony\Component\Console\Exception\RuntimeException;
+use RuntimeException;
 use TYPO3\CMS\Core\Localization\Parser\XliffParser;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
+
+use function count;
 
 /**
  * The import service.
