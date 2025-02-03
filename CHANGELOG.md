@@ -1,3 +1,13 @@
+# 2.0.8
+
+## MISC
+
+- fbcbb93 Fix phpstan issues
+
+## Contributors
+
+- Rico Sonntag
+
 # 2.0.7
 
 ## MISC
