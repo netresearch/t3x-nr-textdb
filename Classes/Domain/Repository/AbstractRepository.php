@@ -14,6 +14,7 @@ namespace Netresearch\NrTextdb\Domain\Repository;
 use Exception;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\DomainObject\DomainObjectInterface;
 use TYPO3\CMS\Extbase\Persistence\Repository;
 
 /**
@@ -24,9 +25,9 @@ use TYPO3\CMS\Extbase\Persistence\Repository;
  * @license Netresearch https://www.netresearch.de
  * @link    https://www.netresearch.de
  *
- * @template T of \TYPO3\CMS\Extbase\DomainObject\DomainObjectInterface
+ * @template T of DomainObjectInterface
  *
- * @extends Repository<T>
+ * @extends  Repository<T>
  */
 class AbstractRepository extends Repository
 {
@@ -70,9 +71,9 @@ class AbstractRepository extends Repository
      *
      * @param bool $createIfMissing
      *
-     * @return $this
+     * @return static
      */
-    public function setCreateIfMissing(bool $createIfMissing): self
+    public function setCreateIfMissing(bool $createIfMissing): static
     {
         $this->createIfMissing = $createIfMissing;
 

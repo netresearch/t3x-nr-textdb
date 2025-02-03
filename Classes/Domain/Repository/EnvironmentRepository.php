@@ -24,6 +24,8 @@ use TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings;
  * @author  Rico Sonntag <rico.sonntag@netresearch.de>
  * @license Netresearch https://www.netresearch.de
  * @link    https://www.netresearch.de
+ *
+ * @extends AbstractRepository<Environment>
  */
 class EnvironmentRepository extends AbstractRepository
 {

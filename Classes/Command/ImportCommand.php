@@ -13,8 +13,6 @@ namespace Netresearch\NrTextdb\Command;
 
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
 use Netresearch\NrTextdb\Service\ImportService;
-use Psr\Log\LoggerAwareInterface;
-use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -26,11 +24,11 @@ use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
 use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
 use TYPO3\CMS\Extensionmanager\Utility\ListUtility;
 
 use function count;
+use function sprintf;
 
 /**
  * Class ImportCommand.
@@ -39,10 +37,8 @@ use function count;
  * @license Netresearch https://www.netresearch.de
  * @link    https://www.netresearch.de
  */
-class ImportCommand extends Command implements LoggerAwareInterface
+class ImportCommand extends Command
 {
-    use LoggerAwareTrait;
-
     /**
      * Path for the language file within an extension.
      *
@@ -53,7 +49,7 @@ class ImportCommand extends Command implements LoggerAwareInterface
     /**
      * @var PersistenceManagerInterface
      */
-    private PersistenceManagerInterface $persistenceManager;
+    private readonly PersistenceManagerInterface $persistenceManager;
 
     /**
      * @var TranslationRepository
@@ -78,7 +74,7 @@ class ImportCommand extends Command implements LoggerAwareInterface
     /**
      * @var ImportService
      */
-    private ImportService $importService;
+    private readonly ImportService $importService;
 
     /**
      * Constructor.
@@ -123,7 +119,7 @@ class ImportCommand extends Command implements LoggerAwareInterface
         $this
             ->setDescription('Imports textdb records from language files')
             ->setHelp(
-                'If you want to add textdb records to your extension. Create a file languagecode.textdb_import.xlf'
+                'If you want to add textdb records to your extension. Create a file <LanguageCode>.textdb_import.xlf'
             )
             ->addArgument(
                 'extensionKey',
@@ -142,7 +138,6 @@ class ImportCommand extends Command implements LoggerAwareInterface
      *
      * @return int
      *
-     * @throws IllegalObjectTypeException
      * @throws UnknownPackageException
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -229,8 +224,6 @@ class ImportCommand extends Command implements LoggerAwareInterface
      * @param bool            $forceUpdate
      *
      * @return void
-     *
-     * @throws IllegalObjectTypeException
      */
     protected function importTranslationsFromFiles(OutputInterface $output, bool $forceUpdate = false): void
     {
@@ -318,7 +311,14 @@ class ImportCommand extends Command implements LoggerAwareInterface
         $languageKey = $this->getLanguageKeyFromFile($file);
         $languageUid = $this->getLanguageId($languageKey);
 
-        $output->writeln(sprintf('Import translations from file %s for language %s (%d)', $file, $languageKey, $languageUid));
+        $output->writeln(
+            sprintf(
+                'Import translations from file %s for language %s (%d)',
+                $file,
+                $languageKey,
+                $languageUid
+            )
+        );
 
         $this->importService
             ->importFile(

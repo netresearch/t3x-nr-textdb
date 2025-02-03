@@ -219,7 +219,7 @@ class TranslationController extends ActionController
     }
 
     /**
-     * Shows the textDB entires.
+     * Shows the textDB entries.
      *
      * @return ResponseInterface
      *
@@ -468,6 +468,7 @@ class TranslationController extends ActionController
             }
         }
 
+        /** @var ZipArchive $archive */
         $archive = GeneralUtility::makeInstance(ZipArchive::class);
 
         if ($archive->open($archivePath, ZipArchive::CREATE) !== true) {
@@ -548,7 +549,7 @@ class TranslationController extends ActionController
     }
 
     /**
-     * Import translations from file.
+     * Import translations from a file.
      *
      * @param bool $update Check if entries should be updated
      *
@@ -678,7 +679,7 @@ class TranslationController extends ActionController
     }
 
     /**
-     * Get the component from key.
+     * Get the component from a key.
      *
      * @param string $key
      *
@@ -766,11 +767,11 @@ class TranslationController extends ActionController
     /**
      * Write the translation file for export and returns the uid of entries written to file.
      *
-     * @param SiteLanguage         $language
-     * @param QueryResultInterface $translations
-     * @param string               $exportDir
-     * @param string               $filename
-     * @param bool                 $enableTargetMarker
+     * @param SiteLanguage                      $language
+     * @param QueryResultInterface<Translation> $translations
+     * @param string                            $exportDir
+     * @param string                            $filename
+     * @param bool                              $enableTargetMarker
      *
      * @return int[]
      */
@@ -924,8 +925,8 @@ class TranslationController extends ActionController
      * - pagination disabled
      * - itemsPerPage = 10
      *
-     * @param QueryResultInterface    $items
-     * @param array<string, int|bool> $settings
+     * @param QueryResultInterface<Translation> $items
+     * @param array<string, int|bool>           $settings
      *
      * @return array<string, mixed>
      */

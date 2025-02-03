@@ -29,9 +29,7 @@ use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
  * @license Netresearch https://www.netresearch.de
  * @link    https://www.netresearch.de
  *
- * @template T of \Netresearch\NrTextdb\Domain\Model\Translation
- *
- * @extends AbstractRepository<T>
+ * @extends AbstractRepository<Translation>
  */
 class TranslationRepository extends AbstractRepository
 {
@@ -54,7 +52,7 @@ class TranslationRepository extends AbstractRepository
      * @param int[] $originals
      * @param int   $languageUid
      *
-     * @return QueryResultInterface
+     * @return QueryResultInterface<Translation>
      *
      * @throws InvalidQueryException
      */
@@ -114,7 +112,7 @@ class TranslationRepository extends AbstractRepository
      * @param string|null $value       Value to search for
      * @param int         $languageId  Language ID
      *
-     * @return QueryResultInterface
+     * @return QueryResultInterface<Translation>
      *
      * @throws InvalidQueryException
      */

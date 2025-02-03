@@ -12,14 +12,21 @@ declare(strict_types=1);
 namespace Netresearch\NrTextdb\ViewHelpers;
 
 use Exception;
+use Netresearch\NrTextdb\Domain\Model\Component;
+use Netresearch\NrTextdb\Domain\Model\Environment;
 use Netresearch\NrTextdb\Domain\Model\Translation;
+use Netresearch\NrTextdb\Domain\Model\Type;
+use Netresearch\NrTextdb\Domain\Repository\ComponentRepository;
+use Netresearch\NrTextdb\Domain\Repository\EnvironmentRepository;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
+use Netresearch\NrTextdb\Domain\Repository\TypeRepository;
 use Netresearch\NrTextdb\Service\TranslationService;
 use RuntimeException;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\Exception\AspectNotFoundException;
 use TYPO3\CMS\Core\Context\LanguageAspect;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
@@ -44,11 +51,29 @@ class TranslateViewHelper extends AbstractViewHelper
     final public const LANGUAGE_UID_EN = 1;
 
     /**
-     * Translation service instance.
-     *
-     * @var TranslationRepository|null
+     * @var EnvironmentRepository
      */
-    protected ?TranslationRepository $translationRepository = null;
+    private readonly EnvironmentRepository $environmentRepository;
+
+    /**
+     * @var ComponentRepository
+     */
+    private readonly ComponentRepository $componentRepository;
+
+    /**
+     * @var TypeRepository
+     */
+    private readonly TypeRepository $typeRepository;
+
+    /**
+     * @var TranslationRepository
+     */
+    private readonly TranslationRepository $translationRepository;
+
+    /**
+     * @var TranslationService
+     */
+    private readonly TranslationService $translationService;
 
     /**
      * Component which can be used for a migration step.
@@ -56,6 +81,29 @@ class TranslateViewHelper extends AbstractViewHelper
      * @var string
      */
     public static string $component = '';
+
+    /**
+     * Translation constructor.
+     *
+     * @param EnvironmentRepository $environmentRepository
+     * @param ComponentRepository   $componentRepository
+     * @param TypeRepository        $typeRepository
+     * @param TranslationRepository $translationRepository
+     * @param TranslationService    $translationService
+     */
+    public function __construct(
+        EnvironmentRepository $environmentRepository,
+        ComponentRepository $componentRepository,
+        TypeRepository $typeRepository,
+        TranslationRepository $translationRepository,
+        TranslationService $translationService,
+    ) {
+        $this->environmentRepository = $environmentRepository;
+        $this->componentRepository   = $componentRepository;
+        $this->typeRepository        = $typeRepository;
+        $this->translationRepository = $translationRepository;
+        $this->translationService    = $translationService;
+    }
 
     /**
      * Initializes arguments (attributes).
@@ -92,6 +140,8 @@ class TranslateViewHelper extends AbstractViewHelper
      * Render translated string.
      *
      * @return string The translated key or tag body if key doesn't exist
+     *
+     * @throws IllegalObjectTypeException
      */
     public function render(): string
     {
@@ -103,7 +153,6 @@ class TranslateViewHelper extends AbstractViewHelper
 
         $placeholder = $this->arguments['key'];
         $extension   = $this->arguments['extensionName'] ?? null;
-        $environment = $this->arguments['environment'];
 
         $translationRequested = LocalizationUtility::translate($placeholder, $extension);
         $translationOriginal  = LocalizationUtility::translate($placeholder, $extension, []);
@@ -113,28 +162,38 @@ class TranslateViewHelper extends AbstractViewHelper
             $placeholder = $placeholderParts[3];
         }
 
-        if ($this->hasTextDbEntry($placeholder)) {
+        $environment = $this->environmentRepository->findByName($this->arguments['environment']);
+        $component   = $this->componentRepository->findByName(static::$component);
+        $type        = $this->typeRepository->findByName('label');
+
+        if (
+            !($environment instanceof Environment)
+            || !($component instanceof Component)
+            || !($type instanceof Type)
+        ) {
+            return $placeholder;
+        }
+
+        if ($this->hasTextDbEntry($environment, $component, $type, $placeholder)) {
             return (string) $translationRequested;
         }
 
-        // TODO Need further rework to use the new methods
-
         try {
-            $this->getTranslationService()
+            $this->translationService
                 ->createTranslation(
-                    static::$component,
                     $environment,
-                    'label',
+                    $component,
+                    $type,
                     $placeholder,
                     $this->getLanguageUid(),
                     (string) $translationRequested
                 );
 
-            $this->getTranslationService()
+            $this->translationService
                 ->createTranslation(
-                    static::$component,
                     $environment,
-                    'label',
+                    $component,
+                    $type,
                     $placeholder,
                     self::LANGUAGE_UID_EN,
                     (string) $translationOriginal
@@ -143,30 +202,6 @@ class TranslateViewHelper extends AbstractViewHelper
         }
 
         return (string) $translationRequested;
-    }
-
-    /**
-     * Returns the translation service.
-     *
-     * @return TranslationService
-     */
-    public function getTranslationService(): TranslationService
-    {
-        return GeneralUtility::makeInstance(TranslationRepository::class);
-    }
-
-    /**
-     * Getter for translationRepository.
-     *
-     * @return TranslationRepository
-     */
-    public function getTranslationRepository(): TranslationRepository
-    {
-        if (!$this->translationRepository instanceof TranslationRepository) {
-            $this->translationRepository = GeneralUtility::makeInstance(TranslationRepository::class);
-        }
-
-        return $this->translationRepository;
     }
 
     /**
@@ -190,19 +225,26 @@ class TranslateViewHelper extends AbstractViewHelper
     }
 
     /**
-     * Returns true, if a textdb translation exisits.
+     * Returns true, if a textdb translation exists.
      *
-     * @param string $placeholder
+     * @param Environment $environment
+     * @param Component   $component
+     * @param Type        $type
+     * @param string      $placeholder
      *
      * @return bool
      */
-    private function hasTextDbEntry(string $placeholder): bool
-    {
-        $textdbTranslation = $this->getTranslationRepository()
+    private function hasTextDbEntry(
+        Environment $environment,
+        Component $component,
+        Type $type,
+        string $placeholder,
+    ): bool {
+        $textdbTranslation = $this->translationRepository
             ->findByEnvironmentComponentTypePlaceholderAndLanguage(
-                static::$component,
-                $this->arguments['environment'],
-                'label',
+                $environment,
+                $component,
+                $type,
                 $placeholder,
                 $this->getLanguageUid()
             );

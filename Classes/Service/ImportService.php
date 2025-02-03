@@ -12,13 +12,14 @@ declare(strict_types=1);
 namespace Netresearch\NrTextdb\Service;
 
 use Exception;
+use Netresearch\NrTextdb\Domain\Model\Component;
+use Netresearch\NrTextdb\Domain\Model\Environment;
 use Netresearch\NrTextdb\Domain\Model\Translation;
+use Netresearch\NrTextdb\Domain\Model\Type;
 use Netresearch\NrTextdb\Domain\Repository\ComponentRepository;
 use Netresearch\NrTextdb\Domain\Repository\EnvironmentRepository;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
 use Netresearch\NrTextdb\Domain\Repository\TypeRepository;
-use Psr\Log\LoggerAwareInterface;
-use Psr\Log\LoggerAwareTrait;
 use RuntimeException;
 use TYPO3\CMS\Core\Localization\Parser\XliffParser;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
@@ -35,44 +36,42 @@ use function count;
  * @license Netresearch https://www.netresearch.de
  * @link    https://www.netresearch.de
  */
-class ImportService implements LoggerAwareInterface
+class ImportService
 {
-    use LoggerAwareTrait;
-
     /**
      * @var PersistenceManagerInterface
      */
-    private PersistenceManagerInterface $persistenceManager;
+    private readonly PersistenceManagerInterface $persistenceManager;
 
     /**
      * @var XliffParser
      */
-    private XliffParser $xliffParser;
+    private readonly XliffParser $xliffParser;
 
     /**
      * @var TranslationService
      */
-    private TranslationService $translationService;
+    private readonly TranslationService $translationService;
 
     /**
      * @var TranslationRepository
      */
-    private TranslationRepository $translationRepository;
+    private readonly TranslationRepository $translationRepository;
 
     /**
      * @var ComponentRepository
      */
-    private ComponentRepository $componentRepository;
+    private readonly ComponentRepository $componentRepository;
 
     /**
      * @var TypeRepository
      */
-    private TypeRepository $typeRepository;
+    private readonly TypeRepository $typeRepository;
 
     /**
      * @var EnvironmentRepository
      */
-    private EnvironmentRepository $environmentRepository;
+    private readonly EnvironmentRepository $environmentRepository;
 
     /**
      * Constructor.
@@ -201,9 +200,9 @@ class ImportService implements LoggerAwareInterface
                 ->findByName($typeName);
 
             if (
-                ($environment === null)
-                || ($component === null)
-                || ($type === null)
+                (!$environment instanceof Environment)
+                || (!$component instanceof Component)
+                || (!$type instanceof Type)
             ) {
                 return;
             }
@@ -279,7 +278,7 @@ class ImportService implements LoggerAwareInterface
         }
     }
 
-    /**
+    /**<
      * Returns the langauge key from the file name.
      *
      * @param string $file
@@ -335,7 +334,7 @@ class ImportService implements LoggerAwareInterface
     }
 
     /**
-     * Get the component from key.
+     * Get the component from a key.
      *
      * @param string $key
      *
@@ -363,7 +362,7 @@ class ImportService implements LoggerAwareInterface
     }
 
     /**
-     * Get the placeholder from key.
+     * Get the placeholder from a key.
      *
      * @param string $key
      *
