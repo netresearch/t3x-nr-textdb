@@ -800,10 +800,11 @@ class TranslationController extends ActionController
 
         /** @var Translation $translation */
         foreach ($translations as $translation) {
-            if (
-                ($translation->getComponent() === null)
-                || ($translation->getType() === null)
-            ) {
+            if ($translation->getComponent() === null) {
+                continue;
+            }
+
+            if ($translation->getType() === null) {
                 continue;
             }
 

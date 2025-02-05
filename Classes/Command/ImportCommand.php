@@ -230,10 +230,11 @@ class ImportCommand extends Command
         foreach (array_keys($this->extensions) as $extKey) {
             $folderPath = ExtensionManagementUtility::extPath($extKey) . self::LANG_FOLDER;
 
-            if (
-                (file_exists($folderPath) === false)
-                || (is_dir($folderPath) === false)
-            ) {
+            if (file_exists($folderPath) === false) {
+                continue;
+            }
+
+            if (is_dir($folderPath) === false) {
                 continue;
             }
 
