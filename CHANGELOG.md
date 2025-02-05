@@ -1,3 +1,13 @@
+# 2.0.9
+
+## MISC
+
+- a49f62d Update rector configuration
+
+## Contributors
+
+- Rico Sonntag
+
 # 2.0.8
 
 ## MISC
