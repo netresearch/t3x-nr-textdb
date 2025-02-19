@@ -42,7 +42,7 @@
         "symfony/console": "^6.0 || ^7.0"
     },
     "require-dev": {
-        "typo3/testing-framework": "^7.0 || ^8.0",
+        "typo3/testing-framework": "^7.0 || ^8.0 || ^9.0",
         "friendsofphp/php-cs-fixer": "^3.65",
         "saschaegerer/phpstan-typo3": "^1.0 || v2.x-dev",
         "overtrue/phplint": "^9.5",
