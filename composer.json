@@ -38,7 +38,7 @@
         "typo3/cms-core": "^12.4",
         "typo3/cms-backend": "^12.4",
         "typo3/cms-extbase": "^12.4",
-        "typo3/cms-extensionmanager": "^12.4",
+        "typo3/cms-extensionmanager": "^12.4 || ^13.0",
         "symfony/console": "^6.0 || ^7.0"
     },
     "require-dev": {
