@@ -35,11 +35,11 @@
         "ext-zip": "*",
         "ext-simplexml": "*",
         "ext-libxml": "*",
-        "typo3/cms-core": "^12.4",
-        "typo3/cms-backend": "^12.4",
-        "typo3/cms-extbase": "^12.4",
-        "typo3/cms-extensionmanager": "^12.4",
-        "symfony/console": "^6.0 || ^7.0"
+        "typo3/cms-core": "^13.4",
+        "typo3/cms-backend": "^13.4",
+        "typo3/cms-extbase": "^13.4",
+        "typo3/cms-extensionmanager": "^13.4",
+        "symfony/console": "^6.0 || ^7.0 || ^8.0"
     },
     "require-dev": {
         "typo3/testing-framework": "^7.0 || ^8.0",
