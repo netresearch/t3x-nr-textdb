@@ -19,6 +19,8 @@ use Rector\Php80\Rector\Class_\ClassPropertyAssignToConstructorPromotionRector;
 use Rector\Set\ValueObject\LevelSetList;
 use Rector\Set\ValueObject\SetList;
 use Ssch\TYPO3Rector\Set\Typo3LevelSetList;
+use Ssch\TYPO3Rector\TYPO313\v0\MigrateAddUserTSConfigToUserTsConfigFileRector;
+use Ssch\TYPO3Rector\TYPO313\v4\MigratePluginContentElementAndPluginSubtypesRector;
 
 return static function (RectorConfig $rectorConfig): void {
     $rectorConfig->paths([
@@ -48,9 +50,8 @@ return static function (RectorConfig $rectorConfig): void {
         SetList::PRIVATIZATION,
         SetList::STRICT_BOOLEANS,
         SetList::TYPE_DECLARATION,
-
-        LevelSetList::UP_TO_PHP_81,
-        Typo3LevelSetList::UP_TO_TYPO3_12,
+        LevelSetList::UP_TO_PHP_82,
+        Typo3LevelSetList::UP_TO_TYPO3_13,
     ]);
 
     // Skip some rules
@@ -61,5 +62,9 @@ return static function (RectorConfig $rectorConfig): void {
         RemoveUselessReturnTagRector::class,
         RemoveUselessVarTagRector::class,
         RemoveUnusedPrivateMethodParameterRector::class,
+
+        // Remove with TYPO3 v14
+        MigrateAddUserTSConfigToUserTsConfigFileRector::class,
+        MigratePluginContentElementAndPluginSubtypesRector::class,
     ]);
 };

@@ -39,18 +39,18 @@
         "typo3/cms-backend": "^13.4",
         "typo3/cms-extbase": "^13.4",
         "typo3/cms-extensionmanager": "^13.4",
-        "symfony/console": "^6.0 || ^7.0 || ^8.0"
+        "symfony/console": "^7.0"
     },
     "require-dev": {
-        "typo3/testing-framework": "^7.0 || ^8.0",
-        "friendsofphp/php-cs-fixer": "^3.65",
-        "saschaegerer/phpstan-typo3": "^1.0 || v2.x-dev",
+        "typo3/testing-framework": "^9.0",
+        "friendsofphp/php-cs-fixer": "^3.75",
+        "saschaegerer/phpstan-typo3": "^2.0",
         "overtrue/phplint": "^9.5",
-        "phpstan/phpstan": "^1.0 || ^2.0",
-        "phpstan/phpstan-strict-rules": "^1.0 || ^2.0",
-        "phpstan/phpstan-phpunit": "^1.0 || ^2.0",
-        "phpstan/phpstan-deprecation-rules": "^1.0 || ^2.0",
-        "ssch/typo3-rector": "^2.0 || ^3.0"
+        "phpstan/phpstan": "^2.0",
+        "phpstan/phpstan-strict-rules": "^2.0",
+        "phpstan/phpstan-phpunit": "^2.0",
+        "phpstan/phpstan-deprecation-rules": "^2.0",
+        "ssch/typo3-rector": "^3.0"
     },
     "suggest": {
         "netresearch/nr-sync": "*"
@@ -93,6 +93,9 @@
         "ci:rector": [
             "rector process --config Build/rector.php"
         ],
+        "ci:fractor": [
+            "fractor process --config Build/fractor.php"
+        ],
         "ci:test:php:cgl": [
             "@ci:cgl --dry-run"
         ],
@@ -111,10 +114,14 @@
         "ci:test:php:rector": [
             "@ci:rector --dry-run"
         ],
+        "ci:test:php:fractor": [
+            "@ci:fractor --dry-run"
+        ],
         "ci:test": [
             "@ci:test:php:lint",
             "@ci:test:php:phpstan",
             "@ci:test:php:rector",
+            "@ci:test:php:fractor",
             "@ci:test:php:unit",
             "@ci:test:php:cgl"
         ]

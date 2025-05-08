@@ -16,6 +16,10 @@
  *  http://cs.sensiolabs.org
  */
 
+use PhpCsFixer\Config;
+use PhpCsFixer\Finder;
+use PhpCsFixer\Runner\Parallel\ParallelConfig;
+
 if (PHP_SAPI !== 'cli') {
     die('This script supports command line usage only. Please check your command.');
 }
@@ -27,8 +31,9 @@ For the full copyright and license information, please read the
 LICENSE file that was distributed with this source code.
 EOF;
 
-return (new PhpCsFixer\Config())
+return (new Config())
     ->setRiskyAllowed(true)
+    ->setParallelConfig(new ParallelConfig(4, 8))
     ->setRules([
         '@PSR12'                          => true,
         '@PER-CS2.0'                      => true,
@@ -86,7 +91,7 @@ return (new PhpCsFixer\Config())
         ],
     ])
     ->setFinder(
-        PhpCsFixer\Finder::create()
+        Finder::create()
             ->exclude('.build')
             ->exclude('config')
             ->exclude('node_modules')
