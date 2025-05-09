@@ -10,7 +10,6 @@
 declare(strict_types=1);
 
 use Netresearch\NrTextdb\Controller\TranslationController;
-use Netresearch\Sync\Controller\BaseSyncModuleController;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 
 // Caution, variable name must not exist within \TYPO3\CMS\Core\Package\AbstractServiceProvider::configureBackendModules
@@ -29,9 +28,10 @@ $backendModulesConfiguration = [
         'iconIdentifier'                           => 'extension-netresearch-textdb',
         'path'                                     => '/module/netresearch/textdb',
         'labels'                                   => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang_mod_textdb.xlf',
-        'extensionName'                            => 'NrTextdb',
         'inheritNavigationComponentFromMainModule' => false,
-        'navigationComponent'                      => '',
+
+        // Extbase module configuration options
+        'extensionName'                            => 'NrTextdb',
         'controllerActions'                        => [
             TranslationController::class => [
                 'list',
@@ -55,7 +55,7 @@ if (ExtensionManagementUtility::isLoaded('netresearch/nr-sync')) {
         ],
         'routes' => [
             '_default' => [
-                'target' => BaseSyncModuleController::class . '::indexAction',
+                'target' => \Netresearch\Sync\Controller\BaseSyncModuleController::class . '::indexAction',
             ],
         ],
         'moduleData' => [
