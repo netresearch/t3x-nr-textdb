@@ -22,7 +22,7 @@ return [
             'endtime'   => 'endtime',
         ],
         'searchFields' => 'name',
-        'iconfile'     => 'EXT:nr_textdb/Resources/Public/Icons/tx_nrtextdb_domain_model_component.gif',
+        'iconfile'     => 'EXT:nr_textdb/Resources/Public/Icons/tx_nrtextdb_domain_model_component.svg',
         'security'     => [
             'ignorePageTypeRestriction' => true,
         ],
