@@ -28,7 +28,7 @@ return [
             'disabled' => 'hidden',
         ],
         'searchFields' => 'value',
-        'iconfile'     => 'EXT:nr_textdb/Resources/Public/Icons/tx_nrtextdb_domain_model_translation.gif',
+        'iconfile'     => 'EXT:nr_textdb/Resources/Public/Icons/tx_nrtextdb_domain_model_translation.svg',
         'security'     => [
             'ignorePageTypeRestriction' => true,
         ],
