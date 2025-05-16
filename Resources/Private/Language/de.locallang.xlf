@@ -4,37 +4,37 @@
         <header/>
         <body>
             <trans-unit id="tx_nrtextdb_domain_model_environment">
-                <target>Environment</target>
+                <target>Umgebung</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_environment.name">
                 <target>Name</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_component">
-                <target>Component</target>
+                <target>Komponente</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_component.name">
                 <target>Name</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_type">
-                <target>Type</target>
+                <target>Typ</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_type.name">
                 <target>Name</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_translation">
-                <target>Translation</target>
+                <target>ÜBersetzung</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_translation.value">
-                <target>Value</target>
+                <target>Wert</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
-                <target>Environment</target>
+                <target>Umgebung</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_translation.component">
-                <target>Component</target>
+                <target>Komponente</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_translation.type">
-                <target>Type</target>
+                <target>Typ</target>
             </trans-unit>
             <trans-unit id="no-entries">
                 <target>Es wurden keine Einträge gefunden.</target>
@@ -56,6 +56,9 @@
             </trans-unit>
             <trans-unit id="environment">
                 <target>Umgebung</target>
+            </trans-unit>
+            <trans-unit id="filter.reset.label">
+                <target>Zurücksetzen</target>
             </trans-unit>
             <trans-unit id="placeholder">
                 <target>Platzhalter</target>

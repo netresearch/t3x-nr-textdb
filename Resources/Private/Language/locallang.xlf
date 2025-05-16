@@ -58,6 +58,9 @@
             <trans-unit id="environment">
                 <source>Environment</source>
             </trans-unit>
+            <trans-unit id="filter.reset.label">
+                <source>Reset</source>
+            </trans-unit>
             <trans-unit id="placeholder">
                 <source>Placeholder</source>
             </trans-unit>

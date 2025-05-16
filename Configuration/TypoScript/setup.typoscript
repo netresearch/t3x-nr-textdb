@@ -1,19 +1,5 @@
 # Module configuration
 module.tx_nrtextdb {
-    view {
-        templateRootPaths {
-            0 = EXT:nr_textdb/Resources/Private/Backend/Templates/
-        }
-
-        partialRootPaths {
-            0 = EXT:nr_textdb/Resources/Private/Backend/Partials/
-        }
-
-        layoutRootPaths {
-            0 = EXT:nr_textdb/Resources/Private/Backend/Layouts/
-        }
-    }
-
     settings {
         pagination {
             enablePagination = 1
