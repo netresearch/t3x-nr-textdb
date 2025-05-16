@@ -1,0 +1,117 @@
+<html data-namespace-typo3-fluid="true"
+      xmlns="http://www.w3.org/1999/xhtml" lang="en"
+      xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+      xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
+>
+    <f:layout name="Module"/>
+
+    <f:section name="Content">
+        <f:be.pageRenderer
+            includeJavaScriptModules="{
+                0: '@netresearch/nr-textdb/TextDbModule.js'
+            }"
+        />
+
+        <h1><f:translate key="LLL:EXT:nr_textdb/Resources/Private/Language/locallang_mod_textdb.xlf:mlang_labels_tablabel" /></h1>
+
+        <f:form action="list" class="mt-4">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="component" class="form-label">
+                        <f:translate key="component">Component</f:translate>
+                    </label>
+                    <f:form.select name="component"
+                                   class="form-select"
+                                   options="{components}"
+                                   value="{defaultComponent.uid}"
+                                   optionValueField="uid"
+                                   optionLabelField="name"
+                                   prependOptionLabel=""/>
+                </div>
+
+                <div class="form-group">
+                    <label for="type" class="form-label">
+                        <f:translate key="type">Type</f:translate>
+                    </label>
+                    <f:form.select name="type" class="form-select" options="{types}" value="{defaultType.uid}"
+                                   optionValueField="uid" optionLabelField="name" prependOptionLabel=""/>
+                </div>
+
+                <div class="form-group">
+                    <label for="placeholder" class="form-label">
+                        <f:translate key="placeholder">Placeholder</f:translate>
+                    </label>
+                    <f:form.textfield name="placeholder" class="form-control" value="{defaultPlaceholder}"/>
+                </div>
+
+                <div class="form-group">
+                    <label for="value" class="form-label">
+                        <f:translate key="value">Value</f:translate>
+                    </label>
+                    <f:form.textfield name="value" class="form-control" value="{defaultValue}"/>
+                </div>
+
+                <div class="form-group">
+                    <f:form.button type="submit" name="operation" class="btn btn-default me-3">
+                        <core:icon identifier="actions-search" size="small" />
+                        <f:translate key="LLL:EXT:core/Resources/Private/Language/locallang_common.xlf:search" />
+                    </f:form.button>
+                    <f:form.button type="reset" name="operation" class="btn btn-link">
+                        <f:translate key="filter.reset.label"/>
+                    </f:form.button>
+                </div>
+            </div>
+        </f:form>
+
+        <f:if condition="{translations}">
+            <f:then>
+                <div class="table-fit">
+                    <table id="tx_nrtextdb" class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <f:translate key="language">Language</f:translate>
+                                </th>
+                                <th>
+                                    <f:translate key="component">Component</f:translate>
+                                </th>
+                                <th>
+                                    <f:translate key="type">Type</f:translate>
+                                </th>
+                                <th>
+                                    <f:translate key="placeholder">Placeholder</f:translate>
+                                </th>
+                                <th>
+                                    <f:translate key="value">Value</f:translate>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <f:if condition="{pagination}">
+                                <f:then>
+                                    <f:for each="{pagination.paginator.paginatedItems}" as="translation" iteration="iterator">
+                                        <f:render partial="Administration/TranslationItem" arguments="{translation: translation}" />
+                                    </f:for>
+                                </f:then>
+                                <f:else>
+                                    <f:for each="{translations}" as="translation">
+                                        <f:render partial="Administration/TranslationItem" arguments="{translation: translation}" />
+                                    </f:for>
+                                </f:else>
+                            </f:if>
+                        </tbody>
+                    </table>
+                </div>
+
+                <f:if condition="{pagination}">
+                    <f:render partial="Administration/Pagination" arguments="{pagination: pagination.pagination, paginator: pagination.paginator, actionName: 'list'}" />
+                </f:if>
+            </f:then>
+            <f:else>
+                <f:be.infobox state="1">
+                    <f:translate key="no-entries">No entries found.</f:translate>
+                </f:be.infobox>
+            </f:else>
+        </f:if>
+    </f:section>
+</html>

@@ -35,7 +35,6 @@ use TYPO3\CMS\Core\Imaging\IconSize;
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Messaging\FlashMessage;
 use TYPO3\CMS\Core\Messaging\FlashMessageService;
-use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Pagination\SimplePagination;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
@@ -78,11 +77,6 @@ class TranslationController extends ActionController
      * @var ExtensionConfiguration
      */
     protected ExtensionConfiguration $extensionConfiguration;
-
-    /**
-     * @var PageRenderer
-     */
-    protected readonly PageRenderer $pageRenderer;
 
     /**
      * @var IconFactory
@@ -133,7 +127,6 @@ class TranslationController extends ActionController
      * TranslationController constructor.
      *
      * @param ModuleTemplateFactory  $moduleTemplateFactory
-     * @param PageRenderer           $pageRenderer
      * @param ExtensionConfiguration $extensionConfiguration
      * @param IconFactory            $iconFactory
      * @param EnvironmentRepository  $environmentRepository
@@ -146,7 +139,6 @@ class TranslationController extends ActionController
      */
     public function __construct(
         ModuleTemplateFactory $moduleTemplateFactory,
-        PageRenderer $pageRenderer,
         ExtensionConfiguration $extensionConfiguration,
         IconFactory $iconFactory,
         EnvironmentRepository $environmentRepository,
@@ -166,10 +158,6 @@ class TranslationController extends ActionController
         $this->typeRepository         = $typeRepository;
         $this->moduleTemplateFactory  = $moduleTemplateFactory;
         $this->iconFactory            = $iconFactory;
-
-        $this->pageRenderer = $pageRenderer;
-        $this->pageRenderer->loadJavaScriptModule('@typo3/backend/modal.js');
-        $this->pageRenderer->loadJavaScriptModule('@netresearch/nr-textdb/TextDbModule.js');
 
         $this->environmentRepository->setCreateIfMissing(true);
         $this->typeRepository->setCreateIfMissing(true);
@@ -193,6 +181,8 @@ class TranslationController extends ActionController
 
         $this->moduleTemplate = $this->getModuleTemplate();
         $this->pid            = (int) ($this->getExtensionConfiguration()['textDbPid'] ?? 0);
+
+        $this->registerDocHeaderButtons();
     }
 
     /**
@@ -204,19 +194,13 @@ class TranslationController extends ActionController
     {
         $moduleTemplate = $this->moduleTemplateFactory->create($this->request);
 
-        $this->registerDocHeaderButtons($moduleTemplate);
+        $moduleTemplate
+            ->setModuleId('typo3-module-textdb-translation')
+            ->setModuleClass('typo3-module-textdb-translation');
+
+        $moduleTemplate->assign('settings', $this->settings);
 
         return $moduleTemplate;
-    }
-
-    /**
-     * @return ResponseInterface
-     */
-    private function moduleResponse(): ResponseInterface
-    {
-        $this->moduleTemplate->assign('content', $this->view->render());
-
-        return $this->moduleTemplate->renderResponse('Backend/BackendModule.html');
     }
 
     /**
@@ -278,7 +262,7 @@ class TranslationController extends ActionController
 
         $this->persistConfigInBeUserData($config);
 
-        $this->view->assignMultiple([
+        $this->moduleTemplate->assignMultiple([
             'defaultComponent'   => $defaultComponent,
             'defaultType'        => $defaultType,
             'defaultPlaceholder' => $defaultPlaceholder,
@@ -294,7 +278,7 @@ class TranslationController extends ActionController
             ),
         ]);
 
-        return $this->moduleResponse();
+        return $this->moduleTemplate->renderResponse('Translation/List');
     }
 
     /**
@@ -319,12 +303,12 @@ class TranslationController extends ActionController
             unset($untranslated[$translation->getSysLanguageUid()]);
         }
 
-        $this->view->assign('originalUid', $uid);
-        $this->view->assign('translated', $translated);
-        $this->view->assign('untranslated', $untranslated);
-        $this->view->assign('languages', $languages);
+        $this->moduleTemplate->assign('originalUid', $uid);
+        $this->moduleTemplate->assign('translated', $translated);
+        $this->moduleTemplate->assign('untranslated', $untranslated);
+        $this->moduleTemplate->assign('languages', $languages);
 
-        return $this->moduleResponse();
+        return $this->moduleTemplate->renderResponse('Translation/Translated');
     }
 
     /**
@@ -563,7 +547,7 @@ class TranslationController extends ActionController
      */
     public function importAction(bool $update = false): ResponseInterface
     {
-        $this->view->assign('action', 'import');
+        $this->moduleTemplate->assign('action', 'import');
 
         /** @var UploadedFile|null $translationFile */
         $translationFile = $this->request->getUploadedFiles()['translationFile'] ?? null;
@@ -573,7 +557,7 @@ class TranslationController extends ActionController
             || ($translationFile->getClientFilename() === null)
             || ($translationFile->getClientFilename() === '')
         ) {
-            return $this->moduleResponse();
+            return $this->moduleTemplate->renderResponse('Translation/Import');
         }
 
         $filename     = $translationFile->getClientFilename();
@@ -634,9 +618,9 @@ class TranslationController extends ActionController
                     $errors[] = $error->message;
                 }
 
-                $this->view->assign('errors', $errors);
+                $this->moduleTemplate->assign('errors', $errors);
 
-                return $this->moduleResponse();
+                return $this->moduleTemplate->renderResponse('Translation/Import');
             }
 
             // TODO Is this really required this way?
@@ -682,7 +666,7 @@ class TranslationController extends ActionController
             }
         }
 
-        $this->view->assignMultiple([
+        $this->moduleTemplate->assignMultiple([
             'updated'  => $updated,
             'imported' => $imported,
             'errors'   => $errors,
@@ -692,7 +676,7 @@ class TranslationController extends ActionController
             ),
         ]);
 
-        return $this->moduleResponse();
+        return $this->moduleTemplate->renderResponse('Translation/Import');
     }
 
     /**
@@ -866,14 +850,14 @@ class TranslationController extends ActionController
     /**
      * Generates and registers buttons for the doc header.
      *
-     * @param ModuleTemplate $moduleTemplate
-     *
      * @return void
      */
-    private function registerDocHeaderButtons(ModuleTemplate $moduleTemplate): void
+    private function registerDocHeaderButtons(): void
     {
         // Instantiate required classes
-        $buttonBar = $moduleTemplate->getDocHeaderComponent()->getButtonBar();
+        $buttonBar = $this->moduleTemplate
+            ->getDocHeaderComponent()
+            ->getButtonBar();
 
         // Prepare an array for the button definitions
         $buttons = [
@@ -899,10 +883,7 @@ class TranslationController extends ActionController
 
         // Add buttons from the definition to the doc header
         foreach ($buttons as $tableConfiguration) {
-            $title = LocalizationUtility::translate(
-                $tableConfiguration['label'],
-                'nr_textdb'
-            );
+            $title = $this->translate($tableConfiguration['label']) ?? '';
 
             $link = $this->uriBuilder
                 ->reset()
@@ -1020,5 +1001,16 @@ class TranslationController extends ActionController
     private function getLanguageService(): LanguageService
     {
         return $GLOBALS['LANG'];
+    }
+
+    /**
+     * @param string       $key
+     * @param array<mixed> $arguments
+     *
+     * @return string|null
+     */
+    private function translate(string $key, array $arguments = []): ?string
+    {
+        return LocalizationUtility::translate($key, 'NrTextdb', $arguments);
     }
 }

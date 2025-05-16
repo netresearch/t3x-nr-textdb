@@ -237,13 +237,15 @@ class TranslationService
         int $sysLanguageUid,
         string $value,
     ): ?Translation {
-        if (!($parentTranslation->getEnvironment() instanceof Environment)
+        if (
+            !($parentTranslation->getEnvironment() instanceof Environment)
             || !($parentTranslation->getComponent() instanceof Component)
             || !($parentTranslation->getType() instanceof Type)
         ) {
             return null;
         }
 
+        /** @var Translation $translation */
         $translation = GeneralUtility::makeInstance(Translation::class);
         $translation
             ->setEnvironment($parentTranslation->getEnvironment())
@@ -281,6 +283,7 @@ class TranslationService
         int $sysLanguageUid = 0,
         string $value = '',
     ): Translation {
+        /** @var Translation $translation */
         $translation = GeneralUtility::makeInstance(Translation::class);
         $translation
             ->setEnvironment($environment)
