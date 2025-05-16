@@ -22,6 +22,7 @@ use Netresearch\NrTextdb\Domain\Repository\TypeRepository;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\Exception\AspectNotFoundException;
 use TYPO3\CMS\Core\Context\LanguageAspect;
+use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -196,15 +197,16 @@ class TranslationService
      */
     public function getAllLanguages(): array
     {
-        $sites = $this->siteFinder->getAllSites();
+        $sites     = $this->siteFinder->getAllSites();
+        $firstSite = reset($sites);
 
-        return reset($sites)->getAllLanguages();
+        return ($firstSite instanceof Site) ? $firstSite->getAllLanguages() : [];
     }
 
     /**
      * Get the current language.
      *
-     * @return int
+     * @return int<-1, max>
      */
     private function getCurrentLanguage(): int
     {
@@ -218,15 +220,15 @@ class TranslationService
             return 0;
         }
 
-        return $languageAspect->getId();
+        return max(-1, $languageAspect->getId());
     }
 
     /**
      * Creates a new translation.
      *
-     * @param Translation $parentTranslation The parent translation record
-     * @param int         $sysLanguageUid    The uid of the language
-     * @param string      $value             The value of the translation
+     * @param Translation  $parentTranslation The parent translation record
+     * @param int<-1, max> $sysLanguageUid    The uid of the language
+     * @param string       $value             The value of the translation
      *
      * @return Translation|null
      */
@@ -262,12 +264,12 @@ class TranslationService
     /**
      * Creates a new translation.
      *
-     * @param Environment $environment    The environment of the translation
-     * @param Component   $component      The component of the translation
-     * @param Type        $type           The type of the translation
-     * @param string      $placeholder    The placeholder of the translation
-     * @param int         $sysLanguageUid The uid of the language
-     * @param string      $value          The value of the translation
+     * @param Environment  $environment    The environment of the translation
+     * @param Component    $component      The component of the translation
+     * @param Type         $type           The type of the translation
+     * @param string       $placeholder    The placeholder of the translation
+     * @param int<-1, max> $sysLanguageUid The uid of the language
+     * @param string       $value          The value of the translation
      *
      * @return Translation
      */

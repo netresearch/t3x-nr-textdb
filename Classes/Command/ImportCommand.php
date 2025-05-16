@@ -20,6 +20,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use TYPO3\CMS\Core\Authentication\CommandLineUserAuthentication;
 use TYPO3\CMS\Core\Core\Bootstrap;
 use TYPO3\CMS\Core\Package\Exception\UnknownPackageException;
+use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
@@ -195,10 +196,10 @@ class ImportCommand extends Command
     {
         /** @var SiteFinder $siteFinder */
         $siteFinder = GeneralUtility::makeInstance(SiteFinder::class);
+        $sites      = $siteFinder->getAllSites();
+        $firstSite  = reset($sites);
 
-        $sites = $siteFinder->getAllSites();
-
-        return reset($sites)->getAllLanguages();
+        return ($firstSite instanceof Site) ? $firstSite->getAllLanguages() : [];
     }
 
     /**
@@ -243,6 +244,12 @@ class ImportCommand extends Command
                 glob($folderPath . 'textdb*.xlf'),
                 glob($folderPath . '*.textdb*.xlf'),
             ];
+
+            // Filter all possible "false" values
+            $files = array_filter(
+                $files,
+                static fn ($file): bool => $file !== false
+            );
 
             $files = array_merge(...$files);
 
