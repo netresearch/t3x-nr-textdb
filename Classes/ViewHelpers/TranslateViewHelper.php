@@ -207,7 +207,7 @@ class TranslateViewHelper extends AbstractViewHelper
     /**
      * Returns the current language uid.
      *
-     * @return int
+     * @return int<-1, max>
      */
     private function getLanguageUid(): int
     {
@@ -221,7 +221,7 @@ class TranslateViewHelper extends AbstractViewHelper
             return 0;
         }
 
-        return $languageAspect->getId();
+        return max(-1, $languageAspect->getId());
     }
 
     /**

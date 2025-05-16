@@ -149,7 +149,7 @@ class Translation extends AbstractEntity
     }
 
     /**
-     * @param int $sysLanguageUid
+     * @param int<-1, max> $sysLanguageUid
      *
      * @return Translation
      */
@@ -357,7 +357,7 @@ class Translation extends AbstractEntity
     }
 
     /**
-     * @return int
+     * @return int<0, max>
      */
     public function getLocalizedUid(): int
     {

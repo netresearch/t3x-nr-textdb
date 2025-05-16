@@ -53,6 +53,7 @@ use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use ZipArchive;
 
 use function is_string;
+use function sprintf;
 
 /**
  * TranslationController.
@@ -236,10 +237,10 @@ class TranslationController extends ActionController
         }
 
         $config      = $this->getConfigFromBeUserData();
-        $componentId = $config['component'] ?? 0;
-        $typeId      = $config['type'] ?? 0;
-        $placeholder = $config['placeholder'] ?? null;
-        $value       = $config['value'] ?? null;
+        $componentId = (int) ($config['component'] ?? 0);
+        $typeId      = (int) ($config['type'] ?? 0);
+        $placeholder = is_string($config['placeholder']) ? $config['placeholder'] : null;
+        $value       = is_string($config['value']) ? $config['value'] : null;
 
         if ($this->request->hasArgument('component')) {
             $componentId = (int) $this->request->getArgument('component');
@@ -327,9 +328,9 @@ class TranslationController extends ActionController
     }
 
     /**
-     * @param int                $parent
-     * @param array<int, string> $new
-     * @param array<int, string> $update
+     * @param int                         $parent
+     * @param array<int<-1, max>, string> $new
+     * @param array<int, string>          $update
      *
      * @return ResponseInterface
      *
@@ -342,7 +343,6 @@ class TranslationController extends ActionController
         $this->translationRepository
             ->injectPersistenceManager($this->persistenceManager);
 
-        /** @var Translation|null $parentTranslation */
         $parentTranslation = $this->translationRepository->findByUid($parent);
 
         if ($parentTranslation instanceof Translation) {
@@ -361,7 +361,6 @@ class TranslationController extends ActionController
         }
 
         foreach ($update as $translationUid => $value) {
-            /** @var Translation $translation */
             $translation = $this->translationRepository->findByUid($translationUid);
 
             if ($translation instanceof Translation) {
@@ -440,8 +439,8 @@ class TranslationController extends ActionController
                     ->findAllByComponentTypePlaceholderValueAndLanguage(
                         (int) $component,
                         (int) $type,
-                        $placeholder,
-                        $value
+                        is_string($placeholder) ? $placeholder : null,
+                        is_string($value) ? $value : null
                     );
 
                 $originals = $this->writeTranslationExportFile(
@@ -486,9 +485,16 @@ class TranslationController extends ActionController
             );
         }
 
-        /** @var string $translationFile */
-        foreach (glob($exportDir . '/*') as $translationFile) {
-            $archive->addFile($translationFile, basename($translationFile));
+        $translationFiles = glob($exportDir . '/*');
+
+        if ($translationFiles !== false) {
+            /** @var string $translationFile */
+            foreach ($translationFiles as $translationFile) {
+                $archive->addFile(
+                    $translationFile,
+                    basename($translationFile)
+                );
+            }
         }
 
         $archive->close();
@@ -603,15 +609,25 @@ class TranslationController extends ActionController
                 continue;
             }
 
-            $languageUid   = $language->getLanguageId();
+            $languageUid   = max(-1, $language->getLanguageId());
             $languageTitle = $language->getTitle();
             $languages[]   = $languageTitle;
+
+            $uploadedFileContent = file_get_contents($uploadedFile);
+
+            if ($uploadedFileContent === false) {
+                continue;
+            }
 
             libxml_use_internal_errors(true);
 
             // We can't use the XliffParser here, due it's limitations regarding filenames
-            $data      = simplexml_load_string(file_get_contents($uploadedFile));
+            $data      = simplexml_load_string($uploadedFileContent);
             $xmlErrors = libxml_get_errors();
+
+            if ($data === false) {
+                continue;
+            }
 
             if ($xmlErrors !== []) {
                 foreach ($xmlErrors as $error) {
@@ -623,6 +639,7 @@ class TranslationController extends ActionController
                 return $this->moduleResponse();
             }
 
+            // TODO Is this really required this way?
             /** @var PersistenceManager $persistenceManager */
             $persistenceManager = GeneralUtility::makeInstance(PersistenceManager::class);
             $this->translationRepository->injectPersistenceManager($persistenceManager);
@@ -689,7 +706,7 @@ class TranslationController extends ActionController
     {
         $parts = explode('|', $key);
 
-        return $parts[0] ?? null;
+        return ($parts[0] !== '') ? $parts[0] : null;
     }
 
     /**
@@ -703,7 +720,7 @@ class TranslationController extends ActionController
     {
         $parts = explode('|', $key);
 
-        return $parts[1] ?? null;
+        return isset($parts[1]) && ($parts[1] !== '') ? $parts[1] : null;
     }
 
     /**
@@ -717,7 +734,7 @@ class TranslationController extends ActionController
     {
         $parts = explode('|', $key);
 
-        return $parts[2] ?? null;
+        return isset($parts[2]) && ($parts[2] !== '') ? $parts[2] : null;
     }
 
     /**
@@ -740,9 +757,13 @@ class TranslationController extends ActionController
      */
     private function getConfigFromBeUserData(): array
     {
-        $serializedConfig = $this->getBackendUser()->getModuleData(static::class);
-        if (is_string($serializedConfig)
-        && ($serializedConfig !== '')) {
+        $serializedConfig = $this->getBackendUser()
+            ->getModuleData(static::class);
+
+        if (
+            is_string($serializedConfig)
+            && ($serializedConfig !== '')
+        ) {
             return unserialize(
                 $serializedConfig,
                 [
@@ -767,11 +788,11 @@ class TranslationController extends ActionController
     /**
      * Write the translation file for export and returns the uid of entries written to file.
      *
-     * @param SiteLanguage                      $language
-     * @param QueryResultInterface<Translation> $translations
-     * @param string                            $exportDir
-     * @param string                            $filename
-     * @param bool                              $enableTargetMarker
+     * @param SiteLanguage                           $language
+     * @param QueryResultInterface<int, Translation> $translations
+     * @param string                                 $exportDir
+     * @param string                                 $filename
+     * @param bool                                   $enableTargetMarker
      *
      * @return int[]
      */
@@ -792,6 +813,10 @@ class TranslationController extends ActionController
                 'Resources/Private/template.xlf'
             )
         );
+
+        if ($markup === false) {
+            return [];
+        }
 
         $entries               = '';
         $writtenTranslationIds = [];
@@ -926,8 +951,8 @@ class TranslationController extends ActionController
      * - pagination disabled
      * - itemsPerPage = 10
      *
-     * @param QueryResultInterface<Translation> $items
-     * @param array<string, int|bool>           $settings
+     * @param QueryResultInterface<int, Translation> $items
+     * @param array<string, int|bool>                $settings
      *
      * @return array<string, mixed>
      */
@@ -937,7 +962,8 @@ class TranslationController extends ActionController
             ? (int) $this->request->getArgument('currentPage') : 1;
 
         if (
-            ($settings['enablePagination'] ?? false)
+            isset($settings['enablePagination'])
+            && ((bool) $settings['enablePagination'])
             && ((int) $settings['itemsPerPage'] > 0)
         ) {
             $paginator = new QueryResultPaginator(

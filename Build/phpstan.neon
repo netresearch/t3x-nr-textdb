@@ -6,7 +6,7 @@ includes:
 
 parameters:
     # You can currently choose from 11 levels (0 is the loosest and 10 is the strictest).
-    level: 6
+    level: 7
 
     paths:
         - %currentWorkingDirectory%/Classes/
@@ -19,5 +19,3 @@ parameters:
         - %currentWorkingDirectory%/.build/*
         - %currentWorkingDirectory%/ext_emconf.php
         - %currentWorkingDirectory%/Configuration/Backend/Modules.php
-
-    treatPhpDocTypesAsCertain: false

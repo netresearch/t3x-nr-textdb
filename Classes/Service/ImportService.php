@@ -22,6 +22,7 @@ use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
 use Netresearch\NrTextdb\Domain\Repository\TypeRepository;
 use RuntimeException;
 use TYPO3\CMS\Core\Localization\Parser\XliffParser;
+use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -163,15 +164,15 @@ class ImportService
     /**
      * Imports a single entry into the database.
      *
-     * @param int         $languageUid
-     * @param string|null $componentName
-     * @param string|null $typeName
-     * @param string      $placeholder
-     * @param string      $value
-     * @param bool        $forceUpdate
-     * @param int         $imported
-     * @param int         $updated
-     * @param string[]    $errors
+     * @param int<-1, max> $languageUid
+     * @param string|null  $componentName
+     * @param string|null  $typeName
+     * @param string       $placeholder
+     * @param string       $value
+     * @param bool         $forceUpdate
+     * @param int          $imported
+     * @param int          $updated
+     * @param string[]     $errors
      *
      * @return void
      */
@@ -301,7 +302,7 @@ class ImportService
      *
      * @param string $languageCode Language Code
      *
-     * @return int
+     * @return int<-1, max>
      */
     private function getLanguageId(string $languageCode): int
     {
@@ -311,7 +312,7 @@ class ImportService
 
         foreach ($this->getAllLanguages() as $localLanguage) {
             if ($languageCode === $localLanguage->getLocale()->getLanguageCode()) {
-                return $localLanguage->getLanguageId();
+                return max(-1, $localLanguage->getLanguageId());
             }
         }
 
@@ -327,10 +328,10 @@ class ImportService
     {
         /** @var SiteFinder $siteFinder */
         $siteFinder = GeneralUtility::makeInstance(SiteFinder::class);
+        $sites      = $siteFinder->getAllSites();
+        $firstSite  = reset($sites);
 
-        $sites = $siteFinder->getAllSites();
-
-        return reset($sites)->getAllLanguages();
+        return ($firstSite instanceof Site) ? $firstSite->getAllLanguages() : [];
     }
 
     /**
@@ -344,7 +345,7 @@ class ImportService
     {
         $parts = explode('|', $key);
 
-        return $parts[0] ?? null;
+        return ($parts[0] !== '') ? $parts[0] : null;
     }
 
     /**
@@ -358,7 +359,7 @@ class ImportService
     {
         $parts = explode('|', $key);
 
-        return $parts[1] ?? null;
+        return isset($parts[1]) && ($parts[1] !== '') ? $parts[1] : null;
     }
 
     /**
@@ -372,6 +373,6 @@ class ImportService
     {
         $parts = explode('|', $key);
 
-        return $parts[2] ?? null;
+        return isset($parts[2]) && ($parts[2] !== '') ? $parts[2] : null;
     }
 }

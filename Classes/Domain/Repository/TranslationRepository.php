@@ -52,7 +52,7 @@ class TranslationRepository extends AbstractRepository
      * @param int[] $originals
      * @param int   $languageUid
      *
-     * @return QueryResultInterface<Translation>
+     * @return QueryResultInterface<int, Translation>
      *
      * @throws InvalidQueryException
      */
@@ -112,7 +112,7 @@ class TranslationRepository extends AbstractRepository
      * @param string|null $value       Value to search for
      * @param int         $languageId  Language ID
      *
-     * @return QueryResultInterface<Translation>
+     * @return QueryResultInterface<int, Translation>
      *
      * @throws InvalidQueryException
      */

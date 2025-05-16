@@ -58,11 +58,14 @@ class AbstractRepository extends Repository
     /**
      * Get the configured page ID, used to store the translation in, from extension configuration.
      *
-     * @return int
+     * @return int<0, max>
      */
     public function getConfiguredPageId(): int
     {
-        return (int) ($this->getExtensionConfiguration('textDbPid') ?? 0);
+        return max(
+            0,
+            (int) ($this->getExtensionConfiguration('textDbPid') ?? 0)
+        );
     }
 
     /**
