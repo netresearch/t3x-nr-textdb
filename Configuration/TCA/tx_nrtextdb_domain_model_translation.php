@@ -12,7 +12,6 @@ declare(strict_types=1);
 return [
     'ctrl' => [
         'title'                    => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang_db.xlf:tx_nrtextdb_domain_model_translation',
-        'descriptionColumn'        => 'value',
         'label'                    => 'value',
         'prependAtCopy'            => '',
         'hideAtCopy'               => false,
@@ -41,7 +40,7 @@ return [
             'showitem' => 'hidden',
         ],
         'paletteLanguage' => [
-            'showitem' => 'sys_language_uid;LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:sys_language_uid_formlabel, l10n_parent, l10n_diffsource',
+            'showitem' => 'sys_language_uid, l10n_parent, l10n_diffsource',
         ],
     ],
     'types' => [
@@ -75,32 +74,6 @@ return [
                 'default'  => 0,
             ],
         ],
-        'l10n_source' => [
-            'config' => [
-                'type' => 'passthrough',
-            ],
-        ],
-        'l10n_diffsource' => [
-            'config' => [
-                'type'    => 'passthrough',
-                'default' => '',
-            ],
-        ],
-        'hidden' => [
-            'l10n_mode' => 'exclude',
-            'exclude'   => true,
-            'label'     => 'LLL:EXT:core/Resources/Private/Language/locallang_general.xlf:LGL.visible',
-            'config'    => [
-                'type'       => 'check',
-                'renderType' => 'checkboxToggle',
-                'items'      => [
-                    [
-                        'label'              => '',
-                        'invertStateDisplay' => true,
-                    ],
-                ],
-            ],
-        ],
         'pid' => [
             'label'  => 'pid',
             'config' => [
@@ -108,21 +81,10 @@ return [
             ],
         ],
         'crdate' => [
-            'label'  => 'crdate',
+            'label'  => 'LLL:EXT:core/Resources/Private/Language/locallang_general.xlf:LGL.creationDate',
             'config' => [
-                'type' => 'datetime',
-            ],
-        ],
-        'tstamp' => [
-            'label'  => 'tstamp',
-            'config' => [
-                'type' => 'datetime',
-            ],
-        ],
-        'sorting' => [
-            'label'  => 'sorting',
-            'config' => [
-                'type' => 'passthrough',
+                'type'    => 'datetime',
+                'default' => 0,
             ],
         ],
         'environment' => [
@@ -176,10 +138,12 @@ return [
             'exclude' => true,
             'label'   => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang_db.xlf:tx_nrtextdb_domain_model_translation.value',
             'config'  => [
-                'type'     => 'input',
-                'size'     => 30,
-                'eval'     => 'trim',
-                'required' => true,
+                'type'           => 'text',
+                'cols'           => 30,
+                'rows'           => 3,
+                'eval'           => 'trim',
+                'required'       => true,
+                'enableRichtext' => true,
             ],
         ],
     ],
