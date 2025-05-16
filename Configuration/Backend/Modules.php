@@ -31,8 +31,8 @@ $backendModulesConfiguration = [
         'inheritNavigationComponentFromMainModule' => false,
 
         // Extbase module configuration options
-        'extensionName'                            => 'NrTextdb',
-        'controllerActions'                        => [
+        'extensionName'     => 'NrTextdb',
+        'controllerActions' => [
             TranslationController::class => [
                 'list',
                 'translated',
@@ -55,7 +55,7 @@ if (ExtensionManagementUtility::isLoaded('netresearch/nr-sync')) {
         ],
         'routes' => [
             '_default' => [
-                'target' => \Netresearch\Sync\Controller\BaseSyncModuleController::class . '::indexAction',
+                'target' => Netresearch\Sync\Controller\BaseSyncModuleController::class . '::indexAction',
             ],
         ],
         'moduleData' => [

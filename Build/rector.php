@@ -21,6 +21,7 @@ use Rector\Set\ValueObject\SetList;
 use Ssch\TYPO3Rector\Set\Typo3LevelSetList;
 use Ssch\TYPO3Rector\TYPO313\v0\MigrateAddUserTSConfigToUserTsConfigFileRector;
 use Ssch\TYPO3Rector\TYPO313\v4\MigratePluginContentElementAndPluginSubtypesRector;
+use Ssch\TYPO3Rector\TYPO313\v4\MigratePluginContentElementAndPluginSubtypesSwapArgsRector;
 
 return static function (RectorConfig $rectorConfig): void {
     $rectorConfig->paths([
@@ -66,5 +67,6 @@ return static function (RectorConfig $rectorConfig): void {
         // Remove with TYPO3 v14
         MigrateAddUserTSConfigToUserTsConfigFileRector::class,
         MigratePluginContentElementAndPluginSubtypesRector::class,
+        MigratePluginContentElementAndPluginSubtypesSwapArgsRector::class,
     ]);
 };

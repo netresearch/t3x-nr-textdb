@@ -50,7 +50,8 @@
         "phpstan/phpstan-strict-rules": "^2.0",
         "phpstan/phpstan-phpunit": "^2.0",
         "phpstan/phpstan-deprecation-rules": "^2.0",
-        "ssch/typo3-rector": "^3.0"
+        "ssch/typo3-rector": "^3.0",
+        "a9f/typo3-fractor": "^0.5"
     },
     "suggest": {
         "netresearch/nr-sync": "*"
@@ -73,8 +74,9 @@
         "optimize-autoloader": true,
         "platform-check": false,
         "allow-plugins": {
-            "typo3/cms-composer-installers": true,
-            "typo3/class-alias-loader": true
+            "a9f/fractor-extension-installer": true,
+            "typo3/class-alias-loader": true,
+            "typo3/cms-composer-installers": true
         }
     },
     "extra": {
