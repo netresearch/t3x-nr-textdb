@@ -324,9 +324,6 @@ class TranslationController extends ActionController
      */
     public function translateRecordAction(int $parent, array $new = [], array $update = []): ResponseInterface
     {
-        $this->translationRepository
-            ->injectPersistenceManager($this->persistenceManager);
-
         $parentTranslation = $this->translationRepository->findByUid($parent);
 
         if ($parentTranslation instanceof Translation) {
@@ -622,11 +619,6 @@ class TranslationController extends ActionController
 
                 return $this->moduleTemplate->renderResponse('Translation/Import');
             }
-
-            // TODO Is this really required this way?
-            /** @var PersistenceManager $persistenceManager */
-            $persistenceManager = GeneralUtility::makeInstance(PersistenceManager::class);
-            $this->translationRepository->injectPersistenceManager($persistenceManager);
 
             /** @var SimpleXMLElement $translation */
             foreach ($data->file->body->children() as $translation) {

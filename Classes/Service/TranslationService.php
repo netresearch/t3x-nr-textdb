@@ -295,12 +295,13 @@ class TranslationService
             ->setPid($this->environmentRepository->getConfiguredPageId());
 
         if ($sysLanguageUid !== 0) {
-            $parentTranslation = $this->translationRepository->findByEnvironmentComponentTypeAndPlaceholder(
-                $environment,
-                $component,
-                $type,
-                $placeholder
-            );
+            $parentTranslation = $this->translationRepository
+                ->findByEnvironmentComponentTypeAndPlaceholder(
+                    $environment,
+                    $component,
+                    $type,
+                    $placeholder
+                );
 
             if ($parentTranslation instanceof Translation) {
                 $translation->setL10nParent($parentTranslation->getUid());
