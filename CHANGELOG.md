@@ -1,3 +1,21 @@
+# 2.0.11
+
+## TASK
+
+- 4f78e8f [TASK] Update ext_emconf.php to use fix gh action
+
+## MISC
+
+- 04ebde5 Update actions/checkout action to v5
+- 2dfc913 Update dependency ubuntu to v24
+- 37fbaff Update actions/checkout action to v4
+- d6be222 Add renovate.json
+
+## Contributors
+
+- Gitsko
+- renovate[bot]
+
 # 2.0.9
 
 ## MISC
