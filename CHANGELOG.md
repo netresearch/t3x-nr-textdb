@@ -1,3 +1,13 @@
+# 1.1.1
+
+## TASK
+
+- 544e291 [TASK] Update ext_emconf.php to use fix gh action
+
+## Contributors
+
+- Gitsko
+
 # 1.1.0
 
 ## MISC
