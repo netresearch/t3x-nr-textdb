@@ -1,3 +1,28 @@
+# 3.0.0
+
+## MISC
+
+- cfbd626 NASAFF-25): Update rector rules
+- 166e708 NASAFF-259: Remove unnecessary injects of persistance manager
+- 7c0f358 NASAFF-259: Rework backend module
+- 6e33a8a NASAFF-259: Apply phpstan rules
+- 65c5390 NASAFF-259: Update TCA structure, remove not required stuff
+- 0308853 NASAFF-259: Update GIF icons to SVG
+- 7daaf5a NASAFF-259: Update dev tools
+- 54e8e81 NASAFF-259: Refactor code to be compatible with TYPO3 v13
+- f93bf19 NASAFF-259: Update dev tools
+- 50743f9 NASAFF-249: change composer.json core compatibility to TYPO3 13.4 - make the extension installable for TYPO3 13.4
+- 04ebde5 Update actions/checkout action to v5
+- 2dfc913 Update dependency ubuntu to v24
+- 37fbaff Update actions/checkout action to v4
+- d6be222 Add renovate.json
+
+## Contributors
+
+- Rico Sonntag
+- Tobias.Hein
+- renovate[bot]
+
 # 2.0.9
 
 ## MISC
