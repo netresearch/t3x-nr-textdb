@@ -1,3 +1,17 @@
+# 2.0.10
+
+## TASK
+
+- 211776e [TASK] Update ext_emconf.php to use fix gh action
+- 18df410 [TASK] Update typo3/cms-extensionmanager for TYPO3 12
+- 4045ec9 [TASK] Update composer dependencies for TYPO3 12
+- c8faf04 [TASK] Update composer.json for TYPO3 12 compatibility
+
+## Contributors
+
+- Gitsko
+- Thomas Schöne
+
 # 1.1.0
 
 ## MISC

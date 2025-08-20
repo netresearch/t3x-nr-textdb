@@ -83,7 +83,7 @@
             "web-dir": ".build/public"
         },
         "branch-alias": {
-            "dev-TYPO3-11": "1.1.x-dev"
+            "dev-TYPO3-12": "2.0.x-dev"
         }
     },
     "scripts": {
