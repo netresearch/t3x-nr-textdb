@@ -1,0 +1,112 @@
+#!/bin/bash
+
+## Description: Install TYPO3 13.4 LTS with nr_textdb extension
+## Usage: install-v13
+## Example: ddev install-v13
+
+set -e
+
+VERSION="v13"
+TYPO3_VERSION="^13.4"
+INSTALL_DIR="/var/www/html/$VERSION"
+
+echo "📦 Installing TYPO3 13.4 LTS..."
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# Create installation directory
+mkdir -p "$INSTALL_DIR"
+cd "$INSTALL_DIR"
+
+# Initialize composer project
+if [ ! -f "composer.json" ]; then
+    echo "🔧 Creating TYPO3 project..."
+    composer create-project typo3/cms-base-distribution:$TYPO3_VERSION . --no-install --no-interaction
+fi
+
+# Install TYPO3 core and dependencies
+echo "📥 Installing TYPO3 core packages..."
+composer require --no-interaction \
+    typo3/cms-core:$TYPO3_VERSION \
+    typo3/cms-backend:$TYPO3_VERSION \
+    typo3/cms-extbase:$TYPO3_VERSION \
+    typo3/cms-frontend:$TYPO3_VERSION \
+    typo3/cms-install:$TYPO3_VERSION
+
+# Add extension via repository path
+echo "🔗 Adding nr_textdb extension..."
+composer config repositories.nr_textdb path /var/www/nr_textdb
+composer require netresearch/nr-textdb:@dev --no-interaction
+
+# Install introduction package for demo content
+echo "📚 Installing introduction package..."
+composer require --no-interaction typo3/cms-introduction
+
+# Run TYPO3 setup
+echo "⚙️  Setting up TYPO3..."
+vendor/bin/typo3 setup \
+    --driver=mysqli \
+    --host=db \
+    --port=3306 \
+    --username=root \
+    --password=root \
+    --dbname=db \
+    --admin-username=admin \
+    --admin-email=admin@example.com \
+    --admin-user-password='Password:joh316' \
+    --project-name='EXT:nr_textdb Dev Environment' \
+    --server-type=apache \
+    --no-interaction \
+    --force
+
+# Activate extensions
+echo "✅ Activating extensions..."
+vendor/bin/typo3 extension:setup --extension=backend || true
+vendor/bin/typo3 extension:setup --extension=nr_textdb || true
+vendor/bin/typo3 extension:setup --extension=introduction || true
+
+# Create site configuration if not exists
+echo "🌐 Creating site configuration..."
+mkdir -p config/sites/main
+if [ ! -f "config/sites/main/config.yaml" ]; then
+    cat > config/sites/main/config.yaml << 'EOF'
+base: /
+baseVariants: {  }
+languages:
+  - title: English
+    enabled: true
+    languageId: 0
+    base: /
+    typo3Language: default
+    locale: en_US.UTF-8
+    iso-639-1: en
+    navigationTitle: English
+    hreflang: en-us
+    direction: ltr
+    flag: us
+rootPageId: 1
+routes: {  }
+websiteTitle: 'TYPO3 13.4 - nr_textdb'
+EOF
+fi
+
+# Flush caches
+echo "🧹 Flushing caches..."
+vendor/bin/typo3 cache:flush || true
+
+# Set permissions
+echo "🔒 Setting permissions..."
+chmod -R 755 public/
+chmod -R 775 var/
+
+echo ""
+echo "✅ TYPO3 13.4 LTS installation complete!"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+echo "🌐 Access your installation:"
+echo "   Frontend: https://v13.nr-textdb.ddev.site/"
+echo "   Backend:  https://v13.nr-textdb.ddev.site/typo3/"
+echo ""
+echo "🔑 Login credentials:"
+echo "   Username: admin"
+echo "   Password: Password:joh316"
+echo ""

@@ -1,0 +1,42 @@
+#!/bin/bash
+
+## Description: Render TYPO3 extension documentation
+## Usage: docs
+## Example: ddev docs
+
+set -e
+
+echo "📚 Rendering TYPO3 Extension Documentation"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# Check if Documentation directory exists
+if [ ! -d "Documentation" ]; then
+    echo "❌ Error: Documentation/ directory not found"
+    echo "   Please create a Documentation/ directory with Index.rst"
+    exit 1
+fi
+
+# Check if Documentation/Index.rst exists
+if [ ! -f "Documentation/Index.rst" ]; then
+    echo "❌ Error: Documentation/Index.rst not found"
+    echo "   Please create Documentation/Index.rst as the entry point"
+    exit 1
+fi
+
+echo "📖 Source:  Documentation/"
+echo "📦 Output:  Documentation-GENERATED-temp/"
+echo ""
+echo "🔨 Rendering documentation with TYPO3 render-guides..."
+echo ""
+
+# Render documentation using TYPO3 render-guides Docker image
+docker run --rm --pull always \
+    -v "$(pwd)/Documentation:/project/Documentation" \
+    -v "$(pwd)/Documentation-GENERATED-temp:/project/Documentation-GENERATED-temp" \
+    ghcr.io/typo3-documentation/render-guides:latest --config=Documentation
+
+echo ""
+echo "✅ Documentation rendered successfully!"
+echo ""
+echo "🌐 View at: https://docs.nr-textdb.ddev.site/"
+echo ""
