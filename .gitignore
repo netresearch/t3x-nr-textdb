@@ -20,3 +20,9 @@ coverage/
 # Cache
 .php-cs-fixer.cache
 .phplint.cache
+
+# DDEV
+.ddev/.homeadditions
+.ddev/.ddev-docker-compose-full.yaml
+.ddev/.gitignore
+Documentation-GENERATED-temp/
