@@ -10,6 +10,7 @@
 declare(strict_types=1);
 
 use Netresearch\NrTextdb\Controller\TranslationController;
+use Netresearch\Sync\Controller\BaseSyncModuleController;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 
 // Caution, variable name must not exist within \TYPO3\CMS\Core\Package\AbstractServiceProvider::configureBackendModules
@@ -55,7 +56,7 @@ if (ExtensionManagementUtility::isLoaded('netresearch/nr-sync')) {
         ],
         'routes' => [
             '_default' => [
-                'target' => Netresearch\Sync\Controller\BaseSyncModuleController::class . '::indexAction',
+                'target' => BaseSyncModuleController::class . '::indexAction',
             ],
         ],
         'moduleData' => [
