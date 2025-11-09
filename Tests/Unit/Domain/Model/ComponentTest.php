@@ -13,6 +13,7 @@ namespace Netresearch\NrTextdb\Tests\Unit\Domain\Model;
 
 use Netresearch\NrTextdb\Domain\Model\Component;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 /**
@@ -38,9 +39,7 @@ final class ComponentTest extends UnitTestCase
         $this->subject = new Component();
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function getNameReturnsInitialValueForString(): void
     {
         self::assertSame(
@@ -49,9 +48,7 @@ final class ComponentTest extends UnitTestCase
         );
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function setNameForStringSetsName(): void
     {
         $this->subject->setName('Conceived at T3CON10');
