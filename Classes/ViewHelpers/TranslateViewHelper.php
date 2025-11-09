@@ -21,6 +21,7 @@ use Netresearch\NrTextdb\Domain\Repository\EnvironmentRepository;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
 use Netresearch\NrTextdb\Domain\Repository\TypeRepository;
 use Netresearch\NrTextdb\Service\TranslationService;
+use Override;
 use RuntimeException;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\Exception\AspectNotFoundException;
@@ -48,48 +49,25 @@ class TranslateViewHelper extends AbstractViewHelper
      *
      * @var int
      */
-    final public const LANGUAGE_UID_EN = 1;
+    final public const int LANGUAGE_UID_EN = 1;
 
-    /**
-     * @var EnvironmentRepository
-     */
     private readonly EnvironmentRepository $environmentRepository;
 
-    /**
-     * @var ComponentRepository
-     */
     private readonly ComponentRepository $componentRepository;
 
-    /**
-     * @var TypeRepository
-     */
     private readonly TypeRepository $typeRepository;
 
-    /**
-     * @var TranslationRepository
-     */
     private readonly TranslationRepository $translationRepository;
 
-    /**
-     * @var TranslationService
-     */
     private readonly TranslationService $translationService;
 
     /**
      * Component which can be used for a migration step.
-     *
-     * @var string
      */
     public static string $component = '';
 
     /**
      * Translation constructor.
-     *
-     * @param EnvironmentRepository $environmentRepository
-     * @param ComponentRepository   $componentRepository
-     * @param TypeRepository        $typeRepository
-     * @param TranslationRepository $translationRepository
-     * @param TranslationService    $translationService
      */
     public function __construct(
         EnvironmentRepository $environmentRepository,
@@ -107,8 +85,6 @@ class TranslateViewHelper extends AbstractViewHelper
 
     /**
      * Initializes arguments (attributes).
-     *
-     * @return void
      */
     public function initializeArguments(): void
     {
@@ -143,6 +119,7 @@ class TranslateViewHelper extends AbstractViewHelper
      *
      * @throws IllegalObjectTypeException
      */
+    #[Override]
     public function render(): string
     {
         if (static::$component === '') {
@@ -154,15 +131,21 @@ class TranslateViewHelper extends AbstractViewHelper
         $placeholder = $this->arguments['key'];
         $extension   = $this->arguments['extensionName'] ?? null;
 
+        assert(is_string($placeholder));
+        assert(is_string($extension) || $extension === null);
+
         $translationRequested = LocalizationUtility::translate($placeholder, $extension);
         $translationOriginal  = LocalizationUtility::translate($placeholder, $extension, []);
 
-        $placeholderParts = explode(':', (string) $placeholder);
+        $placeholderParts = explode(':', $placeholder);
         if (count($placeholderParts) > 1) {
             $placeholder = $placeholderParts[3];
         }
 
-        $environment = $this->environmentRepository->findByName($this->arguments['environment']);
+        $environmentName = $this->arguments['environment'];
+        assert(is_string($environmentName));
+
+        $environment = $this->environmentRepository->findByName($environmentName);
         $component   = $this->componentRepository->findByName(static::$component);
         $type        = $this->typeRepository->findByName('label');
 
@@ -175,10 +158,15 @@ class TranslateViewHelper extends AbstractViewHelper
         }
 
         if ($this->hasTextDbEntry($environment, $component, $type, $placeholder)) {
-            return (string) $translationRequested;
+            assert(is_string($translationRequested));
+
+            return $translationRequested;
         }
 
         try {
+            assert(is_string($translationRequested));
+            assert(is_string($translationOriginal));
+
             $this->translationService
                 ->createTranslation(
                     $environment,
@@ -186,7 +174,7 @@ class TranslateViewHelper extends AbstractViewHelper
                     $type,
                     $placeholder,
                     $this->getLanguageUid(),
-                    (string) $translationRequested
+                    $translationRequested
                 );
 
             $this->translationService
@@ -196,7 +184,7 @@ class TranslateViewHelper extends AbstractViewHelper
                     $type,
                     $placeholder,
                     self::LANGUAGE_UID_EN,
-                    (string) $translationOriginal
+                    $translationOriginal
                 );
         } catch (Exception) {
         }
@@ -226,13 +214,6 @@ class TranslateViewHelper extends AbstractViewHelper
 
     /**
      * Returns true, if a textdb translation exists.
-     *
-     * @param Environment $environment
-     * @param Component   $component
-     * @param Type        $type
-     * @param string      $placeholder
-     *
-     * @return bool
      */
     private function hasTextDbEntry(
         Environment $environment,

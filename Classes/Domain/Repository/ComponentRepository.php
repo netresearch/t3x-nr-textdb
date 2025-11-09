@@ -38,8 +38,6 @@ class ComponentRepository extends AbstractRepository
 
     /**
      * Initialize the object.
-     *
-     * @return void
      */
     public function initializeObject(): void
     {
@@ -53,8 +51,6 @@ class ComponentRepository extends AbstractRepository
      * Find a Component by name and create one if not found.
      *
      * @param string $name Name of Component
-     *
-     * @return Component|null
      *
      * @throws IllegalObjectTypeException
      */
@@ -99,8 +95,6 @@ class ComponentRepository extends AbstractRepository
      *
      * @param string         $key       CacheKey
      * @param Component|null $component Component to cache
-     *
-     * @return Component|null
      */
     private function setToCache(string $key, ?Component $component): ?Component
     {
@@ -113,8 +107,6 @@ class ComponentRepository extends AbstractRepository
      * Returns a component from cache.
      *
      * @param string $key Cache Key
-     *
-     * @return Component|null
      */
     private function getFromCache(string $key): ?Component
     {

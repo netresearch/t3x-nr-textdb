@@ -35,8 +35,6 @@ class TranslationRepository extends AbstractRepository
 {
     /**
      * Initialize the object.
-     *
-     * @return void
      */
     public function initializeObject(): void
     {
@@ -50,7 +48,6 @@ class TranslationRepository extends AbstractRepository
 
     /**
      * @param int[] $originals
-     * @param int   $languageUid
      *
      * @return QueryResultInterface<int, Translation>
      *
@@ -161,13 +158,6 @@ class TranslationRepository extends AbstractRepository
 
     /**
      * Finds a translation record by given environment, component, type and placeholder.
-     *
-     * @param Environment $environment
-     * @param Component   $component
-     * @param Type        $type
-     * @param string      $placeholder
-     *
-     * @return Translation|null
      */
     public function findByEnvironmentComponentTypeAndPlaceholder(
         Environment $environment,
@@ -199,14 +189,6 @@ class TranslationRepository extends AbstractRepository
 
     /**
      * Finds a translation record by given environment, component, type, placeholder and language UID.
-     *
-     * @param Environment $environment
-     * @param Component   $component
-     * @param Type        $type
-     * @param string      $placeholder
-     * @param int         $languageUid
-     *
-     * @return Translation|null
      */
     public function findByEnvironmentComponentTypePlaceholderAndLanguage(
         Environment $environment,

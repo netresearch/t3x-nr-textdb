@@ -39,51 +39,22 @@ use function count;
  */
 class ImportService
 {
-    /**
-     * @var PersistenceManagerInterface
-     */
     private readonly PersistenceManagerInterface $persistenceManager;
 
-    /**
-     * @var XliffParser
-     */
     private readonly XliffParser $xliffParser;
 
-    /**
-     * @var TranslationService
-     */
     private readonly TranslationService $translationService;
 
-    /**
-     * @var TranslationRepository
-     */
     private readonly TranslationRepository $translationRepository;
 
-    /**
-     * @var ComponentRepository
-     */
     private readonly ComponentRepository $componentRepository;
 
-    /**
-     * @var TypeRepository
-     */
     private readonly TypeRepository $typeRepository;
 
-    /**
-     * @var EnvironmentRepository
-     */
     private readonly EnvironmentRepository $environmentRepository;
 
     /**
      * Constructor.
-     *
-     * @param PersistenceManagerInterface $persistenceManager
-     * @param XliffParser                 $xliffParser
-     * @param TranslationService          $translationService
-     * @param TranslationRepository       $translationRepository
-     * @param ComponentRepository         $componentRepository
-     * @param TypeRepository              $typeRepository
-     * @param EnvironmentRepository       $environmentRepository
      */
     public function __construct(
         PersistenceManagerInterface $persistenceManager,
@@ -111,8 +82,6 @@ class ImportService
      * @param int      $imported    The number of imported entries
      * @param int      $updated     The number of updated entries
      * @param string[] $errors      The error messages during import
-     *
-     * @return void
      */
     public function importFile(
         string $file,
@@ -165,16 +134,7 @@ class ImportService
      * Imports a single entry into the database.
      *
      * @param int<-1, max> $languageUid
-     * @param string|null  $componentName
-     * @param string|null  $typeName
-     * @param string       $placeholder
-     * @param string       $value
-     * @param bool         $forceUpdate
-     * @param int          $imported
-     * @param int          $updated
      * @param string[]     $errors
-     *
-     * @return void
      */
     public function importEntry(
         int $languageUid,
@@ -188,6 +148,10 @@ class ImportService
         array &$errors,
     ): void {
         try {
+            if ($componentName === null || $typeName === null) {
+                return;
+            }
+
             $environment = $this->environmentRepository
                 ->setCreateIfMissing(true)
                 ->findByName('default');
@@ -250,7 +214,10 @@ class ImportService
                         );
 
                     if ($parentTranslation instanceof Translation) {
-                        $translation->setL10nParent($parentTranslation->getUid());
+                        $parentUid = $parentTranslation->getUid();
+                        if ($parentUid !== null) {
+                            $translation->setL10nParent($parentUid);
+                        }
                     }
                 }
 
@@ -336,10 +303,6 @@ class ImportService
 
     /**
      * Get the component from a key.
-     *
-     * @param string $key
-     *
-     * @return string|null
      */
     private function getComponentFromKey(string $key): ?string
     {
@@ -350,10 +313,6 @@ class ImportService
 
     /**
      * Get the type from a key.
-     *
-     * @param string $key
-     *
-     * @return string|null
      */
     private function getTypeFromKey(string $key): ?string
     {
@@ -364,10 +323,6 @@ class ImportService
 
     /**
      * Get the placeholder from a key.
-     *
-     * @param string $key
-     *
-     * @return string|null
      */
     private function getPlaceholderFromKey(string $key): ?string
     {

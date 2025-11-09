@@ -39,39 +39,18 @@ use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
  */
 class TranslationService
 {
-    /**
-     * @var EnvironmentRepository
-     */
     private readonly EnvironmentRepository $environmentRepository;
 
-    /**
-     * @var ComponentRepository
-     */
     private readonly ComponentRepository $componentRepository;
 
-    /**
-     * @var TypeRepository
-     */
     private readonly TypeRepository $typeRepository;
 
-    /**
-     * @var TranslationRepository
-     */
     private readonly TranslationRepository $translationRepository;
 
-    /**
-     * @var SiteFinder
-     */
     private readonly SiteFinder $siteFinder;
 
     /**
      * Translation constructor.
-     *
-     * @param EnvironmentRepository $environmentRepository
-     * @param ComponentRepository   $componentRepository
-     * @param TypeRepository        $typeRepository
-     * @param TranslationRepository $translationRepository
-     * @param SiteFinder            $siteFinder
      */
     public function __construct(
         EnvironmentRepository $environmentRepository,
@@ -89,13 +68,6 @@ class TranslationService
 
     /**
      * Translate method.
-     *
-     * @param string $placeholder
-     * @param string $typeName
-     * @param string $componentName
-     * @param string $environmentName
-     *
-     * @return string
      *
      * @throws IllegalObjectTypeException
      */
@@ -172,7 +144,10 @@ class TranslationService
                     GeneralUtility::makeInstance(PersistenceManagerInterface::class)
                         ->persistAll();
 
-                    $translation->setL10nParent($parentTranslation->getUid());
+                    $parentUid = $parentTranslation->getUid();
+                    if ($parentUid !== null) {
+                        $translation->setL10nParent($parentUid);
+                    }
                 }
             }
 
@@ -229,8 +204,6 @@ class TranslationService
      * @param Translation  $parentTranslation The parent translation record
      * @param int<-1, max> $sysLanguageUid    The uid of the language
      * @param string       $value             The value of the translation
-     *
-     * @return Translation|null
      */
     public function createTranslationFromParent(
         Translation $parentTranslation,
@@ -257,7 +230,10 @@ class TranslationService
             ->setPid($this->environmentRepository->getConfiguredPageId());
 
         if ($sysLanguageUid !== 0) {
-            $translation->setL10nParent($parentTranslation->getUid());
+            $parentUid = $parentTranslation->getUid();
+            if ($parentUid !== null) {
+                $translation->setL10nParent($parentUid);
+            }
         }
 
         return $translation;
@@ -272,8 +248,6 @@ class TranslationService
      * @param string       $placeholder    The placeholder of the translation
      * @param int<-1, max> $sysLanguageUid The uid of the language
      * @param string       $value          The value of the translation
-     *
-     * @return Translation
      */
     public function createTranslation(
         Environment $environment,
@@ -304,7 +278,10 @@ class TranslationService
                 );
 
             if ($parentTranslation instanceof Translation) {
-                $translation->setL10nParent($parentTranslation->getUid());
+                $parentUid = $parentTranslation->getUid();
+                if ($parentUid !== null) {
+                    $translation->setL10nParent($parentUid);
+                }
             }
         }
 
