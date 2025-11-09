@@ -45,7 +45,7 @@ class ImportCommand extends Command
      *
      * @var string
      */
-    private const string LANG_FOLDER = 'Resources/Private/Language/';
+    private const LANG_FOLDER = 'Resources/Private/Language/';
 
     private readonly PersistenceManagerInterface $persistenceManager;
 
