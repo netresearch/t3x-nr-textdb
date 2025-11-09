@@ -16,6 +16,7 @@ $EM_CONF['nr_textdb'] = [
     'author'         => 'Thomas Schöne, Axel Seemann, Tobias Hein, Rico Sonntag',
     'author_email'   => 'thomas.schoene@netresearch.de, axel.seemann@netresearch.de, tobias.hein@netresearch.de, rico.sonntag@netresearch.de',
     'author_company' => 'Netresearch DTT GmbH',
+    'license'        => 'GPL-3.0-or-later',
     'state'          => 'stable',
     'version'        => '3.0.1',
     'constraints'    => [
