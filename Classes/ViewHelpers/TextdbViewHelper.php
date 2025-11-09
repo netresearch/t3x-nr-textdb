@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace Netresearch\NrTextdb\ViewHelpers;
 
 use Netresearch\NrTextdb\Service\TranslationService;
-use Override;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
@@ -78,7 +77,6 @@ class TextdbViewHelper extends AbstractViewHelper
      *
      * @throws IllegalObjectTypeException
      */
-    #[Override]
     public function render(): string
     {
         $placeholder = $this->arguments['placeholder'];

@@ -21,7 +21,6 @@ use Netresearch\NrTextdb\Domain\Repository\EnvironmentRepository;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
 use Netresearch\NrTextdb\Domain\Repository\TypeRepository;
 use Netresearch\NrTextdb\Service\TranslationService;
-use Override;
 use RuntimeException;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\Exception\AspectNotFoundException;
@@ -49,7 +48,7 @@ class TranslateViewHelper extends AbstractViewHelper
      *
      * @var int
      */
-    final public const int LANGUAGE_UID_EN = 1;
+    final public const LANGUAGE_UID_EN = 1;
 
     private readonly EnvironmentRepository $environmentRepository;
 
@@ -119,7 +118,6 @@ class TranslateViewHelper extends AbstractViewHelper
      *
      * @throws IllegalObjectTypeException
      */
-    #[Override]
     public function render(): string
     {
         if (static::$component === '') {
