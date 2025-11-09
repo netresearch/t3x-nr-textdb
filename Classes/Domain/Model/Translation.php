@@ -26,7 +26,7 @@ use TYPO3\CMS\Extbase\Validation\Validator\NotEmptyValidator;
  */
 class Translation extends AbstractEntity
 {
-    final public const string AUTO_CREATE_IDENTIFIER = 'auto-created-by-repository';
+    final public const AUTO_CREATE_IDENTIFIER = 'auto-created-by-repository';
 
     protected DateTime $crdate;
 
