@@ -31,9 +31,6 @@ final class TypeTest extends UnitTestCase
     /**
      * @return void
      */
-    /**
-     * @return void
-     */
     protected function setUp(): void
     {
         parent::setUp();

@@ -36,7 +36,7 @@ return (new Config())
     ->setParallelConfig(new ParallelConfig(4, 8))
     ->setRules([
         '@PSR12'                          => true,
-        '@PER-CS2.0'                      => true,
+        '@PER-CS2x0'                      => true,
         '@Symfony'                        => true,
 
         // Additional custom rules

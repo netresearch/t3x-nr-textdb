@@ -31,9 +31,6 @@ final class ComponentTest extends UnitTestCase
     /**
      * @return void
      */
-    /**
-     * @return void
-     */
     protected function setUp(): void
     {
         parent::setUp();
