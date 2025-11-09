@@ -29,9 +29,6 @@ final class ComponentTest extends UnitTestCase
      */
     protected Component $subject;
 
-    /**
-     * @return void
-     */
     protected function setUp(): void
     {
         parent::setUp();
