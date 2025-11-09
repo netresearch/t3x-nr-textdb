@@ -16,6 +16,7 @@ use Netresearch\NrTextdb\Domain\Model\Environment;
 use Netresearch\NrTextdb\Domain\Model\Translation;
 use Netresearch\NrTextdb\Domain\Model\Type;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\UsesClass;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
@@ -45,9 +46,7 @@ final class TranslationTest extends UnitTestCase
         $this->subject = new Translation();
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function getValueReturnsInitialValueForString(): void
     {
         self::assertSame(
@@ -56,9 +55,7 @@ final class TranslationTest extends UnitTestCase
         );
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function setValueForStringSetsValue(): void
     {
         $this->subject->setValue('Conceived at T3CON10');
@@ -69,9 +66,7 @@ final class TranslationTest extends UnitTestCase
         );
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function getEnvironmentReturnsInitialValueForEnvironment(): void
     {
         self::assertEquals(
@@ -80,9 +75,7 @@ final class TranslationTest extends UnitTestCase
         );
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function setEnvironmentForEnvironmentSetsEnvironment(): void
     {
         $environmentFixture = new Environment();
@@ -94,9 +87,7 @@ final class TranslationTest extends UnitTestCase
         );
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function getComponentReturnsInitialValueForComponent(): void
     {
         self::assertEquals(
@@ -105,9 +96,7 @@ final class TranslationTest extends UnitTestCase
         );
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function setComponentForComponentSetsComponent(): void
     {
         $componentFixture = new Component();
@@ -119,9 +108,7 @@ final class TranslationTest extends UnitTestCase
         );
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function getTypeReturnsInitialValueForType(): void
     {
         self::assertEquals(
@@ -130,9 +117,7 @@ final class TranslationTest extends UnitTestCase
         );
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function setTypeForTypeSetsType(): void
     {
         $typeFixture = new Type();
