@@ -29,9 +29,6 @@ final class EnvironmentTest extends UnitTestCase
      */
     protected Environment $subject;
 
-    /**
-     * @return void
-     */
     protected function setUp(): void
     {
         parent::setUp();

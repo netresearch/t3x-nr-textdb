@@ -29,9 +29,6 @@ final class TypeTest extends UnitTestCase
      */
     protected Type $subject;
 
-    /**
-     * @return void
-     */
     protected function setUp(): void
     {
         parent::setUp();

@@ -36,9 +36,6 @@ final class TranslationTest extends UnitTestCase
      */
     protected Translation $subject;
 
-    /**
-     * @return void
-     */
     protected function setUp(): void
     {
         parent::setUp();
