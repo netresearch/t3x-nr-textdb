@@ -41,6 +41,10 @@ return (new Config())
 
         // Additional custom rules
         'declare_strict_types'            => true,
+        'strict_param'                    => true,
+        'strict_comparison'               => true,
+        'modernize_strpos'                => true,
+        'use_arrow_functions'             => true,
         'concat_space'                    => [
             'spacing' => 'one',
         ],
@@ -52,7 +56,11 @@ return (new Config())
         ],
         'phpdoc_to_comment'               => false,
         'phpdoc_no_alias_tag'             => false,
-        'no_superfluous_phpdoc_tags'      => false,
+        'no_superfluous_phpdoc_tags'      => [
+            'allow_mixed'         => true,
+            'remove_inheritdoc'   => false,
+            'allow_unused_params' => false,
+        ],
         'phpdoc_separation'               => [
             'groups' => [
                 [

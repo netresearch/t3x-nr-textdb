@@ -38,8 +38,6 @@ class EnvironmentRepository extends AbstractRepository
 
     /**
      * Initialize the object.
-     *
-     * @return void
      */
     public function initializeObject(): void
     {
@@ -51,8 +49,6 @@ class EnvironmentRepository extends AbstractRepository
 
     /**
      * @param string $name Name of environment
-     *
-     * @return Environment|null
      *
      * @throws IllegalObjectTypeException
      */
@@ -97,8 +93,6 @@ class EnvironmentRepository extends AbstractRepository
      *
      * @param string           $key         Cache Key
      * @param Environment|null $environment Environment which is set to cache
-     *
-     * @return Environment|null
      */
     private function setToCache(string $key, ?Environment $environment): ?Environment
     {
@@ -111,8 +105,6 @@ class EnvironmentRepository extends AbstractRepository
      * Returns the environment from Cache.
      *
      * @param string $key Cache key
-     *
-     * @return Environment|null
      */
     private function getFromCache(string $key): ?Environment
     {

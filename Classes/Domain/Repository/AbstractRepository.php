@@ -31,17 +31,12 @@ use TYPO3\CMS\Extbase\Persistence\Repository;
  */
 class AbstractRepository extends Repository
 {
-    /**
-     * @var bool
-     */
     private bool $createIfMissing = false;
 
     /**
      * Get the extension configuration.
      *
      * @param string $path Path to get the config for
-     *
-     * @return mixed
      */
     private function getExtensionConfiguration(string $path): mixed
     {
@@ -71,10 +66,6 @@ class AbstractRepository extends Repository
     /**
      * Set to true if a translation part should automatically be created if it is missing in a database.
      * This will override the extension setting if it's set to true.
-     *
-     * @param bool $createIfMissing
-     *
-     * @return static
      */
     public function setCreateIfMissing(bool $createIfMissing): static
     {
@@ -85,8 +76,6 @@ class AbstractRepository extends Repository
 
     /**
      * Returns true if the placeholder or parts of the translation should be created if it is missing.
-     *
-     * @return bool
      */
     public function getCreateIfMissing(): bool
     {

@@ -63,79 +63,32 @@ use function sprintf;
  */
 class TranslationController extends ActionController
 {
-    /**
-     * @var ModuleTemplateFactory
-     */
     protected readonly ModuleTemplateFactory $moduleTemplateFactory;
 
-    /**
-     * @var ModuleTemplate
-     */
     protected ModuleTemplate $moduleTemplate;
 
-    /**
-     * @var ExtensionConfiguration
-     */
     protected ExtensionConfiguration $extensionConfiguration;
 
-    /**
-     * @var IconFactory
-     */
     protected readonly IconFactory $iconFactory;
 
-    /**
-     * @var EnvironmentRepository
-     */
     protected readonly EnvironmentRepository $environmentRepository;
 
-    /**
-     * @var TranslationRepository
-     */
     protected readonly TranslationRepository $translationRepository;
 
-    /**
-     * @var ComponentRepository
-     */
     protected readonly ComponentRepository $componentRepository;
 
-    /**
-     * @var TypeRepository
-     */
     protected readonly TypeRepository $typeRepository;
 
-    /**
-     * @var TranslationService
-     */
     protected readonly TranslationService $translationService;
 
-    /**
-     * @var PersistenceManager
-     */
     protected readonly PersistenceManager $persistenceManager;
 
-    /**
-     * @var ImportService
-     */
     private readonly ImportService $importService;
 
-    /**
-     * @var int
-     */
     protected int $pid = 0;
 
     /**
      * TranslationController constructor.
-     *
-     * @param ModuleTemplateFactory  $moduleTemplateFactory
-     * @param ExtensionConfiguration $extensionConfiguration
-     * @param IconFactory            $iconFactory
-     * @param EnvironmentRepository  $environmentRepository
-     * @param TranslationRepository  $translationRepository
-     * @param TranslationService     $translationService
-     * @param PersistenceManager     $persistenceManager
-     * @param ComponentRepository    $componentRepository
-     * @param TypeRepository         $typeRepository
-     * @param ImportService          $importService
      */
     public function __construct(
         ModuleTemplateFactory $moduleTemplateFactory,
@@ -170,8 +123,6 @@ class TranslationController extends ActionController
     /**
      * Initialize Action.
      *
-     * @return void
-     *
      * @throws ExtensionConfigurationExtensionNotConfiguredException
      * @throws ExtensionConfigurationPathDoesNotExistException
      */
@@ -187,8 +138,6 @@ class TranslationController extends ActionController
 
     /**
      * Returns the module template instance.
-     *
-     * @return ModuleTemplate
      */
     private function getModuleTemplate(): ModuleTemplate
     {
@@ -205,8 +154,6 @@ class TranslationController extends ActionController
 
     /**
      * Shows the textDB entries.
-     *
-     * @return ResponseInterface
      *
      * @throws InvalidQueryException
      */
@@ -281,11 +228,6 @@ class TranslationController extends ActionController
         return $this->moduleTemplate->renderResponse('Translation/List');
     }
 
-    /**
-     * @param int $uid
-     *
-     * @return ResponseInterface
-     */
     public function translatedAction(int $uid): ResponseInterface
     {
         $translated = array_merge(
@@ -312,11 +254,8 @@ class TranslationController extends ActionController
     }
 
     /**
-     * @param int                         $parent
      * @param array<int<-1, max>, string> $new
      * @param array<int, string>          $update
-     *
-     * @return ResponseInterface
      *
      * @throws IllegalObjectTypeException
      * @throws UnknownObjectException
@@ -363,8 +302,6 @@ class TranslationController extends ActionController
 
     /**
      * Create an export of the current filtered textDB entries to import it safely into another system.
-     *
-     * @return ResponseInterface
      *
      * @throws RuntimeException
      * @throws InvalidQueryException
@@ -489,10 +426,6 @@ class TranslationController extends ActionController
 
     /**
      * Creates a stream response.
-     *
-     * @param string $file
-     *
-     * @return ResponseInterface
      */
     private function createStreamResponseFromFile(string $file): ResponseInterface
     {
@@ -521,10 +454,6 @@ class TranslationController extends ActionController
 
     /**
      * Returns the name of the file for a given language.
-     *
-     * @param SiteLanguage $language
-     *
-     * @return string
      */
     private function getExportFileNameForLanguage(SiteLanguage $language): string
     {
@@ -539,8 +468,6 @@ class TranslationController extends ActionController
      * Import translations from a file.
      *
      * @param bool $update Check if entries should be updated
-     *
-     * @return ResponseInterface
      */
     public function importAction(bool $update = false): ResponseInterface
     {
@@ -673,10 +600,6 @@ class TranslationController extends ActionController
 
     /**
      * Get the component from a key.
-     *
-     * @param string $key
-     *
-     * @return string|null
      */
     private function getComponentFromKey(string $key): ?string
     {
@@ -687,10 +610,6 @@ class TranslationController extends ActionController
 
     /**
      * Get the type from a key.
-     *
-     * @param string $key
-     *
-     * @return string|null
      */
     private function getTypeFromKey(string $key): ?string
     {
@@ -701,10 +620,6 @@ class TranslationController extends ActionController
 
     /**
      * Get the placeholder from key.
-     *
-     * @param string $key
-     *
-     * @return string|null
      */
     private function getPlaceholderFromKey(string $key): ?string
     {
@@ -715,8 +630,6 @@ class TranslationController extends ActionController
 
     /**
      * Get the extension configuration.
-     *
-     * @return mixed
      *
      * @throws ExtensionConfigurationExtensionNotConfiguredException
      * @throws ExtensionConfigurationPathDoesNotExistException
@@ -764,11 +677,7 @@ class TranslationController extends ActionController
     /**
      * Write the translation file for export and returns the uid of entries written to file.
      *
-     * @param SiteLanguage                           $language
      * @param QueryResultInterface<int, Translation> $translations
-     * @param string                                 $exportDir
-     * @param string                                 $filename
-     * @param bool                                   $enableTargetMarker
      *
      * @return int[]
      */
@@ -841,8 +750,6 @@ class TranslationController extends ActionController
 
     /**
      * Generates and registers buttons for the doc header.
-     *
-     * @return void
      */
     private function registerDocHeaderButtons(): void
     {
@@ -909,9 +816,6 @@ class TranslationController extends ActionController
         }
     }
 
-    /**
-     * @return BackendUserAuthentication
-     */
     private function getBackendUser(): BackendUserAuthentication
     {
         return $GLOBALS['BE_USER'];
@@ -956,12 +860,6 @@ class TranslationController extends ActionController
 
     /**
      * Adds a flash message to the queue.
-     *
-     * @param string                     $messageTitle
-     * @param string                     $messageText
-     * @param ContextualFeedbackSeverity $severity
-     *
-     * @return void
      */
     private function addFlashMessageToQueue(
         string $messageTitle,
@@ -987,8 +885,6 @@ class TranslationController extends ActionController
 
     /**
      * Shorthand functionality for fetching the language service.
-     *
-     * @return LanguageService
      */
     private function getLanguageService(): LanguageService
     {
@@ -996,10 +892,7 @@ class TranslationController extends ActionController
     }
 
     /**
-     * @param string       $key
      * @param array<mixed> $arguments
-     *
-     * @return string|null
      */
     private function translate(string $key, array $arguments = []): ?string
     {

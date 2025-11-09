@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Netresearch\NrTextdb\ViewHelpers;
 
 use Netresearch\NrTextdb\Service\TranslationService;
+use Override;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
@@ -29,15 +30,11 @@ class TextdbViewHelper extends AbstractViewHelper
 {
     /**
      * Translation service instance.
-     *
-     * @var TranslationService|null
      */
     protected ?TranslationService $translationService = null;
 
     /**
      * Initializes arguments (attributes).
-     *
-     * @return void
      */
     public function initializeArguments(): void
     {
@@ -81,21 +78,30 @@ class TextdbViewHelper extends AbstractViewHelper
      *
      * @throws IllegalObjectTypeException
      */
+    #[Override]
     public function render(): string
     {
+        $placeholder = $this->arguments['placeholder'];
+        $type        = $this->arguments['type'];
+        $component   = $this->arguments['component'];
+        $environment = $this->arguments['environment'];
+
+        assert(is_string($placeholder));
+        assert(is_string($type));
+        assert(is_string($component));
+        assert(is_string($environment));
+
         return $this->getTranslationService()
             ->translate(
-                $this->arguments['placeholder'],
-                $this->arguments['type'],
-                $this->arguments['component'],
-                $this->arguments['environment']
+                $placeholder,
+                $type,
+                $component,
+                $environment
             );
     }
 
     /**
      * Getter for translationService.
-     *
-     * @return TranslationService
      */
     public function getTranslationService(): TranslationService
     {

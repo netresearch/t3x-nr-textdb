@@ -6,7 +6,7 @@ includes:
 
 parameters:
     # You can currently choose from 11 levels (0 is the loosest and 10 is the strictest).
-    level: 7
+    level: 10
 
     paths:
         - %currentWorkingDirectory%/Classes/

@@ -24,9 +24,6 @@ use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 #[CoversClass(Type::class)]
 final class TypeTest extends UnitTestCase
 {
-    /**
-     * @var Type
-     */
     protected Type $subject;
 
     protected function setUp(): void

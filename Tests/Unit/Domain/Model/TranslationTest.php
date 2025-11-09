@@ -31,9 +31,6 @@ use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 #[UsesClass(Type::class)]
 final class TranslationTest extends UnitTestCase
 {
-    /**
-     * @var Translation
-     */
     protected Translation $subject;
 
     protected function setUp(): void

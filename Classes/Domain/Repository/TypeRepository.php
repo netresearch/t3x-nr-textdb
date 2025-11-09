@@ -38,8 +38,6 @@ class TypeRepository extends AbstractRepository
 
     /**
      * Initialize the object.
-     *
-     * @return void
      */
     public function initializeObject(): void
     {
@@ -53,8 +51,6 @@ class TypeRepository extends AbstractRepository
      * Find a type by name and return it. If no type is found, it will be created.
      *
      * @param string $name Name of a type
-     *
-     * @return Type|null
      *
      * @throws IllegalObjectTypeException
      */
@@ -102,8 +98,6 @@ class TypeRepository extends AbstractRepository
      *
      * @param string    $key  Cache key
      * @param Type|null $type Type to cache
-     *
-     * @return Type|null
      */
     private function setToCache(string $key, ?Type $type): ?Type
     {
@@ -116,8 +110,6 @@ class TypeRepository extends AbstractRepository
      * Return a cached type.
      *
      * @param string $key Cache key
-     *
-     * @return Type|null
      */
     private function getFromCache(string $key): ?Type
     {

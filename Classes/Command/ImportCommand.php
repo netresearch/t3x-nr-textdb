@@ -45,21 +45,12 @@ class ImportCommand extends Command
      *
      * @var string
      */
-    private const LANG_FOLDER = 'Resources/Private/Language/';
+    private const string LANG_FOLDER = 'Resources/Private/Language/';
 
-    /**
-     * @var PersistenceManagerInterface
-     */
     private readonly PersistenceManagerInterface $persistenceManager;
 
-    /**
-     * @var TranslationRepository
-     */
     protected TranslationRepository $translationRepository;
 
-    /**
-     * @var ListUtility
-     */
     protected ListUtility $listUtility;
 
     /**
@@ -72,18 +63,10 @@ class ImportCommand extends Command
      */
     protected array $extensions = [];
 
-    /**
-     * @var ImportService
-     */
     private readonly ImportService $importService;
 
     /**
      * Constructor.
-     *
-     * @param PersistenceManagerInterface $persistenceManager
-     * @param TranslationRepository       $translationRepository
-     * @param ListUtility                 $listUtility
-     * @param ImportService               $importService
      */
     public function __construct(
         PersistenceManagerInterface $persistenceManager,
@@ -110,8 +93,6 @@ class ImportCommand extends Command
 
     /**
      * Configures the command.
-     *
-     * @return void
      */
     protected function configure(): void
     {
@@ -134,11 +115,6 @@ class ImportCommand extends Command
     }
 
     /**
-     * @param InputInterface  $input
-     * @param OutputInterface $output
-     *
-     * @return int
-     *
      * @throws UnknownPackageException
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -169,8 +145,6 @@ class ImportCommand extends Command
      * Returns the sys_language_uid for a language code.
      *
      * @param string $languageCode Language Code
-     *
-     * @return int
      */
     protected function getLanguageId(string $languageCode): int
     {
@@ -204,10 +178,6 @@ class ImportCommand extends Command
 
     /**
      * Returns the langauge key from the file name.
-     *
-     * @param string $file
-     *
-     * @return string
      */
     protected function getLanguageKeyFromFile(string $file): string
     {
@@ -220,12 +190,6 @@ class ImportCommand extends Command
         return $fileParts[0];
     }
 
-    /**
-     * @param OutputInterface $output
-     * @param bool            $forceUpdate
-     *
-     * @return void
-     */
     protected function importTranslationsFromFiles(OutputInterface $output, bool $forceUpdate = false): void
     {
         foreach (array_keys($this->extensions) as $extKey) {
@@ -266,9 +230,7 @@ class ImportCommand extends Command
     /**
      * Import the language files into the database.
      *
-     * @param string[]        $files
-     * @param OutputInterface $output
-     * @param bool            $forceUpdate
+     * @param string[] $files
      */
     protected function importLanguageFiles(array $files, OutputInterface $output, bool $forceUpdate = false): void
     {
@@ -299,14 +261,7 @@ class ImportCommand extends Command
     }
 
     /**
-     * @param OutputInterface $output
-     * @param string          $file
-     * @param bool            $forceUpdate
-     * @param int             $imported
-     * @param int             $updated
-     * @param string[]        $errors
-     *
-     * @return void
+     * @param string[] $errors
      */
     protected function importFile(
         OutputInterface $output,

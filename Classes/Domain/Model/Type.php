@@ -27,16 +27,12 @@ class Type extends AbstractValueObject
 {
     /**
      * name.
-     *
-     * @var string
      */
     #[Validate(['validator' => NotEmptyValidator::class])]
     protected string $name = '';
 
     /**
      * Returns the name.
-     *
-     * @return string
      */
     public function getName(): string
     {
@@ -45,10 +41,6 @@ class Type extends AbstractValueObject
 
     /**
      * Sets the name.
-     *
-     * @param string $name
-     *
-     * @return void
      */
     public function setName(string $name): void
     {

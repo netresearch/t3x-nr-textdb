@@ -1,2 +1,175 @@
 parameters:
-	ignoreErrors: []
+	ignoreErrors:
+		-
+			message: '#^Parameter \#1 \$extensionKey of method TYPO3\\CMS\\Extensionmanager\\Utility\\ListUtility\:\:getExtension\(\) expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: ../Classes/Command/ImportCommand.php
+
+		-
+			message: '#^Parameter \#2 \$forceUpdate of method Netresearch\\NrTextdb\\Command\\ImportCommand\:\:importTranslationsFromFiles\(\) expects bool, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: ../Classes/Command/ImportCommand.php
+
+		-
+			message: '#^Cannot access offset ''textDbPid'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: ../Classes/Controller/TranslationController.php
+
+		-
+			message: '#^Cannot cast mixed to int\.$#'
+			identifier: cast.int
+			count: 4
+			path: ../Classes/Controller/TranslationController.php
+
+		-
+			message: '#^Cannot cast mixed to string\.$#'
+			identifier: cast.string
+			count: 2
+			path: ../Classes/Controller/TranslationController.php
+
+		-
+			message: '#^Method Netresearch\\NrTextdb\\Controller\\TranslationController\:\:getBackendUser\(\) should return TYPO3\\CMS\\Core\\Authentication\\BackendUserAuthentication but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: ../Classes/Controller/TranslationController.php
+
+		-
+			message: '#^Method Netresearch\\NrTextdb\\Controller\\TranslationController\:\:getConfigFromBeUserData\(\) should return array\<int\|string\> but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: ../Classes/Controller/TranslationController.php
+
+		-
+			message: '#^Method Netresearch\\NrTextdb\\Controller\\TranslationController\:\:getLanguageService\(\) should return TYPO3\\CMS\\Core\\Localization\\LanguageService but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: ../Classes/Controller/TranslationController.php
+
+		-
+			message: '#^Method Netresearch\\NrTextdb\\Controller\\TranslationController\:\:writeTranslationExportFile\(\) should return array\<int\> but returns list\<int\<1, max\>\|null\>\.$#'
+			identifier: return.type
+			count: 1
+			path: ../Classes/Controller/TranslationController.php
+
+		-
+			message: '#^Parameter \#1 \$config of method Netresearch\\NrTextdb\\Controller\\TranslationController\:\:persistConfigInBeUserData\(\) expects array\<int\|string\>, array\<int\|string\|null\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: ../Classes/Controller/TranslationController.php
+
+		-
+			message: '#^Parameter \#1 \$filename of function file_get_contents expects string, string\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: ../Classes/Controller/TranslationController.php
+
+		-
+			message: '#^Parameter \#2 \$settings of method Netresearch\\NrTextdb\\Controller\\TranslationController\:\:getPagination\(\) expects array\<string, bool\|int\>, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: ../Classes/Controller/TranslationController.php
+
+		-
+			message: '#^Method Netresearch\\NrTextdb\\Domain\\Model\\Translation\:\:getLocalizedUid\(\) should return int\<0, max\> but returns int\<0, max\>\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: ../Classes/Domain/Model/Translation.php
+
+		-
+			message: '#^Method Netresearch\\NrTextdb\\Domain\\Model\\Translation\:\:getSysLanguageUid\(\) should return int but returns int\<\-1, max\>\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: ../Classes/Domain/Model/Translation.php
+
+		-
+			message: '#^Cannot cast mixed to int\.$#'
+			identifier: cast.int
+			count: 1
+			path: ../Classes/Domain/Repository/AbstractRepository.php
+
+		-
+			message: '#^Static property Netresearch\\NrTextdb\\Domain\\Repository\\ComponentRepository\:\:\$localCache \(array\<Netresearch\\NrTextdb\\Domain\\Model\\Component\>\) does not accept array\<Netresearch\\NrTextdb\\Domain\\Model\\Component\|null\>\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: ../Classes/Domain/Repository/ComponentRepository.php
+
+		-
+			message: '#^Static property Netresearch\\NrTextdb\\Domain\\Repository\\EnvironmentRepository\:\:\$localCache \(array\<Netresearch\\NrTextdb\\Domain\\Model\\Environment\>\) does not accept array\<Netresearch\\NrTextdb\\Domain\\Model\\Environment\|null\>\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: ../Classes/Domain/Repository/EnvironmentRepository.php
+
+		-
+			message: '#^Static property Netresearch\\NrTextdb\\Domain\\Repository\\TypeRepository\:\:\$localCache \(array\<Netresearch\\NrTextdb\\Domain\\Model\\Type\>\) does not accept array\<Netresearch\\NrTextdb\\Domain\\Model\\Type\|null\>\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: ../Classes/Domain/Repository/TypeRepository.php
+
+		-
+			message: '#^Argument of an invalid type mixed supplied for foreach, only iterables are supported\.$#'
+			identifier: foreach.nonIterable
+			count: 1
+			path: ../Classes/Service/ImportService.php
+
+		-
+			message: '#^Binary operation "\." between ''Missing component…'' and mixed results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: ../Classes/Service/ImportService.php
+
+		-
+			message: '#^Binary operation "\." between ''Missing placeholder…'' and mixed results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: ../Classes/Service/ImportService.php
+
+		-
+			message: '#^Binary operation "\." between ''Missing type name…'' and mixed results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: ../Classes/Service/ImportService.php
+
+		-
+			message: '#^Binary operation "\." between ''Missing value in…'' and mixed results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: ../Classes/Service/ImportService.php
+
+		-
+			message: '#^Cannot access offset ''target'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: ../Classes/Service/ImportService.php
+
+		-
+			message: '#^Cannot access offset 0 on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: ../Classes/Service/ImportService.php
+
+		-
+			message: '#^Parameter \#1 \$key of method Netresearch\\NrTextdb\\Service\\ImportService\:\:getComponentFromKey\(\) expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: ../Classes/Service/ImportService.php
+
+		-
+			message: '#^Parameter \#1 \$key of method Netresearch\\NrTextdb\\Service\\ImportService\:\:getPlaceholderFromKey\(\) expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: ../Classes/Service/ImportService.php
+
+		-
+			message: '#^Parameter \#1 \$key of method Netresearch\\NrTextdb\\Service\\ImportService\:\:getTypeFromKey\(\) expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: ../Classes/Service/ImportService.php
+
+		-
+			message: '#^Parameter \#5 \$value of method Netresearch\\NrTextdb\\Service\\ImportService\:\:importEntry\(\) expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: ../Classes/Service/ImportService.php
