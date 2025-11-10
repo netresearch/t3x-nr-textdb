@@ -45,6 +45,8 @@ Import Performance
 
 **Status:** Under investigation
 
+**GitHub Issue:** `#30 <https://github.com/netresearch/t3x-nr-textdb/issues/30>`_
+
 Pagination with Large Datasets
 -------------------------------
 
@@ -57,6 +59,8 @@ Pagination with Large Datasets
 
 **Status:** Performance improvements planned for 3.1.0
 
+**GitHub Issue:** `#31 <https://github.com/netresearch/t3x-nr-textdb/issues/31>`_
+
 Language Fallback
 -----------------
 
@@ -68,6 +72,8 @@ Language Fallback
   * Use `default` parameter in ViewHelpers
 
 **Status:** Feature request for 3.2.0
+
+**GitHub Issue:** `#32 <https://github.com/netresearch/t3x-nr-textdb/issues/32>`_
 
 .. _compatibility-issues:
 
@@ -98,6 +104,8 @@ Database Engines
   * SQLite
 
 **Note:** PostgreSQL and SQLite may work but are not officially supported.
+
+**GitHub Issue:** `#26 <https://github.com/netresearch/t3x-nr-textdb/issues/26>`_
 
 .. _browser-support:
 
@@ -314,6 +322,8 @@ Version 3.1.0
 * Batch operations for bulk translation management
 * Advanced filtering options
 
+**GitHub Issue:** `#33 <https://github.com/netresearch/t3x-nr-textdb/issues/33>`_
+
 Version 3.2.0
 -------------
 
@@ -322,6 +332,8 @@ Version 3.2.0
 * Translation versioning and history
 * REST API for external integrations
 
+**GitHub Issue:** `#34 <https://github.com/netresearch/t3x-nr-textdb/issues/34>`_
+
 Version 4.0.0
 -------------
 
@@ -329,6 +341,8 @@ Version 4.0.0
 * AI-assisted translation suggestions
 * Translation memory integration
 * Workflow management with approval process
+
+**GitHub Issue:** `#35 <https://github.com/netresearch/t3x-nr-textdb/issues/35>`_
 
 .. note::
 

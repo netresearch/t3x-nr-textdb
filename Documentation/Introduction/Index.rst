@@ -108,6 +108,8 @@ Import & Export
     - Translation edit form interface
     - XLIFF import interface
 
+    **GitHub Issue:** `#27 <https://github.com/netresearch/t3x-nr-textdb/issues/27>`_
+
 .. _use-cases:
 
 Real-World Use Cases
