@@ -198,7 +198,9 @@ class ImportService
             }
 
             // TODO Add option to overwrite auto created records
+            // @see https://github.com/netresearch/t3x-nr-textdb/issues/28
             // TODO Add parent record if not present, if option "overwrite auto created" is true
+            // @see https://github.com/netresearch/t3x-nr-textdb/issues/29
 
             if ($translation instanceof Translation) {
                 $translation->setValue($value);
