@@ -70,33 +70,58 @@ ViewHelpers
 TextDB ViewHelper
 -----------------
 
-Main ViewHelper for displaying translations in Fluid templates.
+.. php:class:: TextdbViewHelper
 
-**Namespace:**
+   Main ViewHelper for displaying translations in Fluid templates.
 
-.. code-block:: html
+   :Namespace: ``Netresearch\NrTextdb\ViewHelpers``
+   :Extends: ``TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper``
 
-   {namespace textdb=Netresearch\NrTextdb\ViewHelpers}
+   **Usage:**
 
-**Usage:**
+   .. code-block:: html
 
-.. code-block:: html
+      {namespace textdb=Netresearch\NrTextdb\ViewHelpers}
 
-   <textdb:textdb
-       component="website"
-       type="label"
-       placeholder="welcome.message"
-       default="Welcome!"
-   />
+      <textdb:textdb
+          component="website"
+          type="label"
+          placeholder="welcome.message"
+          default="Welcome!"
+      />
 
-**Parameters:**
+   **Parameters:**
 
-:`component`: (required) Component identifier
-:`type`: (required) Type identifier (label, message, etc.)
-:`placeholder`: (required) Translation key
-:`default`: (optional) Fallback text if translation not found
+   .. confval:: component
+      :name: textdb-viewhelper-component
+      :type: string
+      :Required: true
 
-**Output:**
+      Component identifier for organizing translations (e.g., "website", "shop", "checkout").
+
+   .. confval:: type
+      :name: textdb-viewhelper-type
+      :type: string
+      :Required: true
+
+      Type identifier categorizing the translation (e.g., "label", "message", "error", "button").
+
+   .. confval:: placeholder
+      :name: textdb-viewhelper-placeholder
+      :type: string
+      :Required: true
+
+      Unique translation key within the component and type context.
+
+   .. confval:: default
+      :name: textdb-viewhelper-default
+      :type: string
+      :Required: false
+      :Default: ``null``
+
+      Fallback text displayed if the translation is not found in the database.
+
+   **Output:**
 
 Returns the translated text for the current page language.
 
@@ -165,38 +190,39 @@ Services API
 TranslationService
 ------------------
 
-Core service for translation management.
+.. php:class:: TranslationService
 
-**Injection:**
+   Core service for translation management and retrieval.
 
-.. code-block:: php
+   :Namespace: ``Netresearch\NrTextdb\Service``
 
-   use Netresearch\NrTextdb\Service\TranslationService;
+   **Dependency Injection:**
 
-   class MyClass
-   {
-       public function __construct(
-           private readonly TranslationService $translationService
-       ) {}
-   }
+   .. code-block:: php
 
-**Methods:**
+      use Netresearch\NrTextdb\Service\TranslationService;
 
-getTranslation()
-~~~~~~~~~~~~~~~~
+      class MyClass
+      {
+          public function __construct(
+              private readonly TranslationService $translationService
+          ) {}
+      }
 
-.. code-block:: php
+   **Methods:**
 
-   public function getTranslation(
-       string $component,
-       string $type,
-       string $placeholder,
-       int $languageUid = 0
-   ): ?Translation
+   .. php:method:: getTranslation(string $component, string $type, string $placeholder, int $languageUid = 0)
 
-Get translation record.
+      Retrieves a translation record from the database.
 
-**Example:**
+      :param string $component: Component identifier
+      :param string $type: Type identifier
+      :param string $placeholder: Translation key
+      :param int $languageUid: Language UID (0 for default language)
+      :returns: Translation domain model or null if not found
+      :returntype: ``\\Netresearch\\NrTextdb\\Domain\\Model\\Translation|null``
+
+      **Example:**
 
 .. code-block:: php
 
