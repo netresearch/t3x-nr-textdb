@@ -32,10 +32,28 @@ Nr TextDB
 
 ----
 
-The Netresearch TextDB extension allows you to manage and edit translations
-directly in the TYPO3 backend. It provides a powerful translation database
-that enables editors to maintain multilingual content without touching
-language files.
+**Manage TYPO3 translations directly in the backend – no more digging through language files**
+
+The Netresearch TextDB extension transforms how you manage **frontend system strings**
+(form labels, buttons, error messages, navigation) by providing a database-backed
+translation system accessible through the TYPO3 backend. Instead of editing scattered
+`.xlf` files and deploying changes, editors and translators can manage translations
+in real-time through an intuitive backend module.
+
+**Perfect for:**
+
+* 🌍 Multi-language websites with frequent translation updates
+* 👥 Non-technical staff who need to update translations without touching code
+* 🔄 Translation workflows requiring import/export for agencies
+* 🚀 Agencies managing multiple TYPO3 projects with consistent processes
+
+**Key Benefits:**
+
+* ✅ **Zero-friction migration** via auto-import ViewHelper
+* ✅ **Live updates** without deployment cycles
+* ✅ **Hierarchical organization** for 500+ translations
+* ✅ **Non-developer friendly** backend module
+* ✅ **Production-grade quality** (PHPStan level 10, 95%+ test coverage)
 
 ----
 
@@ -63,8 +81,8 @@ language files.
 
    .. card:: 📘 Introduction
 
-      Learn what Nr TextDB does, key features, use cases, and target audience.
-      Get an overview of the translation management system for TYPO3.
+      Discover what TextDB is (frontend system strings), real-world use cases
+      with measurable results, competitive advantages, and why it's unique.
 
       .. card-footer:: :ref:`Read more <introduction>`
          :button-style: btn btn-primary stretched-link
