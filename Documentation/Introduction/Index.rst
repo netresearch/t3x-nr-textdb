@@ -11,7 +11,7 @@ Introduction
 What does it do?
 ================
 
-The **Nr TextDB** extension provides a translation database system for TYPO3
+The **Netresearch TextDB** extension provides a translation database system for TYPO3
 that allows backend users to manage and edit translations directly in the
 TYPO3 backend interface. This eliminates the need to edit XLIFF language files
 manually and provides a centralized translation management system.
