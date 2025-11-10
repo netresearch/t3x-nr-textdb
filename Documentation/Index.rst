@@ -35,7 +35,7 @@ Netresearch TextDB
 **Manage TYPO3 translations directly in the backend – no more digging through language files**
 
 The Netresearch TextDB extension transforms how you manage **frontend system strings**
-(form labels, buttons, error messages, navigation) by providing a database-backed
+(form labels, buttons, error or system messages, navigation) by providing a database-backed
 translation system accessible through the TYPO3 backend. Instead of editing scattered
 `.xlf` files and deploying changes, editors and translators can manage translations
 in real-time through an intuitive backend module.
