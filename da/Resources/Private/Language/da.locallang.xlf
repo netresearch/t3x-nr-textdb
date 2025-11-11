@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" datatype="plaintext" original="messages" date="2019-09-11T10:31:41Z" product-name="nr_textdb" target-language="da">
+    <header/>
+    <body>
+      <trans-unit id="tx_nrtextdb_domain_model_environment">
+        <source>Environment</source>
+        <target state="needs-translation">Environment</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_environment.name">
+        <source>Name</source>
+        <target state="needs-translation">Name</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_component">
+        <source>Component</source>
+        <target state="needs-translation">Component</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_component.name">
+        <source>Name</source>
+        <target state="needs-translation">Name</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_type">
+        <source>Type</source>
+        <target state="needs-translation">Type</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_type.name">
+        <source>Name</source>
+        <target state="needs-translation">Name</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation">
+        <source>Translation</source>
+        <target state="needs-translation">Translation</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.value">
+        <source>Value</source>
+        <target state="needs-translation">Value</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
+        <source>Environment</source>
+        <target state="needs-translation">Environment</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.component">
+        <source>Component</source>
+        <target state="needs-translation">Component</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.type">
+        <source>Type</source>
+        <target state="needs-translation">Type</target>
+      </trans-unit>
+      <trans-unit id="no-entries">
+        <source>No entries found</source>
+        <target state="needs-translation">No entries found</target>
+      </trans-unit>
+      <trans-unit id="no-translation">
+        <source>No translations available</source>
+        <target state="needs-translation">No translations available</target>
+      </trans-unit>
+      <trans-unit id="translation">
+        <source>Translation</source>
+        <target state="needs-translation">Translation</target>
+      </trans-unit>
+      <trans-unit id="save">
+        <source>Save</source>
+        <target state="needs-translation">Save</target>
+      </trans-unit>
+      <trans-unit id="component">
+        <source>Component</source>
+        <target state="needs-translation">Component</target>
+      </trans-unit>
+      <trans-unit id="type">
+        <source>Type</source>
+        <target state="needs-translation">Type</target>
+      </trans-unit>
+      <trans-unit id="environment">
+        <source>Environment</source>
+        <target state="needs-translation">Environment</target>
+      </trans-unit>
+      <trans-unit id="filter.reset.label">
+        <source>Reset</source>
+        <target state="needs-translation">Reset</target>
+      </trans-unit>
+      <trans-unit id="placeholder">
+        <source>Placeholder</source>
+        <target state="needs-translation">Placeholder</target>
+      </trans-unit>
+      <trans-unit id="value">
+        <source>Value</source>
+        <target state="needs-translation">Value</target>
+      </trans-unit>
+      <trans-unit id="search">
+        <source>Search</source>
+        <target state="needs-translation">Search</target>
+      </trans-unit>
+      <trans-unit id="import">
+        <source>Import</source>
+        <target state="needs-translation">Import</target>
+      </trans-unit>
+      <trans-unit id="button.label.list">
+        <source>List</source>
+        <target state="needs-translation">List</target>
+      </trans-unit>
+      <trans-unit id="info.import.headline">
+        <source>Select file for import</source>
+        <target state="needs-translation">Select file for import</target>
+      </trans-unit>
+      <trans-unit id="info.import.message">
+        <source>Make sure that you always import the primary language (sys_language_uid = 0) first before adding any translations, as this is the only way to ensure that the links between the records are correct.</source>
+        <target state="needs-translation">Make sure that you always import the primary language (sys_language_uid = 0) first before adding any translations, as this is the only way to ensure that the links between the records are correct.</target>
+      </trans-unit>
+      <trans-unit id="override.existing">
+        <source>Override existing</source>
+        <target state="needs-translation">Override existing</target>
+      </trans-unit>
+      <trans-unit id="message.import">
+        <source>Import done for Language:</source>
+        <target state="needs-translation">Import done for Language:</target>
+      </trans-unit>
+      <trans-unit id="message.updated">
+        <source>Translations updated:</source>
+        <target state="needs-translation">Translations updated:</target>
+      </trans-unit>
+      <trans-unit id="message.imported">
+        <source>Translations imported:</source>
+        <target state="needs-translation">Translations imported:</target>
+      </trans-unit>
+      <trans-unit id="message.errors">
+        <source>The following errors occurs:</source>
+        <target state="needs-translation">The following errors occurs:</target>
+      </trans-unit>
+      <trans-unit id="button.label.export">
+        <source>Export with current filter</source>
+        <target state="needs-translation">Export with current filter</target>
+      </trans-unit>
+      <trans-unit id="message.error.filter">
+        <source>Please select at least one type or component to create an export.</source>
+        <target state="needs-translation">Please select at least one type or component to create an export.</target>
+      </trans-unit>
+      <trans-unit id="message.error.archive">
+        <source>Archive cloud not be created.</source>
+        <target state="needs-translation">Archive cloud not be created.</target>
+      </trans-unit>
+      <trans-unit id="message.error.import">
+        <source>File name does not match the expected pattern.</source>
+        <target state="needs-translation">File name does not match the expected pattern.</target>
+      </trans-unit>
+      <trans-unit id="error.storage.pid">
+        <source>Please configure a valid storage page ID in the extension configuration.</source>
+        <target state="needs-translation">Please configure a valid storage page ID in the extension configuration.</target>
+      </trans-unit>
+      <trans-unit id="error.storage.pid.title" translate="no">
+        <source>TextDb</source>
+        <target state="needs-translation">TextDb</target>
+      </trans-unit>
+      <trans-unit id="error.directory.creation">
+        <source>Directory "%s" was not created</source>
+        <target state="needs-translation">Directory "%s" was not created</target>
+      </trans-unit>
+      <trans-unit id="error.missing.component">
+        <source>Missing component name in key: %s</source>
+        <target state="needs-translation">Missing component name in key: %s</target>
+      </trans-unit>
+      <trans-unit id="error.missing.type">
+        <source>Missing type name in key: %s</source>
+        <target state="needs-translation">Missing type name in key: %s</target>
+      </trans-unit>
+      <trans-unit id="error.missing.placeholder">
+        <source>Missing placeholder in key: %s</source>
+        <target state="needs-translation">Missing placeholder in key: %s</target>
+      </trans-unit>
+      <trans-unit id="language">
+        <source>Language</source>
+        <target state="needs-translation">Language</target>
+      </trans-unit>
+      <trans-unit id="error.missing.value">
+        <source>Missing value in key: %s</source>
+        <target state="needs-translation">Missing value in key: %s</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
