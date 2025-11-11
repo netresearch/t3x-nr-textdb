@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0">
+    <file source-language="en" target-language="ko" datatype="plaintext" original="messages" date="2025-11-10T16:00:00Z"
+          product-name="nr_textdb">
+        <header/>
+        <body>
+            <trans-unit id="mod_textdb">
+                <source>Text database</source>
+                <target>텍스트 데이터베이스</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

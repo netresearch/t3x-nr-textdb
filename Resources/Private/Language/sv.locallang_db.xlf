@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0">
+    <file target-language="sv" datatype="plaintext" original="messages" date="2025-11-10T16:00:00Z"
+          product-name="nr_textdb">
+        <header/>
+        <body>
+            <trans-unit id="tx_nrtextdb_domain_model_environment">
+                <target>Miljö</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_environment.name">
+                <target>Namn</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_component">
+                <target>Komponent</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_component.name">
+                <target>Namn</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_type">
+                <target>Typ</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_type.name">
+                <target>Namn</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_translation">
+                <target>Översättning</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_translation.value">
+                <target>Värde</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_translation.placeholder">
+                <target>Platshållare</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
+                <target>Miljö</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_translation.component">
+                <target>Komponent</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_translation.type">
+                <target>Typ</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

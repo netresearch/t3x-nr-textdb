@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0">
+    <file target-language="pt" datatype="plaintext" original="messages" date="2025-11-10T16:00:00Z"
+          product-name="nr_textdb">
+        <header/>
+        <body>
+            <trans-unit id="tx_nrtextdb_domain_model_environment">
+                <target>Ambiente</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_environment.name">
+                <target>Nome</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_component">
+                <target>Componente</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_component.name">
+                <target>Nome</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_type">
+                <target>Tipo</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_type.name">
+                <target>Nome</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_translation">
+                <target>Tradução</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_translation.value">
+                <target>Valor</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_translation.placeholder">
+                <target>Marcador</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
+                <target>Ambiente</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_translation.component">
+                <target>Componente</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_translation.type">
+                <target>Tipo</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

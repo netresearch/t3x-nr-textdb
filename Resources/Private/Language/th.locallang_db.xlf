@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0">
+    <file target-language="th" datatype="plaintext" original="messages" date="2025-11-10T16:00:00Z"
+          product-name="nr_textdb">
+        <header/>
+        <body>
+            <trans-unit id="tx_nrtextdb_domain_model_environment">
+                <target>สภาพแวดล้อม</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_environment.name">
+                <target>ชื่อ</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_component">
+                <target>คอมโพเนนต์</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_component.name">
+                <target>ชื่อ</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_type">
+                <target>ประเภท</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_type.name">
+                <target>ชื่อ</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_translation">
+                <target>การแปล</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_translation.value">
+                <target>ค่า</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_translation.placeholder">
+                <target>ตัวยึดตำแหน่ง</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
+                <target>สภาพแวดล้อม</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_translation.component">
+                <target>คอมโพเนนต์</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_translation.type">
+                <target>ประเภท</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>
