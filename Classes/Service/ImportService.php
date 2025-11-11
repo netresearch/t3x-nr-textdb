@@ -102,7 +102,7 @@ class ImportService
                 throw new RuntimeException(
                     sprintf(
                         LocalizationUtility::translate('error.missing.component', 'NrTextdb') ?? 'Missing component name in key: %s',
-                        $key
+                        (string) $key
                     )
                 );
             }
@@ -112,7 +112,7 @@ class ImportService
                 throw new RuntimeException(
                     sprintf(
                         LocalizationUtility::translate('error.missing.type', 'NrTextdb') ?? 'Missing type name in key: %s',
-                        $key
+                        (string) $key
                     )
                 );
             }
@@ -122,7 +122,7 @@ class ImportService
                 throw new RuntimeException(
                     sprintf(
                         LocalizationUtility::translate('error.missing.placeholder', 'NrTextdb') ?? 'Missing placeholder in key: %s',
-                        $key
+                        (string) $key
                     )
                 );
             }
@@ -132,7 +132,7 @@ class ImportService
                 throw new RuntimeException(
                     sprintf(
                         LocalizationUtility::translate('error.missing.value', 'NrTextdb') ?? 'Missing value in key: %s',
-                        $key
+                        (string) $key
                     )
                 );
             }
