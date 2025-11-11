@@ -170,7 +170,7 @@ To add a new language:
 3. Update ``crowdin.yml`` with new language patterns
 4. Submit to Crowdin for community translation
 
-See `CONTRIBUTING.md <https://github.com/netresearch/t3x-nr-textdb/blob/master/CONTRIBUTING.md#how-to-contribute-translations>`_ for detailed translation contribution guidelines.
+See `CONTRIBUTING.md <https://github.com/netresearch/t3x-nr-textdb/blob/main/CONTRIBUTING.md#how-to-contribute-translations>`_ for detailed translation contribution guidelines.
 
 .. _dev-viewhelpers:
 

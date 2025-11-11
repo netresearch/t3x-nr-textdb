@@ -132,7 +132,7 @@ The interface language follows your TYPO3 backend user settings. To change the b
 2. Change **Interface Language** to your preferred language
 3. Save and reload the backend
 
-**Contribute Translations**: Help translate the extension into more languages or improve existing translations through the `TYPO3 Crowdin project <https://crowdin.com/project/typo3-cms>`_. No technical knowledge required! See the `Contributing Guide <https://github.com/netresearch/t3x-nr-textdb/blob/master/CONTRIBUTING.md#how-to-contribute-translations>`_ for details.
+**Contribute Translations**: Help translate the extension into more languages or improve existing translations through the `TYPO3 Crowdin project <https://crowdin.com/project/typo3-cms>`_. No technical knowledge required! See the `Contributing Guide <https://github.com/netresearch/t3x-nr-textdb/blob/main/CONTRIBUTING.md#how-to-contribute-translations>`_ for details.
 
 .. _upgrade:
 
