@@ -62,6 +62,116 @@ All services use constructor injection via `Configuration/Services.yaml`:
            resource: '../Classes/*'
            exclude: '../Classes/Domain/Model/*'
 
+.. _dev-localization:
+
+Localization Infrastructure
+============================
+
+.. versionadded:: 3.1.0
+   Comprehensive localization infrastructure with 23 languages and Crowdin integration.
+
+The extension includes a robust localization infrastructure supporting **23 languages** for the backend interface.
+
+Supported Languages
+-------------------
+
+**European (13):**
+Afrikaans (af), Czech (cs), Danish (da), German (de), Spanish (es), Finnish (fi), French (fr), Italian (it), Dutch (nl), Norwegian (no), Polish (pl), Portuguese (pt), Swedish (sv)
+
+**Asian & African (10):**
+Arabic (ar), Hindi (hi), Indonesian (id), Japanese (ja), Korean (ko), Russian (ru), Swahili (sw), Thai (th), Vietnamese (vi), Chinese (zh)
+
+Technical Implementation
+------------------------
+
+**XLIFF 1.2 Standard**
+
+All translation files follow XLIFF 1.2 specification:
+
+.. code-block:: xml
+
+   <?xml version="1.0" encoding="utf-8"?>
+   <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+       <file source-language="en" datatype="plaintext" original="EXT:nr_textdb/Resources/Private/Language/locallang.xlf" date="..." product-name="nr_textdb">
+           <header/>
+           <body>
+               <trans-unit id="module.title" resname="module.title" translate="no">
+                   <source>Netresearch</source>
+               </trans-unit>
+           </body>
+       </file>
+   </xliff>
+
+**Proper Names Protection**
+
+Brand names are marked as untranslatable using ``translate="no"`` attribute:
+
+.. code-block:: xml
+
+   <trans-unit id="module.title" resname="module.title" translate="no">
+       <source>Netresearch</source>
+   </trans-unit>
+
+This ensures "Netresearch" and "TextDb" remain unchanged across all translations.
+
+**UTF-8 Encoding**
+
+All language files use UTF-8 encoding to support non-Latin scripts:
+
+* **Right-to-left scripts**: Arabic (العربية)
+* **Asian ideographs**: Chinese (中文), Japanese (日本語), Korean (한국어)
+* **Indic scripts**: Hindi (हिन्दी), Thai (ไทย)
+
+File Structure
+--------------
+
+Each language has 5 translation files:
+
+.. code-block:: none
+
+   Resources/Private/Language/
+   ├── {lang}.locallang.xlf           # General interface labels
+   ├── {lang}.locallang_db.xlf        # Database field labels
+   ├── {lang}.locallang_mod.xlf       # Backend module labels
+   ├── {lang}.locallang_mod_sync.xlf  # Sync module labels
+   └── {lang}.locallang_mod_textdb.xlf # TextDB module labels
+
+Total: 116 XLIFF files (23 languages × 5 files + 1 source file per type)
+
+Community Translation Workflow
+-------------------------------
+
+The extension integrates with TYPO3's centralized Crowdin translation system:
+
+**Configuration** (``crowdin.yml``):
+
+.. code-block:: yaml
+
+   files:
+     - source: Resources/Private/Language/locallang.xlf
+       translation: Resources/Private/Language/%two_letters_code%.locallang.xlf
+     - source: Resources/Private/Language/locallang_db.xlf
+       translation: Resources/Private/Language/%two_letters_code%.locallang_db.xlf
+     # ... additional file types
+
+**Translation Process:**
+
+1. Translators contribute via https://crowdin.com/project/typo3-cms
+2. TYPO3 translation coordinators review submissions
+3. Approved translations automatically sync to repository
+4. Changes included in next extension release
+
+**Adding New Languages:**
+
+To add a new language:
+
+1. Create language files following naming convention: ``{lang}.locallang*.xlf``
+2. Copy structure from English source files
+3. Update ``crowdin.yml`` with new language patterns
+4. Submit to Crowdin for community translation
+
+See `CONTRIBUTING.md <https://github.com/netresearch/t3x-nr-textdb/blob/master/CONTRIBUTING.md#how-to-contribute-translations>`_ for detailed translation contribution guidelines.
+
 .. _dev-viewhelpers:
 
 ViewHelpers
