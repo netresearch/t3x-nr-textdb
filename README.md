@@ -537,19 +537,50 @@ composer ci:fractor            # Apply Fractor migrations
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please:
+We welcome all types of contributions! Whether you're a developer, translator, or documentation writer, there's a way for you to help.
+
+### 🌍 Help Translate TextDB
+
+**Make TextDB available in your language!** We use Crowdin for community translations.
+
+The extension currently supports **23 languages**, and we're always looking to add more:
+
+🇿🇦 Afrikaans • 🇸🇦 Arabic • 🇨🇿 Czech • 🇩🇰 Danish • 🇩🇪 German • 🇪🇸 Spanish • 🇫🇮 Finnish • 🇫🇷 French • 🇮🇳 Hindi • 🇮🇩 Indonesian • 🇮🇹 Italian • 🇯🇵 Japanese • 🇰🇷 Korean • 🇳🇱 Dutch • 🇳🇴 Norwegian • 🇵🇱 Polish • 🇵🇹 Portuguese • 🇷🇺 Russian • 🇸🇪 Swedish • 🇹🇿 Swahili • 🇹🇭 Thai • 🇻🇳 Vietnamese • 🇨🇳 Chinese
+
+**How to contribute translations:**
+
+1. Visit the TYPO3 Crowdin project: https://crowdin.com/project/typo3-cms
+2. Find the `nr_textdb` extension
+3. Select your language and start translating
+4. Your translations will be automatically synchronized
+
+**No technical knowledge required!** See our [Translation Guide](CONTRIBUTING.md#how-to-contribute-translations) for detailed instructions.
+
+### 💻 Contribute Code
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
+3. Make your changes following our coding standards
+4. Run tests: `composer ci:test`
 5. Open a Pull Request
 
 **Development Standards:**
 - PHPStan level 10 compliance required
-- All code must pass `composer ci:test`
-- Follow PSR-12 coding standards
-- Add tests for new features
+- PSR-12 coding standards
+- `declare(strict_types=1)` in all PHP files
+- Type declarations on all methods
+- Tests for new features
+
+### 📚 Full Contributing Guide
+
+For detailed information about:
+- Translation guidelines and proper names
+- Code contribution workflow
+- Development setup with DDEV
+- Testing and quality standards
+- Issue reporting
+
+See our **[CONTRIBUTING.md](CONTRIBUTING.md)** guide.
 
 ---
 
