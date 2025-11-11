@@ -115,6 +115,12 @@ parameters:
 			path: ../Classes/Service/ImportService.php
 
 		-
+			message: '#^Cannot cast mixed to string.$#'
+			identifier: cast.string
+			count: 4
+			path: ../Classes/Service/ImportService.php
+
+		-
 			message: '#^Cannot access offset ''target'' on mixed\.$#'
 			identifier: offsetAccess.nonOffsetAccessible
 			count: 1
