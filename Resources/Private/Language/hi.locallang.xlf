@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<xliff version="1.0">
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
     <file target-language="hi" datatype="plaintext" original="messages" date="2025-11-10T16:00:00Z" product-name="nr_textdb">
         <header/>
         <body>
@@ -111,7 +111,7 @@
             <trans-unit id="error.storage.pid">
                 <target>एक्सटेंशन कॉन्फ़िगरेशन में एक मान्य संग्रहण पृष्ठ आईडी कॉन्फ़िगर करें।</target>
             </trans-unit>
-            <trans-unit id="error.storage.pid.title">
+            <trans-unit id="error.storage.pid.title" translate="no">
                 <target>TextDb</target>
             </trans-unit>
             <trans-unit id="error.directory.creation">
