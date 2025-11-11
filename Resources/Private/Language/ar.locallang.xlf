@@ -1,136 +1,136 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <xliff version="1.0">
-    <file target-language="de" datatype="plaintext" original="messages" date="2019-09-11T10:31:41Z" product-name="nr_textdb">
+    <file target-language="ar" datatype="plaintext" original="messages" date="2025-11-10T16:00:00Z" product-name="nr_textdb">
         <header/>
         <body>
             <trans-unit id="tx_nrtextdb_domain_model_environment">
-                <target>Umgebung</target>
+                <target>البيئة</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_environment.name">
-                <target>Name</target>
+                <target>الاسم</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_component">
-                <target>Komponente</target>
+                <target>المكون</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_component.name">
-                <target>Name</target>
+                <target>الاسم</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_type">
-                <target>Typ</target>
+                <target>النوع</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_type.name">
-                <target>Name</target>
+                <target>الاسم</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_translation">
-                <target>ÜBersetzung</target>
+                <target>الترجمة</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_translation.value">
-                <target>Wert</target>
+                <target>القيمة</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
-                <target>Umgebung</target>
+                <target>البيئة</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_translation.component">
-                <target>Komponente</target>
+                <target>المكون</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_translation.type">
-                <target>Typ</target>
+                <target>النوع</target>
             </trans-unit>
             <trans-unit id="no-entries">
-                <target>Es wurden keine Einträge gefunden.</target>
+                <target>لم يتم العثور على إدخالات</target>
             </trans-unit>
             <trans-unit id="no-translation">
-                <target>Keine Übersetzungen verfügbar.</target>
+                <target>لا توجد ترجمات متاحة</target>
             </trans-unit>
             <trans-unit id="translation">
-                <target>Übersetzung</target>
+                <target>الترجمة</target>
             </trans-unit>
             <trans-unit id="save">
-                <target>Speichern</target>
+                <target>حفظ</target>
             </trans-unit>
             <trans-unit id="component">
-                <target>Komponente</target>
+                <target>المكون</target>
             </trans-unit>
             <trans-unit id="type">
-                <target>Typ</target>
+                <target>النوع</target>
             </trans-unit>
             <trans-unit id="environment">
-                <target>Umgebung</target>
+                <target>البيئة</target>
             </trans-unit>
             <trans-unit id="filter.reset.label">
-                <target>Zurücksetzen</target>
+                <target>إعادة تعيين</target>
             </trans-unit>
             <trans-unit id="placeholder">
-                <target>Platzhalter</target>
+                <target>عنصر نائب</target>
             </trans-unit>
             <trans-unit id="value">
-                <target>Wert</target>
+                <target>القيمة</target>
             </trans-unit>
             <trans-unit id="search">
-                <target>Suchen</target>
+                <target>بحث</target>
             </trans-unit>
             <trans-unit id="import">
-                <target>Importieren</target>
+                <target>استيراد</target>
             </trans-unit>
             <trans-unit id="button.label.list">
-                <target>Liste</target>
+                <target>قائمة</target>
             </trans-unit>
             <trans-unit id="info.import.headline">
-                <target>Datei für den Import auswählen</target>
+                <target>اختر الملف للاستيراد</target>
             </trans-unit>
             <trans-unit id="info.import.message">
-                <target>Stellen Sie sicher, dass sie immer zuerst die Primärsprache (sys_language_uid = 0) importieren, bevor Sie etwaige Übersetzungen hinzufügen, da nur so sichergestellt ist, dass die Verknüpfungen der Datensätze untereinander korrekt erfolgt.</target>
+                <target>تأكد من استيراد اللغة الأساسية (sys_language_uid = 0) أولاً دائماً قبل إضافة الترجمات، لأن هذه هي الطريقة الوحيدة لضمان صحة الروابط بين السجلات.</target>
             </trans-unit>
             <trans-unit id="override.existing">
-                <target>Überschreibe existierende Übersetzungen</target>
+                <target>استبدال الترجمات الموجودة</target>
             </trans-unit>
             <trans-unit id="message.import">
-                <target>Import abgeschlossen für:</target>
+                <target>اكتمل الاستيراد للغة:</target>
             </trans-unit>
             <trans-unit id="message.updated">
-                <target>Übersetzungen aktualisiert:</target>
+                <target>الترجمات المحدثة:</target>
             </trans-unit>
             <trans-unit id="message.imported">
-                <target>Übersetzungen importiert:</target>
+                <target>الترجمات المستوردة:</target>
             </trans-unit>
             <trans-unit id="message.errors">
-                <target>Folgende Fehler gab es beim Import:</target>
+                <target>حدثت الأخطاء التالية:</target>
             </trans-unit>
             <trans-unit id="button.label.export">
-                <target>Mit aktuellem Filter exportieren</target>
+                <target>تصدير مع الفلتر الحالي</target>
             </trans-unit>
             <trans-unit id="message.error.filter">
-                <target>Bitte wählen Sie mindestens einen Typ oder eine Komponente aus um einen Export zu erstellen.</target>
+                <target>حدد نوعاً واحداً على الأقل أو مكوناً لإنشاء تصدير.</target>
             </trans-unit>
             <trans-unit id="message.error.archive">
-                <target>Archiv konnte nicht erstellt werden.</target>
+                <target>تعذر إنشاء الأرشيف.</target>
             </trans-unit>
             <trans-unit id="message.error.import">
-                <target>Der Dateiname stimmt nicht mit dem erwarteten Muster überein.</target>
+                <target>اسم الملف لا يتطابق مع النمط المتوقع.</target>
             </trans-unit>
             <trans-unit id="error.storage.pid">
-                <target>Bitte konfigurieren Sie eine gültige Speicherseiten-ID in der Erweiterungskonfiguration.</target>
+                <target>قم بتكوين معرف صفحة تخزين صالح في تكوين الامتداد.</target>
             </trans-unit>
             <trans-unit id="error.storage.pid.title">
                 <target>TextDb</target>
             </trans-unit>
             <trans-unit id="error.directory.creation">
-                <target>Verzeichnis "%s" konnte nicht erstellt werden</target>
+                <target>لم يتم إنشاء الدليل "%s"</target>
             </trans-unit>
             <trans-unit id="error.missing.component">
-                <target>Fehlender Komponentenname in Schlüssel: %s</target>
+                <target>اسم المكون مفقود في المفتاح: %s</target>
             </trans-unit>
             <trans-unit id="error.missing.type">
-                <target>Fehlender Typname in Schlüssel: %s</target>
+                <target>اسم النوع مفقود في المفتاح: %s</target>
             </trans-unit>
             <trans-unit id="error.missing.placeholder">
-                <target>Fehlender Platzhalter in Schlüssel: %s</target>
+                <target>العنصر النائب مفقود في المفتاح: %s</target>
             </trans-unit>
             <trans-unit id="language">
-                <target>Sprache</target>
+                <target>اللغة</target>
             </trans-unit>
             <trans-unit id="error.missing.value">
-                <target>Fehlender Wert in Schlüssel: %s</target>
+                <target>القيمة مفقودة في المفتاح: %s</target>
             </trans-unit>
         </body>
     </file>

@@ -161,8 +161,8 @@ class TranslationController extends ActionController
     {
         if ($this->pid === 0) {
             $this->moduleTemplate->addFlashMessage(
-                'Please configure a valid storage page ID in the extension configuration.',
-                'TextDb',
+                $this->translate('error.storage.pid') ?? 'Please configure a valid storage page ID in the extension configuration.',
+                $this->translate('error.storage.pid.title') ?? 'TextDb',
                 ContextualFeedbackSeverity::ERROR
             );
         }
@@ -319,7 +319,7 @@ class TranslationController extends ActionController
         ) {
             throw new RuntimeException(
                 sprintf(
-                    'Directory "%s" was not created',
+                    $this->translate('error.directory.creation') ?? 'Directory "%s" was not created',
                     $exportDir
                 )
             );
@@ -553,17 +553,32 @@ class TranslationController extends ActionController
 
                 $componentName = $this->getComponentFromKey($key);
                 if ($componentName === null) {
-                    throw new RuntimeException('Missing component name in key: ' . $key);
+                    throw new RuntimeException(
+                        sprintf(
+                            $this->translate('error.missing.component') ?? 'Missing component name in key: %s',
+                            $key
+                        )
+                    );
                 }
 
                 $typeName = $this->getTypeFromKey($key);
                 if ($typeName === null) {
-                    throw new RuntimeException('Missing type name in key: ' . $key);
+                    throw new RuntimeException(
+                        sprintf(
+                            $this->translate('error.missing.type') ?? 'Missing type name in key: %s',
+                            $key
+                        )
+                    );
                 }
 
                 $placeholder = $this->getPlaceholderFromKey($key);
                 if ($placeholder === null) {
-                    throw new RuntimeException('Missing placeholder in key: ' . $key);
+                    throw new RuntimeException(
+                        sprintf(
+                            $this->translate('error.missing.placeholder') ?? 'Missing placeholder in key: %s',
+                            $key
+                        )
+                    );
                 }
 
                 $value = $translation->target->getName() === ''

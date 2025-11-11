@@ -1,136 +1,136 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <xliff version="1.0">
-    <file target-language="de" datatype="plaintext" original="messages" date="2019-09-11T10:31:41Z" product-name="nr_textdb">
+    <file target-language="cs" datatype="plaintext" original="messages" date="2025-11-10T16:00:00Z" product-name="nr_textdb">
         <header/>
         <body>
             <trans-unit id="tx_nrtextdb_domain_model_environment">
-                <target>Umgebung</target>
+                <target>Prostředí</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_environment.name">
-                <target>Name</target>
+                <target>Název</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_component">
-                <target>Komponente</target>
+                <target>Komponenta</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_component.name">
-                <target>Name</target>
+                <target>Název</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_type">
                 <target>Typ</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_type.name">
-                <target>Name</target>
+                <target>Název</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_translation">
-                <target>ÜBersetzung</target>
+                <target>Překlad</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_translation.value">
-                <target>Wert</target>
+                <target>Hodnota</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
-                <target>Umgebung</target>
+                <target>Prostředí</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_translation.component">
-                <target>Komponente</target>
+                <target>Komponenta</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_translation.type">
                 <target>Typ</target>
             </trans-unit>
             <trans-unit id="no-entries">
-                <target>Es wurden keine Einträge gefunden.</target>
+                <target>Nebyly nalezeny žádné záznamy</target>
             </trans-unit>
             <trans-unit id="no-translation">
-                <target>Keine Übersetzungen verfügbar.</target>
+                <target>Nejsou k dispozici žádné překlady</target>
             </trans-unit>
             <trans-unit id="translation">
-                <target>Übersetzung</target>
+                <target>Překlad</target>
             </trans-unit>
             <trans-unit id="save">
-                <target>Speichern</target>
+                <target>Uložit</target>
             </trans-unit>
             <trans-unit id="component">
-                <target>Komponente</target>
+                <target>Komponenta</target>
             </trans-unit>
             <trans-unit id="type">
                 <target>Typ</target>
             </trans-unit>
             <trans-unit id="environment">
-                <target>Umgebung</target>
+                <target>Prostředí</target>
             </trans-unit>
             <trans-unit id="filter.reset.label">
-                <target>Zurücksetzen</target>
+                <target>Obnovit</target>
             </trans-unit>
             <trans-unit id="placeholder">
-                <target>Platzhalter</target>
+                <target>Zástupný symbol</target>
             </trans-unit>
             <trans-unit id="value">
-                <target>Wert</target>
+                <target>Hodnota</target>
             </trans-unit>
             <trans-unit id="search">
-                <target>Suchen</target>
+                <target>Hledat</target>
             </trans-unit>
             <trans-unit id="import">
-                <target>Importieren</target>
+                <target>Importovat</target>
             </trans-unit>
             <trans-unit id="button.label.list">
-                <target>Liste</target>
+                <target>Seznam</target>
             </trans-unit>
             <trans-unit id="info.import.headline">
-                <target>Datei für den Import auswählen</target>
+                <target>Vyberte soubor pro import</target>
             </trans-unit>
             <trans-unit id="info.import.message">
-                <target>Stellen Sie sicher, dass sie immer zuerst die Primärsprache (sys_language_uid = 0) importieren, bevor Sie etwaige Übersetzungen hinzufügen, da nur so sichergestellt ist, dass die Verknüpfungen der Datensätze untereinander korrekt erfolgt.</target>
+                <target>Ujistěte se, že vždy nejprve importujete primární jazyk (sys_language_uid = 0) před přidáním překladů, protože je to jediný způsob, jak zajistit správnost propojení mezi záznamy.</target>
             </trans-unit>
             <trans-unit id="override.existing">
-                <target>Überschreibe existierende Übersetzungen</target>
+                <target>Přepsat existující překlady</target>
             </trans-unit>
             <trans-unit id="message.import">
-                <target>Import abgeschlossen für:</target>
+                <target>Import dokončen pro jazyk:</target>
             </trans-unit>
             <trans-unit id="message.updated">
-                <target>Übersetzungen aktualisiert:</target>
+                <target>Aktualizované překlady:</target>
             </trans-unit>
             <trans-unit id="message.imported">
-                <target>Übersetzungen importiert:</target>
+                <target>Importované překlady:</target>
             </trans-unit>
             <trans-unit id="message.errors">
-                <target>Folgende Fehler gab es beim Import:</target>
+                <target>Vyskytly se následující chyby:</target>
             </trans-unit>
             <trans-unit id="button.label.export">
-                <target>Mit aktuellem Filter exportieren</target>
+                <target>Exportovat s aktuálním filtrem</target>
             </trans-unit>
             <trans-unit id="message.error.filter">
-                <target>Bitte wählen Sie mindestens einen Typ oder eine Komponente aus um einen Export zu erstellen.</target>
+                <target>Vyberte alespoň jeden typ nebo komponentu pro vytvoření exportu.</target>
             </trans-unit>
             <trans-unit id="message.error.archive">
-                <target>Archiv konnte nicht erstellt werden.</target>
+                <target>Archiv se nepodařilo vytvořit.</target>
             </trans-unit>
             <trans-unit id="message.error.import">
-                <target>Der Dateiname stimmt nicht mit dem erwarteten Muster überein.</target>
+                <target>Název souboru neodpovídá očekávanému vzoru.</target>
             </trans-unit>
             <trans-unit id="error.storage.pid">
-                <target>Bitte konfigurieren Sie eine gültige Speicherseiten-ID in der Erweiterungskonfiguration.</target>
+                <target>Nakonfigurujte platné ID stránky úložiště v konfiguraci rozšíření.</target>
             </trans-unit>
             <trans-unit id="error.storage.pid.title">
                 <target>TextDb</target>
             </trans-unit>
             <trans-unit id="error.directory.creation">
-                <target>Verzeichnis "%s" konnte nicht erstellt werden</target>
+                <target>Adresář "%s" nebyl vytvořen</target>
             </trans-unit>
             <trans-unit id="error.missing.component">
-                <target>Fehlender Komponentenname in Schlüssel: %s</target>
+                <target>Chybějící název komponenty v klíči: %s</target>
             </trans-unit>
             <trans-unit id="error.missing.type">
-                <target>Fehlender Typname in Schlüssel: %s</target>
+                <target>Chybějící název typu v klíči: %s</target>
             </trans-unit>
             <trans-unit id="error.missing.placeholder">
-                <target>Fehlender Platzhalter in Schlüssel: %s</target>
+                <target>Chybějící zástupný symbol v klíči: %s</target>
             </trans-unit>
             <trans-unit id="language">
-                <target>Sprache</target>
+                <target>Jazyk</target>
             </trans-unit>
             <trans-unit id="error.missing.value">
-                <target>Fehlender Wert in Schlüssel: %s</target>
+                <target>Chybějící hodnota v klíči: %s</target>
             </trans-unit>
         </body>
     </file>

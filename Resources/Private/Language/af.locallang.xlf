@@ -1,136 +1,136 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <xliff version="1.0">
-    <file target-language="de" datatype="plaintext" original="messages" date="2019-09-11T10:31:41Z" product-name="nr_textdb">
+    <file target-language="af" datatype="plaintext" original="messages" date="2025-11-10T16:00:00Z" product-name="nr_textdb">
         <header/>
         <body>
             <trans-unit id="tx_nrtextdb_domain_model_environment">
-                <target>Umgebung</target>
+                <target>Omgewing</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_environment.name">
-                <target>Name</target>
+                <target>Naam</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_component">
-                <target>Komponente</target>
+                <target>Komponent</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_component.name">
-                <target>Name</target>
+                <target>Naam</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_type">
-                <target>Typ</target>
+                <target>Tipe</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_type.name">
-                <target>Name</target>
+                <target>Naam</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_translation">
-                <target>ÜBersetzung</target>
+                <target>Vertaling</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_translation.value">
-                <target>Wert</target>
+                <target>Waarde</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
-                <target>Umgebung</target>
+                <target>Omgewing</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_translation.component">
-                <target>Komponente</target>
+                <target>Komponent</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_translation.type">
-                <target>Typ</target>
+                <target>Tipe</target>
             </trans-unit>
             <trans-unit id="no-entries">
-                <target>Es wurden keine Einträge gefunden.</target>
+                <target>Geen inskrywings gevind nie</target>
             </trans-unit>
             <trans-unit id="no-translation">
-                <target>Keine Übersetzungen verfügbar.</target>
+                <target>Geen vertalings beskikbaar nie</target>
             </trans-unit>
             <trans-unit id="translation">
-                <target>Übersetzung</target>
+                <target>Vertaling</target>
             </trans-unit>
             <trans-unit id="save">
-                <target>Speichern</target>
+                <target>Stoor</target>
             </trans-unit>
             <trans-unit id="component">
-                <target>Komponente</target>
+                <target>Komponent</target>
             </trans-unit>
             <trans-unit id="type">
-                <target>Typ</target>
+                <target>Tipe</target>
             </trans-unit>
             <trans-unit id="environment">
-                <target>Umgebung</target>
+                <target>Omgewing</target>
             </trans-unit>
             <trans-unit id="filter.reset.label">
-                <target>Zurücksetzen</target>
+                <target>Herstel</target>
             </trans-unit>
             <trans-unit id="placeholder">
-                <target>Platzhalter</target>
+                <target>Plekhouer</target>
             </trans-unit>
             <trans-unit id="value">
-                <target>Wert</target>
+                <target>Waarde</target>
             </trans-unit>
             <trans-unit id="search">
-                <target>Suchen</target>
+                <target>Soek</target>
             </trans-unit>
             <trans-unit id="import">
-                <target>Importieren</target>
+                <target>Voer in</target>
             </trans-unit>
             <trans-unit id="button.label.list">
-                <target>Liste</target>
+                <target>Lys</target>
             </trans-unit>
             <trans-unit id="info.import.headline">
-                <target>Datei für den Import auswählen</target>
+                <target>Kies lêer vir invoer</target>
             </trans-unit>
             <trans-unit id="info.import.message">
-                <target>Stellen Sie sicher, dass sie immer zuerst die Primärsprache (sys_language_uid = 0) importieren, bevor Sie etwaige Übersetzungen hinzufügen, da nur so sichergestellt ist, dass die Verknüpfungen der Datensätze untereinander korrekt erfolgt.</target>
+                <target>Maak seker dat jy altyd eers die hooftaal (sys_language_uid = 0) invoer voordat jy vertalings byvoeg, aangesien dit die enigste manier is om te verseker dat die skakels tussen rekords korrek is.</target>
             </trans-unit>
             <trans-unit id="override.existing">
-                <target>Überschreibe existierende Übersetzungen</target>
+                <target>Oorskryf bestaande vertalings</target>
             </trans-unit>
             <trans-unit id="message.import">
-                <target>Import abgeschlossen für:</target>
+                <target>Invoer voltooi vir taal:</target>
             </trans-unit>
             <trans-unit id="message.updated">
-                <target>Übersetzungen aktualisiert:</target>
+                <target>Vertalings opgedateer:</target>
             </trans-unit>
             <trans-unit id="message.imported">
-                <target>Übersetzungen importiert:</target>
+                <target>Vertalings ingevoer:</target>
             </trans-unit>
             <trans-unit id="message.errors">
-                <target>Folgende Fehler gab es beim Import:</target>
+                <target>Die volgende foute het voorgekom:</target>
             </trans-unit>
             <trans-unit id="button.label.export">
-                <target>Mit aktuellem Filter exportieren</target>
+                <target>Voer uit met huidige filter</target>
             </trans-unit>
             <trans-unit id="message.error.filter">
-                <target>Bitte wählen Sie mindestens einen Typ oder eine Komponente aus um einen Export zu erstellen.</target>
+                <target>Kies ten minste een tipe of komponent om 'n uitvoer te skep.</target>
             </trans-unit>
             <trans-unit id="message.error.archive">
-                <target>Archiv konnte nicht erstellt werden.</target>
+                <target>Die argief kon nie geskep word nie.</target>
             </trans-unit>
             <trans-unit id="message.error.import">
-                <target>Der Dateiname stimmt nicht mit dem erwarteten Muster überein.</target>
+                <target>Die lêernaam stem nie ooreen met die verwagte patroon nie.</target>
             </trans-unit>
             <trans-unit id="error.storage.pid">
-                <target>Bitte konfigurieren Sie eine gültige Speicherseiten-ID in der Erweiterungskonfiguration.</target>
+                <target>Konfigureer 'n geldige stoorbladsy-ID in die uitbreiding se konfigurasie.</target>
             </trans-unit>
             <trans-unit id="error.storage.pid.title">
                 <target>TextDb</target>
             </trans-unit>
             <trans-unit id="error.directory.creation">
-                <target>Verzeichnis "%s" konnte nicht erstellt werden</target>
+                <target>Gids "%s" is nie geskep nie</target>
             </trans-unit>
             <trans-unit id="error.missing.component">
-                <target>Fehlender Komponentenname in Schlüssel: %s</target>
+                <target>Ontbrekende komponentnaam in sleutel: %s</target>
             </trans-unit>
             <trans-unit id="error.missing.type">
-                <target>Fehlender Typname in Schlüssel: %s</target>
+                <target>Ontbrekende tipenaam in sleutel: %s</target>
             </trans-unit>
             <trans-unit id="error.missing.placeholder">
-                <target>Fehlender Platzhalter in Schlüssel: %s</target>
+                <target>Ontbrekende plekhouer in sleutel: %s</target>
             </trans-unit>
             <trans-unit id="language">
-                <target>Sprache</target>
+                <target>Taal</target>
             </trans-unit>
             <trans-unit id="error.missing.value">
-                <target>Fehlender Wert in Schlüssel: %s</target>
+                <target>Ontbrekende waarde in sleutel: %s</target>
             </trans-unit>
         </body>
     </file>

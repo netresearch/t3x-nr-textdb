@@ -1,136 +1,136 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <xliff version="1.0">
-    <file target-language="de" datatype="plaintext" original="messages" date="2019-09-11T10:31:41Z" product-name="nr_textdb">
+    <file target-language="sv" datatype="plaintext" original="messages" date="2025-11-10T16:00:00Z" product-name="nr_textdb">
         <header/>
         <body>
             <trans-unit id="tx_nrtextdb_domain_model_environment">
-                <target>Umgebung</target>
+                <target>Miljö</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_environment.name">
-                <target>Name</target>
+                <target>Namn</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_component">
-                <target>Komponente</target>
+                <target>Komponent</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_component.name">
-                <target>Name</target>
+                <target>Namn</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_type">
                 <target>Typ</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_type.name">
-                <target>Name</target>
+                <target>Namn</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_translation">
-                <target>ÜBersetzung</target>
+                <target>Översättning</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_translation.value">
-                <target>Wert</target>
+                <target>Värde</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
-                <target>Umgebung</target>
+                <target>Miljö</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_translation.component">
-                <target>Komponente</target>
+                <target>Komponent</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_translation.type">
                 <target>Typ</target>
             </trans-unit>
             <trans-unit id="no-entries">
-                <target>Es wurden keine Einträge gefunden.</target>
+                <target>Inga poster hittades</target>
             </trans-unit>
             <trans-unit id="no-translation">
-                <target>Keine Übersetzungen verfügbar.</target>
+                <target>Inga översättningar tillgängliga</target>
             </trans-unit>
             <trans-unit id="translation">
-                <target>Übersetzung</target>
+                <target>Översättning</target>
             </trans-unit>
             <trans-unit id="save">
-                <target>Speichern</target>
+                <target>Spara</target>
             </trans-unit>
             <trans-unit id="component">
-                <target>Komponente</target>
+                <target>Komponent</target>
             </trans-unit>
             <trans-unit id="type">
                 <target>Typ</target>
             </trans-unit>
             <trans-unit id="environment">
-                <target>Umgebung</target>
+                <target>Miljö</target>
             </trans-unit>
             <trans-unit id="filter.reset.label">
-                <target>Zurücksetzen</target>
+                <target>Återställ</target>
             </trans-unit>
             <trans-unit id="placeholder">
-                <target>Platzhalter</target>
+                <target>Platshållare</target>
             </trans-unit>
             <trans-unit id="value">
-                <target>Wert</target>
+                <target>Värde</target>
             </trans-unit>
             <trans-unit id="search">
-                <target>Suchen</target>
+                <target>Sök</target>
             </trans-unit>
             <trans-unit id="import">
-                <target>Importieren</target>
+                <target>Importera</target>
             </trans-unit>
             <trans-unit id="button.label.list">
-                <target>Liste</target>
+                <target>Lista</target>
             </trans-unit>
             <trans-unit id="info.import.headline">
-                <target>Datei für den Import auswählen</target>
+                <target>Välj fil för import</target>
             </trans-unit>
             <trans-unit id="info.import.message">
-                <target>Stellen Sie sicher, dass sie immer zuerst die Primärsprache (sys_language_uid = 0) importieren, bevor Sie etwaige Übersetzungen hinzufügen, da nur so sichergestellt ist, dass die Verknüpfungen der Datensätze untereinander korrekt erfolgt.</target>
+                <target>Se till att alltid importera huvudspråket (sys_language_uid = 0) först innan du lägger till översättningar, eftersom detta är det enda sättet att säkerställa att länkarna mellan posterna är korrekta.</target>
             </trans-unit>
             <trans-unit id="override.existing">
-                <target>Überschreibe existierende Übersetzungen</target>
+                <target>Skriv över befintliga översättningar</target>
             </trans-unit>
             <trans-unit id="message.import">
-                <target>Import abgeschlossen für:</target>
+                <target>Import slutförd för språk:</target>
             </trans-unit>
             <trans-unit id="message.updated">
-                <target>Übersetzungen aktualisiert:</target>
+                <target>Översättningar uppdaterade:</target>
             </trans-unit>
             <trans-unit id="message.imported">
-                <target>Übersetzungen importiert:</target>
+                <target>Översättningar importerade:</target>
             </trans-unit>
             <trans-unit id="message.errors">
-                <target>Folgende Fehler gab es beim Import:</target>
+                <target>Följande fel uppstod:</target>
             </trans-unit>
             <trans-unit id="button.label.export">
-                <target>Mit aktuellem Filter exportieren</target>
+                <target>Exportera med aktuellt filter</target>
             </trans-unit>
             <trans-unit id="message.error.filter">
-                <target>Bitte wählen Sie mindestens einen Typ oder eine Komponente aus um einen Export zu erstellen.</target>
+                <target>Välj minst en typ eller komponent för att skapa en export.</target>
             </trans-unit>
             <trans-unit id="message.error.archive">
-                <target>Archiv konnte nicht erstellt werden.</target>
+                <target>Arkivet kunde inte skapas.</target>
             </trans-unit>
             <trans-unit id="message.error.import">
-                <target>Der Dateiname stimmt nicht mit dem erwarteten Muster überein.</target>
+                <target>Filnamnet matchar inte det förväntade mönstret.</target>
             </trans-unit>
             <trans-unit id="error.storage.pid">
-                <target>Bitte konfigurieren Sie eine gültige Speicherseiten-ID in der Erweiterungskonfiguration.</target>
+                <target>Konfigurera ett giltigt lagringssid-ID i tilläggskonfigurationen.</target>
             </trans-unit>
             <trans-unit id="error.storage.pid.title">
                 <target>TextDb</target>
             </trans-unit>
             <trans-unit id="error.directory.creation">
-                <target>Verzeichnis "%s" konnte nicht erstellt werden</target>
+                <target>Katalogen "%s" skapades inte</target>
             </trans-unit>
             <trans-unit id="error.missing.component">
-                <target>Fehlender Komponentenname in Schlüssel: %s</target>
+                <target>Saknat komponentnamn i nyckel: %s</target>
             </trans-unit>
             <trans-unit id="error.missing.type">
-                <target>Fehlender Typname in Schlüssel: %s</target>
+                <target>Saknat typnamn i nyckel: %s</target>
             </trans-unit>
             <trans-unit id="error.missing.placeholder">
-                <target>Fehlender Platzhalter in Schlüssel: %s</target>
+                <target>Saknad platshållare i nyckel: %s</target>
             </trans-unit>
             <trans-unit id="language">
-                <target>Sprache</target>
+                <target>Språk</target>
             </trans-unit>
             <trans-unit id="error.missing.value">
-                <target>Fehlender Wert in Schlüssel: %s</target>
+                <target>Saknat värde i nyckel: %s</target>
             </trans-unit>
         </body>
     </file>

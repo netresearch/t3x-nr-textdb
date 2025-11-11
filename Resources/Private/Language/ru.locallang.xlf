@@ -1,136 +1,136 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <xliff version="1.0">
-    <file target-language="de" datatype="plaintext" original="messages" date="2019-09-11T10:31:41Z" product-name="nr_textdb">
+    <file target-language="ru" datatype="plaintext" original="messages" date="2025-11-10T16:00:00Z" product-name="nr_textdb">
         <header/>
         <body>
             <trans-unit id="tx_nrtextdb_domain_model_environment">
-                <target>Umgebung</target>
+                <target>Окружение</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_environment.name">
-                <target>Name</target>
+                <target>Имя</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_component">
-                <target>Komponente</target>
+                <target>Компонент</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_component.name">
-                <target>Name</target>
+                <target>Имя</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_type">
-                <target>Typ</target>
+                <target>Тип</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_type.name">
-                <target>Name</target>
+                <target>Имя</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_translation">
-                <target>ÜBersetzung</target>
+                <target>Перевод</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_translation.value">
-                <target>Wert</target>
+                <target>Значение</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
-                <target>Umgebung</target>
+                <target>Окружение</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_translation.component">
-                <target>Komponente</target>
+                <target>Компонент</target>
             </trans-unit>
             <trans-unit id="tx_nrtextdb_domain_model_translation.type">
-                <target>Typ</target>
+                <target>Тип</target>
             </trans-unit>
             <trans-unit id="no-entries">
-                <target>Es wurden keine Einträge gefunden.</target>
+                <target>Записи не найдены</target>
             </trans-unit>
             <trans-unit id="no-translation">
-                <target>Keine Übersetzungen verfügbar.</target>
+                <target>Переводы недоступны</target>
             </trans-unit>
             <trans-unit id="translation">
-                <target>Übersetzung</target>
+                <target>Перевод</target>
             </trans-unit>
             <trans-unit id="save">
-                <target>Speichern</target>
+                <target>Сохранить</target>
             </trans-unit>
             <trans-unit id="component">
-                <target>Komponente</target>
+                <target>Компонент</target>
             </trans-unit>
             <trans-unit id="type">
-                <target>Typ</target>
+                <target>Тип</target>
             </trans-unit>
             <trans-unit id="environment">
-                <target>Umgebung</target>
+                <target>Окружение</target>
             </trans-unit>
             <trans-unit id="filter.reset.label">
-                <target>Zurücksetzen</target>
+                <target>Сбросить</target>
             </trans-unit>
             <trans-unit id="placeholder">
-                <target>Platzhalter</target>
+                <target>Заполнитель</target>
             </trans-unit>
             <trans-unit id="value">
-                <target>Wert</target>
+                <target>Значение</target>
             </trans-unit>
             <trans-unit id="search">
-                <target>Suchen</target>
+                <target>Поиск</target>
             </trans-unit>
             <trans-unit id="import">
-                <target>Importieren</target>
+                <target>Импортировать</target>
             </trans-unit>
             <trans-unit id="button.label.list">
-                <target>Liste</target>
+                <target>Список</target>
             </trans-unit>
             <trans-unit id="info.import.headline">
-                <target>Datei für den Import auswählen</target>
+                <target>Выберите файл для импорта</target>
             </trans-unit>
             <trans-unit id="info.import.message">
-                <target>Stellen Sie sicher, dass sie immer zuerst die Primärsprache (sys_language_uid = 0) importieren, bevor Sie etwaige Übersetzungen hinzufügen, da nur so sichergestellt ist, dass die Verknüpfungen der Datensätze untereinander korrekt erfolgt.</target>
+                <target>Убедитесь, что вы всегда сначала импортируете основной язык (sys_language_uid = 0) перед добавлением переводов, так как это единственный способ обеспечить правильность связей между записями.</target>
             </trans-unit>
             <trans-unit id="override.existing">
-                <target>Überschreibe existierende Übersetzungen</target>
+                <target>Перезаписать существующие переводы</target>
             </trans-unit>
             <trans-unit id="message.import">
-                <target>Import abgeschlossen für:</target>
+                <target>Импорт завершен для языка:</target>
             </trans-unit>
             <trans-unit id="message.updated">
-                <target>Übersetzungen aktualisiert:</target>
+                <target>Обновленные переводы:</target>
             </trans-unit>
             <trans-unit id="message.imported">
-                <target>Übersetzungen importiert:</target>
+                <target>Импортированные переводы:</target>
             </trans-unit>
             <trans-unit id="message.errors">
-                <target>Folgende Fehler gab es beim Import:</target>
+                <target>Произошли следующие ошибки:</target>
             </trans-unit>
             <trans-unit id="button.label.export">
-                <target>Mit aktuellem Filter exportieren</target>
+                <target>Экспортировать с текущим фильтром</target>
             </trans-unit>
             <trans-unit id="message.error.filter">
-                <target>Bitte wählen Sie mindestens einen Typ oder eine Komponente aus um einen Export zu erstellen.</target>
+                <target>Выберите хотя бы один тип или компонент для создания экспорта.</target>
             </trans-unit>
             <trans-unit id="message.error.archive">
-                <target>Archiv konnte nicht erstellt werden.</target>
+                <target>Не удалось создать архив.</target>
             </trans-unit>
             <trans-unit id="message.error.import">
-                <target>Der Dateiname stimmt nicht mit dem erwarteten Muster überein.</target>
+                <target>Имя файла не соответствует ожидаемому шаблону.</target>
             </trans-unit>
             <trans-unit id="error.storage.pid">
-                <target>Bitte konfigurieren Sie eine gültige Speicherseiten-ID in der Erweiterungskonfiguration.</target>
+                <target>Настройте действительный ID страницы хранения в конфигурации расширения.</target>
             </trans-unit>
             <trans-unit id="error.storage.pid.title">
                 <target>TextDb</target>
             </trans-unit>
             <trans-unit id="error.directory.creation">
-                <target>Verzeichnis "%s" konnte nicht erstellt werden</target>
+                <target>Каталог "%s" не был создан</target>
             </trans-unit>
             <trans-unit id="error.missing.component">
-                <target>Fehlender Komponentenname in Schlüssel: %s</target>
+                <target>Отсутствует имя компонента в ключе: %s</target>
             </trans-unit>
             <trans-unit id="error.missing.type">
-                <target>Fehlender Typname in Schlüssel: %s</target>
+                <target>Отсутствует имя типа в ключе: %s</target>
             </trans-unit>
             <trans-unit id="error.missing.placeholder">
-                <target>Fehlender Platzhalter in Schlüssel: %s</target>
+                <target>Отсутствует заполнитель в ключе: %s</target>
             </trans-unit>
             <trans-unit id="language">
-                <target>Sprache</target>
+                <target>Язык</target>
             </trans-unit>
             <trans-unit id="error.missing.value">
-                <target>Fehlender Wert in Schlüssel: %s</target>
+                <target>Отсутствует значение в ключе: %s</target>
             </trans-unit>
         </body>
     </file>
