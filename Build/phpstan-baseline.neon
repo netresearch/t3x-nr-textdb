@@ -114,7 +114,7 @@ parameters:
 			count: 1
 			path: ../Classes/Service/ImportService.php
 
-	-
+		-
 			message: '#^Cannot access offset ''target'' on mixed\.$#'
 			identifier: offsetAccess.nonOffsetAccessible
 			count: 1
