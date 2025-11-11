@@ -1,0 +1,15 @@
+# TYPO3 Crowdin Integration
+# This extension is part of the TYPO3 translation project: https://crowdin.com/project/typo3-cms
+# Translations are managed centrally - no project credentials needed
+
+files:
+  - source: Resources/Private/Language/locallang.xlf
+    translation: Resources/Private/Language/%two_letters_code%.locallang.xlf
+  - source: Resources/Private/Language/locallang_db.xlf
+    translation: Resources/Private/Language/%two_letters_code%.locallang_db.xlf
+  - source: Resources/Private/Language/locallang_mod.xlf
+    translation: Resources/Private/Language/%two_letters_code%.locallang_mod.xlf
+  - source: Resources/Private/Language/locallang_mod_sync.xlf
+    translation: Resources/Private/Language/%two_letters_code%.locallang_mod_sync.xlf
+  - source: Resources/Private/Language/locallang_mod_textdb.xlf
+    translation: Resources/Private/Language/%two_letters_code%.locallang_mod_textdb.xlf
