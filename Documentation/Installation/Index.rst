@@ -112,6 +112,28 @@ Post-Installation Steps
    * TextDB Backend Module
    * Storage folder for TextDB records
 
+.. _localization:
+
+Localization
+============
+
+.. versionadded:: 3.1.0
+   Backend interface available in 23 languages with Crowdin integration.
+
+The extension backend interface is available in **23 languages** out of the box:
+
+**European**: Afrikaans, Czech, Danish, German, Spanish, Finnish, French, Italian, Dutch, Norwegian, Polish, Portuguese, Swedish
+
+**Asian & African**: Arabic, Hindi, Indonesian, Japanese, Korean, Russian, Swahili, Thai, Vietnamese, Chinese
+
+The interface language follows your TYPO3 backend user settings. To change the backend language:
+
+1. Navigate to **User Settings** (click your username in top bar)
+2. Change **Interface Language** to your preferred language
+3. Save and reload the backend
+
+**Contribute Translations**: Help translate the extension into more languages or improve existing translations through the `TYPO3 Crowdin project <https://crowdin.com/project/typo3-cms>`_. No technical knowledge required! See the `Contributing Guide <https://github.com/netresearch/t3x-nr-textdb/blob/master/CONTRIBUTING.md#how-to-contribute-translations>`_ for details.
+
 .. _upgrade:
 
 Upgrade Instructions

@@ -76,6 +76,47 @@ Key Features
 * **Filter & Search**: Powerful filtering and search capabilities
 * **Pagination**: Efficient handling of large translation sets
 
+.. _localization-infrastructure:
+
+Global Localization Infrastructure
+===================================
+
+.. versionadded:: 3.1.0
+   Comprehensive localization infrastructure with 23 languages and Crowdin integration.
+
+The TextDB extension includes a robust localization infrastructure supporting **23 languages** out of the box, making it truly global and accessible to users worldwide.
+
+Supported Languages
+-------------------
+
+The extension backend interface is fully translated into:
+
+**European Languages (13):**
+🇿🇦 Afrikaans • 🇨🇿 Czech • 🇩🇰 Danish • 🇩🇪 German • 🇪🇸 Spanish • 🇫🇮 Finnish • 🇫🇷 French • 🇮🇹 Italian • 🇳🇱 Dutch • 🇳🇴 Norwegian • 🇵🇱 Polish • 🇵🇹 Portuguese • 🇸🇪 Swedish
+
+**Asian & African Languages (10):**
+🇸🇦 Arabic • 🇮🇳 Hindi • 🇮🇩 Indonesian • 🇯🇵 Japanese • 🇰🇷 Korean • 🇷🇺 Russian • 🇹🇿 Swahili • 🇹🇭 Thai • 🇻🇳 Vietnamese • 🇨🇳 Chinese
+
+Modern Standards
+----------------
+
+* **XLIFF 1.2 Format**: All language files use modern XLIFF 1.2 with proper namespace
+* **UTF-8 Encoding**: Full support for non-Latin scripts (Arabic, Chinese, Japanese, Hindi, Thai, Korean)
+* **Proper Names Protection**: Brand names "Netresearch" and "TextDb" marked as untranslatable
+* **Complete Coverage**: All 5 file types per language (locallang, locallang_db, locallang_mod, locallang_mod_sync, locallang_mod_textdb)
+
+Community Translation Integration
+----------------------------------
+
+The extension integrates with **TYPO3's centralized Crowdin translation system**, making it easy for the community to contribute translations:
+
+* **No technical knowledge required** - Translation happens through Crowdin's web interface
+* **Automatic synchronization** - Approved translations automatically sync to the repository
+* **Quality assurance** - TYPO3 translation coordinators review all submissions
+* **Collaborative workflow** - Comment system for clarifying context
+
+**Want to help translate?** Visit the `TYPO3 Crowdin project <https://crowdin.com/project/typo3-cms>`_ and look for the ``nr_textdb`` extension. See our `Contributing Guide <https://github.com/netresearch/t3x-nr-textdb/blob/master/CONTRIBUTING.md>`_ for detailed instructions.
+
 .. _screenshots:
 
 Screenshots
