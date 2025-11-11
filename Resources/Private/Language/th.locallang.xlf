@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0">
+    <file target-language="th" datatype="plaintext" original="messages" date="2025-11-10T16:00:00Z" product-name="nr_textdb">
+        <header/>
+        <body>
+            <trans-unit id="tx_nrtextdb_domain_model_environment">
+                <target>สภาพแวดล้อม</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_environment.name">
+                <target>ชื่อ</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_component">
+                <target>คอมโพเนนต์</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_component.name">
+                <target>ชื่อ</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_type">
+                <target>ประเภท</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_type.name">
+                <target>ชื่อ</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_translation">
+                <target>การแปล</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_translation.value">
+                <target>ค่า</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
+                <target>สภาพแวดล้อม</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_translation.component">
+                <target>คอมโพเนนต์</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_translation.type">
+                <target>ประเภท</target>
+            </trans-unit>
+            <trans-unit id="no-entries">
+                <target>ไม่พบรายการ</target>
+            </trans-unit>
+            <trans-unit id="no-translation">
+                <target>ไม่มีการแปลที่พร้อมใช้งาน</target>
+            </trans-unit>
+            <trans-unit id="translation">
+                <target>การแปล</target>
+            </trans-unit>
+            <trans-unit id="save">
+                <target>บันทึก</target>
+            </trans-unit>
+            <trans-unit id="component">
+                <target>คอมโพเนนต์</target>
+            </trans-unit>
+            <trans-unit id="type">
+                <target>ประเภท</target>
+            </trans-unit>
+            <trans-unit id="environment">
+                <target>สภาพแวดล้อม</target>
+            </trans-unit>
+            <trans-unit id="filter.reset.label">
+                <target>รีเซ็ต</target>
+            </trans-unit>
+            <trans-unit id="placeholder">
+                <target>ตัวยึดตำแหน่ง</target>
+            </trans-unit>
+            <trans-unit id="value">
+                <target>ค่า</target>
+            </trans-unit>
+            <trans-unit id="search">
+                <target>ค้นหา</target>
+            </trans-unit>
+            <trans-unit id="import">
+                <target>นำเข้า</target>
+            </trans-unit>
+            <trans-unit id="button.label.list">
+                <target>รายการ</target>
+            </trans-unit>
+            <trans-unit id="info.import.headline">
+                <target>เลือกไฟล์สำหรับการนำเข้า</target>
+            </trans-unit>
+            <trans-unit id="info.import.message">
+                <target>ตรวจสอบให้แน่ใจว่าคุณนำเข้าภาษาหลัก (sys_language_uid = 0) ก่อนเสมอก่อนที่จะเพิ่มการแปล เนื่องจากนี่เป็นวิธีเดียวที่จะทำให้มั่นใจว่าลิงก์ระหว่างระเบียนถูกต้อง</target>
+            </trans-unit>
+            <trans-unit id="override.existing">
+                <target>เขียนทับการแปลที่มีอยู่</target>
+            </trans-unit>
+            <trans-unit id="message.import">
+                <target>การนำเข้าเสร็จสมบูรณ์สำหรับภาษา:</target>
+            </trans-unit>
+            <trans-unit id="message.updated">
+                <target>อัปเดตการแปล:</target>
+            </trans-unit>
+            <trans-unit id="message.imported">
+                <target>นำเข้าการแปล:</target>
+            </trans-unit>
+            <trans-unit id="message.errors">
+                <target>เกิดข้อผิดพลาดต่อไปนี้:</target>
+            </trans-unit>
+            <trans-unit id="button.label.export">
+                <target>ส่งออกด้วยตัวกรองปัจจุบัน</target>
+            </trans-unit>
+            <trans-unit id="message.error.filter">
+                <target>เลือกอย่างน้อยหนึ่งประเภทหรือคอมโพเนนต์เพื่อสร้างการส่งออก</target>
+            </trans-unit>
+            <trans-unit id="message.error.archive">
+                <target>ไม่สามารถสร้างไฟล์เก็บถาวร</target>
+            </trans-unit>
+            <trans-unit id="message.error.import">
+                <target>ชื่อไฟล์ไม่ตรงกับรูปแบบที่คาดหวัง</target>
+            </trans-unit>
+            <trans-unit id="error.storage.pid">
+                <target>กำหนดค่า ID หน้าที่เก็บข้อมูลที่ถูกต้องในการกำหนดค่าส่วนขยาย</target>
+            </trans-unit>
+            <trans-unit id="error.storage.pid.title">
+                <target>TextDb</target>
+            </trans-unit>
+            <trans-unit id="error.directory.creation">
+                <target>ไม่ได้สร้างไดเรกทอรี "%s"</target>
+            </trans-unit>
+            <trans-unit id="error.missing.component">
+                <target>ไม่มีชื่อคอมโพเนนต์ในคีย์: %s</target>
+            </trans-unit>
+            <trans-unit id="error.missing.type">
+                <target>ไม่มีชื่อประเภทในคีย์: %s</target>
+            </trans-unit>
+            <trans-unit id="error.missing.placeholder">
+                <target>ไม่มีตัวยึดตำแหน่งในคีย์: %s</target>
+            </trans-unit>
+            <trans-unit id="language">
+                <target>ภาษา</target>
+            </trans-unit>
+            <trans-unit id="error.missing.value">
+                <target>ไม่มีค่าในคีย์: %s</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

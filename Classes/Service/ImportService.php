@@ -27,6 +27,7 @@ use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
+use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 
 use function count;
 
@@ -98,22 +99,42 @@ class ImportService
         foreach ($entries as $key => $data) {
             $componentName = $this->getComponentFromKey($key);
             if ($componentName === null) {
-                throw new RuntimeException('Missing component name in key: ' . $key);
+                throw new RuntimeException(
+                    sprintf(
+                        LocalizationUtility::translate('error.missing.component', 'NrTextdb') ?? 'Missing component name in key: %s',
+                        $key
+                    )
+                );
             }
 
             $typeName = $this->getTypeFromKey($key);
             if ($typeName === null) {
-                throw new RuntimeException('Missing type name in key: ' . $key);
+                throw new RuntimeException(
+                    sprintf(
+                        LocalizationUtility::translate('error.missing.type', 'NrTextdb') ?? 'Missing type name in key: %s',
+                        $key
+                    )
+                );
             }
 
             $placeholder = $this->getPlaceholderFromKey($key);
             if ($placeholder === null) {
-                throw new RuntimeException('Missing placeholder in key: ' . $key);
+                throw new RuntimeException(
+                    sprintf(
+                        LocalizationUtility::translate('error.missing.placeholder', 'NrTextdb') ?? 'Missing placeholder in key: %s',
+                        $key
+                    )
+                );
             }
 
             $value = $data[0]['target'] ?? null;
             if ($value === null) {
-                throw new RuntimeException('Missing value in key: ' . $key);
+                throw new RuntimeException(
+                    sprintf(
+                        LocalizationUtility::translate('error.missing.value', 'NrTextdb') ?? 'Missing value in key: %s',
+                        $key
+                    )
+                );
             }
 
             $this->importEntry(

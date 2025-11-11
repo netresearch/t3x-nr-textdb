@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0">
+    <file target-language="hi" datatype="plaintext" original="messages" date="2025-11-10T16:00:00Z" product-name="nr_textdb">
+        <header/>
+        <body>
+            <trans-unit id="tx_nrtextdb_domain_model_environment">
+                <target>वातावरण</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_environment.name">
+                <target>नाम</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_component">
+                <target>घटक</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_component.name">
+                <target>नाम</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_type">
+                <target>प्रकार</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_type.name">
+                <target>नाम</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_translation">
+                <target>अनुवाद</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_translation.value">
+                <target>मान</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
+                <target>वातावरण</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_translation.component">
+                <target>घटक</target>
+            </trans-unit>
+            <trans-unit id="tx_nrtextdb_domain_model_translation.type">
+                <target>प्रकार</target>
+            </trans-unit>
+            <trans-unit id="no-entries">
+                <target>कोई प्रविष्टि नहीं मिली</target>
+            </trans-unit>
+            <trans-unit id="no-translation">
+                <target>कोई अनुवाद उपलब्ध नहीं</target>
+            </trans-unit>
+            <trans-unit id="translation">
+                <target>अनुवाद</target>
+            </trans-unit>
+            <trans-unit id="save">
+                <target>सहेजें</target>
+            </trans-unit>
+            <trans-unit id="component">
+                <target>घटक</target>
+            </trans-unit>
+            <trans-unit id="type">
+                <target>प्रकार</target>
+            </trans-unit>
+            <trans-unit id="environment">
+                <target>वातावरण</target>
+            </trans-unit>
+            <trans-unit id="filter.reset.label">
+                <target>रीसेट करें</target>
+            </trans-unit>
+            <trans-unit id="placeholder">
+                <target>प्लेसहोल्डर</target>
+            </trans-unit>
+            <trans-unit id="value">
+                <target>मान</target>
+            </trans-unit>
+            <trans-unit id="search">
+                <target>खोजें</target>
+            </trans-unit>
+            <trans-unit id="import">
+                <target>आयात करें</target>
+            </trans-unit>
+            <trans-unit id="button.label.list">
+                <target>सूची</target>
+            </trans-unit>
+            <trans-unit id="info.import.headline">
+                <target>आयात के लिए फ़ाइल चुनें</target>
+            </trans-unit>
+            <trans-unit id="info.import.message">
+                <target>सुनिश्चित करें कि अनुवाद जोड़ने से पहले हमेशा मुख्य भाषा (sys_language_uid = 0) को पहले आयात करें, क्योंकि यह सुनिश्चित करने का एकमात्र तरीका है कि रिकॉर्ड के बीच लिंक सही हैं।</target>
+            </trans-unit>
+            <trans-unit id="override.existing">
+                <target>मौजूदा अनुवादों को ओवरराइट करें</target>
+            </trans-unit>
+            <trans-unit id="message.import">
+                <target>भाषा के लिए आयात पूर्ण:</target>
+            </trans-unit>
+            <trans-unit id="message.updated">
+                <target>अनुवाद अपडेट किए गए:</target>
+            </trans-unit>
+            <trans-unit id="message.imported">
+                <target>अनुवाद आयात किए गए:</target>
+            </trans-unit>
+            <trans-unit id="message.errors">
+                <target>निम्नलिखित त्रुटियां हुईं:</target>
+            </trans-unit>
+            <trans-unit id="button.label.export">
+                <target>वर्तमान फ़िल्टर के साथ निर्यात करें</target>
+            </trans-unit>
+            <trans-unit id="message.error.filter">
+                <target>निर्यात बनाने के लिए कम से कम एक प्रकार या घटक चुनें।</target>
+            </trans-unit>
+            <trans-unit id="message.error.archive">
+                <target>संग्रह बनाया नहीं जा सका।</target>
+            </trans-unit>
+            <trans-unit id="message.error.import">
+                <target>फ़ाइल नाम अपेक्षित पैटर्न से मेल नहीं खाता।</target>
+            </trans-unit>
+            <trans-unit id="error.storage.pid">
+                <target>एक्सटेंशन कॉन्फ़िगरेशन में एक मान्य संग्रहण पृष्ठ आईडी कॉन्फ़िगर करें।</target>
+            </trans-unit>
+            <trans-unit id="error.storage.pid.title">
+                <target>TextDb</target>
+            </trans-unit>
+            <trans-unit id="error.directory.creation">
+                <target>निर्देशिका "%s" नहीं बनाई गई</target>
+            </trans-unit>
+            <trans-unit id="error.missing.component">
+                <target>कुंजी में घटक नाम गायब: %s</target>
+            </trans-unit>
+            <trans-unit id="error.missing.type">
+                <target>कुंजी में प्रकार नाम गायब: %s</target>
+            </trans-unit>
+            <trans-unit id="error.missing.placeholder">
+                <target>कुंजी में प्लेसहोल्डर गायब: %s</target>
+            </trans-unit>
+            <trans-unit id="language">
+                <target>भाषा</target>
+            </trans-unit>
+            <trans-unit id="error.missing.value">
+                <target>कुंजी में मान गायब: %s</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

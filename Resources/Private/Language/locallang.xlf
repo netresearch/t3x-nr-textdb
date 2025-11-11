@@ -109,6 +109,30 @@
             <trans-unit id="message.error.import">
                 <source>File name does not match the expected pattern.</source>
             </trans-unit>
+            <trans-unit id="error.storage.pid">
+                <source>Please configure a valid storage page ID in the extension configuration.</source>
+            </trans-unit>
+            <trans-unit id="error.storage.pid.title">
+                <source>TextDb</source>
+            </trans-unit>
+            <trans-unit id="error.directory.creation">
+                <source>Directory "%s" was not created</source>
+            </trans-unit>
+            <trans-unit id="error.missing.component">
+                <source>Missing component name in key: %s</source>
+            </trans-unit>
+            <trans-unit id="error.missing.type">
+                <source>Missing type name in key: %s</source>
+            </trans-unit>
+            <trans-unit id="error.missing.placeholder">
+                <source>Missing placeholder in key: %s</source>
+            </trans-unit>
+            <trans-unit id="language">
+                <source>Language</source>
+            </trans-unit>
+            <trans-unit id="error.missing.value">
+                <source>Missing value in key: %s</source>
+            </trans-unit>
         </body>
     </file>
 </xliff>
