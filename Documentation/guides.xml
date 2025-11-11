@@ -11,13 +11,17 @@
 
     <extension class="\T3Docs\Typo3DocsTheme\DependencyInjection\Typo3DocsThemeExtension"
                edit-on-github="netresearch/t3x-nr-textdb"
-               edit-on-github-branch="main"
+               edit-on-github-branch="master"
                edit-on-github-directory="Documentation"
                project-home="https://github.com/netresearch/t3x-nr-textdb"
                project-repository="https://github.com/netresearch/t3x-nr-textdb"
                project-issues="https://github.com/netresearch/t3x-nr-textdb/issues"
                project-contact="thomas.schoene@netresearch.de"
     />
+
+    <!-- Localization Integration -->
+    <!-- Extension translations managed through TYPO3 Crowdin: https://crowdin.com/project/typo3-cms -->
+    <!-- Contributing Guide: https://github.com/netresearch/t3x-nr-textdb/blob/master/CONTRIBUTING.md -->
 
     <!-- Cross-Documentation References (Intersphinx Mappings) -->
     <inventory id="h2document" url="https://docs.typo3.org/h2document/draft/"/>
