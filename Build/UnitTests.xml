@@ -29,9 +29,7 @@
 
     <coverage ignoreDeprecatedCodeUnits="true"
               disableCodeCoverageIgnore="true">
-        <report>
-            <html outputDirectory="../.build/coverage/" />
-        </report>
+        <!-- HTML coverage report removed for CI performance (saves ~80ms per run) -->
     </coverage>
 
     <source restrictDeprecations="true"

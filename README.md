@@ -430,6 +430,20 @@ Use TextDB translations in your Fluid templates:
 - English (default): `textdb_[name].xlf`
 - Other languages: `[iso-code].textdb_[name].xlf` (e.g., `de.textdb_labels.xlf`)
 
+#### Security Considerations
+
+The XLF import functionality implements protection against XML External Entity (XXE) attacks:
+
+- **XXE Protection**: Network access during XML parsing is blocked using the `LIBXML_NONET` flag, preventing external entity resolution and SSRF attacks
+- **PHP 8.0+ Compatible**: External entity loading is disabled by default in PHP 8.0+, with `LIBXML_NONET` providing defense-in-depth security
+- **Permission Requirements**: Only backend users with appropriate permissions can import XLF files
+- **Best Practices**:
+  - Review XLF files from untrusted sources before importing
+  - Monitor import operations in production environments
+  - Regularly update to the latest version to receive security updates
+
+For more information about XXE vulnerabilities, see the [OWASP XXE documentation](https://owasp.org/www-community/vulnerabilities/XML_External_Entity_(XXE)_Processing).
+
 ### Exporting Translations
 
 1. Open the TextDB backend module
