@@ -529,8 +529,19 @@ class TranslationController extends ActionController
 
             libxml_use_internal_errors(true);
 
+            // XXE Protection: Parse with LIBXML_NONET flag to prevent XML External Entity attacks
+            // In PHP 8.0+, external entity loading is disabled by default, but we explicitly use
+            // LIBXML_NONET to prevent network access and do NOT use LIBXML_NOENT (which would enable
+            // entity expansion). See: https://owasp.org/www-community/vulnerabilities/XML_External_Entity_(XXE)_Processing
+            // Related issue: #50 (long-term refactoring to use XliffParser exclusively)
+
             // We can't use the XliffParser here, due it's limitations regarding filenames
-            $data      = simplexml_load_string($uploadedFileContent);
+            // Parse with LIBXML_NONET flag to disable network access during parsing
+            $data = simplexml_load_string(
+                $uploadedFileContent,
+                'SimpleXMLElement',
+                LIBXML_NONET
+            );
             $xmlErrors = libxml_get_errors();
 
             if ($data === false) {
