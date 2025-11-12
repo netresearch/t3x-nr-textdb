@@ -19,9 +19,10 @@ use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
 use Netresearch\NrTextdb\Domain\Repository\TypeRepository;
 use Netresearch\NrTextdb\Service\ImportService;
 use Netresearch\NrTextdb\Service\TranslationService;
+use Netresearch\NrXliffStreaming\Parser\XliffStreamingParser;
+use Netresearch\NrXliffStreaming\Exception\InvalidXliffException;
 use Psr\Http\Message\ResponseInterface;
 use RuntimeException;
-use SimpleXMLElement;
 use TYPO3\CMS\Backend\Template\Components\ButtonBar;
 use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
@@ -85,6 +86,8 @@ class TranslationController extends ActionController
 
     private readonly ImportService $importService;
 
+    private readonly XliffStreamingParser $xliffParser;
+
     protected int $pid = 0;
 
     /**
@@ -98,6 +101,7 @@ class TranslationController extends ActionController
         TranslationRepository $translationRepository,
         TranslationService $translationService,
         PersistenceManager $persistenceManager,
+        XliffStreamingParser $xliffParser,
         ComponentRepository $componentRepository,
         TypeRepository $typeRepository,
         ImportService $importService,
@@ -111,6 +115,7 @@ class TranslationController extends ActionController
         $this->typeRepository         = $typeRepository;
         $this->moduleTemplateFactory  = $moduleTemplateFactory;
         $this->iconFactory            = $iconFactory;
+        $this->xliffParser            = $xliffParser;
 
         $this->environmentRepository->setCreateIfMissing(true);
         $this->typeRepository->setCreateIfMissing(true);
@@ -527,40 +532,13 @@ class TranslationController extends ActionController
                 continue;
             }
 
-            libxml_use_internal_errors(true);
-
-            // XXE Protection: Parse with LIBXML_NONET flag to prevent XML External Entity attacks
-            // In PHP 8.0+, external entity loading is disabled by default, but we explicitly use
-            // LIBXML_NONET to prevent network access and do NOT use LIBXML_NOENT (which would enable
-            // entity expansion). See: https://owasp.org/www-community/vulnerabilities/XML_External_Entity_(XXE)_Processing
-            // Related issue: #50 (long-term refactoring to use XliffParser exclusively)
-
-            // We can't use the XliffParser here, due it's limitations regarding filenames
-            // Parse with LIBXML_NONET flag to disable network access during parsing
-            $data = simplexml_load_string(
-                $uploadedFileContent,
-                'SimpleXMLElement',
-                LIBXML_NONET
-            );
-            $xmlErrors = libxml_get_errors();
-
-            if ($data === false) {
-                continue;
-            }
-
-            if ($xmlErrors !== []) {
-                foreach ($xmlErrors as $error) {
-                    $errors[] = $error->message;
-                }
-
-                $this->moduleTemplate->assign('errors', $errors);
-
-                return $this->moduleTemplate->renderResponse('Translation/Import');
-            }
-
-            /** @var SimpleXMLElement $translation */
-            foreach ($data->file->body->children() as $translation) {
-                $key = (string) $translation->attributes()['id'];
+            // XXE Protection: XliffStreamingParser uses LIBXML_NONET flag internally to prevent
+            // XML External Entity attacks. Network access is disabled during parsing.
+            // See: https://owasp.org/www-community/vulnerabilities/XML_External_Entity_(XXE)_Processing
+            // Implements: Issue #30 (large file support with XMLReader streaming)
+            try {
+                foreach ($this->xliffParser->parseTransUnits($uploadedFileContent) as $unit) {
+                    $key = $unit['id'];
 
                 $componentName = $this->getComponentFromKey($key);
                 if ($componentName === null) {
@@ -592,22 +570,27 @@ class TranslationController extends ActionController
                     );
                 }
 
-                $value = $translation->target->getName() === ''
-                    ? (string) $translation->source
-                    : (string) $translation->target;
+                    // Use target if available, fallback to source
+                    $value = $unit['target'] ?? $unit['source'];
 
-                $this->importService
-                    ->importEntry(
-                        $languageUid,
-                        $componentName,
-                        $typeName,
-                        $placeholder,
-                        trim($value),
-                        $forceUpdate,
-                        $imported,
-                        $updated,
-                        $errors
-                    );
+                    $this->importService
+                        ->importEntry(
+                            $languageUid,
+                            $componentName,
+                            $typeName,
+                            $placeholder,
+                            trim($value),
+                            $forceUpdate,
+                            $imported,
+                            $updated,
+                            $errors
+                        );
+                }
+            } catch (InvalidXliffException $e) {
+                $errors[] = $e->getMessage();
+                $this->moduleTemplate->assign('errors', $errors);
+
+                return $this->moduleTemplate->renderResponse('Translation/Import');
             }
         }
 
