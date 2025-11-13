@@ -1,137 +1,180 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
-    <file target-language="sv" datatype="plaintext" original="messages" date="2025-11-10T16:00:00Z" product-name="nr_textdb">
-        <header/>
-        <body>
-            <trans-unit id="tx_nrtextdb_domain_model_environment">
-                <target>Miljö</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_environment.name">
-                <target>Namn</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_component">
-                <target>Komponent</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_component.name">
-                <target>Namn</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_type">
-                <target>Typ</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_type.name">
-                <target>Namn</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation">
-                <target>Översättning</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation.value">
-                <target>Värde</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
-                <target>Miljö</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation.component">
-                <target>Komponent</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation.type">
-                <target>Typ</target>
-            </trans-unit>
-            <trans-unit id="no-entries">
-                <target>Inga poster hittades</target>
-            </trans-unit>
-            <trans-unit id="no-translation">
-                <target>Inga översättningar tillgängliga</target>
-            </trans-unit>
-            <trans-unit id="translation">
-                <target>Översättning</target>
-            </trans-unit>
-            <trans-unit id="save">
-                <target>Spara</target>
-            </trans-unit>
-            <trans-unit id="component">
-                <target>Komponent</target>
-            </trans-unit>
-            <trans-unit id="type">
-                <target>Typ</target>
-            </trans-unit>
-            <trans-unit id="environment">
-                <target>Miljö</target>
-            </trans-unit>
-            <trans-unit id="filter.reset.label">
-                <target>Återställ</target>
-            </trans-unit>
-            <trans-unit id="placeholder">
-                <target>Platshållare</target>
-            </trans-unit>
-            <trans-unit id="value">
-                <target>Värde</target>
-            </trans-unit>
-            <trans-unit id="search">
-                <target>Sök</target>
-            </trans-unit>
-            <trans-unit id="import">
-                <target>Importera</target>
-            </trans-unit>
-            <trans-unit id="button.label.list">
-                <target>Lista</target>
-            </trans-unit>
-            <trans-unit id="info.import.headline">
-                <target>Välj fil för import</target>
-            </trans-unit>
-            <trans-unit id="info.import.message">
-                <target>Se till att alltid importera huvudspråket (sys_language_uid = 0) först innan du lägger till översättningar, eftersom detta är det enda sättet att säkerställa att länkarna mellan posterna är korrekta.</target>
-            </trans-unit>
-            <trans-unit id="override.existing">
-                <target>Skriv över befintliga översättningar</target>
-            </trans-unit>
-            <trans-unit id="message.import">
-                <target>Import slutförd för språk:</target>
-            </trans-unit>
-            <trans-unit id="message.updated">
-                <target>Översättningar uppdaterade:</target>
-            </trans-unit>
-            <trans-unit id="message.imported">
-                <target>Översättningar importerade:</target>
-            </trans-unit>
-            <trans-unit id="message.errors">
-                <target>Följande fel uppstod:</target>
-            </trans-unit>
-            <trans-unit id="button.label.export">
-                <target>Exportera med aktuellt filter</target>
-            </trans-unit>
-            <trans-unit id="message.error.filter">
-                <target>Välj minst en typ eller komponent för att skapa en export.</target>
-            </trans-unit>
-            <trans-unit id="message.error.archive">
-                <target>Arkivet kunde inte skapas.</target>
-            </trans-unit>
-            <trans-unit id="message.error.import">
-                <target>Filnamnet matchar inte det förväntade mönstret.</target>
-            </trans-unit>
-            <trans-unit id="error.storage.pid">
-                <target>Konfigurera ett giltigt lagringssid-ID i tilläggskonfigurationen.</target>
-            </trans-unit>
-            <trans-unit id="error.storage.pid.title" translate="no">
-                <target>TextDb</target>
-            </trans-unit>
-            <trans-unit id="error.directory.creation">
-                <target>Katalogen "%s" skapades inte</target>
-            </trans-unit>
-            <trans-unit id="error.missing.component">
-                <target>Saknat komponentnamn i nyckel: %s</target>
-            </trans-unit>
-            <trans-unit id="error.missing.type">
-                <target>Saknat typnamn i nyckel: %s</target>
-            </trans-unit>
-            <trans-unit id="error.missing.placeholder">
-                <target>Saknad platshållare i nyckel: %s</target>
-            </trans-unit>
-            <trans-unit id="language">
-                <target>Språk</target>
-            </trans-unit>
-            <trans-unit id="error.missing.value">
-                <target>Saknat värde i nyckel: %s</target>
-            </trans-unit>
-        </body>
-    </file>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" datatype="plaintext" original="messages" date="2019-09-11T10:31:41Z" product-name="nr_textdb" target-language="sv-SE">
+    <header/>
+    <body>
+      <trans-unit id="tx_nrtextdb_domain_model_environment">
+        <source>Environment</source>
+        <target state="translated">Miljö</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_environment.name">
+        <source>Name</source>
+        <target state="translated">Namn</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_component">
+        <source>Component</source>
+        <target state="translated">Komponent</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_component.name">
+        <source>Name</source>
+        <target state="translated">Namn</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_type">
+        <source>Type</source>
+        <target state="translated">Typ</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_type.name">
+        <source>Name</source>
+        <target state="translated">Namn</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation">
+        <source>Translation</source>
+        <target state="translated">Översättning</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.value">
+        <source>Value</source>
+        <target state="translated">Värde</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
+        <source>Environment</source>
+        <target state="translated">Miljö</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.component">
+        <source>Component</source>
+        <target state="translated">Komponent</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.type">
+        <source>Type</source>
+        <target state="translated">Typ</target>
+      </trans-unit>
+      <trans-unit id="no-entries">
+        <source>No entries found</source>
+        <target state="translated">Inga poster hittades</target>
+      </trans-unit>
+      <trans-unit id="no-translation">
+        <source>No translations available</source>
+        <target state="translated">Inga översättningar tillgängliga</target>
+      </trans-unit>
+      <trans-unit id="translation">
+        <source>Translation</source>
+        <target state="translated">Översättning</target>
+      </trans-unit>
+      <trans-unit id="save">
+        <source>Save</source>
+        <target state="translated">Spara</target>
+      </trans-unit>
+      <trans-unit id="component">
+        <source>Component</source>
+        <target state="translated">Komponent</target>
+      </trans-unit>
+      <trans-unit id="type">
+        <source>Type</source>
+        <target state="translated">Typ</target>
+      </trans-unit>
+      <trans-unit id="environment">
+        <source>Environment</source>
+        <target state="translated">Miljö</target>
+      </trans-unit>
+      <trans-unit id="filter.reset.label">
+        <source>Reset</source>
+        <target state="translated">Återställ</target>
+      </trans-unit>
+      <trans-unit id="placeholder">
+        <source>Placeholder</source>
+        <target state="translated">Platshållare</target>
+      </trans-unit>
+      <trans-unit id="value">
+        <source>Value</source>
+        <target state="translated">Värde</target>
+      </trans-unit>
+      <trans-unit id="search">
+        <source>Search</source>
+        <target state="translated">Sök</target>
+      </trans-unit>
+      <trans-unit id="import">
+        <source>Import</source>
+        <target state="translated">Importera</target>
+      </trans-unit>
+      <trans-unit id="button.label.list">
+        <source>List</source>
+        <target state="translated">Lista</target>
+      </trans-unit>
+      <trans-unit id="info.import.headline">
+        <source>Select file for import</source>
+        <target state="translated">Välj fil för import</target>
+      </trans-unit>
+      <trans-unit id="info.import.message">
+        <source>Make sure that you always import the primary language (sys_language_uid = 0) first before adding any translations, as this is the only way to ensure that the links between the records are correct.</source>
+        <target state="translated">Se till att alltid importera huvudspråket (sys_language_uid = 0) först innan du lägger till översättningar, eftersom detta är det enda sättet att säkerställa att länkarna mellan posterna är korrekta.</target>
+      </trans-unit>
+      <trans-unit id="override.existing">
+        <source>Override existing</source>
+        <target state="translated">Skriv över befintliga översättningar</target>
+      </trans-unit>
+      <trans-unit id="message.import">
+        <source>Import done for Language:</source>
+        <target state="translated">Import slutförd för språk:</target>
+      </trans-unit>
+      <trans-unit id="message.updated">
+        <source>Translations updated:</source>
+        <target state="translated">Översättningar uppdaterade:</target>
+      </trans-unit>
+      <trans-unit id="message.imported">
+        <source>Translations imported:</source>
+        <target state="translated">Översättningar importerade:</target>
+      </trans-unit>
+      <trans-unit id="message.errors">
+        <source>The following errors occurs:</source>
+        <target state="translated">Följande fel uppstod:</target>
+      </trans-unit>
+      <trans-unit id="button.label.export">
+        <source>Export with current filter</source>
+        <target state="translated">Exportera med aktuellt filter</target>
+      </trans-unit>
+      <trans-unit id="message.error.filter">
+        <source>Please select at least one type or component to create an export.</source>
+        <target state="translated">Välj minst en typ eller komponent för att skapa en export.</target>
+      </trans-unit>
+      <trans-unit id="message.error.archive">
+        <source>Archive cloud not be created.</source>
+        <target state="translated">Arkivet kunde inte skapas.</target>
+      </trans-unit>
+      <trans-unit id="message.error.import">
+        <source>File name does not match the expected pattern.</source>
+        <target state="translated">Filnamnet matchar inte det förväntade mönstret.</target>
+      </trans-unit>
+      <trans-unit id="error.storage.pid">
+        <source>Please configure a valid storage page ID in the extension configuration.</source>
+        <target state="translated">Konfigurera ett giltigt lagringssid-ID i tilläggskonfigurationen.</target>
+      </trans-unit>
+      <trans-unit id="error.storage.pid.title" translate="no">
+        <source>TextDb</source>
+        <target state="needs-translation">TextDb</target>
+      </trans-unit>
+      <trans-unit id="error.directory.creation">
+        <source>Directory "%s" was not created</source>
+        <target state="translated">Katalogen "%s" skapades inte</target>
+      </trans-unit>
+      <trans-unit id="error.missing.component">
+        <source>Missing component name in key: %s</source>
+        <target state="translated">Saknat komponentnamn i nyckel: %s</target>
+      </trans-unit>
+      <trans-unit id="error.missing.type">
+        <source>Missing type name in key: %s</source>
+        <target state="translated">Saknat typnamn i nyckel: %s</target>
+      </trans-unit>
+      <trans-unit id="error.missing.placeholder">
+        <source>Missing placeholder in key: %s</source>
+        <target state="translated">Saknad platshållare i nyckel: %s</target>
+      </trans-unit>
+      <trans-unit id="language">
+        <source>Language</source>
+        <target state="translated">Språk</target>
+      </trans-unit>
+      <trans-unit id="error.missing.value">
+        <source>Missing value in key: %s</source>
+        <target state="translated">Saknat värde i nyckel: %s</target>
+      </trans-unit>
+    </body>
+  </file>
 </xliff>

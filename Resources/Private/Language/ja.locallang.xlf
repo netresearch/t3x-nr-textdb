@@ -1,137 +1,180 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
-    <file target-language="ja" datatype="plaintext" original="messages" date="2025-11-10T16:00:00Z" product-name="nr_textdb">
-        <header/>
-        <body>
-            <trans-unit id="tx_nrtextdb_domain_model_environment">
-                <target>環境</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_environment.name">
-                <target>名前</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_component">
-                <target>コンポーネント</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_component.name">
-                <target>名前</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_type">
-                <target>タイプ</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_type.name">
-                <target>名前</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation">
-                <target>翻訳</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation.value">
-                <target>値</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
-                <target>環境</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation.component">
-                <target>コンポーネント</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation.type">
-                <target>タイプ</target>
-            </trans-unit>
-            <trans-unit id="no-entries">
-                <target>エントリが見つかりません</target>
-            </trans-unit>
-            <trans-unit id="no-translation">
-                <target>翻訳が利用できません</target>
-            </trans-unit>
-            <trans-unit id="translation">
-                <target>翻訳</target>
-            </trans-unit>
-            <trans-unit id="save">
-                <target>保存</target>
-            </trans-unit>
-            <trans-unit id="component">
-                <target>コンポーネント</target>
-            </trans-unit>
-            <trans-unit id="type">
-                <target>タイプ</target>
-            </trans-unit>
-            <trans-unit id="environment">
-                <target>環境</target>
-            </trans-unit>
-            <trans-unit id="filter.reset.label">
-                <target>リセット</target>
-            </trans-unit>
-            <trans-unit id="placeholder">
-                <target>プレースホルダー</target>
-            </trans-unit>
-            <trans-unit id="value">
-                <target>値</target>
-            </trans-unit>
-            <trans-unit id="search">
-                <target>検索</target>
-            </trans-unit>
-            <trans-unit id="import">
-                <target>インポート</target>
-            </trans-unit>
-            <trans-unit id="button.label.list">
-                <target>リスト</target>
-            </trans-unit>
-            <trans-unit id="info.import.headline">
-                <target>インポートするファイルを選択</target>
-            </trans-unit>
-            <trans-unit id="info.import.message">
-                <target>翻訳を追加する前に、必ず主要言語（sys_language_uid = 0）を最初にインポートしてください。これはレコード間のリンクが正しいことを保証する唯一の方法です。</target>
-            </trans-unit>
-            <trans-unit id="override.existing">
-                <target>既存の翻訳を上書き</target>
-            </trans-unit>
-            <trans-unit id="message.import">
-                <target>言語のインポートが完了しました：</target>
-            </trans-unit>
-            <trans-unit id="message.updated">
-                <target>翻訳を更新しました：</target>
-            </trans-unit>
-            <trans-unit id="message.imported">
-                <target>翻訳をインポートしました：</target>
-            </trans-unit>
-            <trans-unit id="message.errors">
-                <target>次のエラーが発生しました：</target>
-            </trans-unit>
-            <trans-unit id="button.label.export">
-                <target>現在のフィルターでエクスポート</target>
-            </trans-unit>
-            <trans-unit id="message.error.filter">
-                <target>エクスポートを作成するには、少なくとも1つのタイプまたはコンポーネントを選択してください。</target>
-            </trans-unit>
-            <trans-unit id="message.error.archive">
-                <target>アーカイブを作成できませんでした。</target>
-            </trans-unit>
-            <trans-unit id="message.error.import">
-                <target>ファイル名が予期されるパターンと一致しません。</target>
-            </trans-unit>
-            <trans-unit id="error.storage.pid">
-                <target>拡張機能の設定で有効なストレージページIDを設定してください。</target>
-            </trans-unit>
-            <trans-unit id="error.storage.pid.title" translate="no">
-                <target>TextDb</target>
-            </trans-unit>
-            <trans-unit id="error.directory.creation">
-                <target>ディレクトリ「%s」が作成されませんでした</target>
-            </trans-unit>
-            <trans-unit id="error.missing.component">
-                <target>キーにコンポーネント名がありません：%s</target>
-            </trans-unit>
-            <trans-unit id="error.missing.type">
-                <target>キーにタイプ名がありません：%s</target>
-            </trans-unit>
-            <trans-unit id="error.missing.placeholder">
-                <target>キーにプレースホルダーがありません：%s</target>
-            </trans-unit>
-            <trans-unit id="language">
-                <target>言語</target>
-            </trans-unit>
-            <trans-unit id="error.missing.value">
-                <target>キーに値がありません：%s</target>
-            </trans-unit>
-        </body>
-    </file>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" datatype="plaintext" original="messages" date="2019-09-11T10:31:41Z" product-name="nr_textdb" target-language="ja">
+    <header/>
+    <body>
+      <trans-unit id="tx_nrtextdb_domain_model_environment">
+        <source>Environment</source>
+        <target state="translated">環境</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_environment.name">
+        <source>Name</source>
+        <target state="translated">名前</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_component">
+        <source>Component</source>
+        <target state="translated">コンポーネント</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_component.name">
+        <source>Name</source>
+        <target state="translated">名前</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_type">
+        <source>Type</source>
+        <target state="translated">タイプ</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_type.name">
+        <source>Name</source>
+        <target state="translated">名前</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation">
+        <source>Translation</source>
+        <target state="translated">翻訳</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.value">
+        <source>Value</source>
+        <target state="translated">値</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
+        <source>Environment</source>
+        <target state="translated">環境</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.component">
+        <source>Component</source>
+        <target state="translated">コンポーネント</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.type">
+        <source>Type</source>
+        <target state="translated">タイプ</target>
+      </trans-unit>
+      <trans-unit id="no-entries">
+        <source>No entries found</source>
+        <target state="translated">エントリが見つかりません</target>
+      </trans-unit>
+      <trans-unit id="no-translation">
+        <source>No translations available</source>
+        <target state="translated">翻訳が利用できません</target>
+      </trans-unit>
+      <trans-unit id="translation">
+        <source>Translation</source>
+        <target state="translated">翻訳</target>
+      </trans-unit>
+      <trans-unit id="save">
+        <source>Save</source>
+        <target state="translated">保存</target>
+      </trans-unit>
+      <trans-unit id="component">
+        <source>Component</source>
+        <target state="translated">コンポーネント</target>
+      </trans-unit>
+      <trans-unit id="type">
+        <source>Type</source>
+        <target state="translated">タイプ</target>
+      </trans-unit>
+      <trans-unit id="environment">
+        <source>Environment</source>
+        <target state="translated">環境</target>
+      </trans-unit>
+      <trans-unit id="filter.reset.label">
+        <source>Reset</source>
+        <target state="translated">リセット</target>
+      </trans-unit>
+      <trans-unit id="placeholder">
+        <source>Placeholder</source>
+        <target state="translated">プレースホルダー</target>
+      </trans-unit>
+      <trans-unit id="value">
+        <source>Value</source>
+        <target state="translated">値</target>
+      </trans-unit>
+      <trans-unit id="search">
+        <source>Search</source>
+        <target state="translated">検索</target>
+      </trans-unit>
+      <trans-unit id="import">
+        <source>Import</source>
+        <target state="translated">インポート</target>
+      </trans-unit>
+      <trans-unit id="button.label.list">
+        <source>List</source>
+        <target state="translated">リスト</target>
+      </trans-unit>
+      <trans-unit id="info.import.headline">
+        <source>Select file for import</source>
+        <target state="translated">インポートするファイルを選択</target>
+      </trans-unit>
+      <trans-unit id="info.import.message">
+        <source>Make sure that you always import the primary language (sys_language_uid = 0) first before adding any translations, as this is the only way to ensure that the links between the records are correct.</source>
+        <target state="translated">翻訳を追加する前に、必ず主要言語（sys_language_uid = 0）を最初にインポートしてください。これはレコード間のリンクが正しいことを保証する唯一の方法です。</target>
+      </trans-unit>
+      <trans-unit id="override.existing">
+        <source>Override existing</source>
+        <target state="translated">既存の翻訳を上書き</target>
+      </trans-unit>
+      <trans-unit id="message.import">
+        <source>Import done for Language:</source>
+        <target state="translated">言語のインポートが完了しました：</target>
+      </trans-unit>
+      <trans-unit id="message.updated">
+        <source>Translations updated:</source>
+        <target state="translated">翻訳を更新しました：</target>
+      </trans-unit>
+      <trans-unit id="message.imported">
+        <source>Translations imported:</source>
+        <target state="translated">翻訳をインポートしました：</target>
+      </trans-unit>
+      <trans-unit id="message.errors">
+        <source>The following errors occurs:</source>
+        <target state="translated">次のエラーが発生しました：</target>
+      </trans-unit>
+      <trans-unit id="button.label.export">
+        <source>Export with current filter</source>
+        <target state="translated">現在のフィルターでエクスポート</target>
+      </trans-unit>
+      <trans-unit id="message.error.filter">
+        <source>Please select at least one type or component to create an export.</source>
+        <target state="translated">エクスポートを作成するには、少なくとも1つのタイプまたはコンポーネントを選択してください。</target>
+      </trans-unit>
+      <trans-unit id="message.error.archive">
+        <source>Archive cloud not be created.</source>
+        <target state="translated">アーカイブを作成できませんでした。</target>
+      </trans-unit>
+      <trans-unit id="message.error.import">
+        <source>File name does not match the expected pattern.</source>
+        <target state="translated">ファイル名が予期されるパターンと一致しません。</target>
+      </trans-unit>
+      <trans-unit id="error.storage.pid">
+        <source>Please configure a valid storage page ID in the extension configuration.</source>
+        <target state="translated">拡張機能の設定で有効なストレージページIDを設定してください。</target>
+      </trans-unit>
+      <trans-unit id="error.storage.pid.title" translate="no">
+        <source>TextDb</source>
+        <target state="needs-translation">TextDb</target>
+      </trans-unit>
+      <trans-unit id="error.directory.creation">
+        <source>Directory "%s" was not created</source>
+        <target state="translated">ディレクトリ「%s」が作成されませんでした</target>
+      </trans-unit>
+      <trans-unit id="error.missing.component">
+        <source>Missing component name in key: %s</source>
+        <target state="translated">キーにコンポーネント名がありません：%s</target>
+      </trans-unit>
+      <trans-unit id="error.missing.type">
+        <source>Missing type name in key: %s</source>
+        <target state="translated">キーにタイプ名がありません：%s</target>
+      </trans-unit>
+      <trans-unit id="error.missing.placeholder">
+        <source>Missing placeholder in key: %s</source>
+        <target state="translated">キーにプレースホルダーがありません：%s</target>
+      </trans-unit>
+      <trans-unit id="language">
+        <source>Language</source>
+        <target state="translated">言語</target>
+      </trans-unit>
+      <trans-unit id="error.missing.value">
+        <source>Missing value in key: %s</source>
+        <target state="translated">キーに値がありません：%s</target>
+      </trans-unit>
+    </body>
+  </file>
 </xliff>

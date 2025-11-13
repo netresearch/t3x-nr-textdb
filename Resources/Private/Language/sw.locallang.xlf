@@ -1,137 +1,180 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
-    <file target-language="sw" datatype="plaintext" original="messages" date="2025-11-10T16:00:00Z" product-name="nr_textdb">
-        <header/>
-        <body>
-            <trans-unit id="tx_nrtextdb_domain_model_environment">
-                <target>Mazingira</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_environment.name">
-                <target>Jina</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_component">
-                <target>Sehemu</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_component.name">
-                <target>Jina</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_type">
-                <target>Aina</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_type.name">
-                <target>Jina</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation">
-                <target>Tafsiri</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation.value">
-                <target>Thamani</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
-                <target>Mazingira</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation.component">
-                <target>Sehemu</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation.type">
-                <target>Aina</target>
-            </trans-unit>
-            <trans-unit id="no-entries">
-                <target>Hakuna maingizo yaliyopatikana</target>
-            </trans-unit>
-            <trans-unit id="no-translation">
-                <target>Hakuna tafsiri zinazopatikana</target>
-            </trans-unit>
-            <trans-unit id="translation">
-                <target>Tafsiri</target>
-            </trans-unit>
-            <trans-unit id="save">
-                <target>Hifadhi</target>
-            </trans-unit>
-            <trans-unit id="component">
-                <target>Sehemu</target>
-            </trans-unit>
-            <trans-unit id="type">
-                <target>Aina</target>
-            </trans-unit>
-            <trans-unit id="environment">
-                <target>Mazingira</target>
-            </trans-unit>
-            <trans-unit id="filter.reset.label">
-                <target>Weka upya</target>
-            </trans-unit>
-            <trans-unit id="placeholder">
-                <target>Kishikilia nafasi</target>
-            </trans-unit>
-            <trans-unit id="value">
-                <target>Thamani</target>
-            </trans-unit>
-            <trans-unit id="search">
-                <target>Tafuta</target>
-            </trans-unit>
-            <trans-unit id="import">
-                <target>Ingiza</target>
-            </trans-unit>
-            <trans-unit id="button.label.list">
-                <target>Orodha</target>
-            </trans-unit>
-            <trans-unit id="info.import.headline">
-                <target>Chagua faili ya kuingiza</target>
-            </trans-unit>
-            <trans-unit id="info.import.message">
-                <target>Hakikisha kuingiza lugha kuu (sys_language_uid = 0) kwanza kabla ya kuongeza tafsiri, kwa kuwa hii ndiyo njia pekee ya kuhakikisha kuwa viungo kati ya rekodi ni sahihi.</target>
-            </trans-unit>
-            <trans-unit id="override.existing">
-                <target>Badilisha tafsiri zilizopo</target>
-            </trans-unit>
-            <trans-unit id="message.import">
-                <target>Uingizaji umekamilika kwa lugha:</target>
-            </trans-unit>
-            <trans-unit id="message.updated">
-                <target>Tafsiri zilizosasishwa:</target>
-            </trans-unit>
-            <trans-unit id="message.imported">
-                <target>Tafsiri zilizoingizwa:</target>
-            </trans-unit>
-            <trans-unit id="message.errors">
-                <target>Makosa yafuatayo yalitokea:</target>
-            </trans-unit>
-            <trans-unit id="button.label.export">
-                <target>Toa na kichujio cha sasa</target>
-            </trans-unit>
-            <trans-unit id="message.error.filter">
-                <target>Chagua angalau aina moja au sehemu ili kuunda uhamishaji.</target>
-            </trans-unit>
-            <trans-unit id="message.error.archive">
-                <target>Hifadhi haikuweza kuundwa.</target>
-            </trans-unit>
-            <trans-unit id="message.error.import">
-                <target>Jina la faili halioani na muundo unaotarajiwa.</target>
-            </trans-unit>
-            <trans-unit id="error.storage.pid">
-                <target>Sanidi kitambulisho cha ukurasa wa uhifadhi halali katika usanidi wa upanuzi.</target>
-            </trans-unit>
-            <trans-unit id="error.storage.pid.title" translate="no">
-                <target>TextDb</target>
-            </trans-unit>
-            <trans-unit id="error.directory.creation">
-                <target>Saraka "%s" haikuundwa</target>
-            </trans-unit>
-            <trans-unit id="error.missing.component">
-                <target>Jina la sehemu linakosekana katika ufunguo: %s</target>
-            </trans-unit>
-            <trans-unit id="error.missing.type">
-                <target>Jina la aina linakosekana katika ufunguo: %s</target>
-            </trans-unit>
-            <trans-unit id="error.missing.placeholder">
-                <target>Kishikilia nafasi kinakosekana katika ufunguo: %s</target>
-            </trans-unit>
-            <trans-unit id="language">
-                <target>Lugha</target>
-            </trans-unit>
-            <trans-unit id="error.missing.value">
-                <target>Thamani inakosekana katika ufunguo: %s</target>
-            </trans-unit>
-        </body>
-    </file>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" datatype="plaintext" original="messages" date="2019-09-11T10:31:41Z" product-name="nr_textdb" target-language="sw">
+    <header/>
+    <body>
+      <trans-unit id="tx_nrtextdb_domain_model_environment">
+        <source>Environment</source>
+        <target state="translated">Mazingira</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_environment.name">
+        <source>Name</source>
+        <target state="translated">Jina</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_component">
+        <source>Component</source>
+        <target state="translated">Sehemu</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_component.name">
+        <source>Name</source>
+        <target state="translated">Jina</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_type">
+        <source>Type</source>
+        <target state="translated">Aina</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_type.name">
+        <source>Name</source>
+        <target state="translated">Jina</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation">
+        <source>Translation</source>
+        <target state="translated">Tafsiri</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.value">
+        <source>Value</source>
+        <target state="translated">Thamani</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
+        <source>Environment</source>
+        <target state="translated">Mazingira</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.component">
+        <source>Component</source>
+        <target state="translated">Sehemu</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.type">
+        <source>Type</source>
+        <target state="translated">Aina</target>
+      </trans-unit>
+      <trans-unit id="no-entries">
+        <source>No entries found</source>
+        <target state="translated">Hakuna maingizo yaliyopatikana</target>
+      </trans-unit>
+      <trans-unit id="no-translation">
+        <source>No translations available</source>
+        <target state="translated">Hakuna tafsiri zinazopatikana</target>
+      </trans-unit>
+      <trans-unit id="translation">
+        <source>Translation</source>
+        <target state="translated">Tafsiri</target>
+      </trans-unit>
+      <trans-unit id="save">
+        <source>Save</source>
+        <target state="translated">Hifadhi</target>
+      </trans-unit>
+      <trans-unit id="component">
+        <source>Component</source>
+        <target state="translated">Sehemu</target>
+      </trans-unit>
+      <trans-unit id="type">
+        <source>Type</source>
+        <target state="translated">Aina</target>
+      </trans-unit>
+      <trans-unit id="environment">
+        <source>Environment</source>
+        <target state="translated">Mazingira</target>
+      </trans-unit>
+      <trans-unit id="filter.reset.label">
+        <source>Reset</source>
+        <target state="translated">Weka upya</target>
+      </trans-unit>
+      <trans-unit id="placeholder">
+        <source>Placeholder</source>
+        <target state="translated">Kishikilia nafasi</target>
+      </trans-unit>
+      <trans-unit id="value">
+        <source>Value</source>
+        <target state="translated">Thamani</target>
+      </trans-unit>
+      <trans-unit id="search">
+        <source>Search</source>
+        <target state="translated">Tafuta</target>
+      </trans-unit>
+      <trans-unit id="import">
+        <source>Import</source>
+        <target state="translated">Ingiza</target>
+      </trans-unit>
+      <trans-unit id="button.label.list">
+        <source>List</source>
+        <target state="translated">Orodha</target>
+      </trans-unit>
+      <trans-unit id="info.import.headline">
+        <source>Select file for import</source>
+        <target state="translated">Chagua faili ya kuingiza</target>
+      </trans-unit>
+      <trans-unit id="info.import.message">
+        <source>Make sure that you always import the primary language (sys_language_uid = 0) first before adding any translations, as this is the only way to ensure that the links between the records are correct.</source>
+        <target state="translated">Hakikisha kuingiza lugha kuu (sys_language_uid = 0) kwanza kabla ya kuongeza tafsiri, kwa kuwa hii ndiyo njia pekee ya kuhakikisha kuwa viungo kati ya rekodi ni sahihi.</target>
+      </trans-unit>
+      <trans-unit id="override.existing">
+        <source>Override existing</source>
+        <target state="translated">Badilisha tafsiri zilizopo</target>
+      </trans-unit>
+      <trans-unit id="message.import">
+        <source>Import done for Language:</source>
+        <target state="translated">Uingizaji umekamilika kwa lugha:</target>
+      </trans-unit>
+      <trans-unit id="message.updated">
+        <source>Translations updated:</source>
+        <target state="translated">Tafsiri zilizosasishwa:</target>
+      </trans-unit>
+      <trans-unit id="message.imported">
+        <source>Translations imported:</source>
+        <target state="translated">Tafsiri zilizoingizwa:</target>
+      </trans-unit>
+      <trans-unit id="message.errors">
+        <source>The following errors occurs:</source>
+        <target state="translated">Makosa yafuatayo yalitokea:</target>
+      </trans-unit>
+      <trans-unit id="button.label.export">
+        <source>Export with current filter</source>
+        <target state="translated">Toa na kichujio cha sasa</target>
+      </trans-unit>
+      <trans-unit id="message.error.filter">
+        <source>Please select at least one type or component to create an export.</source>
+        <target state="translated">Chagua angalau aina moja au sehemu ili kuunda uhamishaji.</target>
+      </trans-unit>
+      <trans-unit id="message.error.archive">
+        <source>Archive cloud not be created.</source>
+        <target state="translated">Hifadhi haikuweza kuundwa.</target>
+      </trans-unit>
+      <trans-unit id="message.error.import">
+        <source>File name does not match the expected pattern.</source>
+        <target state="translated">Jina la faili halioani na muundo unaotarajiwa.</target>
+      </trans-unit>
+      <trans-unit id="error.storage.pid">
+        <source>Please configure a valid storage page ID in the extension configuration.</source>
+        <target state="translated">Sanidi kitambulisho cha ukurasa wa uhifadhi halali katika usanidi wa upanuzi.</target>
+      </trans-unit>
+      <trans-unit id="error.storage.pid.title" translate="no">
+        <source>TextDb</source>
+        <target state="needs-translation">TextDb</target>
+      </trans-unit>
+      <trans-unit id="error.directory.creation">
+        <source>Directory "%s" was not created</source>
+        <target state="translated">Saraka "%s" haikuundwa</target>
+      </trans-unit>
+      <trans-unit id="error.missing.component">
+        <source>Missing component name in key: %s</source>
+        <target state="translated">Jina la sehemu linakosekana katika ufunguo: %s</target>
+      </trans-unit>
+      <trans-unit id="error.missing.type">
+        <source>Missing type name in key: %s</source>
+        <target state="translated">Jina la aina linakosekana katika ufunguo: %s</target>
+      </trans-unit>
+      <trans-unit id="error.missing.placeholder">
+        <source>Missing placeholder in key: %s</source>
+        <target state="translated">Kishikilia nafasi kinakosekana katika ufunguo: %s</target>
+      </trans-unit>
+      <trans-unit id="language">
+        <source>Language</source>
+        <target state="translated">Lugha</target>
+      </trans-unit>
+      <trans-unit id="error.missing.value">
+        <source>Missing value in key: %s</source>
+        <target state="translated">Thamani inakosekana katika ufunguo: %s</target>
+      </trans-unit>
+    </body>
+  </file>
 </xliff>

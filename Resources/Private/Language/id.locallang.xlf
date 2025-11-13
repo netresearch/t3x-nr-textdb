@@ -1,137 +1,180 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
-    <file target-language="id" datatype="plaintext" original="messages" date="2025-11-10T16:00:00Z" product-name="nr_textdb">
-        <header/>
-        <body>
-            <trans-unit id="tx_nrtextdb_domain_model_environment">
-                <target>Lingkungan</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_environment.name">
-                <target>Nama</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_component">
-                <target>Komponen</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_component.name">
-                <target>Nama</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_type">
-                <target>Tipe</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_type.name">
-                <target>Nama</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation">
-                <target>Terjemahan</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation.value">
-                <target>Nilai</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
-                <target>Lingkungan</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation.component">
-                <target>Komponen</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation.type">
-                <target>Tipe</target>
-            </trans-unit>
-            <trans-unit id="no-entries">
-                <target>Tidak ada entri ditemukan</target>
-            </trans-unit>
-            <trans-unit id="no-translation">
-                <target>Tidak ada terjemahan tersedia</target>
-            </trans-unit>
-            <trans-unit id="translation">
-                <target>Terjemahan</target>
-            </trans-unit>
-            <trans-unit id="save">
-                <target>Simpan</target>
-            </trans-unit>
-            <trans-unit id="component">
-                <target>Komponen</target>
-            </trans-unit>
-            <trans-unit id="type">
-                <target>Tipe</target>
-            </trans-unit>
-            <trans-unit id="environment">
-                <target>Lingkungan</target>
-            </trans-unit>
-            <trans-unit id="filter.reset.label">
-                <target>Setel Ulang</target>
-            </trans-unit>
-            <trans-unit id="placeholder">
-                <target>Placeholder</target>
-            </trans-unit>
-            <trans-unit id="value">
-                <target>Nilai</target>
-            </trans-unit>
-            <trans-unit id="search">
-                <target>Cari</target>
-            </trans-unit>
-            <trans-unit id="import">
-                <target>Impor</target>
-            </trans-unit>
-            <trans-unit id="button.label.list">
-                <target>Daftar</target>
-            </trans-unit>
-            <trans-unit id="info.import.headline">
-                <target>Pilih file untuk impor</target>
-            </trans-unit>
-            <trans-unit id="info.import.message">
-                <target>Pastikan untuk selalu mengimpor bahasa utama (sys_language_uid = 0) terlebih dahulu sebelum menambahkan terjemahan, karena ini adalah satu-satunya cara untuk memastikan bahwa tautan antar catatan benar.</target>
-            </trans-unit>
-            <trans-unit id="override.existing">
-                <target>Timpa terjemahan yang ada</target>
-            </trans-unit>
-            <trans-unit id="message.import">
-                <target>Impor selesai untuk bahasa:</target>
-            </trans-unit>
-            <trans-unit id="message.updated">
-                <target>Terjemahan diperbarui:</target>
-            </trans-unit>
-            <trans-unit id="message.imported">
-                <target>Terjemahan diimpor:</target>
-            </trans-unit>
-            <trans-unit id="message.errors">
-                <target>Kesalahan berikut terjadi:</target>
-            </trans-unit>
-            <trans-unit id="button.label.export">
-                <target>Ekspor dengan filter saat ini</target>
-            </trans-unit>
-            <trans-unit id="message.error.filter">
-                <target>Pilih setidaknya satu tipe atau komponen untuk membuat ekspor.</target>
-            </trans-unit>
-            <trans-unit id="message.error.archive">
-                <target>Arsip tidak dapat dibuat.</target>
-            </trans-unit>
-            <trans-unit id="message.error.import">
-                <target>Nama file tidak cocok dengan pola yang diharapkan.</target>
-            </trans-unit>
-            <trans-unit id="error.storage.pid">
-                <target>Konfigurasikan ID halaman penyimpanan yang valid dalam konfigurasi ekstensi.</target>
-            </trans-unit>
-            <trans-unit id="error.storage.pid.title" translate="no">
-                <target>TextDb</target>
-            </trans-unit>
-            <trans-unit id="error.directory.creation">
-                <target>Direktori "%s" tidak dibuat</target>
-            </trans-unit>
-            <trans-unit id="error.missing.component">
-                <target>Nama komponen hilang di kunci: %s</target>
-            </trans-unit>
-            <trans-unit id="error.missing.type">
-                <target>Nama tipe hilang di kunci: %s</target>
-            </trans-unit>
-            <trans-unit id="error.missing.placeholder">
-                <target>Placeholder hilang di kunci: %s</target>
-            </trans-unit>
-            <trans-unit id="language">
-                <target>Bahasa</target>
-            </trans-unit>
-            <trans-unit id="error.missing.value">
-                <target>Nilai hilang di kunci: %s</target>
-            </trans-unit>
-        </body>
-    </file>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" datatype="plaintext" original="messages" date="2019-09-11T10:31:41Z" product-name="nr_textdb" target-language="id">
+    <header/>
+    <body>
+      <trans-unit id="tx_nrtextdb_domain_model_environment">
+        <source>Environment</source>
+        <target state="translated">Lingkungan</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_environment.name">
+        <source>Name</source>
+        <target state="translated">Nama</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_component">
+        <source>Component</source>
+        <target state="translated">Komponen</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_component.name">
+        <source>Name</source>
+        <target state="translated">Nama</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_type">
+        <source>Type</source>
+        <target state="translated">Tipe</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_type.name">
+        <source>Name</source>
+        <target state="translated">Nama</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation">
+        <source>Translation</source>
+        <target state="translated">Terjemahan</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.value">
+        <source>Value</source>
+        <target state="translated">Nilai</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
+        <source>Environment</source>
+        <target state="translated">Lingkungan</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.component">
+        <source>Component</source>
+        <target state="translated">Komponen</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.type">
+        <source>Type</source>
+        <target state="translated">Tipe</target>
+      </trans-unit>
+      <trans-unit id="no-entries">
+        <source>No entries found</source>
+        <target state="translated">Tidak ada entri ditemukan</target>
+      </trans-unit>
+      <trans-unit id="no-translation">
+        <source>No translations available</source>
+        <target state="translated">Tidak ada terjemahan tersedia</target>
+      </trans-unit>
+      <trans-unit id="translation">
+        <source>Translation</source>
+        <target state="translated">Terjemahan</target>
+      </trans-unit>
+      <trans-unit id="save">
+        <source>Save</source>
+        <target state="translated">Simpan</target>
+      </trans-unit>
+      <trans-unit id="component">
+        <source>Component</source>
+        <target state="translated">Komponen</target>
+      </trans-unit>
+      <trans-unit id="type">
+        <source>Type</source>
+        <target state="translated">Tipe</target>
+      </trans-unit>
+      <trans-unit id="environment">
+        <source>Environment</source>
+        <target state="translated">Lingkungan</target>
+      </trans-unit>
+      <trans-unit id="filter.reset.label">
+        <source>Reset</source>
+        <target state="translated">Setel Ulang</target>
+      </trans-unit>
+      <trans-unit id="placeholder">
+        <source>Placeholder</source>
+        <target state="needs-translation">Placeholder</target>
+      </trans-unit>
+      <trans-unit id="value">
+        <source>Value</source>
+        <target state="translated">Nilai</target>
+      </trans-unit>
+      <trans-unit id="search">
+        <source>Search</source>
+        <target state="translated">Cari</target>
+      </trans-unit>
+      <trans-unit id="import">
+        <source>Import</source>
+        <target state="translated">Impor</target>
+      </trans-unit>
+      <trans-unit id="button.label.list">
+        <source>List</source>
+        <target state="translated">Daftar</target>
+      </trans-unit>
+      <trans-unit id="info.import.headline">
+        <source>Select file for import</source>
+        <target state="translated">Pilih file untuk impor</target>
+      </trans-unit>
+      <trans-unit id="info.import.message">
+        <source>Make sure that you always import the primary language (sys_language_uid = 0) first before adding any translations, as this is the only way to ensure that the links between the records are correct.</source>
+        <target state="translated">Pastikan untuk selalu mengimpor bahasa utama (sys_language_uid = 0) terlebih dahulu sebelum menambahkan terjemahan, karena ini adalah satu-satunya cara untuk memastikan bahwa tautan antar catatan benar.</target>
+      </trans-unit>
+      <trans-unit id="override.existing">
+        <source>Override existing</source>
+        <target state="translated">Timpa terjemahan yang ada</target>
+      </trans-unit>
+      <trans-unit id="message.import">
+        <source>Import done for Language:</source>
+        <target state="translated">Impor selesai untuk bahasa:</target>
+      </trans-unit>
+      <trans-unit id="message.updated">
+        <source>Translations updated:</source>
+        <target state="translated">Terjemahan diperbarui:</target>
+      </trans-unit>
+      <trans-unit id="message.imported">
+        <source>Translations imported:</source>
+        <target state="translated">Terjemahan diimpor:</target>
+      </trans-unit>
+      <trans-unit id="message.errors">
+        <source>The following errors occurs:</source>
+        <target state="translated">Kesalahan berikut terjadi:</target>
+      </trans-unit>
+      <trans-unit id="button.label.export">
+        <source>Export with current filter</source>
+        <target state="translated">Ekspor dengan filter saat ini</target>
+      </trans-unit>
+      <trans-unit id="message.error.filter">
+        <source>Please select at least one type or component to create an export.</source>
+        <target state="translated">Pilih setidaknya satu tipe atau komponen untuk membuat ekspor.</target>
+      </trans-unit>
+      <trans-unit id="message.error.archive">
+        <source>Archive cloud not be created.</source>
+        <target state="translated">Arsip tidak dapat dibuat.</target>
+      </trans-unit>
+      <trans-unit id="message.error.import">
+        <source>File name does not match the expected pattern.</source>
+        <target state="translated">Nama file tidak cocok dengan pola yang diharapkan.</target>
+      </trans-unit>
+      <trans-unit id="error.storage.pid">
+        <source>Please configure a valid storage page ID in the extension configuration.</source>
+        <target state="translated">Konfigurasikan ID halaman penyimpanan yang valid dalam konfigurasi ekstensi.</target>
+      </trans-unit>
+      <trans-unit id="error.storage.pid.title" translate="no">
+        <source>TextDb</source>
+        <target state="needs-translation">TextDb</target>
+      </trans-unit>
+      <trans-unit id="error.directory.creation">
+        <source>Directory "%s" was not created</source>
+        <target state="translated">Direktori "%s" tidak dibuat</target>
+      </trans-unit>
+      <trans-unit id="error.missing.component">
+        <source>Missing component name in key: %s</source>
+        <target state="translated">Nama komponen hilang di kunci: %s</target>
+      </trans-unit>
+      <trans-unit id="error.missing.type">
+        <source>Missing type name in key: %s</source>
+        <target state="translated">Nama tipe hilang di kunci: %s</target>
+      </trans-unit>
+      <trans-unit id="error.missing.placeholder">
+        <source>Missing placeholder in key: %s</source>
+        <target state="translated">Placeholder hilang di kunci: %s</target>
+      </trans-unit>
+      <trans-unit id="language">
+        <source>Language</source>
+        <target state="translated">Bahasa</target>
+      </trans-unit>
+      <trans-unit id="error.missing.value">
+        <source>Missing value in key: %s</source>
+        <target state="translated">Nilai hilang di kunci: %s</target>
+      </trans-unit>
+    </body>
+  </file>
 </xliff>

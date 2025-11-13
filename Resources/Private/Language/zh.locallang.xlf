@@ -1,137 +1,180 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
-    <file target-language="zh" datatype="plaintext" original="messages" date="2025-11-10T16:00:00Z" product-name="nr_textdb">
-        <header/>
-        <body>
-            <trans-unit id="tx_nrtextdb_domain_model_environment">
-                <target>环境</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_environment.name">
-                <target>名称</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_component">
-                <target>组件</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_component.name">
-                <target>名称</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_type">
-                <target>类型</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_type.name">
-                <target>名称</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation">
-                <target>翻译</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation.value">
-                <target>值</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
-                <target>环境</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation.component">
-                <target>组件</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation.type">
-                <target>类型</target>
-            </trans-unit>
-            <trans-unit id="no-entries">
-                <target>未找到条目</target>
-            </trans-unit>
-            <trans-unit id="no-translation">
-                <target>无可用翻译</target>
-            </trans-unit>
-            <trans-unit id="translation">
-                <target>翻译</target>
-            </trans-unit>
-            <trans-unit id="save">
-                <target>保存</target>
-            </trans-unit>
-            <trans-unit id="component">
-                <target>组件</target>
-            </trans-unit>
-            <trans-unit id="type">
-                <target>类型</target>
-            </trans-unit>
-            <trans-unit id="environment">
-                <target>环境</target>
-            </trans-unit>
-            <trans-unit id="filter.reset.label">
-                <target>重置</target>
-            </trans-unit>
-            <trans-unit id="placeholder">
-                <target>占位符</target>
-            </trans-unit>
-            <trans-unit id="value">
-                <target>值</target>
-            </trans-unit>
-            <trans-unit id="search">
-                <target>搜索</target>
-            </trans-unit>
-            <trans-unit id="import">
-                <target>导入</target>
-            </trans-unit>
-            <trans-unit id="button.label.list">
-                <target>列表</target>
-            </trans-unit>
-            <trans-unit id="info.import.headline">
-                <target>选择要导入的文件</target>
-            </trans-unit>
-            <trans-unit id="info.import.message">
-                <target>在添加翻译之前，请务必先导入主语言（sys_language_uid = 0），因为这是确保记录之间链接正确的唯一方法。</target>
-            </trans-unit>
-            <trans-unit id="override.existing">
-                <target>覆盖现有翻译</target>
-            </trans-unit>
-            <trans-unit id="message.import">
-                <target>导入完成，语言：</target>
-            </trans-unit>
-            <trans-unit id="message.updated">
-                <target>已更新翻译：</target>
-            </trans-unit>
-            <trans-unit id="message.imported">
-                <target>已导入翻译：</target>
-            </trans-unit>
-            <trans-unit id="message.errors">
-                <target>发生以下错误：</target>
-            </trans-unit>
-            <trans-unit id="button.label.export">
-                <target>使用当前筛选器导出</target>
-            </trans-unit>
-            <trans-unit id="message.error.filter">
-                <target>请至少选择一种类型或组件来创建导出。</target>
-            </trans-unit>
-            <trans-unit id="message.error.archive">
-                <target>无法创建归档。</target>
-            </trans-unit>
-            <trans-unit id="message.error.import">
-                <target>文件名与预期模式不匹配。</target>
-            </trans-unit>
-            <trans-unit id="error.storage.pid">
-                <target>请在扩展配置中配置有效的存储页面ID。</target>
-            </trans-unit>
-            <trans-unit id="error.storage.pid.title" translate="no">
-                <target>TextDb</target>
-            </trans-unit>
-            <trans-unit id="error.directory.creation">
-                <target>目录"%s"未创建</target>
-            </trans-unit>
-            <trans-unit id="error.missing.component">
-                <target>键中缺少组件名称：%s</target>
-            </trans-unit>
-            <trans-unit id="error.missing.type">
-                <target>键中缺少类型名称：%s</target>
-            </trans-unit>
-            <trans-unit id="error.missing.placeholder">
-                <target>键中缺少占位符：%s</target>
-            </trans-unit>
-            <trans-unit id="language">
-                <target>语言</target>
-            </trans-unit>
-            <trans-unit id="error.missing.value">
-                <target>键中缺少值：%s</target>
-            </trans-unit>
-        </body>
-    </file>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" datatype="plaintext" original="messages" date="2019-09-11T10:31:41Z" product-name="nr_textdb" target-language="zh-CN">
+    <header/>
+    <body>
+      <trans-unit id="tx_nrtextdb_domain_model_environment">
+        <source>Environment</source>
+        <target state="translated">环境</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_environment.name">
+        <source>Name</source>
+        <target state="translated">名称</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_component">
+        <source>Component</source>
+        <target state="translated">组件</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_component.name">
+        <source>Name</source>
+        <target state="translated">名称</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_type">
+        <source>Type</source>
+        <target state="translated">类型</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_type.name">
+        <source>Name</source>
+        <target state="translated">名称</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation">
+        <source>Translation</source>
+        <target state="translated">翻译</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.value">
+        <source>Value</source>
+        <target state="translated">值</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
+        <source>Environment</source>
+        <target state="translated">环境</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.component">
+        <source>Component</source>
+        <target state="translated">组件</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.type">
+        <source>Type</source>
+        <target state="translated">类型</target>
+      </trans-unit>
+      <trans-unit id="no-entries">
+        <source>No entries found</source>
+        <target state="translated">未找到条目</target>
+      </trans-unit>
+      <trans-unit id="no-translation">
+        <source>No translations available</source>
+        <target state="translated">无可用翻译</target>
+      </trans-unit>
+      <trans-unit id="translation">
+        <source>Translation</source>
+        <target state="translated">翻译</target>
+      </trans-unit>
+      <trans-unit id="save">
+        <source>Save</source>
+        <target state="translated">保存</target>
+      </trans-unit>
+      <trans-unit id="component">
+        <source>Component</source>
+        <target state="translated">组件</target>
+      </trans-unit>
+      <trans-unit id="type">
+        <source>Type</source>
+        <target state="translated">类型</target>
+      </trans-unit>
+      <trans-unit id="environment">
+        <source>Environment</source>
+        <target state="translated">环境</target>
+      </trans-unit>
+      <trans-unit id="filter.reset.label">
+        <source>Reset</source>
+        <target state="translated">重置</target>
+      </trans-unit>
+      <trans-unit id="placeholder">
+        <source>Placeholder</source>
+        <target state="translated">占位符</target>
+      </trans-unit>
+      <trans-unit id="value">
+        <source>Value</source>
+        <target state="translated">值</target>
+      </trans-unit>
+      <trans-unit id="search">
+        <source>Search</source>
+        <target state="translated">搜索</target>
+      </trans-unit>
+      <trans-unit id="import">
+        <source>Import</source>
+        <target state="translated">导入</target>
+      </trans-unit>
+      <trans-unit id="button.label.list">
+        <source>List</source>
+        <target state="translated">列表</target>
+      </trans-unit>
+      <trans-unit id="info.import.headline">
+        <source>Select file for import</source>
+        <target state="translated">选择要导入的文件</target>
+      </trans-unit>
+      <trans-unit id="info.import.message">
+        <source>Make sure that you always import the primary language (sys_language_uid = 0) first before adding any translations, as this is the only way to ensure that the links between the records are correct.</source>
+        <target state="translated">在添加翻译之前，请务必先导入主语言（sys_language_uid = 0），因为这是确保记录之间链接正确的唯一方法。</target>
+      </trans-unit>
+      <trans-unit id="override.existing">
+        <source>Override existing</source>
+        <target state="translated">覆盖现有翻译</target>
+      </trans-unit>
+      <trans-unit id="message.import">
+        <source>Import done for Language:</source>
+        <target state="translated">导入完成，语言：</target>
+      </trans-unit>
+      <trans-unit id="message.updated">
+        <source>Translations updated:</source>
+        <target state="translated">已更新翻译：</target>
+      </trans-unit>
+      <trans-unit id="message.imported">
+        <source>Translations imported:</source>
+        <target state="translated">已导入翻译：</target>
+      </trans-unit>
+      <trans-unit id="message.errors">
+        <source>The following errors occurs:</source>
+        <target state="translated">发生以下错误：</target>
+      </trans-unit>
+      <trans-unit id="button.label.export">
+        <source>Export with current filter</source>
+        <target state="translated">使用当前筛选器导出</target>
+      </trans-unit>
+      <trans-unit id="message.error.filter">
+        <source>Please select at least one type or component to create an export.</source>
+        <target state="translated">请至少选择一种类型或组件来创建导出。</target>
+      </trans-unit>
+      <trans-unit id="message.error.archive">
+        <source>Archive cloud not be created.</source>
+        <target state="translated">无法创建归档。</target>
+      </trans-unit>
+      <trans-unit id="message.error.import">
+        <source>File name does not match the expected pattern.</source>
+        <target state="translated">文件名与预期模式不匹配。</target>
+      </trans-unit>
+      <trans-unit id="error.storage.pid">
+        <source>Please configure a valid storage page ID in the extension configuration.</source>
+        <target state="translated">请在扩展配置中配置有效的存储页面ID。</target>
+      </trans-unit>
+      <trans-unit id="error.storage.pid.title" translate="no">
+        <source>TextDb</source>
+        <target state="needs-translation">TextDb</target>
+      </trans-unit>
+      <trans-unit id="error.directory.creation">
+        <source>Directory "%s" was not created</source>
+        <target state="translated">目录"%s"未创建</target>
+      </trans-unit>
+      <trans-unit id="error.missing.component">
+        <source>Missing component name in key: %s</source>
+        <target state="translated">键中缺少组件名称：%s</target>
+      </trans-unit>
+      <trans-unit id="error.missing.type">
+        <source>Missing type name in key: %s</source>
+        <target state="translated">键中缺少类型名称：%s</target>
+      </trans-unit>
+      <trans-unit id="error.missing.placeholder">
+        <source>Missing placeholder in key: %s</source>
+        <target state="translated">键中缺少占位符：%s</target>
+      </trans-unit>
+      <trans-unit id="language">
+        <source>Language</source>
+        <target state="translated">语言</target>
+      </trans-unit>
+      <trans-unit id="error.missing.value">
+        <source>Missing value in key: %s</source>
+        <target state="translated">键中缺少值：%s</target>
+      </trans-unit>
+    </body>
+  </file>
 </xliff>

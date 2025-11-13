@@ -1,137 +1,180 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
-    <file target-language="pt" datatype="plaintext" original="messages" date="2025-11-10T16:00:00Z" product-name="nr_textdb">
-        <header/>
-        <body>
-            <trans-unit id="tx_nrtextdb_domain_model_environment">
-                <target>Ambiente</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_environment.name">
-                <target>Nome</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_component">
-                <target>Componente</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_component.name">
-                <target>Nome</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_type">
-                <target>Tipo</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_type.name">
-                <target>Nome</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation">
-                <target>Tradução</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation.value">
-                <target>Valor</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
-                <target>Ambiente</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation.component">
-                <target>Componente</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation.type">
-                <target>Tipo</target>
-            </trans-unit>
-            <trans-unit id="no-entries">
-                <target>Nenhuma entrada encontrada</target>
-            </trans-unit>
-            <trans-unit id="no-translation">
-                <target>Nenhuma tradução disponível</target>
-            </trans-unit>
-            <trans-unit id="translation">
-                <target>Tradução</target>
-            </trans-unit>
-            <trans-unit id="save">
-                <target>Guardar</target>
-            </trans-unit>
-            <trans-unit id="component">
-                <target>Componente</target>
-            </trans-unit>
-            <trans-unit id="type">
-                <target>Tipo</target>
-            </trans-unit>
-            <trans-unit id="environment">
-                <target>Ambiente</target>
-            </trans-unit>
-            <trans-unit id="filter.reset.label">
-                <target>Redefinir</target>
-            </trans-unit>
-            <trans-unit id="placeholder">
-                <target>Marcador</target>
-            </trans-unit>
-            <trans-unit id="value">
-                <target>Valor</target>
-            </trans-unit>
-            <trans-unit id="search">
-                <target>Pesquisar</target>
-            </trans-unit>
-            <trans-unit id="import">
-                <target>Importar</target>
-            </trans-unit>
-            <trans-unit id="button.label.list">
-                <target>Lista</target>
-            </trans-unit>
-            <trans-unit id="info.import.headline">
-                <target>Selecione o ficheiro para importação</target>
-            </trans-unit>
-            <trans-unit id="info.import.message">
-                <target>Certifique-se de importar sempre o idioma principal (sys_language_uid = 0) antes de adicionar traduções, pois esta é a única forma de garantir que as ligações entre os registos estão corretas.</target>
-            </trans-unit>
-            <trans-unit id="override.existing">
-                <target>Substituir traduções existentes</target>
-            </trans-unit>
-            <trans-unit id="message.import">
-                <target>Importação concluída para o idioma:</target>
-            </trans-unit>
-            <trans-unit id="message.updated">
-                <target>Traduções atualizadas:</target>
-            </trans-unit>
-            <trans-unit id="message.imported">
-                <target>Traduções importadas:</target>
-            </trans-unit>
-            <trans-unit id="message.errors">
-                <target>Ocorreram os seguintes erros:</target>
-            </trans-unit>
-            <trans-unit id="button.label.export">
-                <target>Exportar com filtro atual</target>
-            </trans-unit>
-            <trans-unit id="message.error.filter">
-                <target>Selecione pelo menos um tipo ou componente para criar uma exportação.</target>
-            </trans-unit>
-            <trans-unit id="message.error.archive">
-                <target>Não foi possível criar o arquivo.</target>
-            </trans-unit>
-            <trans-unit id="message.error.import">
-                <target>O nome do ficheiro não corresponde ao padrão esperado.</target>
-            </trans-unit>
-            <trans-unit id="error.storage.pid">
-                <target>Configure um ID de página de armazenamento válido na configuração da extensão.</target>
-            </trans-unit>
-            <trans-unit id="error.storage.pid.title" translate="no">
-                <target>TextDb</target>
-            </trans-unit>
-            <trans-unit id="error.directory.creation">
-                <target>O diretório "%s" não foi criado</target>
-            </trans-unit>
-            <trans-unit id="error.missing.component">
-                <target>Nome do componente em falta na chave: %s</target>
-            </trans-unit>
-            <trans-unit id="error.missing.type">
-                <target>Nome do tipo em falta na chave: %s</target>
-            </trans-unit>
-            <trans-unit id="error.missing.placeholder">
-                <target>Marcador em falta na chave: %s</target>
-            </trans-unit>
-            <trans-unit id="language">
-                <target>Idioma</target>
-            </trans-unit>
-            <trans-unit id="error.missing.value">
-                <target>Valor em falta na chave: %s</target>
-            </trans-unit>
-        </body>
-    </file>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" datatype="plaintext" original="messages" date="2019-09-11T10:31:41Z" product-name="nr_textdb" target-language="pt-PT">
+    <header/>
+    <body>
+      <trans-unit id="tx_nrtextdb_domain_model_environment">
+        <source>Environment</source>
+        <target state="translated">Ambiente</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_environment.name">
+        <source>Name</source>
+        <target state="translated">Nome</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_component">
+        <source>Component</source>
+        <target state="translated">Componente</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_component.name">
+        <source>Name</source>
+        <target state="translated">Nome</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_type">
+        <source>Type</source>
+        <target state="translated">Tipo</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_type.name">
+        <source>Name</source>
+        <target state="translated">Nome</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation">
+        <source>Translation</source>
+        <target state="translated">Tradução</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.value">
+        <source>Value</source>
+        <target state="translated">Valor</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
+        <source>Environment</source>
+        <target state="translated">Ambiente</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.component">
+        <source>Component</source>
+        <target state="translated">Componente</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.type">
+        <source>Type</source>
+        <target state="translated">Tipo</target>
+      </trans-unit>
+      <trans-unit id="no-entries">
+        <source>No entries found</source>
+        <target state="translated">Nenhuma entrada encontrada</target>
+      </trans-unit>
+      <trans-unit id="no-translation">
+        <source>No translations available</source>
+        <target state="translated">Nenhuma tradução disponível</target>
+      </trans-unit>
+      <trans-unit id="translation">
+        <source>Translation</source>
+        <target state="translated">Tradução</target>
+      </trans-unit>
+      <trans-unit id="save">
+        <source>Save</source>
+        <target state="translated">Guardar</target>
+      </trans-unit>
+      <trans-unit id="component">
+        <source>Component</source>
+        <target state="translated">Componente</target>
+      </trans-unit>
+      <trans-unit id="type">
+        <source>Type</source>
+        <target state="translated">Tipo</target>
+      </trans-unit>
+      <trans-unit id="environment">
+        <source>Environment</source>
+        <target state="translated">Ambiente</target>
+      </trans-unit>
+      <trans-unit id="filter.reset.label">
+        <source>Reset</source>
+        <target state="translated">Redefinir</target>
+      </trans-unit>
+      <trans-unit id="placeholder">
+        <source>Placeholder</source>
+        <target state="translated">Marcador</target>
+      </trans-unit>
+      <trans-unit id="value">
+        <source>Value</source>
+        <target state="translated">Valor</target>
+      </trans-unit>
+      <trans-unit id="search">
+        <source>Search</source>
+        <target state="translated">Pesquisar</target>
+      </trans-unit>
+      <trans-unit id="import">
+        <source>Import</source>
+        <target state="translated">Importar</target>
+      </trans-unit>
+      <trans-unit id="button.label.list">
+        <source>List</source>
+        <target state="translated">Lista</target>
+      </trans-unit>
+      <trans-unit id="info.import.headline">
+        <source>Select file for import</source>
+        <target state="translated">Selecione o ficheiro para importação</target>
+      </trans-unit>
+      <trans-unit id="info.import.message">
+        <source>Make sure that you always import the primary language (sys_language_uid = 0) first before adding any translations, as this is the only way to ensure that the links between the records are correct.</source>
+        <target state="translated">Certifique-se de importar sempre o idioma principal (sys_language_uid = 0) antes de adicionar traduções, pois esta é a única forma de garantir que as ligações entre os registos estão corretas.</target>
+      </trans-unit>
+      <trans-unit id="override.existing">
+        <source>Override existing</source>
+        <target state="translated">Substituir traduções existentes</target>
+      </trans-unit>
+      <trans-unit id="message.import">
+        <source>Import done for Language:</source>
+        <target state="translated">Importação concluída para o idioma:</target>
+      </trans-unit>
+      <trans-unit id="message.updated">
+        <source>Translations updated:</source>
+        <target state="translated">Traduções atualizadas:</target>
+      </trans-unit>
+      <trans-unit id="message.imported">
+        <source>Translations imported:</source>
+        <target state="translated">Traduções importadas:</target>
+      </trans-unit>
+      <trans-unit id="message.errors">
+        <source>The following errors occurs:</source>
+        <target state="translated">Ocorreram os seguintes erros:</target>
+      </trans-unit>
+      <trans-unit id="button.label.export">
+        <source>Export with current filter</source>
+        <target state="translated">Exportar com filtro atual</target>
+      </trans-unit>
+      <trans-unit id="message.error.filter">
+        <source>Please select at least one type or component to create an export.</source>
+        <target state="translated">Selecione pelo menos um tipo ou componente para criar uma exportação.</target>
+      </trans-unit>
+      <trans-unit id="message.error.archive">
+        <source>Archive cloud not be created.</source>
+        <target state="translated">Não foi possível criar o arquivo.</target>
+      </trans-unit>
+      <trans-unit id="message.error.import">
+        <source>File name does not match the expected pattern.</source>
+        <target state="translated">O nome do ficheiro não corresponde ao padrão esperado.</target>
+      </trans-unit>
+      <trans-unit id="error.storage.pid">
+        <source>Please configure a valid storage page ID in the extension configuration.</source>
+        <target state="translated">Configure um ID de página de armazenamento válido na configuração da extensão.</target>
+      </trans-unit>
+      <trans-unit id="error.storage.pid.title" translate="no">
+        <source>TextDb</source>
+        <target state="needs-translation">TextDb</target>
+      </trans-unit>
+      <trans-unit id="error.directory.creation">
+        <source>Directory "%s" was not created</source>
+        <target state="translated">O diretório "%s" não foi criado</target>
+      </trans-unit>
+      <trans-unit id="error.missing.component">
+        <source>Missing component name in key: %s</source>
+        <target state="translated">Nome do componente em falta na chave: %s</target>
+      </trans-unit>
+      <trans-unit id="error.missing.type">
+        <source>Missing type name in key: %s</source>
+        <target state="translated">Nome do tipo em falta na chave: %s</target>
+      </trans-unit>
+      <trans-unit id="error.missing.placeholder">
+        <source>Missing placeholder in key: %s</source>
+        <target state="translated">Marcador em falta na chave: %s</target>
+      </trans-unit>
+      <trans-unit id="language">
+        <source>Language</source>
+        <target state="translated">Idioma</target>
+      </trans-unit>
+      <trans-unit id="error.missing.value">
+        <source>Missing value in key: %s</source>
+        <target state="translated">Valor em falta na chave: %s</target>
+      </trans-unit>
+    </body>
+  </file>
 </xliff>

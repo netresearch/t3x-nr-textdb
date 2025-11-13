@@ -1,137 +1,180 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
-    <file target-language="nl" datatype="plaintext" original="messages" date="2025-11-10T16:00:00Z" product-name="nr_textdb">
-        <header/>
-        <body>
-            <trans-unit id="tx_nrtextdb_domain_model_environment">
-                <target>Omgeving</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_environment.name">
-                <target>Naam</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_component">
-                <target>Component</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_component.name">
-                <target>Naam</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_type">
-                <target>Type</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_type.name">
-                <target>Naam</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation">
-                <target>Vertaling</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation.value">
-                <target>Waarde</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
-                <target>Omgeving</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation.component">
-                <target>Component</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation.type">
-                <target>Type</target>
-            </trans-unit>
-            <trans-unit id="no-entries">
-                <target>Geen vermeldingen gevonden</target>
-            </trans-unit>
-            <trans-unit id="no-translation">
-                <target>Geen vertalingen beschikbaar</target>
-            </trans-unit>
-            <trans-unit id="translation">
-                <target>Vertaling</target>
-            </trans-unit>
-            <trans-unit id="save">
-                <target>Opslaan</target>
-            </trans-unit>
-            <trans-unit id="component">
-                <target>Component</target>
-            </trans-unit>
-            <trans-unit id="type">
-                <target>Type</target>
-            </trans-unit>
-            <trans-unit id="environment">
-                <target>Omgeving</target>
-            </trans-unit>
-            <trans-unit id="filter.reset.label">
-                <target>Resetten</target>
-            </trans-unit>
-            <trans-unit id="placeholder">
-                <target>Plaatshouder</target>
-            </trans-unit>
-            <trans-unit id="value">
-                <target>Waarde</target>
-            </trans-unit>
-            <trans-unit id="search">
-                <target>Zoeken</target>
-            </trans-unit>
-            <trans-unit id="import">
-                <target>Importeren</target>
-            </trans-unit>
-            <trans-unit id="button.label.list">
-                <target>Lijst</target>
-            </trans-unit>
-            <trans-unit id="info.import.headline">
-                <target>Selecteer bestand voor import</target>
-            </trans-unit>
-            <trans-unit id="info.import.message">
-                <target>Zorg ervoor dat u altijd eerst de hoofdtaal (sys_language_uid = 0) importeert voordat u vertalingen toevoegt, omdat dit de enige manier is om ervoor te zorgen dat de links tussen de records correct zijn.</target>
-            </trans-unit>
-            <trans-unit id="override.existing">
-                <target>Bestaande vertalingen overschrijven</target>
-            </trans-unit>
-            <trans-unit id="message.import">
-                <target>Import voltooid voor taal:</target>
-            </trans-unit>
-            <trans-unit id="message.updated">
-                <target>Vertalingen bijgewerkt:</target>
-            </trans-unit>
-            <trans-unit id="message.imported">
-                <target>Vertalingen geïmporteerd:</target>
-            </trans-unit>
-            <trans-unit id="message.errors">
-                <target>De volgende fouten zijn opgetreden:</target>
-            </trans-unit>
-            <trans-unit id="button.label.export">
-                <target>Exporteren met huidige filter</target>
-            </trans-unit>
-            <trans-unit id="message.error.filter">
-                <target>Selecteer ten minste één type of component om een export te maken.</target>
-            </trans-unit>
-            <trans-unit id="message.error.archive">
-                <target>Archief kon niet worden gemaakt.</target>
-            </trans-unit>
-            <trans-unit id="message.error.import">
-                <target>De bestandsnaam komt niet overeen met het verwachte patroon.</target>
-            </trans-unit>
-            <trans-unit id="error.storage.pid">
-                <target>Configureer een geldige opslagpagina-ID in de extensieconfiguratie.</target>
-            </trans-unit>
-            <trans-unit id="error.storage.pid.title" translate="no">
-                <target>TextDb</target>
-            </trans-unit>
-            <trans-unit id="error.directory.creation">
-                <target>Map "%s" is niet aangemaakt</target>
-            </trans-unit>
-            <trans-unit id="error.missing.component">
-                <target>Ontbrekende componentnaam in sleutel: %s</target>
-            </trans-unit>
-            <trans-unit id="error.missing.type">
-                <target>Ontbrekende typenaam in sleutel: %s</target>
-            </trans-unit>
-            <trans-unit id="error.missing.placeholder">
-                <target>Ontbrekende plaatshouder in sleutel: %s</target>
-            </trans-unit>
-            <trans-unit id="language">
-                <target>Taal</target>
-            </trans-unit>
-            <trans-unit id="error.missing.value">
-                <target>Ontbrekende waarde in sleutel: %s</target>
-            </trans-unit>
-        </body>
-    </file>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" datatype="plaintext" original="messages" date="2019-09-11T10:31:41Z" product-name="nr_textdb" target-language="nl">
+    <header/>
+    <body>
+      <trans-unit id="tx_nrtextdb_domain_model_environment">
+        <source>Environment</source>
+        <target state="translated">Omgeving</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_environment.name">
+        <source>Name</source>
+        <target state="translated">Naam</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_component">
+        <source>Component</source>
+        <target state="needs-translation">Component</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_component.name">
+        <source>Name</source>
+        <target state="translated">Naam</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_type">
+        <source>Type</source>
+        <target state="needs-translation">Type</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_type.name">
+        <source>Name</source>
+        <target state="translated">Naam</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation">
+        <source>Translation</source>
+        <target state="translated">Vertaling</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.value">
+        <source>Value</source>
+        <target state="translated">Waarde</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
+        <source>Environment</source>
+        <target state="translated">Omgeving</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.component">
+        <source>Component</source>
+        <target state="needs-translation">Component</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.type">
+        <source>Type</source>
+        <target state="needs-translation">Type</target>
+      </trans-unit>
+      <trans-unit id="no-entries">
+        <source>No entries found</source>
+        <target state="translated">Geen vermeldingen gevonden</target>
+      </trans-unit>
+      <trans-unit id="no-translation">
+        <source>No translations available</source>
+        <target state="translated">Geen vertalingen beschikbaar</target>
+      </trans-unit>
+      <trans-unit id="translation">
+        <source>Translation</source>
+        <target state="translated">Vertaling</target>
+      </trans-unit>
+      <trans-unit id="save">
+        <source>Save</source>
+        <target state="translated">Opslaan</target>
+      </trans-unit>
+      <trans-unit id="component">
+        <source>Component</source>
+        <target state="needs-translation">Component</target>
+      </trans-unit>
+      <trans-unit id="type">
+        <source>Type</source>
+        <target state="needs-translation">Type</target>
+      </trans-unit>
+      <trans-unit id="environment">
+        <source>Environment</source>
+        <target state="translated">Omgeving</target>
+      </trans-unit>
+      <trans-unit id="filter.reset.label">
+        <source>Reset</source>
+        <target state="translated">Resetten</target>
+      </trans-unit>
+      <trans-unit id="placeholder">
+        <source>Placeholder</source>
+        <target state="translated">Plaatshouder</target>
+      </trans-unit>
+      <trans-unit id="value">
+        <source>Value</source>
+        <target state="translated">Waarde</target>
+      </trans-unit>
+      <trans-unit id="search">
+        <source>Search</source>
+        <target state="translated">Zoeken</target>
+      </trans-unit>
+      <trans-unit id="import">
+        <source>Import</source>
+        <target state="translated">Importeren</target>
+      </trans-unit>
+      <trans-unit id="button.label.list">
+        <source>List</source>
+        <target state="translated">Lijst</target>
+      </trans-unit>
+      <trans-unit id="info.import.headline">
+        <source>Select file for import</source>
+        <target state="translated">Selecteer bestand voor import</target>
+      </trans-unit>
+      <trans-unit id="info.import.message">
+        <source>Make sure that you always import the primary language (sys_language_uid = 0) first before adding any translations, as this is the only way to ensure that the links between the records are correct.</source>
+        <target state="translated">Zorg ervoor dat u altijd eerst de hoofdtaal (sys_language_uid = 0) importeert voordat u vertalingen toevoegt, omdat dit de enige manier is om ervoor te zorgen dat de links tussen de records correct zijn.</target>
+      </trans-unit>
+      <trans-unit id="override.existing">
+        <source>Override existing</source>
+        <target state="translated">Bestaande vertalingen overschrijven</target>
+      </trans-unit>
+      <trans-unit id="message.import">
+        <source>Import done for Language:</source>
+        <target state="translated">Import voltooid voor taal:</target>
+      </trans-unit>
+      <trans-unit id="message.updated">
+        <source>Translations updated:</source>
+        <target state="translated">Vertalingen bijgewerkt:</target>
+      </trans-unit>
+      <trans-unit id="message.imported">
+        <source>Translations imported:</source>
+        <target state="translated">Vertalingen geïmporteerd:</target>
+      </trans-unit>
+      <trans-unit id="message.errors">
+        <source>The following errors occurs:</source>
+        <target state="translated">De volgende fouten zijn opgetreden:</target>
+      </trans-unit>
+      <trans-unit id="button.label.export">
+        <source>Export with current filter</source>
+        <target state="translated">Exporteren met huidige filter</target>
+      </trans-unit>
+      <trans-unit id="message.error.filter">
+        <source>Please select at least one type or component to create an export.</source>
+        <target state="translated">Selecteer ten minste één type of component om een export te maken.</target>
+      </trans-unit>
+      <trans-unit id="message.error.archive">
+        <source>Archive cloud not be created.</source>
+        <target state="translated">Archief kon niet worden gemaakt.</target>
+      </trans-unit>
+      <trans-unit id="message.error.import">
+        <source>File name does not match the expected pattern.</source>
+        <target state="translated">De bestandsnaam komt niet overeen met het verwachte patroon.</target>
+      </trans-unit>
+      <trans-unit id="error.storage.pid">
+        <source>Please configure a valid storage page ID in the extension configuration.</source>
+        <target state="translated">Configureer een geldige opslagpagina-ID in de extensieconfiguratie.</target>
+      </trans-unit>
+      <trans-unit id="error.storage.pid.title" translate="no">
+        <source>TextDb</source>
+        <target state="needs-translation">TextDb</target>
+      </trans-unit>
+      <trans-unit id="error.directory.creation">
+        <source>Directory "%s" was not created</source>
+        <target state="translated">Map "%s" is niet aangemaakt</target>
+      </trans-unit>
+      <trans-unit id="error.missing.component">
+        <source>Missing component name in key: %s</source>
+        <target state="translated">Ontbrekende componentnaam in sleutel: %s</target>
+      </trans-unit>
+      <trans-unit id="error.missing.type">
+        <source>Missing type name in key: %s</source>
+        <target state="translated">Ontbrekende typenaam in sleutel: %s</target>
+      </trans-unit>
+      <trans-unit id="error.missing.placeholder">
+        <source>Missing placeholder in key: %s</source>
+        <target state="translated">Ontbrekende plaatshouder in sleutel: %s</target>
+      </trans-unit>
+      <trans-unit id="language">
+        <source>Language</source>
+        <target state="translated">Taal</target>
+      </trans-unit>
+      <trans-unit id="error.missing.value">
+        <source>Missing value in key: %s</source>
+        <target state="translated">Ontbrekende waarde in sleutel: %s</target>
+      </trans-unit>
+    </body>
+  </file>
 </xliff>
