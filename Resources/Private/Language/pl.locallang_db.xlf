@@ -1,45 +1,56 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
-    <file target-language="pl" datatype="plaintext" original="messages" date="2025-11-10T16:00:00Z"
-          product-name="nr_textdb">
-        <header/>
-        <body>
-            <trans-unit id="tx_nrtextdb_domain_model_environment">
-                <target>Środowisko</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_environment.name">
-                <target>Nazwa</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_component">
-                <target>Komponent</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_component.name">
-                <target>Nazwa</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_type">
-                <target>Typ</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_type.name">
-                <target>Nazwa</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation">
-                <target>Tłumaczenie</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation.value">
-                <target>Wartość</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation.placeholder">
-                <target>Symbol zastępczy</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
-                <target>Środowisko</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation.component">
-                <target>Komponent</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation.type">
-                <target>Typ</target>
-            </trans-unit>
-        </body>
-    </file>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" datatype="plaintext" original="messages" date="2024-01-01T00:00:00Z" product-name="nr_textdb" target-language="pl">
+    <header/>
+    <body>
+      <trans-unit id="tx_nrtextdb_domain_model_environment">
+        <source>Environment</source>
+        <target state="translated">Środowisko</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_environment.name">
+        <source>Name</source>
+        <target state="translated">Nazwa</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_component">
+        <source>Component</source>
+        <target state="translated">Komponent</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_component.name">
+        <source>Name</source>
+        <target state="translated">Nazwa</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_type">
+        <source>Type</source>
+        <target state="translated">Typ</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_type.name">
+        <source>Name</source>
+        <target state="translated">Nazwa</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation">
+        <source>Translation</source>
+        <target state="translated">Tłumaczenie</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.value">
+        <source>Value</source>
+        <target state="translated">Wartość</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.placeholder">
+        <source>Placeholder</source>
+        <target state="translated">Symbol zastępczy</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
+        <source>Environment</source>
+        <target state="translated">Środowisko</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.component">
+        <source>Component</source>
+        <target state="translated">Komponent</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.type">
+        <source>Type</source>
+        <target state="translated">Typ</target>
+      </trans-unit>
+    </body>
+  </file>
 </xliff>
