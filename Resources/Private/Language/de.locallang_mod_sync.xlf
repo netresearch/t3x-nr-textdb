@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
-    <file target-language="de" datatype="plaintext" original="messages" date="2024-01-01T00:00:00Z"
-          product-name="nr_textdb">
-        <header/>
-        <body>
-            <trans-unit id="mod_textdb">
-                <target>Textdatenbank</target>
-            </trans-unit>
-        </body>
-    </file>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" datatype="plaintext" original="messages" date="2024-01-01T00:00:00Z" product-name="nr_textdb" target-language="de">
+    <header/>
+    <body>
+      <trans-unit id="mod_textdb">
+        <source>Text database</source>
+        <target state="translated">Textdatenbank</target>
+      </trans-unit>
+    </body>
+  </file>
 </xliff>
