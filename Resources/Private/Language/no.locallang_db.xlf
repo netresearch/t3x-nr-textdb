@@ -1,45 +1,56 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
-    <file target-language="no" datatype="plaintext" original="messages" date="2025-11-10T16:00:00Z"
-          product-name="nr_textdb">
-        <header/>
-        <body>
-            <trans-unit id="tx_nrtextdb_domain_model_environment">
-                <target>Miljø</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_environment.name">
-                <target>Navn</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_component">
-                <target>Komponent</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_component.name">
-                <target>Navn</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_type">
-                <target>Type</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_type.name">
-                <target>Navn</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation">
-                <target>Oversettelse</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation.value">
-                <target>Verdi</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation.placeholder">
-                <target>Plassholder</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
-                <target>Miljø</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation.component">
-                <target>Komponent</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation.type">
-                <target>Type</target>
-            </trans-unit>
-        </body>
-    </file>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" datatype="plaintext" original="messages" date="2024-01-01T00:00:00Z" product-name="nr_textdb" target-language="no">
+    <header/>
+    <body>
+      <trans-unit id="tx_nrtextdb_domain_model_environment">
+        <source>Environment</source>
+        <target state="translated">Miljø</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_environment.name">
+        <source>Name</source>
+        <target state="translated">Navn</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_component">
+        <source>Component</source>
+        <target state="translated">Komponent</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_component.name">
+        <source>Name</source>
+        <target state="translated">Navn</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_type">
+        <source>Type</source>
+        <target state="needs-translation">Type</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_type.name">
+        <source>Name</source>
+        <target state="translated">Navn</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation">
+        <source>Translation</source>
+        <target state="translated">Oversettelse</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.value">
+        <source>Value</source>
+        <target state="translated">Verdi</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.placeholder">
+        <source>Placeholder</source>
+        <target state="translated">Plassholder</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
+        <source>Environment</source>
+        <target state="translated">Miljø</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.component">
+        <source>Component</source>
+        <target state="translated">Komponent</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.type">
+        <source>Type</source>
+        <target state="needs-translation">Type</target>
+      </trans-unit>
+    </body>
+  </file>
 </xliff>
