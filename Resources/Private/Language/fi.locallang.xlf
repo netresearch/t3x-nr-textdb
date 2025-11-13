@@ -1,137 +1,180 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
-    <file target-language="fi" datatype="plaintext" original="messages" date="2025-11-10T16:00:00Z" product-name="nr_textdb">
-        <header/>
-        <body>
-            <trans-unit id="tx_nrtextdb_domain_model_environment">
-                <target>Ympäristö</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_environment.name">
-                <target>Nimi</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_component">
-                <target>Komponentti</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_component.name">
-                <target>Nimi</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_type">
-                <target>Tyyppi</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_type.name">
-                <target>Nimi</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation">
-                <target>Käännös</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation.value">
-                <target>Arvo</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
-                <target>Ympäristö</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation.component">
-                <target>Komponentti</target>
-            </trans-unit>
-            <trans-unit id="tx_nrtextdb_domain_model_translation.type">
-                <target>Tyyppi</target>
-            </trans-unit>
-            <trans-unit id="no-entries">
-                <target>Merkintöjä ei löytynyt</target>
-            </trans-unit>
-            <trans-unit id="no-translation">
-                <target>Käännöksiä ei ole saatavilla</target>
-            </trans-unit>
-            <trans-unit id="translation">
-                <target>Käännös</target>
-            </trans-unit>
-            <trans-unit id="save">
-                <target>Tallenna</target>
-            </trans-unit>
-            <trans-unit id="component">
-                <target>Komponentti</target>
-            </trans-unit>
-            <trans-unit id="type">
-                <target>Tyyppi</target>
-            </trans-unit>
-            <trans-unit id="environment">
-                <target>Ympäristö</target>
-            </trans-unit>
-            <trans-unit id="filter.reset.label">
-                <target>Nollaa</target>
-            </trans-unit>
-            <trans-unit id="placeholder">
-                <target>Paikanpitäjä</target>
-            </trans-unit>
-            <trans-unit id="value">
-                <target>Arvo</target>
-            </trans-unit>
-            <trans-unit id="search">
-                <target>Etsi</target>
-            </trans-unit>
-            <trans-unit id="import">
-                <target>Tuo</target>
-            </trans-unit>
-            <trans-unit id="button.label.list">
-                <target>Lista</target>
-            </trans-unit>
-            <trans-unit id="info.import.headline">
-                <target>Valitse tuotava tiedosto</target>
-            </trans-unit>
-            <trans-unit id="info.import.message">
-                <target>Varmista, että tuot aina ensin peruskielen (sys_language_uid = 0) ennen käännösten lisäämistä, koska tämä on ainoa tapa varmistaa, että tietueiden väliset linkit ovat oikein.</target>
-            </trans-unit>
-            <trans-unit id="override.existing">
-                <target>Korvaa olemassa olevat käännökset</target>
-            </trans-unit>
-            <trans-unit id="message.import">
-                <target>Tuonti valmis kielelle:</target>
-            </trans-unit>
-            <trans-unit id="message.updated">
-                <target>Käännökset päivitetty:</target>
-            </trans-unit>
-            <trans-unit id="message.imported">
-                <target>Käännökset tuotu:</target>
-            </trans-unit>
-            <trans-unit id="message.errors">
-                <target>Seuraavat virheet tapahtuivat:</target>
-            </trans-unit>
-            <trans-unit id="button.label.export">
-                <target>Vie nykyisellä suodattimella</target>
-            </trans-unit>
-            <trans-unit id="message.error.filter">
-                <target>Valitse vähintään yksi tyyppi tai komponentti viennin luomiseksi.</target>
-            </trans-unit>
-            <trans-unit id="message.error.archive">
-                <target>Arkistoa ei voitu luoda.</target>
-            </trans-unit>
-            <trans-unit id="message.error.import">
-                <target>Tiedostonimi ei vastaa odotettua mallia.</target>
-            </trans-unit>
-            <trans-unit id="error.storage.pid">
-                <target>Määritä kelvollinen tallennussivun tunnus laajennuksen asetuksissa.</target>
-            </trans-unit>
-            <trans-unit id="error.storage.pid.title" translate="no">
-                <target>TextDb</target>
-            </trans-unit>
-            <trans-unit id="error.directory.creation">
-                <target>Hakemistoa "%s" ei luotu</target>
-            </trans-unit>
-            <trans-unit id="error.missing.component">
-                <target>Puuttuva komponentin nimi avaimessa: %s</target>
-            </trans-unit>
-            <trans-unit id="error.missing.type">
-                <target>Puuttuva tyypin nimi avaimessa: %s</target>
-            </trans-unit>
-            <trans-unit id="error.missing.placeholder">
-                <target>Puuttuva paikanpitäjä avaimessa: %s</target>
-            </trans-unit>
-            <trans-unit id="language">
-                <target>Kieli</target>
-            </trans-unit>
-            <trans-unit id="error.missing.value">
-                <target>Puuttuva arvo avaimessa: %s</target>
-            </trans-unit>
-        </body>
-    </file>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" datatype="plaintext" original="messages" date="2019-09-11T10:31:41Z" product-name="nr_textdb" target-language="fi">
+    <header/>
+    <body>
+      <trans-unit id="tx_nrtextdb_domain_model_environment">
+        <source>Environment</source>
+        <target state="translated">Ympäristö</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_environment.name">
+        <source>Name</source>
+        <target state="translated">Nimi</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_component">
+        <source>Component</source>
+        <target state="translated">Komponentti</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_component.name">
+        <source>Name</source>
+        <target state="translated">Nimi</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_type">
+        <source>Type</source>
+        <target state="translated">Tyyppi</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_type.name">
+        <source>Name</source>
+        <target state="translated">Nimi</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation">
+        <source>Translation</source>
+        <target state="translated">Käännös</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.value">
+        <source>Value</source>
+        <target state="translated">Arvo</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
+        <source>Environment</source>
+        <target state="translated">Ympäristö</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.component">
+        <source>Component</source>
+        <target state="translated">Komponentti</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.type">
+        <source>Type</source>
+        <target state="translated">Tyyppi</target>
+      </trans-unit>
+      <trans-unit id="no-entries">
+        <source>No entries found</source>
+        <target state="translated">Merkintöjä ei löytynyt</target>
+      </trans-unit>
+      <trans-unit id="no-translation">
+        <source>No translations available</source>
+        <target state="translated">Käännöksiä ei ole saatavilla</target>
+      </trans-unit>
+      <trans-unit id="translation">
+        <source>Translation</source>
+        <target state="translated">Käännös</target>
+      </trans-unit>
+      <trans-unit id="save">
+        <source>Save</source>
+        <target state="translated">Tallenna</target>
+      </trans-unit>
+      <trans-unit id="component">
+        <source>Component</source>
+        <target state="translated">Komponentti</target>
+      </trans-unit>
+      <trans-unit id="type">
+        <source>Type</source>
+        <target state="translated">Tyyppi</target>
+      </trans-unit>
+      <trans-unit id="environment">
+        <source>Environment</source>
+        <target state="translated">Ympäristö</target>
+      </trans-unit>
+      <trans-unit id="filter.reset.label">
+        <source>Reset</source>
+        <target state="translated">Nollaa</target>
+      </trans-unit>
+      <trans-unit id="placeholder">
+        <source>Placeholder</source>
+        <target state="translated">Paikanpitäjä</target>
+      </trans-unit>
+      <trans-unit id="value">
+        <source>Value</source>
+        <target state="translated">Arvo</target>
+      </trans-unit>
+      <trans-unit id="search">
+        <source>Search</source>
+        <target state="translated">Etsi</target>
+      </trans-unit>
+      <trans-unit id="import">
+        <source>Import</source>
+        <target state="translated">Tuo</target>
+      </trans-unit>
+      <trans-unit id="button.label.list">
+        <source>List</source>
+        <target state="translated">Lista</target>
+      </trans-unit>
+      <trans-unit id="info.import.headline">
+        <source>Select file for import</source>
+        <target state="translated">Valitse tuotava tiedosto</target>
+      </trans-unit>
+      <trans-unit id="info.import.message">
+        <source>Make sure that you always import the primary language (sys_language_uid = 0) first before adding any translations, as this is the only way to ensure that the links between the records are correct.</source>
+        <target state="translated">Varmista, että tuot aina ensin peruskielen (sys_language_uid = 0) ennen käännösten lisäämistä, koska tämä on ainoa tapa varmistaa, että tietueiden väliset linkit ovat oikein.</target>
+      </trans-unit>
+      <trans-unit id="override.existing">
+        <source>Override existing</source>
+        <target state="translated">Korvaa olemassa olevat käännökset</target>
+      </trans-unit>
+      <trans-unit id="message.import">
+        <source>Import done for Language:</source>
+        <target state="translated">Tuonti valmis kielelle:</target>
+      </trans-unit>
+      <trans-unit id="message.updated">
+        <source>Translations updated:</source>
+        <target state="translated">Käännökset päivitetty:</target>
+      </trans-unit>
+      <trans-unit id="message.imported">
+        <source>Translations imported:</source>
+        <target state="translated">Käännökset tuotu:</target>
+      </trans-unit>
+      <trans-unit id="message.errors">
+        <source>The following errors occurs:</source>
+        <target state="translated">Seuraavat virheet tapahtuivat:</target>
+      </trans-unit>
+      <trans-unit id="button.label.export">
+        <source>Export with current filter</source>
+        <target state="translated">Vie nykyisellä suodattimella</target>
+      </trans-unit>
+      <trans-unit id="message.error.filter">
+        <source>Please select at least one type or component to create an export.</source>
+        <target state="translated">Valitse vähintään yksi tyyppi tai komponentti viennin luomiseksi.</target>
+      </trans-unit>
+      <trans-unit id="message.error.archive">
+        <source>Archive cloud not be created.</source>
+        <target state="translated">Arkistoa ei voitu luoda.</target>
+      </trans-unit>
+      <trans-unit id="message.error.import">
+        <source>File name does not match the expected pattern.</source>
+        <target state="translated">Tiedostonimi ei vastaa odotettua mallia.</target>
+      </trans-unit>
+      <trans-unit id="error.storage.pid">
+        <source>Please configure a valid storage page ID in the extension configuration.</source>
+        <target state="translated">Määritä kelvollinen tallennussivun tunnus laajennuksen asetuksissa.</target>
+      </trans-unit>
+      <trans-unit id="error.storage.pid.title" translate="no">
+        <source>TextDb</source>
+        <target state="needs-translation">TextDb</target>
+      </trans-unit>
+      <trans-unit id="error.directory.creation">
+        <source>Directory "%s" was not created</source>
+        <target state="translated">Hakemistoa "%s" ei luotu</target>
+      </trans-unit>
+      <trans-unit id="error.missing.component">
+        <source>Missing component name in key: %s</source>
+        <target state="translated">Puuttuva komponentin nimi avaimessa: %s</target>
+      </trans-unit>
+      <trans-unit id="error.missing.type">
+        <source>Missing type name in key: %s</source>
+        <target state="translated">Puuttuva tyypin nimi avaimessa: %s</target>
+      </trans-unit>
+      <trans-unit id="error.missing.placeholder">
+        <source>Missing placeholder in key: %s</source>
+        <target state="translated">Puuttuva paikanpitäjä avaimessa: %s</target>
+      </trans-unit>
+      <trans-unit id="language">
+        <source>Language</source>
+        <target state="translated">Kieli</target>
+      </trans-unit>
+      <trans-unit id="error.missing.value">
+        <source>Missing value in key: %s</source>
+        <target state="translated">Puuttuva arvo avaimessa: %s</target>
+      </trans-unit>
+    </body>
+  </file>
 </xliff>
