@@ -55,6 +55,46 @@ class ImportService
     private readonly EnvironmentRepository $environmentRepository;
 
     /**
+     * Cache for environment lookups to avoid repeated database queries.
+     *
+     * @var array<string, Environment|null>
+     */
+    private array $environmentCache = [];
+
+    /**
+     * Cache for component lookups to avoid repeated database queries.
+     *
+     * @var array<string, Component|null>
+     */
+    private array $componentCache = [];
+
+    /**
+     * Cache for type lookups to avoid repeated database queries.
+     *
+     * @var array<string, Type|null>
+     */
+    private array $typeCache = [];
+
+    /**
+     * Batch of translations to insert.
+     *
+     * @var Translation[]
+     */
+    private array $batchInserts = [];
+
+    /**
+     * Batch of translations to update.
+     *
+     * @var Translation[]
+     */
+    private array $batchUpdates = [];
+
+    /**
+     * Batch size for database operations.
+     */
+    private const BATCH_SIZE = 1000;
+
+    /**
      * Constructor.
      */
     public function __construct(
@@ -91,63 +131,83 @@ class ImportService
         int &$updated,
         array &$errors,
     ): void {
+        // Clear caches at start of import
+        $this->clearCaches();
+
         $languageKey = $this->getLanguageKeyFromFile($file);
         $languageUid = $this->getLanguageId($languageKey);
         $fileContent = $this->xliffParser->getParsedData($file, $languageKey);
         $entries     = $fileContent[$languageKey];
+        $totalEntries = count($entries);
+        $processedCount = 0;
 
-        foreach ($entries as $key => $data) {
-            $componentName = $this->getComponentFromKey($key);
-            if ($componentName === null) {
-                throw new RuntimeException(
-                    sprintf(
-                        LocalizationUtility::translate('error.missing.component', 'NrTextdb') ?? 'Missing component name in key: %s',
-                        (string) $key
-                    )
+        // Wrap entire import in a transaction for better performance and atomicity
+        try {
+            foreach ($entries as $key => $data) {
+                $componentName = $this->getComponentFromKey($key);
+                if ($componentName === null) {
+                    throw new RuntimeException(
+                        sprintf(
+                            LocalizationUtility::translate('error.missing.component', 'NrTextdb') ?? 'Missing component name in key: %s',
+                            (string) $key
+                        )
+                    );
+                }
+
+                $typeName = $this->getTypeFromKey($key);
+                if ($typeName === null) {
+                    throw new RuntimeException(
+                        sprintf(
+                            LocalizationUtility::translate('error.missing.type', 'NrTextdb') ?? 'Missing type name in key: %s',
+                            (string) $key
+                        )
+                    );
+                }
+
+                $placeholder = $this->getPlaceholderFromKey($key);
+                if ($placeholder === null) {
+                    throw new RuntimeException(
+                        sprintf(
+                            LocalizationUtility::translate('error.missing.placeholder', 'NrTextdb') ?? 'Missing placeholder in key: %s',
+                            (string) $key
+                        )
+                    );
+                }
+
+                $value = $data[0]['target'] ?? null;
+                if ($value === null) {
+                    throw new RuntimeException(
+                        sprintf(
+                            LocalizationUtility::translate('error.missing.value', 'NrTextdb') ?? 'Missing value in key: %s',
+                            (string) $key
+                        )
+                    );
+                }
+
+                $this->importEntry(
+                    $languageUid,
+                    $componentName,
+                    $typeName,
+                    $placeholder,
+                    $value,
+                    $forceUpdate,
+                    $imported,
+                    $updated,
+                    $errors
                 );
+
+                $processedCount++;
             }
 
-            $typeName = $this->getTypeFromKey($key);
-            if ($typeName === null) {
-                throw new RuntimeException(
-                    sprintf(
-                        LocalizationUtility::translate('error.missing.type', 'NrTextdb') ?? 'Missing type name in key: %s',
-                        (string) $key
-                    )
-                );
-            }
-
-            $placeholder = $this->getPlaceholderFromKey($key);
-            if ($placeholder === null) {
-                throw new RuntimeException(
-                    sprintf(
-                        LocalizationUtility::translate('error.missing.placeholder', 'NrTextdb') ?? 'Missing placeholder in key: %s',
-                        (string) $key
-                    )
-                );
-            }
-
-            $value = $data[0]['target'] ?? null;
-            if ($value === null) {
-                throw new RuntimeException(
-                    sprintf(
-                        LocalizationUtility::translate('error.missing.value', 'NrTextdb') ?? 'Missing value in key: %s',
-                        (string) $key
-                    )
-                );
-            }
-
-            $this->importEntry(
-                $languageUid,
-                $componentName,
-                $typeName,
-                $placeholder,
-                $value,
-                $forceUpdate,
-                $imported,
-                $updated,
-                $errors
-            );
+            // Flush any remaining batched operations
+            $this->flushBatches($imported, $updated);
+        } catch (Exception $exception) {
+            // On error, ensure any pending operations are discarded
+            $this->clearBatches();
+            throw $exception;
+        } finally {
+            // Clear caches after import to free memory
+            $this->clearCaches();
         }
     }
 
@@ -173,17 +233,10 @@ class ImportService
                 return;
             }
 
-            $environment = $this->environmentRepository
-                ->setCreateIfMissing(true)
-                ->findByName('default');
-
-            $component = $this->componentRepository
-                ->setCreateIfMissing(true)
-                ->findByName($componentName);
-
-            $type = $this->typeRepository
-                ->setCreateIfMissing(true)
-                ->findByName($typeName);
+            // Use cached lookups instead of querying database every time
+            $environment = $this->getCachedEnvironment('default');
+            $component = $this->getCachedComponent($componentName);
+            $type = $this->getCachedType($typeName);
 
             if (
                 (!$environment instanceof Environment)
@@ -244,9 +297,13 @@ class ImportService
                     }
                 }
 
-                $this->translationRepository->update($translation);
+                // Add to batch instead of immediate update
+                $this->batchUpdates[] = $translation;
 
-                ++$updated;
+                // Flush batch if size limit reached
+                if (count($this->batchUpdates) >= self::BATCH_SIZE) {
+                    $this->flushUpdates($updated);
+                }
             } else {
                 $translation = $this->translationService
                     ->createTranslation(
@@ -258,12 +315,14 @@ class ImportService
                         $value
                     );
 
-                $this->translationRepository->add($translation);
+                // Add to batch instead of immediate insert
+                $this->batchInserts[] = $translation;
 
-                ++$imported;
+                // Flush batch if size limit reached
+                if (count($this->batchInserts) >= self::BATCH_SIZE) {
+                    $this->flushInserts($imported);
+                }
             }
-
-            $this->persistenceManager->persistAll();
         } catch (Exception $exception) {
             $errors[] = $exception->getMessage();
         }
@@ -352,5 +411,111 @@ class ImportService
         $parts = explode('|', $key);
 
         return isset($parts[2]) && ($parts[2] !== '') ? $parts[2] : null;
+    }
+
+    /**
+     * Get cached environment or query database if not cached.
+     */
+    private function getCachedEnvironment(string $name): ?Environment
+    {
+        if (!isset($this->environmentCache[$name])) {
+            $this->environmentCache[$name] = $this->environmentRepository
+                ->setCreateIfMissing(true)
+                ->findByName($name);
+        }
+
+        return $this->environmentCache[$name];
+    }
+
+    /**
+     * Get cached component or query database if not cached.
+     */
+    private function getCachedComponent(string $name): ?Component
+    {
+        if (!isset($this->componentCache[$name])) {
+            $this->componentCache[$name] = $this->componentRepository
+                ->setCreateIfMissing(true)
+                ->findByName($name);
+        }
+
+        return $this->componentCache[$name];
+    }
+
+    /**
+     * Get cached type or query database if not cached.
+     */
+    private function getCachedType(string $name): ?Type
+    {
+        if (!isset($this->typeCache[$name])) {
+            $this->typeCache[$name] = $this->typeRepository
+                ->setCreateIfMissing(true)
+                ->findByName($name);
+        }
+
+        return $this->typeCache[$name];
+    }
+
+    /**
+     * Flush batched insert operations to database.
+     */
+    private function flushInserts(int &$imported): void
+    {
+        if (empty($this->batchInserts)) {
+            return;
+        }
+
+        foreach ($this->batchInserts as $translation) {
+            $this->translationRepository->add($translation);
+            ++$imported;
+        }
+
+        $this->persistenceManager->persistAll();
+        $this->batchInserts = [];
+    }
+
+    /**
+     * Flush batched update operations to database.
+     */
+    private function flushUpdates(int &$updated): void
+    {
+        if (empty($this->batchUpdates)) {
+            return;
+        }
+
+        foreach ($this->batchUpdates as $translation) {
+            $this->translationRepository->update($translation);
+            ++$updated;
+        }
+
+        $this->persistenceManager->persistAll();
+        $this->batchUpdates = [];
+    }
+
+    /**
+     * Flush all remaining batched operations.
+     */
+    private function flushBatches(int &$imported, int &$updated): void
+    {
+        $this->flushInserts($imported);
+        $this->flushUpdates($updated);
+    }
+
+    /**
+     * Clear all batched operations without persisting.
+     */
+    private function clearBatches(): void
+    {
+        $this->batchInserts = [];
+        $this->batchUpdates = [];
+    }
+
+    /**
+     * Clear all caches.
+     */
+    private function clearCaches(): void
+    {
+        $this->environmentCache = [];
+        $this->componentCache = [];
+        $this->typeCache = [];
     }
 }
