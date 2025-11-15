@@ -1,3 +1,13 @@
+# 3.0.2
+
+## MISC
+
+- 6f9f873 Switch the extension icon to the netresearch logo
+
+## Contributors
+
+- Sebastian Altenburg
+
 # 3.0.1
 
 ## TASK
