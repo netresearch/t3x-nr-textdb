@@ -5,22 +5,21 @@ ENV EXTENSION_KEY "nr_textdb"
 ENV DDEV_SITENAME "nr-textdb"
 ENV GITHUB_URL "https://github.com/netresearch/t3x-nr-textdb"
 
-# Get git info from build context (captured on host before build)
-ARG GIT_BRANCH="unknown"
-ARG GIT_COMMIT="unknown"
-ARG GIT_PR="unknown"
-
-# Create PHP-based landing page with dynamic git info from build args
-RUN cat > /var/www/html/index.php << PHPEOF
+# Remove default Apache index.html and create PHP-based landing page
+RUN rm -f /var/www/html/index.html
+RUN cat > /var/www/html/index.php << 'PHPEOF'
 <?php
-// Get git info from Docker build args
-\$gitBranch = '${GIT_BRANCH}';
-\$gitCommit = '${GIT_COMMIT}';
-\$prNumber = '${GIT_PR}' !== 'unknown' ? '${GIT_PR}' : null;
+// Get git info from runtime file (updated on each ddev start)
+$gitInfoFile = '/var/www/html/.git-info.json';
+$gitInfo = file_exists($gitInfoFile) ? json_decode(file_get_contents($gitInfoFile), true) : [];
 
-\$githubUrl = 'https://github.com/netresearch/t3x-nr-textdb';
-\$branchUrl = \$githubUrl && \$gitBranch !== 'unknown' ? \$githubUrl . '/tree/' . urlencode(\$gitBranch) : null;
-\$prUrl = \$githubUrl && \$prNumber ? \$githubUrl . '/pull/' . \$prNumber : null;
+$gitBranch = $gitInfo['branch'] ?? 'unknown';
+$gitCommit = $gitInfo['commit'] ?? 'unknown';
+$prNumber = isset($gitInfo['pr']) && $gitInfo['pr'] !== 'unknown' ? $gitInfo['pr'] : null;
+
+$githubUrl = 'https://github.com/netresearch/t3x-nr-textdb';
+$branchUrl = $githubUrl && $gitBranch !== 'unknown' ? $githubUrl . '/tree/' . urlencode($gitBranch) : null;
+$prUrl = $githubUrl && $prNumber ? $githubUrl . '/pull/' . $prNumber : null;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -55,19 +54,19 @@ RUN cat > /var/www/html/index.php << PHPEOF
 <body>
     <div class="container">
         <h1>🚀 EXT:nr_textdb Development Environment</h1>
-        <?php if (\$gitBranch !== 'unknown' || \$prNumber): ?>
+        <?php if ($gitBranch !== 'unknown' || $prNumber): ?>
         <div class="git-info">
-            <?php if (\$branchUrl): ?>
-                <a href="<?= htmlspecialchars(\$branchUrl) ?>" target="_blank" title="View branch on GitHub">
-                    🌿 <?= htmlspecialchars(\$gitBranch) ?><?php if (\$gitCommit !== 'unknown'): ?> @ <?= htmlspecialchars(\$gitCommit) ?><?php endif; ?>
+            <?php if ($branchUrl): ?>
+                <a href="<?= htmlspecialchars($branchUrl) ?>" target="_blank" title="View branch on GitHub">
+                    🌿 <?= htmlspecialchars($gitBranch) ?><?php if ($gitCommit !== 'unknown'): ?> @ <?= htmlspecialchars($gitCommit) ?><?php endif; ?>
                 </a>
-            <?php elseif (\$gitBranch !== 'unknown'): ?>
-                🌿 <?= htmlspecialchars(\$gitBranch) ?><?php if (\$gitCommit !== 'unknown'): ?> @ <?= htmlspecialchars(\$gitCommit) ?><?php endif; ?>
+            <?php elseif ($gitBranch !== 'unknown'): ?>
+                🌿 <?= htmlspecialchars($gitBranch) ?><?php if ($gitCommit !== 'unknown'): ?> @ <?= htmlspecialchars($gitCommit) ?><?php endif; ?>
             <?php endif; ?>
-            <?php if (\$prUrl): ?>
+            <?php if ($prUrl): ?>
                 <span class="separator">|</span>
-                <a href="<?= htmlspecialchars(\$prUrl) ?>" target="_blank" title="View pull request">
-                    🔀 PR #<?= htmlspecialchars(\$prNumber) ?>
+                <a href="<?= htmlspecialchars($prUrl) ?>" target="_blank" title="View pull request">
+                    🔀 PR #<?= htmlspecialchars($prNumber) ?>
                 </a>
             <?php endif; ?>
         </div>
