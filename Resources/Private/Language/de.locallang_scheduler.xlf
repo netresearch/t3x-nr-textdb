@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" datatype="plaintext" original="messages" date="2024-01-15T12:00:00Z" product-name="nr_textdb" target-language="de">
+    <header/>
+    <body>
+      <trans-unit id="task.processMessenger.title" resname="task.processMessenger.title">
+        <source>Process Messenger Queue (nr_textdb)</source>
+        <target state="translated">Messenger-Warteschlange verarbeiten (nr_textdb)</target>
+      </trans-unit>
+      <trans-unit id="task.processMessenger.description" resname="task.processMessenger.description">
+        <source>Processes queued async import jobs from Symfony Messenger queue. This task runs messenger:consume with a time limit, allowing automatic processing via Scheduler instead of requiring systemd/supervisor.</source>
+        <target state="translated">Verarbeitet asynchrone Import-Aufträge aus der Symfony Messenger-Warteschlange. Diese Aufgabe führt messenger:consume mit einem Zeitlimit aus und ermöglicht die automatische Verarbeitung über den Scheduler, ohne systemd/supervisor zu benötigen.</target>
+      </trans-unit>
+      <trans-unit id="task.processMessenger.timeLimit" resname="task.processMessenger.timeLimit">
+        <source>Time Limit (seconds)</source>
+        <target state="translated">Zeitlimit (Sekunden)</target>
+      </trans-unit>
+      <trans-unit id="task.processMessenger.transport" resname="task.processMessenger.transport">
+        <source>Transport Name</source>
+        <target state="translated">Transport-Name</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
