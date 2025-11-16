@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" datatype="plaintext" original="messages" date="2024-01-15T12:00:00Z" product-name="nr_textdb" target-language="vi">
+    <header/>
+    <body>
+      <trans-unit id="task.processMessenger.title" resname="task.processMessenger.title">
+        <source>Process Messenger Queue (nr_textdb)</source>
+        <target state="translated">Xử lý hàng đợi Messenger (nr_textdb)</target>
+      </trans-unit>
+      <trans-unit id="task.processMessenger.description" resname="task.processMessenger.description">
+        <source>Processes queued async import jobs from Symfony Messenger queue. This task runs messenger:consume with a time limit, allowing automatic processing via Scheduler instead of requiring systemd/supervisor.</source>
+        <target state="translated">Xử lý các công việc nhập khẩu không đồng bộ trong hàng đợi từ hàng đợi Symfony Messenger. Tác vụ này chạy messenger:consume với giới hạn thời gian, cho phép xử lý tự động qua Bộ lập lịch thay vì yêu cầu systemd/supervisor.</target>
+      </trans-unit>
+      <trans-unit id="task.processMessenger.timeLimit" resname="task.processMessenger.timeLimit">
+        <source>Time Limit (seconds)</source>
+        <target state="translated">Giới hạn thời gian (giây)</target>
+      </trans-unit>
+      <trans-unit id="task.processMessenger.transport" resname="task.processMessenger.transport">
+        <source>Transport Name</source>
+        <target state="translated">Tên vận chuyển</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
