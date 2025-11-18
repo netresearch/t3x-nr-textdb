@@ -1,0 +1,37 @@
+[package]
+name = "xliff_parser"
+version = "1.0.0"
+edition = "2021"
+authors = ["TYPO3 TextDB Contributors"]
+description = "High-performance XLIFF parser for TYPO3 TextDB extension"
+license = "GPL-3.0-or-later"
+
+[lib]
+crate-type = ["cdylib"]  # Creates shared library (.so/.dll/.dylib)
+name = "xliff_parser"
+
+[dependencies]
+quick-xml = { version = "0.36", features = ["serialize"] }
+libc = "0.2"
+
+# Database support (MySQL/MariaDB for TYPO3)
+mysql = "25.0"
+# Connection pooling
+deadpool = "0.12"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Performance optimization
+bumpalo = "3.14"  # Arena allocator for reduced allocations
+
+[profile.release]
+opt-level = 3        # Maximum optimization
+lto = true           # Link-time optimization
+codegen-units = 1    # Better optimization, slower compile
+strip = true         # Remove debug symbols
+panic = "abort"      # Smaller binary size
+
+[profile.dev]
+opt-level = 0
