@@ -3,53 +3,53 @@
   <file source-language="en" datatype="plaintext" original="messages" date="2024-01-01T00:00:00Z" product-name="nr_textdb" target-language="ar">
     <header/>
     <body>
-      <trans-unit id="tx_nrtextdb_domain_model_environment">
+      <trans-unit id="tx_nrtextdb_domain_model_environment" approved="yes">
         <source>Environment</source>
-        <target state="translated">البيئة</target>
+        <target state="final">البيئة</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_environment.name">
+      <trans-unit id="tx_nrtextdb_domain_model_environment.name" approved="yes">
         <source>Name</source>
-        <target state="translated">الاسم</target>
+        <target state="final">الاسم</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_component">
+      <trans-unit id="tx_nrtextdb_domain_model_component" approved="yes">
         <source>Component</source>
-        <target state="translated">المكون</target>
+        <target state="final">المكون</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_component.name">
+      <trans-unit id="tx_nrtextdb_domain_model_component.name" approved="yes">
         <source>Name</source>
-        <target state="translated">الاسم</target>
+        <target state="final">الاسم</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_type">
+      <trans-unit id="tx_nrtextdb_domain_model_type" approved="yes">
         <source>Type</source>
-        <target state="translated">النوع</target>
+        <target state="final">النوع</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_type.name">
+      <trans-unit id="tx_nrtextdb_domain_model_type.name" approved="yes">
         <source>Name</source>
-        <target state="translated">الاسم</target>
+        <target state="final">الاسم</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation">
+      <trans-unit id="tx_nrtextdb_domain_model_translation" approved="yes">
         <source>Translation</source>
-        <target state="translated">الترجمة</target>
+        <target state="final">الترجمة</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.value">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.value" approved="yes">
         <source>Value</source>
-        <target state="translated">القيمة</target>
+        <target state="final">القيمة</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.placeholder">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.placeholder" approved="yes">
         <source>Placeholder</source>
-        <target state="translated">عنصر نائب</target>
+        <target state="final">عنصر نائب</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.environment" approved="yes">
         <source>Environment</source>
-        <target state="translated">البيئة</target>
+        <target state="final">البيئة</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.component">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.component" approved="yes">
         <source>Component</source>
-        <target state="translated">المكون</target>
+        <target state="final">المكون</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.type">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.type" approved="yes">
         <source>Type</source>
-        <target state="translated">النوع</target>
+        <target state="final">النوع</target>
       </trans-unit>
     </body>
   </file>

@@ -3,177 +3,177 @@
   <file source-language="en" datatype="plaintext" original="messages" date="2019-09-11T10:31:41Z" product-name="nr_textdb" target-language="it">
     <header/>
     <body>
-      <trans-unit id="tx_nrtextdb_domain_model_environment">
+      <trans-unit id="tx_nrtextdb_domain_model_environment" approved="yes">
         <source>Environment</source>
-        <target state="translated">Ambiente</target>
+        <target state="final">Ambiente</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_environment.name">
+      <trans-unit id="tx_nrtextdb_domain_model_environment.name" approved="yes">
         <source>Name</source>
-        <target state="translated">Nome</target>
+        <target state="final">Nome</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_component">
+      <trans-unit id="tx_nrtextdb_domain_model_component" approved="yes">
         <source>Component</source>
-        <target state="translated">Componente</target>
+        <target state="final">Componente</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_component.name">
+      <trans-unit id="tx_nrtextdb_domain_model_component.name" approved="yes">
         <source>Name</source>
-        <target state="translated">Nome</target>
+        <target state="final">Nome</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_type">
+      <trans-unit id="tx_nrtextdb_domain_model_type" approved="yes">
         <source>Type</source>
-        <target state="translated">Tipo</target>
+        <target state="final">Tipo</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_type.name">
+      <trans-unit id="tx_nrtextdb_domain_model_type.name" approved="yes">
         <source>Name</source>
-        <target state="translated">Nome</target>
+        <target state="final">Nome</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation">
+      <trans-unit id="tx_nrtextdb_domain_model_translation" approved="yes">
         <source>Translation</source>
-        <target state="translated">Traduzione</target>
+        <target state="final">Traduzione</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.value">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.value" approved="yes">
         <source>Value</source>
-        <target state="translated">Valore</target>
+        <target state="final">Valore</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.environment" approved="yes">
         <source>Environment</source>
-        <target state="translated">Ambiente</target>
+        <target state="final">Ambiente</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.component">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.component" approved="yes">
         <source>Component</source>
-        <target state="translated">Componente</target>
+        <target state="final">Componente</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.type">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.type" approved="yes">
         <source>Type</source>
-        <target state="translated">Tipo</target>
+        <target state="final">Tipo</target>
       </trans-unit>
-      <trans-unit id="no-entries">
+      <trans-unit id="no-entries" approved="yes">
         <source>No entries found</source>
-        <target state="translated">Nessuna voce trovata</target>
+        <target state="final">Nessuna voce trovata</target>
       </trans-unit>
-      <trans-unit id="no-translation">
+      <trans-unit id="no-translation" approved="yes">
         <source>No translations available</source>
-        <target state="translated">Nessuna traduzione disponibile</target>
+        <target state="final">Nessuna traduzione disponibile</target>
       </trans-unit>
-      <trans-unit id="translation">
+      <trans-unit id="translation" approved="yes">
         <source>Translation</source>
-        <target state="translated">Traduzione</target>
+        <target state="final">Traduzione</target>
       </trans-unit>
-      <trans-unit id="save">
+      <trans-unit id="save" approved="yes">
         <source>Save</source>
-        <target state="translated">Salva</target>
+        <target state="final">Salva</target>
       </trans-unit>
-      <trans-unit id="component">
+      <trans-unit id="component" approved="yes">
         <source>Component</source>
-        <target state="translated">Componente</target>
+        <target state="final">Componente</target>
       </trans-unit>
-      <trans-unit id="type">
+      <trans-unit id="type" approved="yes">
         <source>Type</source>
-        <target state="translated">Tipo</target>
+        <target state="final">Tipo</target>
       </trans-unit>
-      <trans-unit id="environment">
+      <trans-unit id="environment" approved="yes">
         <source>Environment</source>
-        <target state="translated">Ambiente</target>
+        <target state="final">Ambiente</target>
       </trans-unit>
-      <trans-unit id="filter.reset.label">
+      <trans-unit id="filter.reset.label" approved="yes">
         <source>Reset</source>
-        <target state="translated">Reimposta</target>
+        <target state="final">Reimposta</target>
       </trans-unit>
-      <trans-unit id="placeholder">
+      <trans-unit id="placeholder" approved="yes">
         <source>Placeholder</source>
-        <target state="translated">Segnaposto</target>
+        <target state="final">Segnaposto</target>
       </trans-unit>
-      <trans-unit id="value">
+      <trans-unit id="value" approved="yes">
         <source>Value</source>
-        <target state="translated">Valore</target>
+        <target state="final">Valore</target>
       </trans-unit>
-      <trans-unit id="search">
+      <trans-unit id="search" approved="yes">
         <source>Search</source>
-        <target state="translated">Cerca</target>
+        <target state="final">Cerca</target>
       </trans-unit>
-      <trans-unit id="import">
+      <trans-unit id="import" approved="yes">
         <source>Import</source>
-        <target state="translated">Importa</target>
+        <target state="final">Importa</target>
       </trans-unit>
-      <trans-unit id="button.label.list">
+      <trans-unit id="button.label.list" approved="yes">
         <source>List</source>
-        <target state="translated">Elenco</target>
+        <target state="final">Elenco</target>
       </trans-unit>
-      <trans-unit id="info.import.headline">
+      <trans-unit id="info.import.headline" approved="yes">
         <source>Select file for import</source>
-        <target state="translated">Seleziona il file da importare</target>
+        <target state="final">Seleziona il file da importare</target>
       </trans-unit>
-      <trans-unit id="info.import.message">
+      <trans-unit id="info.import.message" approved="yes">
         <source>Make sure that you always import the primary language (sys_language_uid = 0) first before adding any translations, as this is the only way to ensure that the links between the records are correct.</source>
-        <target state="translated">Assicurati di importare sempre prima la lingua principale (sys_language_uid = 0) prima di aggiungere le traduzioni, poiché questo è l'unico modo per garantire che i collegamenti tra i record siano corretti.</target>
+        <target state="final">Assicurati di importare sempre prima la lingua principale (sys_language_uid = 0) prima di aggiungere le traduzioni, poiché questo è l'unico modo per garantire che i collegamenti tra i record siano corretti.</target>
       </trans-unit>
-      <trans-unit id="override.existing">
+      <trans-unit id="override.existing" approved="yes">
         <source>Override existing</source>
-        <target state="translated">Sovrascrivi traduzioni esistenti</target>
+        <target state="final">Sovrascrivi traduzioni esistenti</target>
       </trans-unit>
-      <trans-unit id="message.import">
+      <trans-unit id="message.import" approved="yes">
         <source>Import done for Language:</source>
-        <target state="translated">Importazione completata per la lingua:</target>
+        <target state="final">Importazione completata per la lingua:</target>
       </trans-unit>
-      <trans-unit id="message.updated">
+      <trans-unit id="message.updated" approved="yes">
         <source>Translations updated:</source>
-        <target state="translated">Traduzioni aggiornate:</target>
+        <target state="final">Traduzioni aggiornate:</target>
       </trans-unit>
-      <trans-unit id="message.imported">
+      <trans-unit id="message.imported" approved="yes">
         <source>Translations imported:</source>
-        <target state="translated">Traduzioni importate:</target>
+        <target state="final">Traduzioni importate:</target>
       </trans-unit>
-      <trans-unit id="message.errors">
+      <trans-unit id="message.errors" approved="yes">
         <source>The following errors occurs:</source>
-        <target state="translated">Si sono verificati i seguenti errori:</target>
+        <target state="final">Si sono verificati i seguenti errori:</target>
       </trans-unit>
-      <trans-unit id="button.label.export">
+      <trans-unit id="button.label.export" approved="yes">
         <source>Export with current filter</source>
-        <target state="translated">Esporta con filtro corrente</target>
+        <target state="final">Esporta con filtro corrente</target>
       </trans-unit>
-      <trans-unit id="message.error.filter">
+      <trans-unit id="message.error.filter" approved="yes">
         <source>Please select at least one type or component to create an export.</source>
-        <target state="translated">Seleziona almeno un tipo o un componente per creare un'esportazione.</target>
+        <target state="final">Seleziona almeno un tipo o un componente per creare un'esportazione.</target>
       </trans-unit>
-      <trans-unit id="message.error.archive">
+      <trans-unit id="message.error.archive" approved="yes">
         <source>Archive cloud not be created.</source>
-        <target state="translated">L'archivio non è stato creato.</target>
+        <target state="final">L'archivio non è stato creato.</target>
       </trans-unit>
-      <trans-unit id="message.error.import">
+      <trans-unit id="message.error.import" approved="yes">
         <source>File name does not match the expected pattern.</source>
-        <target state="translated">Il nome del file non corrisponde al modello previsto.</target>
+        <target state="final">Il nome del file non corrisponde al modello previsto.</target>
       </trans-unit>
-      <trans-unit id="error.storage.pid">
+      <trans-unit id="error.storage.pid" approved="yes">
         <source>Please configure a valid storage page ID in the extension configuration.</source>
-        <target state="translated">Configura un ID di pagina di archiviazione valido nella configurazione dell'estensione.</target>
+        <target state="final">Configura un ID di pagina di archiviazione valido nella configurazione dell'estensione.</target>
       </trans-unit>
       <trans-unit id="error.storage.pid.title" translate="no">
         <source>TextDb</source>
         <target state="needs-translation">TextDb</target>
       </trans-unit>
-      <trans-unit id="error.directory.creation">
+      <trans-unit id="error.directory.creation" approved="yes">
         <source>Directory "%s" was not created</source>
-        <target state="translated">La directory "%s" non è stata creata</target>
+        <target state="final">La directory "%s" non è stata creata</target>
       </trans-unit>
-      <trans-unit id="error.missing.component">
+      <trans-unit id="error.missing.component" approved="yes">
         <source>Missing component name in key: %s</source>
-        <target state="translated">Nome componente mancante nella chiave: %s</target>
+        <target state="final">Nome componente mancante nella chiave: %s</target>
       </trans-unit>
-      <trans-unit id="error.missing.type">
+      <trans-unit id="error.missing.type" approved="yes">
         <source>Missing type name in key: %s</source>
-        <target state="translated">Nome tipo mancante nella chiave: %s</target>
+        <target state="final">Nome tipo mancante nella chiave: %s</target>
       </trans-unit>
-      <trans-unit id="error.missing.placeholder">
+      <trans-unit id="error.missing.placeholder" approved="yes">
         <source>Missing placeholder in key: %s</source>
-        <target state="translated">Segnaposto mancante nella chiave: %s</target>
+        <target state="final">Segnaposto mancante nella chiave: %s</target>
       </trans-unit>
-      <trans-unit id="language">
+      <trans-unit id="language" approved="yes">
         <source>Language</source>
-        <target state="translated">Lingua</target>
+        <target state="final">Lingua</target>
       </trans-unit>
-      <trans-unit id="error.missing.value">
+      <trans-unit id="error.missing.value" approved="yes">
         <source>Missing value in key: %s</source>
-        <target state="translated">Valore mancante nella chiave: %s</target>
+        <target state="final">Valore mancante nella chiave: %s</target>
       </trans-unit>
     </body>
   </file>

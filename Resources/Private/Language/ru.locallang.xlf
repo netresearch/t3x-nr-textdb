@@ -3,177 +3,177 @@
   <file source-language="en" datatype="plaintext" original="messages" date="2019-09-11T10:31:41Z" product-name="nr_textdb" target-language="ru">
     <header/>
     <body>
-      <trans-unit id="tx_nrtextdb_domain_model_environment">
+      <trans-unit id="tx_nrtextdb_domain_model_environment" approved="yes">
         <source>Environment</source>
-        <target state="translated">Окружение</target>
+        <target state="final">Окружение</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_environment.name">
+      <trans-unit id="tx_nrtextdb_domain_model_environment.name" approved="yes">
         <source>Name</source>
-        <target state="translated">Имя</target>
+        <target state="final">Имя</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_component">
+      <trans-unit id="tx_nrtextdb_domain_model_component" approved="yes">
         <source>Component</source>
-        <target state="translated">Компонент</target>
+        <target state="final">Компонент</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_component.name">
+      <trans-unit id="tx_nrtextdb_domain_model_component.name" approved="yes">
         <source>Name</source>
-        <target state="translated">Имя</target>
+        <target state="final">Имя</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_type">
+      <trans-unit id="tx_nrtextdb_domain_model_type" approved="yes">
         <source>Type</source>
-        <target state="translated">Тип</target>
+        <target state="final">Тип</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_type.name">
+      <trans-unit id="tx_nrtextdb_domain_model_type.name" approved="yes">
         <source>Name</source>
-        <target state="translated">Имя</target>
+        <target state="final">Имя</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation">
+      <trans-unit id="tx_nrtextdb_domain_model_translation" approved="yes">
         <source>Translation</source>
-        <target state="translated">Перевод</target>
+        <target state="final">Перевод</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.value">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.value" approved="yes">
         <source>Value</source>
-        <target state="translated">Значение</target>
+        <target state="final">Значение</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.environment" approved="yes">
         <source>Environment</source>
-        <target state="translated">Окружение</target>
+        <target state="final">Окружение</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.component">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.component" approved="yes">
         <source>Component</source>
-        <target state="translated">Компонент</target>
+        <target state="final">Компонент</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.type">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.type" approved="yes">
         <source>Type</source>
-        <target state="translated">Тип</target>
+        <target state="final">Тип</target>
       </trans-unit>
-      <trans-unit id="no-entries">
+      <trans-unit id="no-entries" approved="yes">
         <source>No entries found</source>
-        <target state="translated">Записи не найдены</target>
+        <target state="final">Записи не найдены</target>
       </trans-unit>
-      <trans-unit id="no-translation">
+      <trans-unit id="no-translation" approved="yes">
         <source>No translations available</source>
-        <target state="translated">Переводы недоступны</target>
+        <target state="final">Переводы недоступны</target>
       </trans-unit>
-      <trans-unit id="translation">
+      <trans-unit id="translation" approved="yes">
         <source>Translation</source>
-        <target state="translated">Перевод</target>
+        <target state="final">Перевод</target>
       </trans-unit>
-      <trans-unit id="save">
+      <trans-unit id="save" approved="yes">
         <source>Save</source>
-        <target state="translated">Сохранить</target>
+        <target state="final">Сохранить</target>
       </trans-unit>
-      <trans-unit id="component">
+      <trans-unit id="component" approved="yes">
         <source>Component</source>
-        <target state="translated">Компонент</target>
+        <target state="final">Компонент</target>
       </trans-unit>
-      <trans-unit id="type">
+      <trans-unit id="type" approved="yes">
         <source>Type</source>
-        <target state="translated">Тип</target>
+        <target state="final">Тип</target>
       </trans-unit>
-      <trans-unit id="environment">
+      <trans-unit id="environment" approved="yes">
         <source>Environment</source>
-        <target state="translated">Окружение</target>
+        <target state="final">Окружение</target>
       </trans-unit>
-      <trans-unit id="filter.reset.label">
+      <trans-unit id="filter.reset.label" approved="yes">
         <source>Reset</source>
-        <target state="translated">Сбросить</target>
+        <target state="final">Сбросить</target>
       </trans-unit>
-      <trans-unit id="placeholder">
+      <trans-unit id="placeholder" approved="yes">
         <source>Placeholder</source>
-        <target state="translated">Заполнитель</target>
+        <target state="final">Заполнитель</target>
       </trans-unit>
-      <trans-unit id="value">
+      <trans-unit id="value" approved="yes">
         <source>Value</source>
-        <target state="translated">Значение</target>
+        <target state="final">Значение</target>
       </trans-unit>
-      <trans-unit id="search">
+      <trans-unit id="search" approved="yes">
         <source>Search</source>
-        <target state="translated">Поиск</target>
+        <target state="final">Поиск</target>
       </trans-unit>
-      <trans-unit id="import">
+      <trans-unit id="import" approved="yes">
         <source>Import</source>
-        <target state="translated">Импортировать</target>
+        <target state="final">Импортировать</target>
       </trans-unit>
-      <trans-unit id="button.label.list">
+      <trans-unit id="button.label.list" approved="yes">
         <source>List</source>
-        <target state="translated">Список</target>
+        <target state="final">Список</target>
       </trans-unit>
-      <trans-unit id="info.import.headline">
+      <trans-unit id="info.import.headline" approved="yes">
         <source>Select file for import</source>
-        <target state="translated">Выберите файл для импорта</target>
+        <target state="final">Выберите файл для импорта</target>
       </trans-unit>
-      <trans-unit id="info.import.message">
+      <trans-unit id="info.import.message" approved="yes">
         <source>Make sure that you always import the primary language (sys_language_uid = 0) first before adding any translations, as this is the only way to ensure that the links between the records are correct.</source>
-        <target state="translated">Убедитесь, что вы всегда сначала импортируете основной язык (sys_language_uid = 0) перед добавлением переводов, так как это единственный способ обеспечить правильность связей между записями.</target>
+        <target state="final">Убедитесь, что вы всегда сначала импортируете основной язык (sys_language_uid = 0) перед добавлением переводов, так как это единственный способ обеспечить правильность связей между записями.</target>
       </trans-unit>
-      <trans-unit id="override.existing">
+      <trans-unit id="override.existing" approved="yes">
         <source>Override existing</source>
-        <target state="translated">Перезаписать существующие переводы</target>
+        <target state="final">Перезаписать существующие переводы</target>
       </trans-unit>
-      <trans-unit id="message.import">
+      <trans-unit id="message.import" approved="yes">
         <source>Import done for Language:</source>
-        <target state="translated">Импорт завершен для языка:</target>
+        <target state="final">Импорт завершен для языка:</target>
       </trans-unit>
-      <trans-unit id="message.updated">
+      <trans-unit id="message.updated" approved="yes">
         <source>Translations updated:</source>
-        <target state="translated">Обновленные переводы:</target>
+        <target state="final">Обновленные переводы:</target>
       </trans-unit>
-      <trans-unit id="message.imported">
+      <trans-unit id="message.imported" approved="yes">
         <source>Translations imported:</source>
-        <target state="translated">Импортированные переводы:</target>
+        <target state="final">Импортированные переводы:</target>
       </trans-unit>
-      <trans-unit id="message.errors">
+      <trans-unit id="message.errors" approved="yes">
         <source>The following errors occurs:</source>
-        <target state="translated">Произошли следующие ошибки:</target>
+        <target state="final">Произошли следующие ошибки:</target>
       </trans-unit>
-      <trans-unit id="button.label.export">
+      <trans-unit id="button.label.export" approved="yes">
         <source>Export with current filter</source>
-        <target state="translated">Экспортировать с текущим фильтром</target>
+        <target state="final">Экспортировать с текущим фильтром</target>
       </trans-unit>
-      <trans-unit id="message.error.filter">
+      <trans-unit id="message.error.filter" approved="yes">
         <source>Please select at least one type or component to create an export.</source>
-        <target state="translated">Выберите хотя бы один тип или компонент для создания экспорта.</target>
+        <target state="final">Выберите хотя бы один тип или компонент для создания экспорта.</target>
       </trans-unit>
-      <trans-unit id="message.error.archive">
+      <trans-unit id="message.error.archive" approved="yes">
         <source>Archive cloud not be created.</source>
-        <target state="translated">Не удалось создать архив.</target>
+        <target state="final">Не удалось создать архив.</target>
       </trans-unit>
-      <trans-unit id="message.error.import">
+      <trans-unit id="message.error.import" approved="yes">
         <source>File name does not match the expected pattern.</source>
-        <target state="translated">Имя файла не соответствует ожидаемому шаблону.</target>
+        <target state="final">Имя файла не соответствует ожидаемому шаблону.</target>
       </trans-unit>
-      <trans-unit id="error.storage.pid">
+      <trans-unit id="error.storage.pid" approved="yes">
         <source>Please configure a valid storage page ID in the extension configuration.</source>
-        <target state="translated">Настройте действительный ID страницы хранения в конфигурации расширения.</target>
+        <target state="final">Настройте действительный ID страницы хранения в конфигурации расширения.</target>
       </trans-unit>
       <trans-unit id="error.storage.pid.title" translate="no">
         <source>TextDb</source>
         <target state="needs-translation">TextDb</target>
       </trans-unit>
-      <trans-unit id="error.directory.creation">
+      <trans-unit id="error.directory.creation" approved="yes">
         <source>Directory "%s" was not created</source>
-        <target state="translated">Каталог "%s" не был создан</target>
+        <target state="final">Каталог "%s" не был создан</target>
       </trans-unit>
-      <trans-unit id="error.missing.component">
+      <trans-unit id="error.missing.component" approved="yes">
         <source>Missing component name in key: %s</source>
-        <target state="translated">Отсутствует имя компонента в ключе: %s</target>
+        <target state="final">Отсутствует имя компонента в ключе: %s</target>
       </trans-unit>
-      <trans-unit id="error.missing.type">
+      <trans-unit id="error.missing.type" approved="yes">
         <source>Missing type name in key: %s</source>
-        <target state="translated">Отсутствует имя типа в ключе: %s</target>
+        <target state="final">Отсутствует имя типа в ключе: %s</target>
       </trans-unit>
-      <trans-unit id="error.missing.placeholder">
+      <trans-unit id="error.missing.placeholder" approved="yes">
         <source>Missing placeholder in key: %s</source>
-        <target state="translated">Отсутствует заполнитель в ключе: %s</target>
+        <target state="final">Отсутствует заполнитель в ключе: %s</target>
       </trans-unit>
-      <trans-unit id="language">
+      <trans-unit id="language" approved="yes">
         <source>Language</source>
-        <target state="translated">Язык</target>
+        <target state="final">Язык</target>
       </trans-unit>
-      <trans-unit id="error.missing.value">
+      <trans-unit id="error.missing.value" approved="yes">
         <source>Missing value in key: %s</source>
-        <target state="translated">Отсутствует значение в ключе: %s</target>
+        <target state="final">Отсутствует значение в ключе: %s</target>
       </trans-unit>
     </body>
   </file>
