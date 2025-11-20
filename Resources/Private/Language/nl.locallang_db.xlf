@@ -11,17 +11,17 @@
         <source>Name</source>
         <target state="final">Naam</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_component">
+      <trans-unit id="tx_nrtextdb_domain_model_component" approved="yes">
         <source>Component</source>
-        <target state="needs-translation">Component</target>
+        <target state="final">Component</target>
       </trans-unit>
       <trans-unit id="tx_nrtextdb_domain_model_component.name" approved="yes">
         <source>Name</source>
         <target state="final">Naam</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_type">
+      <trans-unit id="tx_nrtextdb_domain_model_type" approved="yes">
         <source>Type</source>
-        <target state="needs-translation">Type</target>
+        <target state="final">Type</target>
       </trans-unit>
       <trans-unit id="tx_nrtextdb_domain_model_type.name" approved="yes">
         <source>Name</source>
@@ -43,13 +43,13 @@
         <source>Environment</source>
         <target state="final">Omgeving</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.component">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.component" approved="yes">
         <source>Component</source>
-        <target state="needs-translation">Component</target>
+        <target state="final">Component</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.type">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.type" approved="yes">
         <source>Type</source>
-        <target state="needs-translation">Type</target>
+        <target state="final">Type</target>
       </trans-unit>
     </body>
   </file>
