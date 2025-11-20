@@ -3,177 +3,177 @@
   <file source-language="en" datatype="plaintext" original="messages" date="2019-09-11T10:31:41Z" product-name="nr_textdb" target-language="cs">
     <header/>
     <body>
-      <trans-unit id="tx_nrtextdb_domain_model_environment">
+      <trans-unit id="tx_nrtextdb_domain_model_environment" approved="yes">
         <source>Environment</source>
-        <target state="translated">Prostředí</target>
+        <target state="final">Prostředí</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_environment.name">
+      <trans-unit id="tx_nrtextdb_domain_model_environment.name" approved="yes">
         <source>Name</source>
-        <target state="translated">Název</target>
+        <target state="final">Název</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_component">
+      <trans-unit id="tx_nrtextdb_domain_model_component" approved="yes">
         <source>Component</source>
-        <target state="translated">Komponenta</target>
+        <target state="final">Komponenta</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_component.name">
+      <trans-unit id="tx_nrtextdb_domain_model_component.name" approved="yes">
         <source>Name</source>
-        <target state="translated">Název</target>
+        <target state="final">Název</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_type">
+      <trans-unit id="tx_nrtextdb_domain_model_type" approved="yes">
         <source>Type</source>
-        <target state="translated">Typ</target>
+        <target state="final">Typ</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_type.name">
+      <trans-unit id="tx_nrtextdb_domain_model_type.name" approved="yes">
         <source>Name</source>
-        <target state="translated">Název</target>
+        <target state="final">Název</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation">
+      <trans-unit id="tx_nrtextdb_domain_model_translation" approved="yes">
         <source>Translation</source>
-        <target state="translated">Překlad</target>
+        <target state="final">Překlad</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.value">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.value" approved="yes">
         <source>Value</source>
-        <target state="translated">Hodnota</target>
+        <target state="final">Hodnota</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.environment" approved="yes">
         <source>Environment</source>
-        <target state="translated">Prostředí</target>
+        <target state="final">Prostředí</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.component">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.component" approved="yes">
         <source>Component</source>
-        <target state="translated">Komponenta</target>
+        <target state="final">Komponenta</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.type">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.type" approved="yes">
         <source>Type</source>
-        <target state="translated">Typ</target>
+        <target state="final">Typ</target>
       </trans-unit>
-      <trans-unit id="no-entries">
+      <trans-unit id="no-entries" approved="yes">
         <source>No entries found</source>
-        <target state="translated">Nebyly nalezeny žádné záznamy</target>
+        <target state="final">Nebyly nalezeny žádné záznamy</target>
       </trans-unit>
-      <trans-unit id="no-translation">
+      <trans-unit id="no-translation" approved="yes">
         <source>No translations available</source>
-        <target state="translated">Nejsou k dispozici žádné překlady</target>
+        <target state="final">Nejsou k dispozici žádné překlady</target>
       </trans-unit>
-      <trans-unit id="translation">
+      <trans-unit id="translation" approved="yes">
         <source>Translation</source>
-        <target state="translated">Překlad</target>
+        <target state="final">Překlad</target>
       </trans-unit>
-      <trans-unit id="save">
+      <trans-unit id="save" approved="yes">
         <source>Save</source>
-        <target state="translated">Uložit</target>
+        <target state="final">Uložit</target>
       </trans-unit>
-      <trans-unit id="component">
+      <trans-unit id="component" approved="yes">
         <source>Component</source>
-        <target state="translated">Komponenta</target>
+        <target state="final">Komponenta</target>
       </trans-unit>
-      <trans-unit id="type">
+      <trans-unit id="type" approved="yes">
         <source>Type</source>
-        <target state="translated">Typ</target>
+        <target state="final">Typ</target>
       </trans-unit>
-      <trans-unit id="environment">
+      <trans-unit id="environment" approved="yes">
         <source>Environment</source>
-        <target state="translated">Prostředí</target>
+        <target state="final">Prostředí</target>
       </trans-unit>
-      <trans-unit id="filter.reset.label">
+      <trans-unit id="filter.reset.label" approved="yes">
         <source>Reset</source>
-        <target state="translated">Obnovit</target>
+        <target state="final">Obnovit</target>
       </trans-unit>
-      <trans-unit id="placeholder">
+      <trans-unit id="placeholder" approved="yes">
         <source>Placeholder</source>
-        <target state="translated">Zástupný symbol</target>
+        <target state="final">Zástupný symbol</target>
       </trans-unit>
-      <trans-unit id="value">
+      <trans-unit id="value" approved="yes">
         <source>Value</source>
-        <target state="translated">Hodnota</target>
+        <target state="final">Hodnota</target>
       </trans-unit>
-      <trans-unit id="search">
+      <trans-unit id="search" approved="yes">
         <source>Search</source>
-        <target state="translated">Hledat</target>
+        <target state="final">Hledat</target>
       </trans-unit>
-      <trans-unit id="import">
+      <trans-unit id="import" approved="yes">
         <source>Import</source>
-        <target state="translated">Importovat</target>
+        <target state="final">Importovat</target>
       </trans-unit>
-      <trans-unit id="button.label.list">
+      <trans-unit id="button.label.list" approved="yes">
         <source>List</source>
-        <target state="translated">Seznam</target>
+        <target state="final">Seznam</target>
       </trans-unit>
-      <trans-unit id="info.import.headline">
+      <trans-unit id="info.import.headline" approved="yes">
         <source>Select file for import</source>
-        <target state="translated">Vyberte soubor pro import</target>
+        <target state="final">Vyberte soubor pro import</target>
       </trans-unit>
-      <trans-unit id="info.import.message">
+      <trans-unit id="info.import.message" approved="yes">
         <source>Make sure that you always import the primary language (sys_language_uid = 0) first before adding any translations, as this is the only way to ensure that the links between the records are correct.</source>
-        <target state="translated">Ujistěte se, že vždy nejprve importujete primární jazyk (sys_language_uid = 0) před přidáním překladů, protože je to jediný způsob, jak zajistit správnost propojení mezi záznamy.</target>
+        <target state="final">Ujistěte se, že vždy nejprve importujete primární jazyk (sys_language_uid = 0) před přidáním překladů, protože je to jediný způsob, jak zajistit správnost propojení mezi záznamy.</target>
       </trans-unit>
-      <trans-unit id="override.existing">
+      <trans-unit id="override.existing" approved="yes">
         <source>Override existing</source>
-        <target state="translated">Přepsat existující překlady</target>
+        <target state="final">Přepsat existující překlady</target>
       </trans-unit>
-      <trans-unit id="message.import">
+      <trans-unit id="message.import" approved="yes">
         <source>Import done for Language:</source>
-        <target state="translated">Import dokončen pro jazyk:</target>
+        <target state="final">Import dokončen pro jazyk:</target>
       </trans-unit>
-      <trans-unit id="message.updated">
+      <trans-unit id="message.updated" approved="yes">
         <source>Translations updated:</source>
-        <target state="translated">Aktualizované překlady:</target>
+        <target state="final">Aktualizované překlady:</target>
       </trans-unit>
-      <trans-unit id="message.imported">
+      <trans-unit id="message.imported" approved="yes">
         <source>Translations imported:</source>
-        <target state="translated">Importované překlady:</target>
+        <target state="final">Importované překlady:</target>
       </trans-unit>
-      <trans-unit id="message.errors">
+      <trans-unit id="message.errors" approved="yes">
         <source>The following errors occurs:</source>
-        <target state="translated">Vyskytly se následující chyby:</target>
+        <target state="final">Vyskytly se následující chyby:</target>
       </trans-unit>
-      <trans-unit id="button.label.export">
+      <trans-unit id="button.label.export" approved="yes">
         <source>Export with current filter</source>
-        <target state="translated">Exportovat s aktuálním filtrem</target>
+        <target state="final">Exportovat s aktuálním filtrem</target>
       </trans-unit>
-      <trans-unit id="message.error.filter">
+      <trans-unit id="message.error.filter" approved="yes">
         <source>Please select at least one type or component to create an export.</source>
-        <target state="translated">Vyberte alespoň jeden typ nebo komponentu pro vytvoření exportu.</target>
+        <target state="final">Vyberte alespoň jeden typ nebo komponentu pro vytvoření exportu.</target>
       </trans-unit>
-      <trans-unit id="message.error.archive">
+      <trans-unit id="message.error.archive" approved="yes">
         <source>Archive cloud not be created.</source>
-        <target state="translated">Archiv se nepodařilo vytvořit.</target>
+        <target state="final">Archiv se nepodařilo vytvořit.</target>
       </trans-unit>
-      <trans-unit id="message.error.import">
+      <trans-unit id="message.error.import" approved="yes">
         <source>File name does not match the expected pattern.</source>
-        <target state="translated">Název souboru neodpovídá očekávanému vzoru.</target>
+        <target state="final">Název souboru neodpovídá očekávanému vzoru.</target>
       </trans-unit>
-      <trans-unit id="error.storage.pid">
+      <trans-unit id="error.storage.pid" approved="yes">
         <source>Please configure a valid storage page ID in the extension configuration.</source>
-        <target state="translated">Nakonfigurujte platné ID stránky úložiště v konfiguraci rozšíření.</target>
+        <target state="final">Nakonfigurujte platné ID stránky úložiště v konfiguraci rozšíření.</target>
       </trans-unit>
       <trans-unit id="error.storage.pid.title" translate="no">
         <source>TextDb</source>
         <target state="needs-translation">TextDb</target>
       </trans-unit>
-      <trans-unit id="error.directory.creation">
+      <trans-unit id="error.directory.creation" approved="yes">
         <source>Directory "%s" was not created</source>
-        <target state="translated">Adresář "%s" nebyl vytvořen</target>
+        <target state="final">Adresář "%s" nebyl vytvořen</target>
       </trans-unit>
-      <trans-unit id="error.missing.component">
+      <trans-unit id="error.missing.component" approved="yes">
         <source>Missing component name in key: %s</source>
-        <target state="translated">Chybějící název komponenty v klíči: %s</target>
+        <target state="final">Chybějící název komponenty v klíči: %s</target>
       </trans-unit>
-      <trans-unit id="error.missing.type">
+      <trans-unit id="error.missing.type" approved="yes">
         <source>Missing type name in key: %s</source>
-        <target state="translated">Chybějící název typu v klíči: %s</target>
+        <target state="final">Chybějící název typu v klíči: %s</target>
       </trans-unit>
-      <trans-unit id="error.missing.placeholder">
+      <trans-unit id="error.missing.placeholder" approved="yes">
         <source>Missing placeholder in key: %s</source>
-        <target state="translated">Chybějící zástupný symbol v klíči: %s</target>
+        <target state="final">Chybějící zástupný symbol v klíči: %s</target>
       </trans-unit>
-      <trans-unit id="language">
+      <trans-unit id="language" approved="yes">
         <source>Language</source>
-        <target state="translated">Jazyk</target>
+        <target state="final">Jazyk</target>
       </trans-unit>
-      <trans-unit id="error.missing.value">
+      <trans-unit id="error.missing.value" approved="yes">
         <source>Missing value in key: %s</source>
-        <target state="translated">Chybějící hodnota v klíči: %s</target>
+        <target state="final">Chybějící hodnota v klíči: %s</target>
       </trans-unit>
     </body>
   </file>
