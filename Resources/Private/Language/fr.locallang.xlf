@@ -19,9 +19,9 @@
         <source>Name</source>
         <target state="final">Nom</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_type">
+      <trans-unit id="tx_nrtextdb_domain_model_type" approved="yes">
         <source>Type</source>
-        <target state="needs-translation">Type</target>
+        <target state="final">Type</target>
       </trans-unit>
       <trans-unit id="tx_nrtextdb_domain_model_type.name" approved="yes">
         <source>Name</source>
@@ -43,9 +43,9 @@
         <source>Component</source>
         <target state="final">Composant</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.type">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.type" approved="yes">
         <source>Type</source>
-        <target state="needs-translation">Type</target>
+        <target state="final">Type</target>
       </trans-unit>
       <trans-unit id="no-entries" approved="yes">
         <source>No entries found</source>
@@ -67,9 +67,9 @@
         <source>Component</source>
         <target state="final">Composant</target>
       </trans-unit>
-      <trans-unit id="type">
+      <trans-unit id="type" approved="yes">
         <source>Type</source>
-        <target state="needs-translation">Type</target>
+        <target state="final">Type</target>
       </trans-unit>
       <trans-unit id="environment" approved="yes">
         <source>Environment</source>
@@ -147,9 +147,9 @@
         <source>Please configure a valid storage page ID in the extension configuration.</source>
         <target state="final">Veuillez configurer un identifiant de page de stockage valide dans la configuration de l'extension.</target>
       </trans-unit>
-      <trans-unit id="error.storage.pid.title" translate="no">
+      <trans-unit id="error.storage.pid.title" translate="no" approved="yes">
         <source>TextDb</source>
-        <target state="needs-translation">TextDb</target>
+        <target state="final">TextDb</target>
       </trans-unit>
       <trans-unit id="error.directory.creation" approved="yes">
         <source>Directory "%s" was not created</source>
