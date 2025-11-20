@@ -3,49 +3,49 @@
   <file source-language="en" datatype="plaintext" original="messages" date="2024-01-01T00:00:00Z" product-name="nr_textdb" target-language="fr">
     <header/>
     <body>
-      <trans-unit id="tx_nrtextdb_domain_model_environment">
+      <trans-unit id="tx_nrtextdb_domain_model_environment" approved="yes">
         <source>Environment</source>
-        <target state="translated">Environnement</target>
+        <target state="final">Environnement</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_environment.name">
+      <trans-unit id="tx_nrtextdb_domain_model_environment.name" approved="yes">
         <source>Name</source>
-        <target state="translated">Nom</target>
+        <target state="final">Nom</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_component">
+      <trans-unit id="tx_nrtextdb_domain_model_component" approved="yes">
         <source>Component</source>
-        <target state="translated">Composant</target>
+        <target state="final">Composant</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_component.name">
+      <trans-unit id="tx_nrtextdb_domain_model_component.name" approved="yes">
         <source>Name</source>
-        <target state="translated">Nom</target>
+        <target state="final">Nom</target>
       </trans-unit>
       <trans-unit id="tx_nrtextdb_domain_model_type">
         <source>Type</source>
         <target state="needs-translation">Type</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_type.name">
+      <trans-unit id="tx_nrtextdb_domain_model_type.name" approved="yes">
         <source>Name</source>
-        <target state="translated">Nom</target>
+        <target state="final">Nom</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation">
+      <trans-unit id="tx_nrtextdb_domain_model_translation" approved="yes">
         <source>Translation</source>
-        <target state="translated">Traduction</target>
+        <target state="final">Traduction</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.value">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.value" approved="yes">
         <source>Value</source>
-        <target state="translated">Valeur</target>
+        <target state="final">Valeur</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.placeholder">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.placeholder" approved="yes">
         <source>Placeholder</source>
-        <target state="translated">Espace réservé</target>
+        <target state="final">Espace réservé</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.environment" approved="yes">
         <source>Environment</source>
-        <target state="translated">Environnement</target>
+        <target state="final">Environnement</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.component">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.component" approved="yes">
         <source>Component</source>
-        <target state="translated">Composant</target>
+        <target state="final">Composant</target>
       </trans-unit>
       <trans-unit id="tx_nrtextdb_domain_model_translation.type">
         <source>Type</source>
