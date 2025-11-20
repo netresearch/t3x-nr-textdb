@@ -35,9 +35,9 @@
         <source>Value</source>
         <target state="final">Nilai</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.placeholder">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.placeholder" approved="yes">
         <source>Placeholder</source>
-        <target state="needs-translation">Placeholder</target>
+        <target state="final">Placeholder</target>
       </trans-unit>
       <trans-unit id="tx_nrtextdb_domain_model_translation.environment" approved="yes">
         <source>Environment</source>
