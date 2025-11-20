@@ -3,177 +3,177 @@
   <file source-language="en" datatype="plaintext" original="messages" date="2019-09-11T10:31:41Z" product-name="nr_textdb" target-language="no">
     <header/>
     <body>
-      <trans-unit id="tx_nrtextdb_domain_model_environment">
+      <trans-unit id="tx_nrtextdb_domain_model_environment" approved="yes">
         <source>Environment</source>
-        <target state="translated">Miljø</target>
+        <target state="final">Miljø</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_environment.name">
+      <trans-unit id="tx_nrtextdb_domain_model_environment.name" approved="yes">
         <source>Name</source>
-        <target state="translated">Navn</target>
+        <target state="final">Navn</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_component">
+      <trans-unit id="tx_nrtextdb_domain_model_component" approved="yes">
         <source>Component</source>
-        <target state="translated">Komponent</target>
+        <target state="final">Komponent</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_component.name">
+      <trans-unit id="tx_nrtextdb_domain_model_component.name" approved="yes">
         <source>Name</source>
-        <target state="translated">Navn</target>
+        <target state="final">Navn</target>
       </trans-unit>
       <trans-unit id="tx_nrtextdb_domain_model_type">
         <source>Type</source>
         <target state="needs-translation">Type</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_type.name">
+      <trans-unit id="tx_nrtextdb_domain_model_type.name" approved="yes">
         <source>Name</source>
-        <target state="translated">Navn</target>
+        <target state="final">Navn</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation">
+      <trans-unit id="tx_nrtextdb_domain_model_translation" approved="yes">
         <source>Translation</source>
-        <target state="translated">Oversettelse</target>
+        <target state="final">Oversettelse</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.value">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.value" approved="yes">
         <source>Value</source>
-        <target state="translated">Verdi</target>
+        <target state="final">Verdi</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.environment" approved="yes">
         <source>Environment</source>
-        <target state="translated">Miljø</target>
+        <target state="final">Miljø</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.component">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.component" approved="yes">
         <source>Component</source>
-        <target state="translated">Komponent</target>
+        <target state="final">Komponent</target>
       </trans-unit>
       <trans-unit id="tx_nrtextdb_domain_model_translation.type">
         <source>Type</source>
         <target state="needs-translation">Type</target>
       </trans-unit>
-      <trans-unit id="no-entries">
+      <trans-unit id="no-entries" approved="yes">
         <source>No entries found</source>
-        <target state="translated">Ingen oppføringer funnet</target>
+        <target state="final">Ingen oppføringer funnet</target>
       </trans-unit>
-      <trans-unit id="no-translation">
+      <trans-unit id="no-translation" approved="yes">
         <source>No translations available</source>
-        <target state="translated">Ingen oversettelser tilgjengelig</target>
+        <target state="final">Ingen oversettelser tilgjengelig</target>
       </trans-unit>
-      <trans-unit id="translation">
+      <trans-unit id="translation" approved="yes">
         <source>Translation</source>
-        <target state="translated">Oversettelse</target>
+        <target state="final">Oversettelse</target>
       </trans-unit>
-      <trans-unit id="save">
+      <trans-unit id="save" approved="yes">
         <source>Save</source>
-        <target state="translated">Lagre</target>
+        <target state="final">Lagre</target>
       </trans-unit>
-      <trans-unit id="component">
+      <trans-unit id="component" approved="yes">
         <source>Component</source>
-        <target state="translated">Komponent</target>
+        <target state="final">Komponent</target>
       </trans-unit>
       <trans-unit id="type">
         <source>Type</source>
         <target state="needs-translation">Type</target>
       </trans-unit>
-      <trans-unit id="environment">
+      <trans-unit id="environment" approved="yes">
         <source>Environment</source>
-        <target state="translated">Miljø</target>
+        <target state="final">Miljø</target>
       </trans-unit>
-      <trans-unit id="filter.reset.label">
+      <trans-unit id="filter.reset.label" approved="yes">
         <source>Reset</source>
-        <target state="translated">Tilbakestill</target>
+        <target state="final">Tilbakestill</target>
       </trans-unit>
-      <trans-unit id="placeholder">
+      <trans-unit id="placeholder" approved="yes">
         <source>Placeholder</source>
-        <target state="translated">Plassholder</target>
+        <target state="final">Plassholder</target>
       </trans-unit>
-      <trans-unit id="value">
+      <trans-unit id="value" approved="yes">
         <source>Value</source>
-        <target state="translated">Verdi</target>
+        <target state="final">Verdi</target>
       </trans-unit>
-      <trans-unit id="search">
+      <trans-unit id="search" approved="yes">
         <source>Search</source>
-        <target state="translated">Søk</target>
+        <target state="final">Søk</target>
       </trans-unit>
-      <trans-unit id="import">
+      <trans-unit id="import" approved="yes">
         <source>Import</source>
-        <target state="translated">Importer</target>
+        <target state="final">Importer</target>
       </trans-unit>
-      <trans-unit id="button.label.list">
+      <trans-unit id="button.label.list" approved="yes">
         <source>List</source>
-        <target state="translated">Liste</target>
+        <target state="final">Liste</target>
       </trans-unit>
-      <trans-unit id="info.import.headline">
+      <trans-unit id="info.import.headline" approved="yes">
         <source>Select file for import</source>
-        <target state="translated">Velg fil for import</target>
+        <target state="final">Velg fil for import</target>
       </trans-unit>
-      <trans-unit id="info.import.message">
+      <trans-unit id="info.import.message" approved="yes">
         <source>Make sure that you always import the primary language (sys_language_uid = 0) first before adding any translations, as this is the only way to ensure that the links between the records are correct.</source>
-        <target state="translated">Sørg for alltid å importere hovedspråket (sys_language_uid = 0) først før du legger til oversettelser, da dette er den eneste måten å sikre at koblingene mellom postene er korrekte.</target>
+        <target state="final">Sørg for alltid å importere hovedspråket (sys_language_uid = 0) først før du legger til oversettelser, da dette er den eneste måten å sikre at koblingene mellom postene er korrekte.</target>
       </trans-unit>
-      <trans-unit id="override.existing">
+      <trans-unit id="override.existing" approved="yes">
         <source>Override existing</source>
-        <target state="translated">Overskriv eksisterende oversettelser</target>
+        <target state="final">Overskriv eksisterende oversettelser</target>
       </trans-unit>
-      <trans-unit id="message.import">
+      <trans-unit id="message.import" approved="yes">
         <source>Import done for Language:</source>
-        <target state="translated">Import fullført for språk:</target>
+        <target state="final">Import fullført for språk:</target>
       </trans-unit>
-      <trans-unit id="message.updated">
+      <trans-unit id="message.updated" approved="yes">
         <source>Translations updated:</source>
-        <target state="translated">Oversettelser oppdatert:</target>
+        <target state="final">Oversettelser oppdatert:</target>
       </trans-unit>
-      <trans-unit id="message.imported">
+      <trans-unit id="message.imported" approved="yes">
         <source>Translations imported:</source>
-        <target state="translated">Oversettelser importert:</target>
+        <target state="final">Oversettelser importert:</target>
       </trans-unit>
-      <trans-unit id="message.errors">
+      <trans-unit id="message.errors" approved="yes">
         <source>The following errors occurs:</source>
-        <target state="translated">Følgende feil oppstod:</target>
+        <target state="final">Følgende feil oppstod:</target>
       </trans-unit>
-      <trans-unit id="button.label.export">
+      <trans-unit id="button.label.export" approved="yes">
         <source>Export with current filter</source>
-        <target state="translated">Eksporter med gjeldende filter</target>
+        <target state="final">Eksporter med gjeldende filter</target>
       </trans-unit>
-      <trans-unit id="message.error.filter">
+      <trans-unit id="message.error.filter" approved="yes">
         <source>Please select at least one type or component to create an export.</source>
-        <target state="translated">Velg minst én type eller komponent for å opprette en eksport.</target>
+        <target state="final">Velg minst én type eller komponent for å opprette en eksport.</target>
       </trans-unit>
-      <trans-unit id="message.error.archive">
+      <trans-unit id="message.error.archive" approved="yes">
         <source>Archive cloud not be created.</source>
-        <target state="translated">Arkivet kunne ikke opprettes.</target>
+        <target state="final">Arkivet kunne ikke opprettes.</target>
       </trans-unit>
-      <trans-unit id="message.error.import">
+      <trans-unit id="message.error.import" approved="yes">
         <source>File name does not match the expected pattern.</source>
-        <target state="translated">Filnavnet samsvarer ikke med forventet mønster.</target>
+        <target state="final">Filnavnet samsvarer ikke med forventet mønster.</target>
       </trans-unit>
-      <trans-unit id="error.storage.pid">
+      <trans-unit id="error.storage.pid" approved="yes">
         <source>Please configure a valid storage page ID in the extension configuration.</source>
-        <target state="translated">Konfigurer en gyldig lagringsside-ID i utvidelseskonfigurasjonen.</target>
+        <target state="final">Konfigurer en gyldig lagringsside-ID i utvidelseskonfigurasjonen.</target>
       </trans-unit>
       <trans-unit id="error.storage.pid.title" translate="no">
         <source>TextDb</source>
         <target state="needs-translation">TextDb</target>
       </trans-unit>
-      <trans-unit id="error.directory.creation">
+      <trans-unit id="error.directory.creation" approved="yes">
         <source>Directory "%s" was not created</source>
-        <target state="translated">Katalogen "%s" ble ikke opprettet</target>
+        <target state="final">Katalogen "%s" ble ikke opprettet</target>
       </trans-unit>
-      <trans-unit id="error.missing.component">
+      <trans-unit id="error.missing.component" approved="yes">
         <source>Missing component name in key: %s</source>
-        <target state="translated">Manglende komponentnavn i nøkkel: %s</target>
+        <target state="final">Manglende komponentnavn i nøkkel: %s</target>
       </trans-unit>
-      <trans-unit id="error.missing.type">
+      <trans-unit id="error.missing.type" approved="yes">
         <source>Missing type name in key: %s</source>
-        <target state="translated">Manglende typenavn i nøkkel: %s</target>
+        <target state="final">Manglende typenavn i nøkkel: %s</target>
       </trans-unit>
-      <trans-unit id="error.missing.placeholder">
+      <trans-unit id="error.missing.placeholder" approved="yes">
         <source>Missing placeholder in key: %s</source>
-        <target state="translated">Manglende plassholder i nøkkel: %s</target>
+        <target state="final">Manglende plassholder i nøkkel: %s</target>
       </trans-unit>
-      <trans-unit id="language">
+      <trans-unit id="language" approved="yes">
         <source>Language</source>
-        <target state="translated">Språk</target>
+        <target state="final">Språk</target>
       </trans-unit>
-      <trans-unit id="error.missing.value">
+      <trans-unit id="error.missing.value" approved="yes">
         <source>Missing value in key: %s</source>
-        <target state="translated">Manglende verdi i nøkkel: %s</target>
+        <target state="final">Manglende verdi i nøkkel: %s</target>
       </trans-unit>
     </body>
   </file>
