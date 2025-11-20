@@ -3,177 +3,177 @@
   <file source-language="en" datatype="plaintext" original="messages" date="2019-09-11T10:31:41Z" product-name="nr_textdb" target-language="zh-CN">
     <header/>
     <body>
-      <trans-unit id="tx_nrtextdb_domain_model_environment">
+      <trans-unit id="tx_nrtextdb_domain_model_environment" approved="yes">
         <source>Environment</source>
-        <target state="translated">环境</target>
+        <target state="final">环境</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_environment.name">
+      <trans-unit id="tx_nrtextdb_domain_model_environment.name" approved="yes">
         <source>Name</source>
-        <target state="translated">名称</target>
+        <target state="final">名称</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_component">
+      <trans-unit id="tx_nrtextdb_domain_model_component" approved="yes">
         <source>Component</source>
-        <target state="translated">组件</target>
+        <target state="final">组件</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_component.name">
+      <trans-unit id="tx_nrtextdb_domain_model_component.name" approved="yes">
         <source>Name</source>
-        <target state="translated">名称</target>
+        <target state="final">名称</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_type">
+      <trans-unit id="tx_nrtextdb_domain_model_type" approved="yes">
         <source>Type</source>
-        <target state="translated">类型</target>
+        <target state="final">类型</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_type.name">
+      <trans-unit id="tx_nrtextdb_domain_model_type.name" approved="yes">
         <source>Name</source>
-        <target state="translated">名称</target>
+        <target state="final">名称</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation">
+      <trans-unit id="tx_nrtextdb_domain_model_translation" approved="yes">
         <source>Translation</source>
-        <target state="translated">翻译</target>
+        <target state="final">翻译</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.value">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.value" approved="yes">
         <source>Value</source>
-        <target state="translated">值</target>
+        <target state="final">值</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.environment" approved="yes">
         <source>Environment</source>
-        <target state="translated">环境</target>
+        <target state="final">环境</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.component">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.component" approved="yes">
         <source>Component</source>
-        <target state="translated">组件</target>
+        <target state="final">组件</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.type">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.type" approved="yes">
         <source>Type</source>
-        <target state="translated">类型</target>
+        <target state="final">类型</target>
       </trans-unit>
-      <trans-unit id="no-entries">
+      <trans-unit id="no-entries" approved="yes">
         <source>No entries found</source>
-        <target state="translated">未找到条目</target>
+        <target state="final">未找到条目</target>
       </trans-unit>
-      <trans-unit id="no-translation">
+      <trans-unit id="no-translation" approved="yes">
         <source>No translations available</source>
-        <target state="translated">无可用翻译</target>
+        <target state="final">无可用翻译</target>
       </trans-unit>
-      <trans-unit id="translation">
+      <trans-unit id="translation" approved="yes">
         <source>Translation</source>
-        <target state="translated">翻译</target>
+        <target state="final">翻译</target>
       </trans-unit>
-      <trans-unit id="save">
+      <trans-unit id="save" approved="yes">
         <source>Save</source>
-        <target state="translated">保存</target>
+        <target state="final">保存</target>
       </trans-unit>
-      <trans-unit id="component">
+      <trans-unit id="component" approved="yes">
         <source>Component</source>
-        <target state="translated">组件</target>
+        <target state="final">组件</target>
       </trans-unit>
-      <trans-unit id="type">
+      <trans-unit id="type" approved="yes">
         <source>Type</source>
-        <target state="translated">类型</target>
+        <target state="final">类型</target>
       </trans-unit>
-      <trans-unit id="environment">
+      <trans-unit id="environment" approved="yes">
         <source>Environment</source>
-        <target state="translated">环境</target>
+        <target state="final">环境</target>
       </trans-unit>
-      <trans-unit id="filter.reset.label">
+      <trans-unit id="filter.reset.label" approved="yes">
         <source>Reset</source>
-        <target state="translated">重置</target>
+        <target state="final">重置</target>
       </trans-unit>
-      <trans-unit id="placeholder">
+      <trans-unit id="placeholder" approved="yes">
         <source>Placeholder</source>
-        <target state="translated">占位符</target>
+        <target state="final">占位符</target>
       </trans-unit>
-      <trans-unit id="value">
+      <trans-unit id="value" approved="yes">
         <source>Value</source>
-        <target state="translated">值</target>
+        <target state="final">值</target>
       </trans-unit>
-      <trans-unit id="search">
+      <trans-unit id="search" approved="yes">
         <source>Search</source>
-        <target state="translated">搜索</target>
+        <target state="final">搜索</target>
       </trans-unit>
-      <trans-unit id="import">
+      <trans-unit id="import" approved="yes">
         <source>Import</source>
-        <target state="translated">导入</target>
+        <target state="final">导入</target>
       </trans-unit>
-      <trans-unit id="button.label.list">
+      <trans-unit id="button.label.list" approved="yes">
         <source>List</source>
-        <target state="translated">列表</target>
+        <target state="final">列表</target>
       </trans-unit>
-      <trans-unit id="info.import.headline">
+      <trans-unit id="info.import.headline" approved="yes">
         <source>Select file for import</source>
-        <target state="translated">选择要导入的文件</target>
+        <target state="final">选择要导入的文件</target>
       </trans-unit>
-      <trans-unit id="info.import.message">
+      <trans-unit id="info.import.message" approved="yes">
         <source>Make sure that you always import the primary language (sys_language_uid = 0) first before adding any translations, as this is the only way to ensure that the links between the records are correct.</source>
-        <target state="translated">在添加翻译之前，请务必先导入主语言（sys_language_uid = 0），因为这是确保记录之间链接正确的唯一方法。</target>
+        <target state="final">在添加翻译之前，请务必先导入主语言（sys_language_uid = 0），因为这是确保记录之间链接正确的唯一方法。</target>
       </trans-unit>
-      <trans-unit id="override.existing">
+      <trans-unit id="override.existing" approved="yes">
         <source>Override existing</source>
-        <target state="translated">覆盖现有翻译</target>
+        <target state="final">覆盖现有翻译</target>
       </trans-unit>
-      <trans-unit id="message.import">
+      <trans-unit id="message.import" approved="yes">
         <source>Import done for Language:</source>
-        <target state="translated">导入完成，语言：</target>
+        <target state="final">导入完成，语言：</target>
       </trans-unit>
-      <trans-unit id="message.updated">
+      <trans-unit id="message.updated" approved="yes">
         <source>Translations updated:</source>
-        <target state="translated">已更新翻译：</target>
+        <target state="final">已更新翻译：</target>
       </trans-unit>
-      <trans-unit id="message.imported">
+      <trans-unit id="message.imported" approved="yes">
         <source>Translations imported:</source>
-        <target state="translated">已导入翻译：</target>
+        <target state="final">已导入翻译：</target>
       </trans-unit>
-      <trans-unit id="message.errors">
+      <trans-unit id="message.errors" approved="yes">
         <source>The following errors occurs:</source>
-        <target state="translated">发生以下错误：</target>
+        <target state="final">发生以下错误：</target>
       </trans-unit>
-      <trans-unit id="button.label.export">
+      <trans-unit id="button.label.export" approved="yes">
         <source>Export with current filter</source>
-        <target state="translated">使用当前筛选器导出</target>
+        <target state="final">使用当前筛选器导出</target>
       </trans-unit>
-      <trans-unit id="message.error.filter">
+      <trans-unit id="message.error.filter" approved="yes">
         <source>Please select at least one type or component to create an export.</source>
-        <target state="translated">请至少选择一种类型或组件来创建导出。</target>
+        <target state="final">请至少选择一种类型或组件来创建导出。</target>
       </trans-unit>
-      <trans-unit id="message.error.archive">
+      <trans-unit id="message.error.archive" approved="yes">
         <source>Archive cloud not be created.</source>
-        <target state="translated">无法创建归档。</target>
+        <target state="final">无法创建归档。</target>
       </trans-unit>
-      <trans-unit id="message.error.import">
+      <trans-unit id="message.error.import" approved="yes">
         <source>File name does not match the expected pattern.</source>
-        <target state="translated">文件名与预期模式不匹配。</target>
+        <target state="final">文件名与预期模式不匹配。</target>
       </trans-unit>
-      <trans-unit id="error.storage.pid">
+      <trans-unit id="error.storage.pid" approved="yes">
         <source>Please configure a valid storage page ID in the extension configuration.</source>
-        <target state="translated">请在扩展配置中配置有效的存储页面ID。</target>
+        <target state="final">请在扩展配置中配置有效的存储页面ID。</target>
       </trans-unit>
       <trans-unit id="error.storage.pid.title" translate="no">
         <source>TextDb</source>
         <target state="needs-translation">TextDb</target>
       </trans-unit>
-      <trans-unit id="error.directory.creation">
+      <trans-unit id="error.directory.creation" approved="yes">
         <source>Directory "%s" was not created</source>
-        <target state="translated">目录"%s"未创建</target>
+        <target state="final">目录"%s"未创建</target>
       </trans-unit>
-      <trans-unit id="error.missing.component">
+      <trans-unit id="error.missing.component" approved="yes">
         <source>Missing component name in key: %s</source>
-        <target state="translated">键中缺少组件名称：%s</target>
+        <target state="final">键中缺少组件名称：%s</target>
       </trans-unit>
-      <trans-unit id="error.missing.type">
+      <trans-unit id="error.missing.type" approved="yes">
         <source>Missing type name in key: %s</source>
-        <target state="translated">键中缺少类型名称：%s</target>
+        <target state="final">键中缺少类型名称：%s</target>
       </trans-unit>
-      <trans-unit id="error.missing.placeholder">
+      <trans-unit id="error.missing.placeholder" approved="yes">
         <source>Missing placeholder in key: %s</source>
-        <target state="translated">键中缺少占位符：%s</target>
+        <target state="final">键中缺少占位符：%s</target>
       </trans-unit>
-      <trans-unit id="language">
+      <trans-unit id="language" approved="yes">
         <source>Language</source>
-        <target state="translated">语言</target>
+        <target state="final">语言</target>
       </trans-unit>
-      <trans-unit id="error.missing.value">
+      <trans-unit id="error.missing.value" approved="yes">
         <source>Missing value in key: %s</source>
-        <target state="translated">键中缺少值：%s</target>
+        <target state="final">键中缺少值：%s</target>
       </trans-unit>
     </body>
   </file>
