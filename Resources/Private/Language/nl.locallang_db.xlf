@@ -3,45 +3,45 @@
   <file source-language="en" datatype="plaintext" original="messages" date="2024-01-01T00:00:00Z" product-name="nr_textdb" target-language="nl">
     <header/>
     <body>
-      <trans-unit id="tx_nrtextdb_domain_model_environment">
+      <trans-unit id="tx_nrtextdb_domain_model_environment" approved="yes">
         <source>Environment</source>
-        <target state="translated">Omgeving</target>
+        <target state="final">Omgeving</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_environment.name">
+      <trans-unit id="tx_nrtextdb_domain_model_environment.name" approved="yes">
         <source>Name</source>
-        <target state="translated">Naam</target>
+        <target state="final">Naam</target>
       </trans-unit>
       <trans-unit id="tx_nrtextdb_domain_model_component">
         <source>Component</source>
         <target state="needs-translation">Component</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_component.name">
+      <trans-unit id="tx_nrtextdb_domain_model_component.name" approved="yes">
         <source>Name</source>
-        <target state="translated">Naam</target>
+        <target state="final">Naam</target>
       </trans-unit>
       <trans-unit id="tx_nrtextdb_domain_model_type">
         <source>Type</source>
         <target state="needs-translation">Type</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_type.name">
+      <trans-unit id="tx_nrtextdb_domain_model_type.name" approved="yes">
         <source>Name</source>
-        <target state="translated">Naam</target>
+        <target state="final">Naam</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation">
+      <trans-unit id="tx_nrtextdb_domain_model_translation" approved="yes">
         <source>Translation</source>
-        <target state="translated">Vertaling</target>
+        <target state="final">Vertaling</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.value">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.value" approved="yes">
         <source>Value</source>
-        <target state="translated">Waarde</target>
+        <target state="final">Waarde</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.placeholder">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.placeholder" approved="yes">
         <source>Placeholder</source>
-        <target state="translated">Plaatshouder</target>
+        <target state="final">Plaatshouder</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.environment" approved="yes">
         <source>Environment</source>
-        <target state="translated">Omgeving</target>
+        <target state="final">Omgeving</target>
       </trans-unit>
       <trans-unit id="tx_nrtextdb_domain_model_translation.component">
         <source>Component</source>
