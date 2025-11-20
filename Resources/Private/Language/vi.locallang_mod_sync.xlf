@@ -3,9 +3,9 @@
   <file source-language="en" datatype="plaintext" original="messages" date="2024-01-01T00:00:00Z" product-name="nr_textdb" target-language="vi">
     <header/>
     <body>
-      <trans-unit id="mod_textdb">
+      <trans-unit id="mod_textdb" approved="yes">
         <source>Text database</source>
-        <target state="translated">Cơ sở dữ liệu văn bản</target>
+        <target state="final">Cơ sở dữ liệu văn bản</target>
       </trans-unit>
     </body>
   </file>
