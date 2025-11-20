@@ -79,9 +79,9 @@
         <source>Reset</source>
         <target state="final">Setel Ulang</target>
       </trans-unit>
-      <trans-unit id="placeholder">
+      <trans-unit id="placeholder" approved="yes">
         <source>Placeholder</source>
-        <target state="needs-translation">Placeholder</target>
+        <target state="final">Placeholder</target>
       </trans-unit>
       <trans-unit id="value" approved="yes">
         <source>Value</source>
@@ -147,9 +147,9 @@
         <source>Please configure a valid storage page ID in the extension configuration.</source>
         <target state="final">Konfigurasikan ID halaman penyimpanan yang valid dalam konfigurasi ekstensi.</target>
       </trans-unit>
-      <trans-unit id="error.storage.pid.title" translate="no">
+      <trans-unit id="error.storage.pid.title" translate="no" approved="yes">
         <source>TextDb</source>
-        <target state="needs-translation">TextDb</target>
+        <target state="final">TextDb</target>
       </trans-unit>
       <trans-unit id="error.directory.creation" approved="yes">
         <source>Directory "%s" was not created</source>
