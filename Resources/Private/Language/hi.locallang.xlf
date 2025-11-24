@@ -3,177 +3,177 @@
   <file source-language="en" datatype="plaintext" original="messages" date="2019-09-11T10:31:41Z" product-name="nr_textdb" target-language="hi">
     <header/>
     <body>
-      <trans-unit id="tx_nrtextdb_domain_model_environment">
+      <trans-unit id="tx_nrtextdb_domain_model_environment" approved="yes">
         <source>Environment</source>
-        <target state="translated">वातावरण</target>
+        <target state="final">वातावरण</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_environment.name">
+      <trans-unit id="tx_nrtextdb_domain_model_environment.name" approved="yes">
         <source>Name</source>
-        <target state="translated">नाम</target>
+        <target state="final">नाम</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_component">
+      <trans-unit id="tx_nrtextdb_domain_model_component" approved="yes">
         <source>Component</source>
-        <target state="translated">घटक</target>
+        <target state="final">घटक</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_component.name">
+      <trans-unit id="tx_nrtextdb_domain_model_component.name" approved="yes">
         <source>Name</source>
-        <target state="translated">नाम</target>
+        <target state="final">नाम</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_type">
+      <trans-unit id="tx_nrtextdb_domain_model_type" approved="yes">
         <source>Type</source>
-        <target state="translated">प्रकार</target>
+        <target state="final">प्रकार</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_type.name">
+      <trans-unit id="tx_nrtextdb_domain_model_type.name" approved="yes">
         <source>Name</source>
-        <target state="translated">नाम</target>
+        <target state="final">नाम</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation">
+      <trans-unit id="tx_nrtextdb_domain_model_translation" approved="yes">
         <source>Translation</source>
-        <target state="translated">अनुवाद</target>
+        <target state="final">अनुवाद</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.value">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.value" approved="yes">
         <source>Value</source>
-        <target state="translated">मान</target>
+        <target state="final">मान</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.environment" approved="yes">
         <source>Environment</source>
-        <target state="translated">वातावरण</target>
+        <target state="final">वातावरण</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.component">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.component" approved="yes">
         <source>Component</source>
-        <target state="translated">घटक</target>
+        <target state="final">घटक</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.type">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.type" approved="yes">
         <source>Type</source>
-        <target state="translated">प्रकार</target>
+        <target state="final">प्रकार</target>
       </trans-unit>
-      <trans-unit id="no-entries">
+      <trans-unit id="no-entries" approved="yes">
         <source>No entries found</source>
-        <target state="translated">कोई प्रविष्टि नहीं मिली</target>
+        <target state="final">कोई प्रविष्टि नहीं मिली</target>
       </trans-unit>
-      <trans-unit id="no-translation">
+      <trans-unit id="no-translation" approved="yes">
         <source>No translations available</source>
-        <target state="translated">कोई अनुवाद उपलब्ध नहीं</target>
+        <target state="final">कोई अनुवाद उपलब्ध नहीं</target>
       </trans-unit>
-      <trans-unit id="translation">
+      <trans-unit id="translation" approved="yes">
         <source>Translation</source>
-        <target state="translated">अनुवाद</target>
+        <target state="final">अनुवाद</target>
       </trans-unit>
-      <trans-unit id="save">
+      <trans-unit id="save" approved="yes">
         <source>Save</source>
-        <target state="translated">सहेजें</target>
+        <target state="final">सहेजें</target>
       </trans-unit>
-      <trans-unit id="component">
+      <trans-unit id="component" approved="yes">
         <source>Component</source>
-        <target state="translated">घटक</target>
+        <target state="final">घटक</target>
       </trans-unit>
-      <trans-unit id="type">
+      <trans-unit id="type" approved="yes">
         <source>Type</source>
-        <target state="translated">प्रकार</target>
+        <target state="final">प्रकार</target>
       </trans-unit>
-      <trans-unit id="environment">
+      <trans-unit id="environment" approved="yes">
         <source>Environment</source>
-        <target state="translated">वातावरण</target>
+        <target state="final">वातावरण</target>
       </trans-unit>
-      <trans-unit id="filter.reset.label">
+      <trans-unit id="filter.reset.label" approved="yes">
         <source>Reset</source>
-        <target state="translated">रीसेट करें</target>
+        <target state="final">रीसेट करें</target>
       </trans-unit>
-      <trans-unit id="placeholder">
+      <trans-unit id="placeholder" approved="yes">
         <source>Placeholder</source>
-        <target state="translated">प्लेसहोल्डर</target>
+        <target state="final">प्लेसहोल्डर</target>
       </trans-unit>
-      <trans-unit id="value">
+      <trans-unit id="value" approved="yes">
         <source>Value</source>
-        <target state="translated">मान</target>
+        <target state="final">मान</target>
       </trans-unit>
-      <trans-unit id="search">
+      <trans-unit id="search" approved="yes">
         <source>Search</source>
-        <target state="translated">खोजें</target>
+        <target state="final">खोजें</target>
       </trans-unit>
-      <trans-unit id="import">
+      <trans-unit id="import" approved="yes">
         <source>Import</source>
-        <target state="translated">आयात करें</target>
+        <target state="final">आयात करें</target>
       </trans-unit>
-      <trans-unit id="button.label.list">
+      <trans-unit id="button.label.list" approved="yes">
         <source>List</source>
-        <target state="translated">सूची</target>
+        <target state="final">सूची</target>
       </trans-unit>
-      <trans-unit id="info.import.headline">
+      <trans-unit id="info.import.headline" approved="yes">
         <source>Select file for import</source>
-        <target state="translated">आयात के लिए फ़ाइल चुनें</target>
+        <target state="final">आयात के लिए फ़ाइल चुनें</target>
       </trans-unit>
-      <trans-unit id="info.import.message">
+      <trans-unit id="info.import.message" approved="yes">
         <source>Make sure that you always import the primary language (sys_language_uid = 0) first before adding any translations, as this is the only way to ensure that the links between the records are correct.</source>
-        <target state="translated">सुनिश्चित करें कि अनुवाद जोड़ने से पहले हमेशा मुख्य भाषा (sys_language_uid = 0) को पहले आयात करें, क्योंकि यह सुनिश्चित करने का एकमात्र तरीका है कि रिकॉर्ड के बीच लिंक सही हैं।</target>
+        <target state="final">सुनिश्चित करें कि अनुवाद जोड़ने से पहले हमेशा मुख्य भाषा (sys_language_uid = 0) को पहले आयात करें, क्योंकि यह सुनिश्चित करने का एकमात्र तरीका है कि रिकॉर्ड के बीच लिंक सही हैं।</target>
       </trans-unit>
-      <trans-unit id="override.existing">
+      <trans-unit id="override.existing" approved="yes">
         <source>Override existing</source>
-        <target state="translated">मौजूदा अनुवादों को ओवरराइट करें</target>
+        <target state="final">मौजूदा अनुवादों को ओवरराइट करें</target>
       </trans-unit>
-      <trans-unit id="message.import">
+      <trans-unit id="message.import" approved="yes">
         <source>Import done for Language:</source>
-        <target state="translated">भाषा के लिए आयात पूर्ण:</target>
+        <target state="final">भाषा के लिए आयात पूर्ण:</target>
       </trans-unit>
-      <trans-unit id="message.updated">
+      <trans-unit id="message.updated" approved="yes">
         <source>Translations updated:</source>
-        <target state="translated">अनुवाद अपडेट किए गए:</target>
+        <target state="final">अनुवाद अपडेट किए गए:</target>
       </trans-unit>
-      <trans-unit id="message.imported">
+      <trans-unit id="message.imported" approved="yes">
         <source>Translations imported:</source>
-        <target state="translated">अनुवाद आयात किए गए:</target>
+        <target state="final">अनुवाद आयात किए गए:</target>
       </trans-unit>
-      <trans-unit id="message.errors">
+      <trans-unit id="message.errors" approved="yes">
         <source>The following errors occurs:</source>
-        <target state="translated">निम्नलिखित त्रुटियां हुईं:</target>
+        <target state="final">निम्नलिखित त्रुटियां हुईं:</target>
       </trans-unit>
-      <trans-unit id="button.label.export">
+      <trans-unit id="button.label.export" approved="yes">
         <source>Export with current filter</source>
-        <target state="translated">वर्तमान फ़िल्टर के साथ निर्यात करें</target>
+        <target state="final">वर्तमान फ़िल्टर के साथ निर्यात करें</target>
       </trans-unit>
-      <trans-unit id="message.error.filter">
+      <trans-unit id="message.error.filter" approved="yes">
         <source>Please select at least one type or component to create an export.</source>
-        <target state="translated">निर्यात बनाने के लिए कम से कम एक प्रकार या घटक चुनें।</target>
+        <target state="final">निर्यात बनाने के लिए कम से कम एक प्रकार या घटक चुनें।</target>
       </trans-unit>
-      <trans-unit id="message.error.archive">
+      <trans-unit id="message.error.archive" approved="yes">
         <source>Archive cloud not be created.</source>
-        <target state="translated">संग्रह बनाया नहीं जा सका।</target>
+        <target state="final">संग्रह बनाया नहीं जा सका।</target>
       </trans-unit>
-      <trans-unit id="message.error.import">
+      <trans-unit id="message.error.import" approved="yes">
         <source>File name does not match the expected pattern.</source>
-        <target state="translated">फ़ाइल नाम अपेक्षित पैटर्न से मेल नहीं खाता।</target>
+        <target state="final">फ़ाइल नाम अपेक्षित पैटर्न से मेल नहीं खाता।</target>
       </trans-unit>
-      <trans-unit id="error.storage.pid">
+      <trans-unit id="error.storage.pid" approved="yes">
         <source>Please configure a valid storage page ID in the extension configuration.</source>
-        <target state="translated">एक्सटेंशन कॉन्फ़िगरेशन में एक मान्य संग्रहण पृष्ठ आईडी कॉन्फ़िगर करें।</target>
+        <target state="final">एक्सटेंशन कॉन्फ़िगरेशन में एक मान्य संग्रहण पृष्ठ आईडी कॉन्फ़िगर करें।</target>
       </trans-unit>
       <trans-unit id="error.storage.pid.title" translate="no">
         <source>TextDb</source>
         <target state="needs-translation">TextDb</target>
       </trans-unit>
-      <trans-unit id="error.directory.creation">
+      <trans-unit id="error.directory.creation" approved="yes">
         <source>Directory "%s" was not created</source>
-        <target state="translated">निर्देशिका "%s" नहीं बनाई गई</target>
+        <target state="final">निर्देशिका "%s" नहीं बनाई गई</target>
       </trans-unit>
-      <trans-unit id="error.missing.component">
+      <trans-unit id="error.missing.component" approved="yes">
         <source>Missing component name in key: %s</source>
-        <target state="translated">कुंजी में घटक नाम गायब: %s</target>
+        <target state="final">कुंजी में घटक नाम गायब: %s</target>
       </trans-unit>
-      <trans-unit id="error.missing.type">
+      <trans-unit id="error.missing.type" approved="yes">
         <source>Missing type name in key: %s</source>
-        <target state="translated">कुंजी में प्रकार नाम गायब: %s</target>
+        <target state="final">कुंजी में प्रकार नाम गायब: %s</target>
       </trans-unit>
-      <trans-unit id="error.missing.placeholder">
+      <trans-unit id="error.missing.placeholder" approved="yes">
         <source>Missing placeholder in key: %s</source>
-        <target state="translated">कुंजी में प्लेसहोल्डर गायब: %s</target>
+        <target state="final">कुंजी में प्लेसहोल्डर गायब: %s</target>
       </trans-unit>
-      <trans-unit id="language">
+      <trans-unit id="language" approved="yes">
         <source>Language</source>
-        <target state="translated">भाषा</target>
+        <target state="final">भाषा</target>
       </trans-unit>
-      <trans-unit id="error.missing.value">
+      <trans-unit id="error.missing.value" approved="yes">
         <source>Missing value in key: %s</source>
-        <target state="translated">कुंजी में मान गायब: %s</target>
+        <target state="final">कुंजी में मान गायब: %s</target>
       </trans-unit>
     </body>
   </file>

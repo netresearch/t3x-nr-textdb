@@ -3,177 +3,177 @@
   <file source-language="en" datatype="plaintext" original="messages" date="2019-09-11T10:31:41Z" product-name="nr_textdb" target-language="nl">
     <header/>
     <body>
-      <trans-unit id="tx_nrtextdb_domain_model_environment">
+      <trans-unit id="tx_nrtextdb_domain_model_environment" approved="yes">
         <source>Environment</source>
-        <target state="translated">Omgeving</target>
+        <target state="final">Omgeving</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_environment.name">
+      <trans-unit id="tx_nrtextdb_domain_model_environment.name" approved="yes">
         <source>Name</source>
-        <target state="translated">Naam</target>
+        <target state="final">Naam</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_component">
+      <trans-unit id="tx_nrtextdb_domain_model_component" approved="yes">
         <source>Component</source>
-        <target state="needs-translation">Component</target>
+        <target state="final">Component</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_component.name">
+      <trans-unit id="tx_nrtextdb_domain_model_component.name" approved="yes">
         <source>Name</source>
-        <target state="translated">Naam</target>
+        <target state="final">Naam</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_type">
+      <trans-unit id="tx_nrtextdb_domain_model_type" approved="yes">
         <source>Type</source>
-        <target state="needs-translation">Type</target>
+        <target state="final">Type</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_type.name">
+      <trans-unit id="tx_nrtextdb_domain_model_type.name" approved="yes">
         <source>Name</source>
-        <target state="translated">Naam</target>
+        <target state="final">Naam</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation">
+      <trans-unit id="tx_nrtextdb_domain_model_translation" approved="yes">
         <source>Translation</source>
-        <target state="translated">Vertaling</target>
+        <target state="final">Vertaling</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.value">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.value" approved="yes">
         <source>Value</source>
-        <target state="translated">Waarde</target>
+        <target state="final">Waarde</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.environment" approved="yes">
         <source>Environment</source>
-        <target state="translated">Omgeving</target>
+        <target state="final">Omgeving</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.component">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.component" approved="yes">
         <source>Component</source>
-        <target state="needs-translation">Component</target>
+        <target state="final">Component</target>
       </trans-unit>
-      <trans-unit id="tx_nrtextdb_domain_model_translation.type">
+      <trans-unit id="tx_nrtextdb_domain_model_translation.type" approved="yes">
         <source>Type</source>
-        <target state="needs-translation">Type</target>
+        <target state="final">Type</target>
       </trans-unit>
-      <trans-unit id="no-entries">
+      <trans-unit id="no-entries" approved="yes">
         <source>No entries found</source>
-        <target state="translated">Geen vermeldingen gevonden</target>
+        <target state="final">Geen vermeldingen gevonden</target>
       </trans-unit>
-      <trans-unit id="no-translation">
+      <trans-unit id="no-translation" approved="yes">
         <source>No translations available</source>
-        <target state="translated">Geen vertalingen beschikbaar</target>
+        <target state="final">Geen vertalingen beschikbaar</target>
       </trans-unit>
-      <trans-unit id="translation">
+      <trans-unit id="translation" approved="yes">
         <source>Translation</source>
-        <target state="translated">Vertaling</target>
+        <target state="final">Vertaling</target>
       </trans-unit>
-      <trans-unit id="save">
+      <trans-unit id="save" approved="yes">
         <source>Save</source>
-        <target state="translated">Opslaan</target>
+        <target state="final">Opslaan</target>
       </trans-unit>
-      <trans-unit id="component">
+      <trans-unit id="component" approved="yes">
         <source>Component</source>
-        <target state="needs-translation">Component</target>
+        <target state="final">Component</target>
       </trans-unit>
-      <trans-unit id="type">
+      <trans-unit id="type" approved="yes">
         <source>Type</source>
-        <target state="needs-translation">Type</target>
+        <target state="final">Type</target>
       </trans-unit>
-      <trans-unit id="environment">
+      <trans-unit id="environment" approved="yes">
         <source>Environment</source>
-        <target state="translated">Omgeving</target>
+        <target state="final">Omgeving</target>
       </trans-unit>
-      <trans-unit id="filter.reset.label">
+      <trans-unit id="filter.reset.label" approved="yes">
         <source>Reset</source>
-        <target state="translated">Resetten</target>
+        <target state="final">Resetten</target>
       </trans-unit>
-      <trans-unit id="placeholder">
+      <trans-unit id="placeholder" approved="yes">
         <source>Placeholder</source>
-        <target state="translated">Plaatshouder</target>
+        <target state="final">Plaatshouder</target>
       </trans-unit>
-      <trans-unit id="value">
+      <trans-unit id="value" approved="yes">
         <source>Value</source>
-        <target state="translated">Waarde</target>
+        <target state="final">Waarde</target>
       </trans-unit>
-      <trans-unit id="search">
+      <trans-unit id="search" approved="yes">
         <source>Search</source>
-        <target state="translated">Zoeken</target>
+        <target state="final">Zoeken</target>
       </trans-unit>
-      <trans-unit id="import">
+      <trans-unit id="import" approved="yes">
         <source>Import</source>
-        <target state="translated">Importeren</target>
+        <target state="final">Importeren</target>
       </trans-unit>
-      <trans-unit id="button.label.list">
+      <trans-unit id="button.label.list" approved="yes">
         <source>List</source>
-        <target state="translated">Lijst</target>
+        <target state="final">Lijst</target>
       </trans-unit>
-      <trans-unit id="info.import.headline">
+      <trans-unit id="info.import.headline" approved="yes">
         <source>Select file for import</source>
-        <target state="translated">Selecteer bestand voor import</target>
+        <target state="final">Selecteer bestand voor import</target>
       </trans-unit>
-      <trans-unit id="info.import.message">
+      <trans-unit id="info.import.message" approved="yes">
         <source>Make sure that you always import the primary language (sys_language_uid = 0) first before adding any translations, as this is the only way to ensure that the links between the records are correct.</source>
-        <target state="translated">Zorg ervoor dat u altijd eerst de hoofdtaal (sys_language_uid = 0) importeert voordat u vertalingen toevoegt, omdat dit de enige manier is om ervoor te zorgen dat de links tussen de records correct zijn.</target>
+        <target state="final">Zorg ervoor dat u altijd eerst de hoofdtaal (sys_language_uid = 0) importeert voordat u vertalingen toevoegt, omdat dit de enige manier is om ervoor te zorgen dat de links tussen de records correct zijn.</target>
       </trans-unit>
-      <trans-unit id="override.existing">
+      <trans-unit id="override.existing" approved="yes">
         <source>Override existing</source>
-        <target state="translated">Bestaande vertalingen overschrijven</target>
+        <target state="final">Bestaande vertalingen overschrijven</target>
       </trans-unit>
-      <trans-unit id="message.import">
+      <trans-unit id="message.import" approved="yes">
         <source>Import done for Language:</source>
-        <target state="translated">Import voltooid voor taal:</target>
+        <target state="final">Import voltooid voor taal:</target>
       </trans-unit>
-      <trans-unit id="message.updated">
+      <trans-unit id="message.updated" approved="yes">
         <source>Translations updated:</source>
-        <target state="translated">Vertalingen bijgewerkt:</target>
+        <target state="final">Vertalingen bijgewerkt:</target>
       </trans-unit>
-      <trans-unit id="message.imported">
+      <trans-unit id="message.imported" approved="yes">
         <source>Translations imported:</source>
-        <target state="translated">Vertalingen geïmporteerd:</target>
+        <target state="final">Vertalingen geïmporteerd:</target>
       </trans-unit>
-      <trans-unit id="message.errors">
+      <trans-unit id="message.errors" approved="yes">
         <source>The following errors occurs:</source>
-        <target state="translated">De volgende fouten zijn opgetreden:</target>
+        <target state="final">De volgende fouten zijn opgetreden:</target>
       </trans-unit>
-      <trans-unit id="button.label.export">
+      <trans-unit id="button.label.export" approved="yes">
         <source>Export with current filter</source>
-        <target state="translated">Exporteren met huidige filter</target>
+        <target state="final">Exporteren met huidige filter</target>
       </trans-unit>
-      <trans-unit id="message.error.filter">
+      <trans-unit id="message.error.filter" approved="yes">
         <source>Please select at least one type or component to create an export.</source>
-        <target state="translated">Selecteer ten minste één type of component om een export te maken.</target>
+        <target state="final">Selecteer ten minste één type of component om een export te maken.</target>
       </trans-unit>
-      <trans-unit id="message.error.archive">
+      <trans-unit id="message.error.archive" approved="yes">
         <source>Archive cloud not be created.</source>
-        <target state="translated">Archief kon niet worden gemaakt.</target>
+        <target state="final">Archief kon niet worden gemaakt.</target>
       </trans-unit>
-      <trans-unit id="message.error.import">
+      <trans-unit id="message.error.import" approved="yes">
         <source>File name does not match the expected pattern.</source>
-        <target state="translated">De bestandsnaam komt niet overeen met het verwachte patroon.</target>
+        <target state="final">De bestandsnaam komt niet overeen met het verwachte patroon.</target>
       </trans-unit>
-      <trans-unit id="error.storage.pid">
+      <trans-unit id="error.storage.pid" approved="yes">
         <source>Please configure a valid storage page ID in the extension configuration.</source>
-        <target state="translated">Configureer een geldige opslagpagina-ID in de extensieconfiguratie.</target>
+        <target state="final">Configureer een geldige opslagpagina-ID in de extensieconfiguratie.</target>
       </trans-unit>
-      <trans-unit id="error.storage.pid.title" translate="no">
+      <trans-unit id="error.storage.pid.title" translate="no" approved="yes">
         <source>TextDb</source>
-        <target state="needs-translation">TextDb</target>
+        <target state="final">TextDb</target>
       </trans-unit>
-      <trans-unit id="error.directory.creation">
+      <trans-unit id="error.directory.creation" approved="yes">
         <source>Directory "%s" was not created</source>
-        <target state="translated">Map "%s" is niet aangemaakt</target>
+        <target state="final">Map "%s" is niet aangemaakt</target>
       </trans-unit>
-      <trans-unit id="error.missing.component">
+      <trans-unit id="error.missing.component" approved="yes">
         <source>Missing component name in key: %s</source>
-        <target state="translated">Ontbrekende componentnaam in sleutel: %s</target>
+        <target state="final">Ontbrekende componentnaam in sleutel: %s</target>
       </trans-unit>
-      <trans-unit id="error.missing.type">
+      <trans-unit id="error.missing.type" approved="yes">
         <source>Missing type name in key: %s</source>
-        <target state="translated">Ontbrekende typenaam in sleutel: %s</target>
+        <target state="final">Ontbrekende typenaam in sleutel: %s</target>
       </trans-unit>
-      <trans-unit id="error.missing.placeholder">
+      <trans-unit id="error.missing.placeholder" approved="yes">
         <source>Missing placeholder in key: %s</source>
-        <target state="translated">Ontbrekende plaatshouder in sleutel: %s</target>
+        <target state="final">Ontbrekende plaatshouder in sleutel: %s</target>
       </trans-unit>
-      <trans-unit id="language">
+      <trans-unit id="language" approved="yes">
         <source>Language</source>
-        <target state="translated">Taal</target>
+        <target state="final">Taal</target>
       </trans-unit>
-      <trans-unit id="error.missing.value">
+      <trans-unit id="error.missing.value" approved="yes">
         <source>Missing value in key: %s</source>
-        <target state="translated">Ontbrekende waarde in sleutel: %s</target>
+        <target state="final">Ontbrekende waarde in sleutel: %s</target>
       </trans-unit>
     </body>
   </file>
