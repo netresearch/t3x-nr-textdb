@@ -1,57 +1,56 @@
-<?xml version='1.0' encoding='utf-8'?>
-<ns0:xliff xmlns:ns0="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
-    <ns0:file source-language="en" datatype="plaintext" original="messages" date="2024-01-01T00:00:00Z" product-name="nr_textdb" target-language="ro">
-    <ns0:header>
-      </ns0:header>
-    <ns0:body>
-      <ns0:trans-unit id="tx_nrtextdb_domain_model_environment" approved="yes">
-        <ns0:source>Environment</ns0:source>
-        <target state="final">Mediu</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="tx_nrtextdb_domain_model_environment.name" approved="yes">
-        <ns0:source>Name</ns0:source>
-        <target state="final">Nume</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="tx_nrtextdb_domain_model_component" approved="yes">
-        <ns0:source>Component</ns0:source>
-        <target state="final">Componentă</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="tx_nrtextdb_domain_model_component.name" approved="yes">
-        <ns0:source>Name</ns0:source>
-        <target state="final">Nume</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="tx_nrtextdb_domain_model_type" approved="yes">
-        <ns0:source>Type</ns0:source>
-        <target state="final">Tip</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="tx_nrtextdb_domain_model_type.name" approved="yes">
-        <ns0:source>Name</ns0:source>
-        <target state="final">Nume</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="tx_nrtextdb_domain_model_translation" approved="yes">
-        <ns0:source>Translation</ns0:source>
-        <target state="final">Traducere</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="tx_nrtextdb_domain_model_translation.value" approved="yes">
-        <ns0:source>Value</ns0:source>
-        <target state="final">Valoare</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="tx_nrtextdb_domain_model_translation.placeholder" approved="yes">
-        <ns0:source>Placeholder</ns0:source>
-        <target state="final">Substituent</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="tx_nrtextdb_domain_model_translation.environment" approved="yes">
-        <ns0:source>Environment</ns0:source>
-        <target state="final">Mediu</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="tx_nrtextdb_domain_model_translation.component" approved="yes">
-        <ns0:source>Component</ns0:source>
-        <target state="final">Componentă</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="tx_nrtextdb_domain_model_translation.type" approved="yes">
-        <ns0:source>Type</ns0:source>
-        <target state="final">Tip</target>
-      </ns0:trans-unit>
-    </ns0:body>
-  </ns0:file>
-</ns0:xliff>
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" datatype="plaintext" original="messages" date="2024-01-01T00:00:00Z" product-name="nr_textdb" target-language="ro">
+    <header/>
+    <body>
+      <trans-unit id="tx_nrtextdb_domain_model_environment" approved="yes">
+        <source>Environment</source>
+        <target state="final">Environment</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_environment.name" approved="yes">
+        <source>Name</source>
+        <target state="final">Name</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_component" approved="yes">
+        <source>Component</source>
+        <target state="final">Component</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_component.name" approved="yes">
+        <source>Name</source>
+        <target state="final">Name</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_type" approved="yes">
+        <source>Type</source>
+        <target state="final">Type</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_type.name" approved="yes">
+        <source>Name</source>
+        <target state="final">Name</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation" approved="yes">
+        <source>Translation</source>
+        <target state="final">Translation</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.value" approved="yes">
+        <source>Value</source>
+        <target state="final">Value</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.placeholder" approved="yes">
+        <source>Placeholder</source>
+        <target state="final">Placeholder</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.environment" approved="yes">
+        <source>Environment</source>
+        <target state="final">Environment</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.component" approved="yes">
+        <source>Component</source>
+        <target state="final">Component</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.type" approved="yes">
+        <source>Type</source>
+        <target state="final">Type</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
