@@ -1,181 +1,180 @@
-<?xml version='1.0' encoding='utf-8'?>
-<ns0:xliff xmlns:ns0="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
-    <ns0:file source-language="en" datatype="plaintext" original="messages" date="2019-09-11T10:31:41Z" product-name="nr_textdb" target-language="sr">
-    <ns0:header>
-      </ns0:header>
-    <ns0:body>
-      <ns0:trans-unit id="tx_nrtextdb_domain_model_environment" approved="yes">
-        <ns0:source>Environment</ns0:source>
-        <target state="final">Окружење</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="tx_nrtextdb_domain_model_environment.name" approved="yes">
-        <ns0:source>Name</ns0:source>
-        <target state="final">Назив</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="tx_nrtextdb_domain_model_component" approved="yes">
-        <ns0:source>Component</ns0:source>
-        <target state="final">Компонента</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="tx_nrtextdb_domain_model_component.name" approved="yes">
-        <ns0:source>Name</ns0:source>
-        <target state="final">Назив</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="tx_nrtextdb_domain_model_type" approved="yes">
-        <ns0:source>Type</ns0:source>
-        <target state="final">Тип</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="tx_nrtextdb_domain_model_type.name" approved="yes">
-        <ns0:source>Name</ns0:source>
-        <target state="final">Назив</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="tx_nrtextdb_domain_model_translation" approved="yes">
-        <ns0:source>Translation</ns0:source>
-        <target state="final">Превод</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="tx_nrtextdb_domain_model_translation.value" approved="yes">
-        <ns0:source>Value</ns0:source>
-        <target state="final">Вредност</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="tx_nrtextdb_domain_model_translation.environment" approved="yes">
-        <ns0:source>Environment</ns0:source>
-        <target state="final">Окружење</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="tx_nrtextdb_domain_model_translation.component" approved="yes">
-        <ns0:source>Component</ns0:source>
-        <target state="final">Компонента</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="tx_nrtextdb_domain_model_translation.type" approved="yes">
-        <ns0:source>Type</ns0:source>
-        <target state="final">Тип</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="no-entries" approved="yes">
-        <ns0:source>No entries found</ns0:source>
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" datatype="plaintext" original="messages" date="2019-09-11T10:31:41Z" product-name="nr_textdb" target-language="sr">
+    <header/>
+    <body>
+      <trans-unit id="tx_nrtextdb_domain_model_environment" approved="yes">
+        <source>Environment</source>
+        <target state="final">Environment</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_environment.name" approved="yes">
+        <source>Name</source>
+        <target state="final">Name</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_component" approved="yes">
+        <source>Component</source>
+        <target state="final">Component</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_component.name" approved="yes">
+        <source>Name</source>
+        <target state="final">Name</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_type" approved="yes">
+        <source>Type</source>
+        <target state="final">Type</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_type.name" approved="yes">
+        <source>Name</source>
+        <target state="final">Name</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation" approved="yes">
+        <source>Translation</source>
+        <target state="final">Translation</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.value" approved="yes">
+        <source>Value</source>
+        <target state="final">Value</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.environment" approved="yes">
+        <source>Environment</source>
+        <target state="final">Environment</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.component" approved="yes">
+        <source>Component</source>
+        <target state="final">Component</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.type" approved="yes">
+        <source>Type</source>
+        <target state="final">Type</target>
+      </trans-unit>
+      <trans-unit id="no-entries" approved="yes">
+        <source>No entries found</source>
         <target state="final">No entries found</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="no-translation" approved="yes">
-        <ns0:source>No translations available</ns0:source>
+      </trans-unit>
+      <trans-unit id="no-translation" approved="yes">
+        <source>No translations available</source>
         <target state="final">No translations available</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="translation" approved="yes">
-        <ns0:source>Translation</ns0:source>
-        <target state="final">Превод</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="save" approved="yes">
-        <ns0:source>Save</ns0:source>
+      </trans-unit>
+      <trans-unit id="translation" approved="yes">
+        <source>Translation</source>
+        <target state="final">Translation</target>
+      </trans-unit>
+      <trans-unit id="save" approved="yes">
+        <source>Save</source>
         <target state="final">Save</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="component" approved="yes">
-        <ns0:source>Component</ns0:source>
-        <target state="final">Компонента</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="type" approved="yes">
-        <ns0:source>Type</ns0:source>
-        <target state="final">Тип</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="environment" approved="yes">
-        <ns0:source>Environment</ns0:source>
-        <target state="final">Окружење</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="filter.reset.label" approved="yes">
-        <ns0:source>Reset</ns0:source>
+      </trans-unit>
+      <trans-unit id="component" approved="yes">
+        <source>Component</source>
+        <target state="final">Component</target>
+      </trans-unit>
+      <trans-unit id="type" approved="yes">
+        <source>Type</source>
+        <target state="final">Type</target>
+      </trans-unit>
+      <trans-unit id="environment" approved="yes">
+        <source>Environment</source>
+        <target state="final">Environment</target>
+      </trans-unit>
+      <trans-unit id="filter.reset.label" approved="yes">
+        <source>Reset</source>
         <target state="final">Reset</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="placeholder" approved="yes">
-        <ns0:source>Placeholder</ns0:source>
-        <target state="final">Резервисано место</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="value" approved="yes">
-        <ns0:source>Value</ns0:source>
-        <target state="final">Вредност</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="search" approved="yes">
-        <ns0:source>Search</ns0:source>
+      </trans-unit>
+      <trans-unit id="placeholder" approved="yes">
+        <source>Placeholder</source>
+        <target state="final">Placeholder</target>
+      </trans-unit>
+      <trans-unit id="value" approved="yes">
+        <source>Value</source>
+        <target state="final">Value</target>
+      </trans-unit>
+      <trans-unit id="search" approved="yes">
+        <source>Search</source>
         <target state="final">Search</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="import" approved="yes">
-        <ns0:source>Import</ns0:source>
+      </trans-unit>
+      <trans-unit id="import" approved="yes">
+        <source>Import</source>
         <target state="final">Import</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="button.label.list" approved="yes">
-        <ns0:source>List</ns0:source>
+      </trans-unit>
+      <trans-unit id="button.label.list" approved="yes">
+        <source>List</source>
         <target state="final">List</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="info.import.headline" approved="yes">
-        <ns0:source>Select file for import</ns0:source>
+      </trans-unit>
+      <trans-unit id="info.import.headline" approved="yes">
+        <source>Select file for import</source>
         <target state="final">Select file for import</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="info.import.message" approved="yes">
-        <ns0:source>Make sure that you always import the primary language (sys_language_uid = 0) first before adding any translations, as this is the only way to ensure that the links between the records are correct.</ns0:source>
+      </trans-unit>
+      <trans-unit id="info.import.message" approved="yes">
+        <source>Make sure that you always import the primary language (sys_language_uid = 0) first before adding any translations, as this is the only way to ensure that the links between the records are correct.</source>
         <target state="final">Make sure that you always import the primary language (sys_language_uid = 0) first before adding any translations, as this is the only way to ensure that the links between the records are correct.</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="override.existing" approved="yes">
-        <ns0:source>Override existing</ns0:source>
+      </trans-unit>
+      <trans-unit id="override.existing" approved="yes">
+        <source>Override existing</source>
         <target state="final">Override existing</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="message.import" approved="yes">
-        <ns0:source>Import done for Language:</ns0:source>
+      </trans-unit>
+      <trans-unit id="message.import" approved="yes">
+        <source>Import done for Language:</source>
         <target state="final">Import done for Language:</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="message.updated" approved="yes">
-        <ns0:source>Translations updated:</ns0:source>
+      </trans-unit>
+      <trans-unit id="message.updated" approved="yes">
+        <source>Translations updated:</source>
         <target state="final">Translations updated:</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="message.imported" approved="yes">
-        <ns0:source>Translations imported:</ns0:source>
+      </trans-unit>
+      <trans-unit id="message.imported" approved="yes">
+        <source>Translations imported:</source>
         <target state="final">Translations imported:</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="message.errors" approved="yes">
-        <ns0:source>The following errors occurs:</ns0:source>
+      </trans-unit>
+      <trans-unit id="message.errors" approved="yes">
+        <source>The following errors occurs:</source>
         <target state="final">The following errors occurs:</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="button.label.export" approved="yes">
-        <ns0:source>Export with current filter</ns0:source>
+      </trans-unit>
+      <trans-unit id="button.label.export" approved="yes">
+        <source>Export with current filter</source>
         <target state="final">Export with current filter</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="message.error.filter" approved="yes">
-        <ns0:source>Please select at least one type or component to create an export.</ns0:source>
+      </trans-unit>
+      <trans-unit id="message.error.filter" approved="yes">
+        <source>Please select at least one type or component to create an export.</source>
         <target state="final">Please select at least one type or component to create an export.</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="message.error.archive" approved="yes">
-        <ns0:source>Archive cloud not be created.</ns0:source>
+      </trans-unit>
+      <trans-unit id="message.error.archive" approved="yes">
+        <source>Archive cloud not be created.</source>
         <target state="final">Archive cloud not be created.</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="message.error.import" approved="yes">
-        <ns0:source>File name does not match the expected pattern.</ns0:source>
+      </trans-unit>
+      <trans-unit id="message.error.import" approved="yes">
+        <source>File name does not match the expected pattern.</source>
         <target state="final">File name does not match the expected pattern.</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="error.storage.pid" approved="yes">
-        <ns0:source>Please configure a valid storage page ID in the extension configuration.</ns0:source>
+      </trans-unit>
+      <trans-unit id="error.storage.pid" approved="yes">
+        <source>Please configure a valid storage page ID in the extension configuration.</source>
         <target state="final">Please configure a valid storage page ID in the extension configuration.</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="error.storage.pid.title" translate="no" approved="yes">
-        <ns0:source>TextDb</ns0:source>
+      </trans-unit>
+      <trans-unit id="error.storage.pid.title" translate="no" approved="yes">
+        <source>TextDb</source>
         <target state="final">TextDb</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="error.directory.creation" approved="yes">
-        <ns0:source>Directory "%s" was not created</ns0:source>
+      </trans-unit>
+      <trans-unit id="error.directory.creation" approved="yes">
+        <source>Directory "%s" was not created</source>
         <target state="final">Directory "%s" was not created</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="error.missing.component" approved="yes">
-        <ns0:source>Missing component name in key: %s</ns0:source>
+      </trans-unit>
+      <trans-unit id="error.missing.component" approved="yes">
+        <source>Missing component name in key: %s</source>
         <target state="final">Missing component name in key: %s</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="error.missing.type" approved="yes">
-        <ns0:source>Missing type name in key: %s</ns0:source>
+      </trans-unit>
+      <trans-unit id="error.missing.type" approved="yes">
+        <source>Missing type name in key: %s</source>
         <target state="final">Missing type name in key: %s</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="error.missing.placeholder" approved="yes">
-        <ns0:source>Missing placeholder in key: %s</ns0:source>
+      </trans-unit>
+      <trans-unit id="error.missing.placeholder" approved="yes">
+        <source>Missing placeholder in key: %s</source>
         <target state="final">Missing placeholder in key: %s</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="language" approved="yes">
-        <ns0:source>Language</ns0:source>
-        <target state="final">Језик</target>
-      </ns0:trans-unit>
-      <ns0:trans-unit id="error.missing.value" approved="yes">
-        <ns0:source>Missing value in key: %s</ns0:source>
+      </trans-unit>
+      <trans-unit id="language" approved="yes">
+        <source>Language</source>
+        <target state="final">Language</target>
+      </trans-unit>
+      <trans-unit id="error.missing.value" approved="yes">
+        <source>Missing value in key: %s</source>
         <target state="final">Missing value in key: %s</target>
-      </ns0:trans-unit>
-    </ns0:body>
-  </ns0:file>
-</ns0:xliff>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
