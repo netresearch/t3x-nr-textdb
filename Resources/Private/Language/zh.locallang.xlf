@@ -147,9 +147,9 @@
         <source>Please configure a valid storage page ID in the extension configuration.</source>
         <target state="final">请在扩展配置中配置有效的存储页面ID。</target>
       </trans-unit>
-      <trans-unit id="error.storage.pid.title" translate="no">
+      <trans-unit id="error.storage.pid.title" translate="no" approved="yes">
         <source>TextDb</source>
-        <target state="needs-translation">TextDb</target>
+        <target state="final">TextDb</target>
       </trans-unit>
       <trans-unit id="error.directory.creation" approved="yes">
         <source>Directory "%s" was not created</source>
