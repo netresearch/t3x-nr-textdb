@@ -5,51 +5,51 @@
     <body>
       <trans-unit id="tx_nrtextdb_domain_model_environment" approved="yes">
         <source>Environment</source>
-        <target state="final">Environment</target>
+        <target state="final">Середовище</target>
       </trans-unit>
       <trans-unit id="tx_nrtextdb_domain_model_environment.name" approved="yes">
         <source>Name</source>
-        <target state="final">Name</target>
+        <target state="final">Назва</target>
       </trans-unit>
       <trans-unit id="tx_nrtextdb_domain_model_component" approved="yes">
         <source>Component</source>
-        <target state="final">Component</target>
+        <target state="final">Компонент</target>
       </trans-unit>
       <trans-unit id="tx_nrtextdb_domain_model_component.name" approved="yes">
         <source>Name</source>
-        <target state="final">Name</target>
+        <target state="final">Назва</target>
       </trans-unit>
       <trans-unit id="tx_nrtextdb_domain_model_type" approved="yes">
         <source>Type</source>
-        <target state="final">Type</target>
+        <target state="final">Тип</target>
       </trans-unit>
       <trans-unit id="tx_nrtextdb_domain_model_type.name" approved="yes">
         <source>Name</source>
-        <target state="final">Name</target>
+        <target state="final">Назва</target>
       </trans-unit>
       <trans-unit id="tx_nrtextdb_domain_model_translation" approved="yes">
         <source>Translation</source>
-        <target state="final">Translation</target>
+        <target state="final">Переклад</target>
       </trans-unit>
       <trans-unit id="tx_nrtextdb_domain_model_translation.value" approved="yes">
         <source>Value</source>
-        <target state="final">Value</target>
+        <target state="final">Значення</target>
       </trans-unit>
       <trans-unit id="tx_nrtextdb_domain_model_translation.placeholder" approved="yes">
         <source>Placeholder</source>
-        <target state="final">Placeholder</target>
+        <target state="final">Заповнювач</target>
       </trans-unit>
       <trans-unit id="tx_nrtextdb_domain_model_translation.environment" approved="yes">
         <source>Environment</source>
-        <target state="final">Environment</target>
+        <target state="final">Середовище</target>
       </trans-unit>
       <trans-unit id="tx_nrtextdb_domain_model_translation.component" approved="yes">
         <source>Component</source>
-        <target state="final">Component</target>
+        <target state="final">Компонент</target>
       </trans-unit>
       <trans-unit id="tx_nrtextdb_domain_model_translation.type" approved="yes">
         <source>Type</source>
-        <target state="final">Type</target>
+        <target state="final">Тип</target>
       </trans-unit>
     </body>
   </file>

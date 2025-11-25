@@ -5,11 +5,11 @@
     <body>
       <trans-unit id="tx_nrtextdb_domain_model_environment" approved="yes">
         <source>Environment</source>
-        <target state="final">Environment</target>
+        <target state="final">Entorn</target>
       </trans-unit>
       <trans-unit id="tx_nrtextdb_domain_model_environment.name" approved="yes">
         <source>Name</source>
-        <target state="final">Name</target>
+        <target state="final">Nom</target>
       </trans-unit>
       <trans-unit id="tx_nrtextdb_domain_model_component" approved="yes">
         <source>Component</source>
@@ -17,27 +17,27 @@
       </trans-unit>
       <trans-unit id="tx_nrtextdb_domain_model_component.name" approved="yes">
         <source>Name</source>
-        <target state="final">Name</target>
+        <target state="final">Nom</target>
       </trans-unit>
       <trans-unit id="tx_nrtextdb_domain_model_type" approved="yes">
         <source>Type</source>
-        <target state="final">Type</target>
+        <target state="final">Tipus</target>
       </trans-unit>
       <trans-unit id="tx_nrtextdb_domain_model_type.name" approved="yes">
         <source>Name</source>
-        <target state="final">Name</target>
+        <target state="final">Nom</target>
       </trans-unit>
       <trans-unit id="tx_nrtextdb_domain_model_translation" approved="yes">
         <source>Translation</source>
-        <target state="final">Translation</target>
+        <target state="final">Traducció</target>
       </trans-unit>
       <trans-unit id="tx_nrtextdb_domain_model_translation.value" approved="yes">
         <source>Value</source>
-        <target state="final">Value</target>
+        <target state="final">Valor</target>
       </trans-unit>
       <trans-unit id="tx_nrtextdb_domain_model_translation.environment" approved="yes">
         <source>Environment</source>
-        <target state="final">Environment</target>
+        <target state="final">Entorn</target>
       </trans-unit>
       <trans-unit id="tx_nrtextdb_domain_model_translation.component" approved="yes">
         <source>Component</source>
@@ -45,23 +45,23 @@
       </trans-unit>
       <trans-unit id="tx_nrtextdb_domain_model_translation.type" approved="yes">
         <source>Type</source>
-        <target state="final">Type</target>
+        <target state="final">Tipus</target>
       </trans-unit>
       <trans-unit id="no-entries" approved="yes">
         <source>No entries found</source>
-        <target state="final">No entries found</target>
+        <target state="final">No s'han trobat entrades</target>
       </trans-unit>
       <trans-unit id="no-translation" approved="yes">
         <source>No translations available</source>
-        <target state="final">No translations available</target>
+        <target state="final">No hi ha traduccions disponibles</target>
       </trans-unit>
       <trans-unit id="translation" approved="yes">
         <source>Translation</source>
-        <target state="final">Translation</target>
+        <target state="final">Traducció</target>
       </trans-unit>
       <trans-unit id="save" approved="yes">
         <source>Save</source>
-        <target state="final">Save</target>
+        <target state="final">Desa</target>
       </trans-unit>
       <trans-unit id="component" approved="yes">
         <source>Component</source>
@@ -69,83 +69,83 @@
       </trans-unit>
       <trans-unit id="type" approved="yes">
         <source>Type</source>
-        <target state="final">Type</target>
+        <target state="final">Tipus</target>
       </trans-unit>
       <trans-unit id="environment" approved="yes">
         <source>Environment</source>
-        <target state="final">Environment</target>
+        <target state="final">Entorn</target>
       </trans-unit>
       <trans-unit id="filter.reset.label" approved="yes">
         <source>Reset</source>
-        <target state="final">Reset</target>
+        <target state="final">Restableix</target>
       </trans-unit>
       <trans-unit id="placeholder" approved="yes">
         <source>Placeholder</source>
-        <target state="final">Placeholder</target>
+        <target state="final">Marcador de posició</target>
       </trans-unit>
       <trans-unit id="value" approved="yes">
         <source>Value</source>
-        <target state="final">Value</target>
+        <target state="final">Valor</target>
       </trans-unit>
       <trans-unit id="search" approved="yes">
         <source>Search</source>
-        <target state="final">Search</target>
+        <target state="final">Cerca</target>
       </trans-unit>
       <trans-unit id="import" approved="yes">
         <source>Import</source>
-        <target state="final">Import</target>
+        <target state="final">Importa</target>
       </trans-unit>
       <trans-unit id="button.label.list" approved="yes">
         <source>List</source>
-        <target state="final">List</target>
+        <target state="final">Llista</target>
       </trans-unit>
       <trans-unit id="info.import.headline" approved="yes">
         <source>Select file for import</source>
-        <target state="final">Select file for import</target>
+        <target state="final">Seleccioneu el fitxer per importar</target>
       </trans-unit>
       <trans-unit id="info.import.message" approved="yes">
         <source>Make sure that you always import the primary language (sys_language_uid = 0) first before adding any translations, as this is the only way to ensure that the links between the records are correct.</source>
-        <target state="final">Make sure that you always import the primary language (sys_language_uid = 0) first before adding any translations, as this is the only way to ensure that the links between the records are correct.</target>
+        <target state="final">Assegureu-vos d'importar sempre primer l'idioma principal (sys_language_uid = 0) abans d'afegir traduccions, ja que aquesta és l'única manera de garantir que els enllaços entre els registres siguin correctes.</target>
       </trans-unit>
       <trans-unit id="override.existing" approved="yes">
         <source>Override existing</source>
-        <target state="final">Override existing</target>
+        <target state="final">Substitueix les existents</target>
       </trans-unit>
       <trans-unit id="message.import" approved="yes">
         <source>Import done for Language:</source>
-        <target state="final">Import done for Language:</target>
+        <target state="final">Importació completada per a l'idioma:</target>
       </trans-unit>
       <trans-unit id="message.updated" approved="yes">
         <source>Translations updated:</source>
-        <target state="final">Translations updated:</target>
+        <target state="final">Traduccions actualitzades:</target>
       </trans-unit>
       <trans-unit id="message.imported" approved="yes">
         <source>Translations imported:</source>
-        <target state="final">Translations imported:</target>
+        <target state="final">Traduccions importades:</target>
       </trans-unit>
       <trans-unit id="message.errors" approved="yes">
         <source>The following errors occurs:</source>
-        <target state="final">The following errors occurs:</target>
+        <target state="final">S'han produït els errors següents:</target>
       </trans-unit>
       <trans-unit id="button.label.export" approved="yes">
         <source>Export with current filter</source>
-        <target state="final">Export with current filter</target>
+        <target state="final">Exporta amb el filtre actual</target>
       </trans-unit>
       <trans-unit id="message.error.filter" approved="yes">
         <source>Please select at least one type or component to create an export.</source>
-        <target state="final">Please select at least one type or component to create an export.</target>
+        <target state="final">Seleccioneu almenys un tipus o component per crear una exportació.</target>
       </trans-unit>
       <trans-unit id="message.error.archive" approved="yes">
         <source>Archive cloud not be created.</source>
-        <target state="final">Archive cloud not be created.</target>
+        <target state="final">No s'ha pogut crear l'arxiu.</target>
       </trans-unit>
       <trans-unit id="message.error.import" approved="yes">
         <source>File name does not match the expected pattern.</source>
-        <target state="final">File name does not match the expected pattern.</target>
+        <target state="final">El nom del fitxer no coincideix amb el patró esperat.</target>
       </trans-unit>
       <trans-unit id="error.storage.pid" approved="yes">
         <source>Please configure a valid storage page ID in the extension configuration.</source>
-        <target state="final">Please configure a valid storage page ID in the extension configuration.</target>
+        <target state="final">Configureu un identificador de pàgina d'emmagatzematge vàlid a la configuració de l'extensió.</target>
       </trans-unit>
       <trans-unit id="error.storage.pid.title" translate="no" approved="yes">
         <source>TextDb</source>
@@ -153,27 +153,27 @@
       </trans-unit>
       <trans-unit id="error.directory.creation" approved="yes">
         <source>Directory "%s" was not created</source>
-        <target state="final">Directory "%s" was not created</target>
+        <target state="final">El directori "%s" no s'ha creat</target>
       </trans-unit>
       <trans-unit id="error.missing.component" approved="yes">
         <source>Missing component name in key: %s</source>
-        <target state="final">Missing component name in key: %s</target>
+        <target state="final">Falta el nom del component a la clau: %s</target>
       </trans-unit>
       <trans-unit id="error.missing.type" approved="yes">
         <source>Missing type name in key: %s</source>
-        <target state="final">Missing type name in key: %s</target>
+        <target state="final">Falta el nom del tipus a la clau: %s</target>
       </trans-unit>
       <trans-unit id="error.missing.placeholder" approved="yes">
         <source>Missing placeholder in key: %s</source>
-        <target state="final">Missing placeholder in key: %s</target>
+        <target state="final">Falta el marcador de posició a la clau: %s</target>
       </trans-unit>
       <trans-unit id="language" approved="yes">
         <source>Language</source>
-        <target state="final">Language</target>
+        <target state="final">Idioma</target>
       </trans-unit>
       <trans-unit id="error.missing.value" approved="yes">
         <source>Missing value in key: %s</source>
-        <target state="final">Missing value in key: %s</target>
+        <target state="final">Falta el valor a la clau: %s</target>
       </trans-unit>
     </body>
   </file>

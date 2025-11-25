@@ -81,7 +81,7 @@
       </trans-unit>
       <trans-unit id="placeholder" approved="yes">
         <source>Placeholder</source>
-        <target state="final">Placeholder</target>
+        <target state="final">Penanda Posisi</target>
       </trans-unit>
       <trans-unit id="value" approved="yes">
         <source>Value</source>
