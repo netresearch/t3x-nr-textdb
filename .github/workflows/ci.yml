@@ -89,3 +89,17 @@ jobs:
                 if: ${{ always() && steps.install.conclusion == 'success' }}
                 run: |
                     composer ci:test:php:unit
+
+    build-complete:
+        name: Build Complete
+        needs: build
+        runs-on: ubuntu-latest
+        if: always()
+        steps:
+            -   name: Check build matrix status
+                run: |
+                    if [ "${{ needs.build.result }}" != "success" ]; then
+                        echo "Build matrix failed"
+                        exit 1
+                    fi
+                    echo "All build matrix jobs passed"
