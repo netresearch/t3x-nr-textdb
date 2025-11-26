@@ -1,0 +1,244 @@
+<html data-namespace-typo3-fluid="true"
+      xmlns="http://www.w3.org/1999/xhtml" lang="en"
+      xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+      xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
+>
+    <f:layout name="Module"/>
+
+    <f:section name="Content">
+        <f:be.infobox state="-1" title="Import Status">
+            <p>Import job <strong>{jobId}</strong> has been queued for processing.</p>
+            <p>File: <strong>{job.original_filename}</strong> ({f:format.bytes(value: job.file_size)})</p>
+        </f:be.infobox>
+
+        <div id="import-status-container">
+            <!-- Status will be updated by JavaScript -->
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        Status: <span id="status-text" class="badge badge-secondary">Pending</span>
+                    </h5>
+
+                    <div id="progress-container" style="display: none;">
+                        <p class="card-text">
+                            <strong>Imported:</strong> <span id="imported-count">0</span> records<br>
+                            <strong>Updated:</strong> <span id="updated-count">0</span> records
+                        </p>
+
+                        <div class="progress" style="height: 25px; margin-top: 10px;">
+                            <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated"
+                                 role="progressbar" style="width: 0%;"
+                                 aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                                Processing...
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="timing-info" style="margin-top: 15px; display: none;">
+                        <small class="text-muted">
+                            <strong>Started:</strong> <span id="started-time"></span><br>
+                            <strong>Duration:</strong> <span id="duration"></span>
+                        </small>
+                    </div>
+
+                    <div id="completion-message" style="display: none; margin-top: 15px;">
+                        <f:be.infobox state="0" title="Import Completed">
+                            <p>
+                                <strong>Imported:</strong> <span id="final-imported">0</span> records<br>
+                                <strong>Updated:</strong> <span id="final-updated">0</span> records<br>
+                                <strong>Total time:</strong> <span id="final-duration"></span>
+                            </p>
+                        </f:be.infobox>
+                    </div>
+
+                    <div id="error-message" style="display: none; margin-top: 15px;">
+                        <f:be.infobox state="3" title="Import Failed">
+                            <p id="error-text"></p>
+                        </f:be.infobox>
+                    </div>
+
+                    <div id="worker-warning" style="display: none; margin-top: 15px;">
+                        <f:be.infobox state="1" title="Worker Notice">
+                            <p>
+                                <strong>Note:</strong> The import job is queued but not yet processing.
+                                Make sure the Symfony Messenger worker is running:
+                            </p>
+                            <pre style="background: #f5f5f5; padding: 10px; border-radius: 4px;">vendor/bin/typo3 messenger:consume doctrine</pre>
+                        </f:be.infobox>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <f:link.action action="import" class="btn btn-default">
+                &laquo; Back to Import
+            </f:link.action>
+        </div>
+
+        <script>
+        (function() {
+            'use strict';
+
+            const jobId = '{jobId}';
+            const apiUrl = '{f:uri.action(action: "importStatusApi", arguments: "{jobId: jobId}")}';
+
+            let pollInterval = 2000; // Start with 2 seconds
+            let maxInterval = 10000; // Max 10 seconds
+            let pollCount = 0;
+            let isCompleted = false;
+            let startTime = null;
+            let pendingStartTime = Date.now();
+            let workerWarningShown = false;
+
+            // Status badge styles
+            const statusStyles = {
+                'pending': { class: 'badge-secondary', text: 'Pending' },
+                'processing': { class: 'badge-primary', text: 'Processing' },
+                'completed': { class: 'badge-success', text: 'Completed' },
+                'failed': { class: 'badge-danger', text: 'Failed' }
+            };
+
+            function formatDuration(seconds) {
+                if (seconds < 60) {
+                    return seconds + 's';
+                }
+                const minutes = Math.floor(seconds / 60);
+                const remainingSeconds = seconds % 60;
+                return minutes + 'm ' + remainingSeconds + 's';
+            }
+
+            function formatTimestamp(timestamp) {
+                if (!timestamp) return 'N/A';
+                const date = new Date(timestamp * 1000);
+                return date.toLocaleTimeString();
+            }
+
+            function updateStatus(data) {
+                const statusBadge = document.getElementById('status-text');
+                const statusInfo = statusStyles[data.status] || statusStyles['pending'];
+
+                statusBadge.textContent = statusInfo.text;
+                statusBadge.className = 'badge ' + statusInfo.class;
+
+                // Update imported/updated counts
+                document.getElementById('imported-count').textContent = data.imported || 0;
+                document.getElementById('updated-count').textContent = data.updated || 0;
+
+                if (data.status === 'pending') {
+                    // Show worker warning if pending for more than 10 seconds
+                    const pendingDuration = Math.floor((Date.now() - pendingStartTime) / 1000);
+                    if (pendingDuration > 10 && !workerWarningShown) {
+                        document.getElementById('worker-warning').style.display = 'block';
+                        workerWarningShown = true;
+                    }
+                }
+
+                if (data.status === 'processing') {
+                    // Hide worker warning if it was shown
+                    document.getElementById('worker-warning').style.display = 'none';
+
+                    // Show progress container
+                    document.getElementById('progress-container').style.display = 'block';
+
+                    // Update timing info
+                    if (data.startedAt && !startTime) {
+                        startTime = data.startedAt;
+                    }
+
+                    if (startTime) {
+                        document.getElementById('timing-info').style.display = 'block';
+                        document.getElementById('started-time').textContent = formatTimestamp(startTime);
+
+                        const duration = Math.floor(Date.now() / 1000) - startTime;
+                        document.getElementById('duration').textContent = formatDuration(duration);
+                    }
+
+                    // Update progress bar (we don't have total count, so just animate)
+                    const progressBar = document.getElementById('progress-bar');
+                    progressBar.style.width = '100%';
+                }
+
+                if (data.status === 'completed') {
+                    isCompleted = true;
+
+                    // Hide progress container
+                    document.getElementById('progress-container').style.display = 'none';
+                    document.getElementById('timing-info').style.display = 'none';
+
+                    // Show completion message
+                    const completionDiv = document.getElementById('completion-message');
+                    completionDiv.style.display = 'block';
+
+                    document.getElementById('final-imported').textContent = data.imported || 0;
+                    document.getElementById('final-updated').textContent = data.updated || 0;
+
+                    if (data.startedAt && data.completedAt) {
+                        const duration = data.completedAt - data.startedAt;
+                        document.getElementById('final-duration').textContent = formatDuration(duration);
+                    }
+
+                    // Show errors if any
+                    if (data.errors) {
+                        const errorDiv = document.getElementById('error-message');
+                        errorDiv.style.display = 'block';
+                        document.getElementById('error-text').textContent = data.errors;
+                    }
+                }
+
+                if (data.status === 'failed') {
+                    isCompleted = true;
+
+                    // Hide progress container
+                    document.getElementById('progress-container').style.display = 'none';
+                    document.getElementById('timing-info').style.display = 'none';
+
+                    // Show error message
+                    const errorDiv = document.getElementById('error-message');
+                    errorDiv.style.display = 'block';
+                    document.getElementById('error-text').textContent = data.errors || 'Unknown error occurred';
+                }
+            }
+
+            function pollStatus() {
+                if (isCompleted) {
+                    return;
+                }
+
+                fetch(apiUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            console.error('Status error:', data.error);
+                            return;
+                        }
+
+                        updateStatus(data);
+
+                        if (!isCompleted) {
+                            pollCount++;
+
+                            // Exponential backoff: 2s -> 4s -> 8s -> 10s (max)
+                            if (pollCount > 1) {
+                                pollInterval = Math.min(pollInterval * 1.5, maxInterval);
+                            }
+
+                            setTimeout(pollStatus, pollInterval);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Poll error:', error);
+
+                        // Retry with exponential backoff
+                        if (!isCompleted) {
+                            setTimeout(pollStatus, pollInterval);
+                        }
+                    });
+            }
+
+            // Start polling immediately
+            pollStatus();
+        })();
+        </script>
+    </f:section>
+</html>
