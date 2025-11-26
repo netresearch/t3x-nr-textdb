@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 $EM_CONF['nr_textdb'] = [
     'title'          => 'Netresearch - TextDB',
-    'description'    => 'Allows you to edit the translations in the back end',
+    'description'    => 'Auto-creating TYPO3 translation database - use ViewHelpers, editors translate in backend, instant updates - by Netresearch',
     'category'       => 'module',
     'author'         => 'Thomas Schöne, Axel Seemann, Tobias Hein, Rico Sonntag',
     'author_email'   => 'thomas.schoene@netresearch.de, axel.seemann@netresearch.de, tobias.hein@netresearch.de, rico.sonntag@netresearch.de',
