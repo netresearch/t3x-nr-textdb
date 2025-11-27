@@ -7,7 +7,7 @@
  * LICENSE file that was distributed with this source code.
  */
 
-$EM_CONF['nr_textdb'] = [
+$EM_CONF[$_EXTKEY] = [
     'title'          => 'Netresearch - TextDB',
     'description'    => 'Auto-creating TYPO3 translation database - use ViewHelpers, editors translate in backend, instant updates - by Netresearch',
     'category'       => 'module',

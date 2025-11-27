@@ -39,8 +39,9 @@ jobs:
         run: |
           # Use release body if available, otherwise use release name
           if [[ -n "${RELEASE_BODY}" ]]; then
-            # Truncate to 500 chars to avoid TER issues, strip excessive whitespace
-            COMMENT=$(echo "${RELEASE_BODY}" | head -c 500 | tr '\n' ' ' | sed 's/  */ /g')
+            # Truncate to 500 chars, strip newlines and excessive whitespace
+            # Remove backticks and other shell-problematic characters
+            COMMENT=$(echo "${RELEASE_BODY}" | head -c 500 | tr '\n' ' ' | tr '`' "'" | sed 's/  */ /g' | sed "s/[\"\\$]//g")
           elif [[ -n "${RELEASE_NAME}" ]]; then
             COMMENT="${RELEASE_NAME}"
           else
