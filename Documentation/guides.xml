@@ -16,9 +16,10 @@
                edit-on-github-branch="main"
                edit-on-github-directory="Documentation"
                project-home="https://github.com/netresearch/t3x-nr-textdb"
+               project-contact="https://github.com/netresearch/t3x-nr-textdb/discussions"
                project-repository="https://github.com/netresearch/t3x-nr-textdb"
                project-issues="https://github.com/netresearch/t3x-nr-textdb/issues"
-               project-contact="thomas.schoene@netresearch.de"
+               report-issue="https://github.com/netresearch/t3x-nr-textdb/issues"
     />
 
     <!-- Localization Integration -->
