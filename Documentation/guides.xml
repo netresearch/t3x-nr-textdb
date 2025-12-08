@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<guides xmlns="https://www.phpdoc.org/guides"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="https://www.phpdoc.org/guides https://www.phpdoc.org/guides/guides.xsd"
-        default-code-language="php"
-        max-menu-depth="3"
+<guides
+    xmlns="https://www.phpdoc.org/guides"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="https://www.phpdoc.org/guides ../vendor/phpdocumentor/guides-cli/resources/schema/guides.xsd"
+    theme="typo3docs"
+    default-code-language="php"
+    max-menu-depth="3"
 >
     <project title="Netresearch TextDB"
              version="3.0.1"
