@@ -426,6 +426,122 @@ Use TextDB translations in your Fluid templates:
 </xliff>
 ```
 
+### Background Processing & Large File Imports
+
+**TYPO3 v13** imports are processed **asynchronously using Symfony Messenger** for reliable handling of large files:
+
+**How it works:**
+1. Upload XLF file via backend module
+2. Job is queued immediately (no timeout risk)
+3. Worker processes import in background
+4. Real-time progress tracking in status page
+5. Automatic completion notification
+
+**Performance:**
+- ✅ Handles files >10MB with 400K+ translations
+- ✅ No PHP timeout (60s limit eliminated)
+- ✅ 12x+ faster with DBAL bulk operations
+- ✅ Progress tracking with imported/updated counters
+
+#### Running the Message Worker
+
+**The Symfony Messenger worker MUST be running** to process async imports.
+
+**Quick test (development only):**
+```bash
+# Start worker manually (stops when you close terminal)
+vendor/bin/typo3 messenger:consume doctrine
+
+# Or via DDEV
+ddev exec vendor/bin/typo3 messenger:consume doctrine
+```
+
+**Production deployment options:**
+
+**Option 1: TYPO3 Scheduler (Recommended - Easy Setup)**
+1. Install Scheduler extension: `composer require typo3/cms-scheduler:^13.4`
+2. Add system cron job (runs every minute):
+   ```bash
+   * * * * * cd /var/www/html && vendor/bin/typo3 scheduler:run >> /var/log/typo3-scheduler.log 2>&1
+   ```
+3. In TYPO3 backend: **System > Scheduler**
+4. **Add new task:**
+   - **Task class**: "Process Messenger Queue (nr_textdb)"
+   - **Frequency**: Every 5 minutes (or faster for high-volume)
+   - **Time limit**: 120 seconds (default)
+   - **Transport**: doctrine
+5. **Save and activate**
+
+✅ **Advantages:**
+- No systemd/supervisor access required
+- Works on shared hosting
+- Easy backend configuration
+- Automatic processing via existing cron setup
+
+**Option 2: Systemd Service (Advanced - Dedicated Worker)
+```ini
+# /etc/systemd/system/typo3-messenger.service
+[Unit]
+Description=TYPO3 Messenger Consumer
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/var/www/html
+ExecStart=/usr/bin/php vendor/bin/typo3 messenger:consume doctrine --time-limit=3600
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```bash
+sudo systemctl enable typo3-messenger
+sudo systemctl start typo3-messenger
+sudo systemctl status typo3-messenger
+```
+
+**Option 3: Supervisor**
+```ini
+# /etc/supervisor/conf.d/typo3-messenger.conf
+[program:typo3-messenger]
+command=/usr/bin/php /var/www/html/vendor/bin/typo3 messenger:consume doctrine --time-limit=3600
+directory=/var/www/html
+user=www-data
+autostart=true
+autorestart=true
+stderr_logfile=/var/log/typo3-messenger.err.log
+stdout_logfile=/var/www/html/var/log/typo3-messenger.out.log
+```
+
+**Option 4: Direct Cron Job (Simple but Limited)**
+```bash
+# Run every minute, exits after 1 hour
+* * * * * /usr/bin/php /var/www/html/vendor/bin/typo3 messenger:consume doctrine --time-limit=3600 >> /var/log/typo3-messenger.log 2>&1
+```
+⚠️ Not recommended - processes may overlap causing lock issues
+
+**Worker behavior:**
+- Processes jobs from database queue (`doctrine` transport)
+- Runs indefinitely until `--time-limit` (recommended: 3600s = 1 hour)
+- Auto-restarts via systemd/supervisor after time limit
+- Handles errors gracefully (no worker crashes)
+- Logs to TYPO3 logging system
+
+**Monitoring:**
+- Real-time status page shows job progress
+- Worker warning appears if job pending >10 seconds
+- Check worker status: `systemctl status typo3-messenger`
+- View logs: `journalctl -u typo3-messenger -f`
+
+**Without worker running:**
+- Import jobs queue successfully
+- Status page shows "pending" state
+- Worker warning displayed after 10 seconds
+- Jobs process immediately when worker starts
+
 **File Naming Convention:**
 - English (default): `textdb_[name].xlf`
 - Other languages: `[iso-code].textdb_[name].xlf` (e.g., `de.textdb_labels.xlf`)

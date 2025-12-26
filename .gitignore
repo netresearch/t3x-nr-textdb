@@ -25,3 +25,20 @@ coverage/
 .ddev/.homeadditions
 .ddev/.ddev-docker-compose-full.yaml
 Documentation-GENERATED-temp/
+
+# Exclude large test files (regenerate with generator script)
+Build/test-data/test_100mb.textdb_import.xlf
+Resources/Private/Language/massive.textdb_import.xlf
+
+# Exclude profiling dumps and large debugging files
+Build/scripts/cachegrind.out.*.gz
+*.cachegrind
+
+# Serena MCP session data (user-specific)
+.serena/
+
+# Claude Code documentation (local development notes)
+claudedocs/
+
+# Test files (regenerate with Build/scripts/generate-test-xliff.php)
+Build/test-data/
