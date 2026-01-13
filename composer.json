@@ -40,6 +40,7 @@
         "typo3/cms-backend": "^13.4",
         "typo3/cms-extbase": "^13.4",
         "typo3/cms-extensionmanager": "^13.4",
+        "typo3/cms-scheduler": "^13.4",
         "symfony/console": "^7.0"
     },
     "require-dev": {
@@ -108,6 +109,9 @@
         "ci:test:php:unit": [
             "XDEBUG_MODE=coverage phpunit -c Build/UnitTests.xml"
         ],
+        "ci:test:php:functional": [
+            "phpunit -c Build/FunctionalTests.xml"
+        ],
         "ci:test:php:phpstan": [
             "phpstan analyze --configuration Build/phpstan.neon --memory-limit=-1"
         ],
@@ -126,6 +130,7 @@
             "@ci:test:php:rector",
             "@ci:test:php:fractor",
             "@ci:test:php:unit",
+            "@ci:test:php:functional",
             "@ci:test:php:cgl"
         ]
     }
