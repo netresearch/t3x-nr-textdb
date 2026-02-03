@@ -148,9 +148,9 @@ class TranslateViewHelper extends AbstractViewHelper
         $type        = $this->typeRepository->findByName('label');
 
         if (
-            !($environment instanceof Environment)
-            || !($component instanceof Component)
-            || !($type instanceof Type)
+            !$environment instanceof Environment
+            || !$component instanceof Component
+            || !$type instanceof Type
         ) {
             return $placeholder;
         }
