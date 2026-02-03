@@ -87,9 +87,9 @@ class TranslationService
         $languageUid = $this->getCurrentLanguage();
 
         if (
-            !($environment instanceof Environment)
-            || !($component instanceof Component)
-            || !($type instanceof Type)
+            !$environment instanceof Environment
+            || !$component instanceof Component
+            || !$type instanceof Type
         ) {
             return $placeholder;
         }
@@ -105,7 +105,7 @@ class TranslationService
 
         // Create a new translation
         if (
-            !($translation instanceof Translation)
+            !$translation instanceof Translation
             && $this->translationRepository->getCreateIfMissing()
         ) {
             $translation = $this->createTranslation(
@@ -128,7 +128,7 @@ class TranslationService
                     );
 
                 // No parent so far, create one to maintain translation order
-                if (!($parentTranslation instanceof Translation)) {
+                if (!$parentTranslation instanceof Translation) {
                     $parentTranslation = $this->createTranslation(
                         $environment,
                         $component,
@@ -158,7 +158,7 @@ class TranslationService
                 ->persistAll();
         }
 
-        if (!($translation instanceof Translation)) {
+        if (!$translation instanceof Translation) {
             return $placeholder;
         }
 
@@ -211,9 +211,9 @@ class TranslationService
         string $value,
     ): ?Translation {
         if (
-            !($parentTranslation->getEnvironment() instanceof Environment)
-            || !($parentTranslation->getComponent() instanceof Component)
-            || !($parentTranslation->getType() instanceof Type)
+            !$parentTranslation->getEnvironment() instanceof Environment
+            || !$parentTranslation->getComponent() instanceof Component
+            || !$parentTranslation->getType() instanceof Type
         ) {
             return null;
         }
