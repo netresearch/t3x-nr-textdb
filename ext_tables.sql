@@ -94,3 +94,29 @@ CREATE TABLE tx_nrtextdb_domain_model_translation
     KEY subquery (sys_language_uid, deleted, l10n_parent, hidden),
     KEY sys_language_uid_l10n_parent (sys_language_uid, l10n_parent)
 );
+
+
+#
+# Table structure for table 'tx_nrtextdb_import_job_status'
+#
+CREATE TABLE tx_nrtextdb_import_job_status
+(
+    uid               int(11) unsigned                   NOT NULL auto_increment,
+    job_id            varchar(40)                        NOT NULL,
+    status            varchar(20)          DEFAULT 'pending' NOT NULL,
+    file_path         text,
+    original_filename varchar(255)         DEFAULT '',
+    file_size         int(11) unsigned     DEFAULT 0,
+    imported          int(11) unsigned     DEFAULT 0,
+    updated           int(11) unsigned     DEFAULT 0,
+    errors            text,
+    backend_user_id   int(11) unsigned     DEFAULT 0,
+    created_at        int(11) unsigned     DEFAULT 0     NOT NULL,
+    started_at        int(11) unsigned     DEFAULT 0,
+    completed_at      int(11) unsigned     DEFAULT 0,
+
+    PRIMARY KEY (uid),
+    UNIQUE KEY job_id (job_id),
+    KEY status (status),
+    KEY created_at (created_at)
+);

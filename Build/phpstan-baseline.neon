@@ -21,7 +21,7 @@ parameters:
 		-
 			message: '#^Cannot cast mixed to int\.$#'
 			identifier: cast.int
-			count: 4
+			count: 5
 			path: ../Classes/Controller/TranslationController.php
 
 		-
@@ -56,12 +56,6 @@ parameters:
 
 		-
 			message: '#^Parameter \#1 \$config of method Netresearch\\NrTextdb\\Controller\\TranslationController\:\:persistConfigInBeUserData\(\) expects array\<int\|string\>, array\<int\|string\|null\> given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../Classes/Controller/TranslationController.php
-
-		-
-			message: '#^Parameter \#1 \$filename of function file_get_contents expects string, string\|null given\.$#'
 			identifier: argument.type
 			count: 1
 			path: ../Classes/Controller/TranslationController.php
@@ -103,6 +97,12 @@ parameters:
 			path: ../Classes/Domain/Repository/EnvironmentRepository.php
 
 		-
+			message: '#^Cannot cast mixed to int\.$#'
+			identifier: cast.int
+			count: 6
+			path: ../Classes/Domain/Repository/ImportJobStatusRepository.php
+
+		-
 			message: '#^Static property Netresearch\\NrTextdb\\Domain\\Repository\\TypeRepository\:\:\$localCache \(array\<Netresearch\\NrTextdb\\Domain\\Model\\Type\>\) does not accept array\<Netresearch\\NrTextdb\\Domain\\Model\\Type\|null\>\.$#'
 			identifier: assign.propertyType
 			count: 1
@@ -115,12 +115,6 @@ parameters:
 			path: ../Classes/Service/ImportService.php
 
 		-
-			message: '#^Cannot cast mixed to string.$#'
-			identifier: cast.string
-			count: 4
-			path: ../Classes/Service/ImportService.php
-
-		-
 			message: '#^Cannot access offset ''target'' on mixed\.$#'
 			identifier: offsetAccess.nonOffsetAccessible
 			count: 1
@@ -130,6 +124,18 @@ parameters:
 			message: '#^Cannot access offset 0 on mixed\.$#'
 			identifier: offsetAccess.nonOffsetAccessible
 			count: 1
+			path: ../Classes/Service/ImportService.php
+
+		-
+			message: '#^Cannot cast mixed to int\.$#'
+			identifier: cast.int
+			count: 2
+			path: ../Classes/Service/ImportService.php
+
+		-
+			message: '#^Cannot cast mixed to string\.$#'
+			identifier: cast.string
+			count: 7
 			path: ../Classes/Service/ImportService.php
 
 		-
@@ -151,7 +157,217 @@ parameters:
 			path: ../Classes/Service/ImportService.php
 
 		-
-			message: '#^Parameter \#5 \$value of method Netresearch\\NrTextdb\\Service\\ImportService\:\:importEntry\(\) expects string, mixed given\.$#'
-			identifier: argument.type
+			message: '#^Cannot cast mixed to int\.$#'
+			identifier: cast.int
+			count: 2
+			path: ../Classes/Task/ProcessMessengerQueueTaskAdditionalFieldProvider.php
+
+		-
+			message: '#^Method Netresearch\\NrTextdb\\Task\\ProcessMessengerQueueTaskAdditionalFieldProvider\:\:getAdditionalFields\(\) has parameter \$taskInfo with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
 			count: 1
-			path: ../Classes/Service/ImportService.php
+			path: ../Classes/Task/ProcessMessengerQueueTaskAdditionalFieldProvider.php
+
+		-
+			message: '#^Method Netresearch\\NrTextdb\\Task\\ProcessMessengerQueueTaskAdditionalFieldProvider\:\:saveAdditionalFields\(\) has parameter \$submittedData with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: ../Classes/Task/ProcessMessengerQueueTaskAdditionalFieldProvider.php
+
+		-
+			message: '#^Method Netresearch\\NrTextdb\\Task\\ProcessMessengerQueueTaskAdditionalFieldProvider\:\:validateAdditionalFields\(\) has parameter \$submittedData with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: ../Classes/Task/ProcessMessengerQueueTaskAdditionalFieldProvider.php
+
+		-
+			message: '#^Parameter \#1 \$string of function trim expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 2
+			path: ../Classes/Task/ProcessMessengerQueueTaskAdditionalFieldProvider.php
+
+		-
+			message: '#^Call to an undefined method Netresearch\\NrTextdb\\Service\\ImportService\:\:expects\(\)\.$#'
+			identifier: method.notFound
+			count: 6
+			path: ../Tests/Functional/Queue/Handler/ImportTranslationsMessageHandlerTest.php
+
+		-
+			message: '#^Cannot call method method\(\) on mixed\.$#'
+			identifier: method.nonObject
+			count: 6
+			path: ../Tests/Functional/Queue/Handler/ImportTranslationsMessageHandlerTest.php
+
+		-
+			message: '#^Cannot call method willReturnCallback\(\) on mixed\.$#'
+			identifier: method.nonObject
+			count: 5
+			path: ../Tests/Functional/Queue/Handler/ImportTranslationsMessageHandlerTest.php
+
+		-
+			message: '#^Cannot call method willThrowException\(\) on mixed\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: ../Tests/Functional/Queue/Handler/ImportTranslationsMessageHandlerTest.php
+
+		-
+			message: '#^Cannot call method with\(\) on mixed\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: ../Tests/Functional/Queue/Handler/ImportTranslationsMessageHandlerTest.php
+
+		-
+			message: '#^Offset ''status'' might not exist on array\<string, mixed\>\|null\.$#'
+			identifier: offsetAccess.notFound
+			count: 2
+			path: ../Tests/Functional/Queue/Handler/ImportTranslationsMessageHandlerTest.php
+
+		-
+			message: '#^Parameter \#2 \$haystack of static method PHPUnit\\Framework\\Assert\:\:assertStringContainsString\(\) expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 3
+			path: ../Tests/Functional/Queue/Handler/ImportTranslationsMessageHandlerTest.php
+
+		-
+			message: '#^Call to function method_exists\(\) with Netresearch\\NrTextdb\\Domain\\Repository\\ImportJobStatusRepository and ''create'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: ../Tests/Unit/Domain/Repository/ImportJobStatusRepositoryTest.php
+
+		-
+			message: '#^Call to function method_exists\(\) with Netresearch\\NrTextdb\\Domain\\Repository\\ImportJobStatusRepository and ''deleteOldJobs'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: ../Tests/Unit/Domain/Repository/ImportJobStatusRepositoryTest.php
+
+		-
+			message: '#^Call to function method_exists\(\) with Netresearch\\NrTextdb\\Domain\\Repository\\ImportJobStatusRepository and ''findByJobId'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: ../Tests/Unit/Domain/Repository/ImportJobStatusRepositoryTest.php
+
+		-
+			message: '#^Call to function method_exists\(\) with Netresearch\\NrTextdb\\Domain\\Repository\\ImportJobStatusRepository and ''getStatus'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: ../Tests/Unit/Domain/Repository/ImportJobStatusRepositoryTest.php
+
+		-
+			message: '#^Call to function method_exists\(\) with Netresearch\\NrTextdb\\Domain\\Repository\\ImportJobStatusRepository and ''updateProgress'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: ../Tests/Unit/Domain/Repository/ImportJobStatusRepositoryTest.php
+
+		-
+			message: '#^Call to function method_exists\(\) with Netresearch\\NrTextdb\\Domain\\Repository\\ImportJobStatusRepository and ''updateStatus'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: ../Tests/Unit/Domain/Repository/ImportJobStatusRepositoryTest.php
+
+		-
+			message: '#^Call to an undefined method Netresearch\\NrTextdb\\Domain\\Repository\\ImportJobStatusRepository\:\:expects\(\)\.$#'
+			identifier: method.notFound
+			count: 4
+			path: ../Tests/Unit/Queue/Handler/ImportTranslationsMessageHandlerTest.php
+
+		-
+			message: '#^Call to an undefined method Netresearch\\NrTextdb\\Service\\ImportService\:\:expects\(\)\.$#'
+			identifier: method.notFound
+			count: 4
+			path: ../Tests/Unit/Queue/Handler/ImportTranslationsMessageHandlerTest.php
+
+		-
+			message: '#^Call to an undefined method Netresearch\\NrTextdb\\Service\\ImportService\:\:method\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: ../Tests/Unit/Queue/Handler/ImportTranslationsMessageHandlerTest.php
+
+		-
+			message: '#^Call to an undefined method Psr\\Log\\LoggerInterface\:\:expects\(\)\.$#'
+			identifier: method.notFound
+			count: 4
+			path: ../Tests/Unit/Queue/Handler/ImportTranslationsMessageHandlerTest.php
+
+		-
+			message: '#^Call to static method PHPUnit\\Framework\\Assert\:\:assertTrue\(\) with true will always evaluate to true\.$#'
+			identifier: staticMethod.alreadyNarrowedType
+			count: 1
+			path: ../Tests/Unit/Queue/Handler/ImportTranslationsMessageHandlerTest.php
+
+		-
+			message: '#^Cannot call method method\(\) on mixed\.$#'
+			identifier: method.nonObject
+			count: 12
+			path: ../Tests/Unit/Queue/Handler/ImportTranslationsMessageHandlerTest.php
+
+		-
+			message: '#^Cannot call method willReturnCallback\(\) on mixed\.$#'
+			identifier: method.nonObject
+			count: 7
+			path: ../Tests/Unit/Queue/Handler/ImportTranslationsMessageHandlerTest.php
+
+		-
+			message: '#^Cannot call method willThrowException\(\) on mixed\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: ../Tests/Unit/Queue/Handler/ImportTranslationsMessageHandlerTest.php
+
+		-
+			message: '#^Cannot call method with\(\) on mixed\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: ../Tests/Unit/Queue/Handler/ImportTranslationsMessageHandlerTest.php
+
+		-
+			message: '#^Cannot use \+\+ on mixed\.$#'
+			identifier: preInc.type
+			count: 4
+			path: ../Tests/Unit/Queue/Handler/ImportTranslationsMessageHandlerTest.php
+
+		-
+			message: '#^Parameter \#2 \$haystack of static method PHPUnit\\Framework\\Assert\:\:assertStringContainsString\(\) expects string, string\|null given\.$#'
+			identifier: argument.type
+			count: 2
+			path: ../Tests/Unit/Queue/Handler/ImportTranslationsMessageHandlerTest.php
+
+		-
+			message: '#^Cannot access property \$backendUserId on mixed\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: ../Tests/Unit/Queue/Message/ImportTranslationsMessageTest.php
+
+		-
+			message: '#^Cannot access property \$filePath on mixed\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: ../Tests/Unit/Queue/Message/ImportTranslationsMessageTest.php
+
+		-
+			message: '#^Cannot access property \$fileSize on mixed\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: ../Tests/Unit/Queue/Message/ImportTranslationsMessageTest.php
+
+		-
+			message: '#^Cannot access property \$forceUpdate on mixed\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: ../Tests/Unit/Queue/Message/ImportTranslationsMessageTest.php
+
+		-
+			message: '#^Cannot access property \$jobId on mixed\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: ../Tests/Unit/Queue/Message/ImportTranslationsMessageTest.php
+
+		-
+			message: '#^Cannot access property \$originalFilename on mixed\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: ../Tests/Unit/Queue/Message/ImportTranslationsMessageTest.php
+
+		-
+			message: '#^Cannot assign offset ''Netresearch\\\\NrTextdb\\\\Task\\\\ProcessMessengerQueueTask'' to array\<string, string\>\|string\.$#'
+			identifier: offsetAssign.dimType
+			count: 1
+			path: ../ext_localconf.php
