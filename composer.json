@@ -45,7 +45,7 @@
     "require-dev": {
         "typo3/testing-framework": "^9.0",
         "friendsofphp/php-cs-fixer": "^3.75",
-        "saschaegerer/phpstan-typo3": "^2.0",
+        "saschaegerer/phpstan-typo3": "^2.0 || ^3.0",
         "overtrue/phplint": "^9.5",
         "phpstan/phpstan": "^2.0",
         "phpstan/phpstan-strict-rules": "^2.0",
