@@ -78,6 +78,11 @@
             "a9f/fractor-extension-installer": true,
             "typo3/class-alias-loader": true,
             "typo3/cms-composer-installers": true
+        },
+        "audit": {
+            "ignore": {
+                "PKSA-y2cr-5h3j-g3ys": "Upstream firebase/php-jwt issue via typo3/cms-core, no fix available yet"
+            }
         }
     },
     "extra": {
