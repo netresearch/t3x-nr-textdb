@@ -3,7 +3,6 @@
     <file source-language="en" target-language="%s" datatype="plaintext" original="messages" product-name="nr_texdb_export">
         <header>
             <authorName>Netresearch</authorName>
-            <authorEmail>info@netresearch.de</authorEmail>
         </header>
         <body>
 %s
