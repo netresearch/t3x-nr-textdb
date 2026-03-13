@@ -15,13 +15,14 @@ use Exception;
 use Netresearch\NrTextdb\Domain\Model\Translation;
 use Netresearch\NrTextdb\Domain\Repository\ComponentRepository;
 use Netresearch\NrTextdb\Domain\Repository\EnvironmentRepository;
+use Netresearch\NrTextdb\Domain\Repository\ImportJobStatusRepository;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
 use Netresearch\NrTextdb\Domain\Repository\TypeRepository;
-use Netresearch\NrTextdb\Service\ImportService;
+use Netresearch\NrTextdb\Queue\Message\ImportTranslationsMessage;
 use Netresearch\NrTextdb\Service\TranslationService;
 use Psr\Http\Message\ResponseInterface;
 use RuntimeException;
-use SimpleXMLElement;
+use Symfony\Component\Messenger\MessageBusInterface;
 use TYPO3\CMS\Backend\Template\Components\ButtonBar;
 use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
@@ -83,7 +84,9 @@ class TranslationController extends ActionController
 
     protected readonly PersistenceManager $persistenceManager;
 
-    private readonly ImportService $importService;
+    private readonly MessageBusInterface $messageBus;
+
+    private readonly ImportJobStatusRepository $jobStatusRepository;
 
     protected int $pid = 0;
 
@@ -100,7 +103,8 @@ class TranslationController extends ActionController
         PersistenceManager $persistenceManager,
         ComponentRepository $componentRepository,
         TypeRepository $typeRepository,
-        ImportService $importService,
+        MessageBusInterface $messageBus,
+        ImportJobStatusRepository $jobStatusRepository,
     ) {
         $this->extensionConfiguration = $extensionConfiguration;
         $this->environmentRepository  = $environmentRepository;
@@ -116,8 +120,8 @@ class TranslationController extends ActionController
         $this->typeRepository->setCreateIfMissing(true);
         $this->componentRepository->setCreateIfMissing(true);
         $this->translationRepository->setCreateIfMissing(true);
-
-        $this->importService = $importService;
+        $this->messageBus          = $messageBus;
+        $this->jobStatusRepository = $jobStatusRepository;
     }
 
     /**
@@ -465,7 +469,7 @@ class TranslationController extends ActionController
     }
 
     /**
-     * Import translations from a file.
+     * Import translations from a file (async queue dispatch).
      *
      * @param bool $update Check if entries should be updated
      */
@@ -503,155 +507,109 @@ class TranslationController extends ActionController
             );
         }
 
-        $languageCode = trim($matches[1], '.');
-        $languageCode = $languageCode === '' ? 'en' : $languageCode;
+        // Generate unique job ID
+        $jobId = uniqid('import_', true);
 
-        $imported    = 0;
-        $updated     = 0;
-        $languages   = [];
-        $errors      = [];
-        $forceUpdate = $update;
+        // Move uploaded file to permanent temp location for async processing
+        $tempDir = sys_get_temp_dir() . '/nr_textdb_imports';
+        if (!is_dir($tempDir) && !mkdir($tempDir, 0700, true) && !is_dir($tempDir)) {
+            throw new RuntimeException(sprintf('Directory "%s" was not created', $tempDir));
+        }
 
-        foreach ($this->translationService->getAllLanguages() as $language) {
-            if ($language->getLocale()->getLanguageCode() !== $languageCode) {
-                continue;
-            }
+        $permanentTempFile = $tempDir . '/' . $jobId . '_' . $filename;
+        if ($uploadedFile === null || !copy($uploadedFile, $permanentTempFile)) {
+            throw new RuntimeException('Failed to move uploaded file to permanent temp location');
+        }
 
-            $languageUid   = max(-1, $language->getLanguageId());
-            $languageTitle = $language->getTitle();
-            $languages[]   = $languageTitle;
+        // Get file size for progress estimation
+        $fileSize = filesize($permanentTempFile);
+        if ($fileSize === false) {
+            $fileSize = 0;
+        }
 
-            $uploadedFileContent = file_get_contents($uploadedFile);
+        // Create job record in database
+        $backendUserId = (int) ($this->getBackendUser()->user['uid'] ?? 0);
+        $this->jobStatusRepository->create(
+            $jobId,
+            $permanentTempFile,
+            $filename,
+            $fileSize,
+            $backendUserId
+        );
 
-            if ($uploadedFileContent === false) {
-                continue;
-            }
+        // Dispatch message to Symfony Messenger queue
+        $message = new ImportTranslationsMessage(
+            jobId: $jobId,
+            filePath: $permanentTempFile,
+            originalFilename: $filename,
+            fileSize: $fileSize,
+            forceUpdate: $update,
+            backendUserId: $backendUserId
+        );
 
-            libxml_use_internal_errors(true);
+        $this->messageBus->dispatch($message);
 
-            // XXE Protection: Parse with LIBXML_NONET flag to prevent XML External Entity attacks
-            // In PHP 8.0+, external entity loading is disabled by default, but we explicitly use
-            // LIBXML_NONET to prevent network access and do NOT use LIBXML_NOENT (which would enable
-            // entity expansion). See: https://owasp.org/www-community/vulnerabilities/XML_External_Entity_(XXE)_Processing
-            // Related issue: #50 (long-term refactoring to use XliffParser exclusively)
+        // Redirect to status page
+        return $this->redirectToUri(
+            $this->uriBuilder->reset()->uriFor(
+                'importStatus',
+                ['jobId' => $jobId]
+            )
+        );
+    }
 
-            // We can't use the XliffParser here, due it's limitations regarding filenames
-            // Parse with LIBXML_NONET flag to disable network access during parsing
-            $data = simplexml_load_string(
-                $uploadedFileContent,
-                'SimpleXMLElement',
-                LIBXML_NONET
+    /**
+     * Display import status page with progress monitoring.
+     */
+    public function importStatusAction(string $jobId): ResponseInterface
+    {
+        $job = $this->jobStatusRepository->findByJobId($jobId);
+
+        if ($job === null) {
+            $this->addFlashMessageToQueue(
+                'Import Status',
+                'Import job not found',
+                ContextualFeedbackSeverity::ERROR
             );
-            $xmlErrors = libxml_get_errors();
 
-            if ($data === false) {
-                continue;
-            }
-
-            if ($xmlErrors !== []) {
-                foreach ($xmlErrors as $error) {
-                    $errors[] = $error->message;
-                }
-
-                $this->moduleTemplate->assign('errors', $errors);
-
-                return $this->moduleTemplate->renderResponse('Translation/Import');
-            }
-
-            /** @var SimpleXMLElement $translation */
-            foreach ($data->file->body->children() as $translation) {
-                $key = (string) $translation->attributes()['id'];
-
-                $componentName = $this->getComponentFromKey($key);
-                if ($componentName === null) {
-                    throw new RuntimeException(
-                        sprintf(
-                            $this->translate('error.missing.component') ?? 'Missing component name in key: %s',
-                            $key
-                        )
-                    );
-                }
-
-                $typeName = $this->getTypeFromKey($key);
-                if ($typeName === null) {
-                    throw new RuntimeException(
-                        sprintf(
-                            $this->translate('error.missing.type') ?? 'Missing type name in key: %s',
-                            $key
-                        )
-                    );
-                }
-
-                $placeholder = $this->getPlaceholderFromKey($key);
-                if ($placeholder === null) {
-                    throw new RuntimeException(
-                        sprintf(
-                            $this->translate('error.missing.placeholder') ?? 'Missing placeholder in key: %s',
-                            $key
-                        )
-                    );
-                }
-
-                $value = $translation->target->getName() === ''
-                    ? (string) $translation->source
-                    : (string) $translation->target;
-
-                $this->importService
-                    ->importEntry(
-                        $languageUid,
-                        $componentName,
-                        $typeName,
-                        $placeholder,
-                        trim($value),
-                        $forceUpdate,
-                        $imported,
-                        $updated,
-                        $errors
-                    );
-            }
+            return $this->redirectToUri(
+                $this->uriBuilder->reset()->uriFor('import')
+            );
         }
 
         $this->moduleTemplate->assignMultiple([
-            'updated'  => $updated,
-            'imported' => $imported,
-            'errors'   => $errors,
-            'language' => implode(
-                ',',
-                $languages
-            ),
+            'jobId'  => $jobId,
+            'job'    => $job,
+            'action' => 'importStatus',
         ]);
 
-        return $this->moduleTemplate->renderResponse('Translation/Import');
+        return $this->moduleTemplate->renderResponse('Translation/ImportStatus');
     }
 
     /**
-     * Get the component from a key.
+     * AJAX endpoint for polling import job status.
+     *
+     * Returns JSON with current job status, progress, and results.
      */
-    private function getComponentFromKey(string $key): ?string
+    public function importStatusApiAction(string $jobId): ResponseInterface
     {
-        $parts = explode('|', $key);
+        $status = $this->jobStatusRepository->getStatus($jobId);
 
-        return ($parts[0] !== '') ? $parts[0] : null;
-    }
+        if ($status === null) {
+            return $this->responseFactory
+                ->createResponse()
+                ->withHeader('Content-Type', 'application/json')
+                ->withBody($this->streamFactory->createStream(
+                    json_encode(['error' => 'Job not found'], JSON_THROW_ON_ERROR)
+                ));
+        }
 
-    /**
-     * Get the type from a key.
-     */
-    private function getTypeFromKey(string $key): ?string
-    {
-        $parts = explode('|', $key);
-
-        return isset($parts[1]) && ($parts[1] !== '') ? $parts[1] : null;
-    }
-
-    /**
-     * Get the placeholder from key.
-     */
-    private function getPlaceholderFromKey(string $key): ?string
-    {
-        $parts = explode('|', $key);
-
-        return isset($parts[2]) && ($parts[2] !== '') ? $parts[2] : null;
+        return $this->responseFactory
+            ->createResponse()
+            ->withHeader('Content-Type', 'application/json')
+            ->withBody($this->streamFactory->createStream(
+                json_encode($status, JSON_THROW_ON_ERROR)
+            ));
     }
 
     /**
@@ -862,7 +820,7 @@ class TranslationController extends ActionController
     private function getPagination(QueryResultInterface $items, array $settings): array
     {
         $currentPage = $this->request->hasArgument('currentPage')
-            ? (int) $this->request->getArgument('currentPage') : 1;
+            ? (int) (is_numeric($this->request->getArgument('currentPage') ?? 1) ? $this->request->getArgument('currentPage') : 1) : 1;
 
         if (
             isset($settings['enablePagination'])
