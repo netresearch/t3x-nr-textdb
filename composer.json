@@ -7,7 +7,7 @@
     ],
     "authors": [
         {
-            "name": "Thomas Schöne",
+            "name": "Thomas Sch\u00f6ne",
             "email": "thomas.schoene@netresearch.de",
             "role": "Developer",
             "homepage": "https://www.netresearch.de/"
@@ -52,7 +52,8 @@
         "phpstan/phpstan-phpunit": "^2.0",
         "phpstan/phpstan-deprecation-rules": "^2.0",
         "ssch/typo3-rector": "^3.0",
-        "a9f/typo3-fractor": "^0.5"
+        "a9f/typo3-fractor": "^0.5",
+        "netresearch/typo3-ci-workflows": "^1.0"
     },
     "suggest": {
         "netresearch/nr-sync": "*"
