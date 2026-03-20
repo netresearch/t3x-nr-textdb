@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  * This file is part of the package netresearch/nr-textdb.
  *
  * For the full copyright and license information, please read the
@@ -10,6 +10,8 @@
 declare(strict_types=1);
 
 namespace Netresearch\NrTextdb\Service;
+
+use function count;
 
 use Exception;
 use Netresearch\NrTextdb\Domain\Model\Component;
@@ -29,14 +31,13 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 
-use function count;
-
 /**
  * The import service.
  *
  * @author  Rico Sonntag <rico.sonntag@netresearch.de>
  * @license Netresearch https://www.netresearch.de
- * @link    https://www.netresearch.de
+ *
+ * @see    https://www.netresearch.de
  */
 class ImportService
 {
@@ -102,8 +103,8 @@ class ImportService
                 throw new RuntimeException(
                     sprintf(
                         LocalizationUtility::translate('error.missing.component', 'NrTextdb') ?? 'Missing component name in key: %s',
-                        (string) $key
-                    )
+                        (string) $key,
+                    ),
                 );
             }
 
@@ -112,8 +113,8 @@ class ImportService
                 throw new RuntimeException(
                     sprintf(
                         LocalizationUtility::translate('error.missing.type', 'NrTextdb') ?? 'Missing type name in key: %s',
-                        (string) $key
-                    )
+                        (string) $key,
+                    ),
                 );
             }
 
@@ -122,8 +123,8 @@ class ImportService
                 throw new RuntimeException(
                     sprintf(
                         LocalizationUtility::translate('error.missing.placeholder', 'NrTextdb') ?? 'Missing placeholder in key: %s',
-                        (string) $key
-                    )
+                        (string) $key,
+                    ),
                 );
             }
 
@@ -132,8 +133,8 @@ class ImportService
                 throw new RuntimeException(
                     sprintf(
                         LocalizationUtility::translate('error.missing.value', 'NrTextdb') ?? 'Missing value in key: %s',
-                        (string) $key
-                    )
+                        (string) $key,
+                    ),
                 );
             }
 
@@ -146,7 +147,7 @@ class ImportService
                 $forceUpdate,
                 $imported,
                 $updated,
-                $errors
+                $errors,
             );
         }
     }
@@ -200,7 +201,7 @@ class ImportService
                     $component,
                     $type,
                     $placeholder,
-                    $languageUid
+                    $languageUid,
                 );
 
             if (
@@ -233,7 +234,7 @@ class ImportService
                             $environment,
                             $component,
                             $type,
-                            $placeholder
+                            $placeholder,
                         );
 
                     if ($parentTranslation instanceof Translation) {
@@ -255,7 +256,7 @@ class ImportService
                         $type,
                         $placeholder,
                         $languageUid,
-                        $value
+                        $value,
                     );
 
                 $this->translationRepository->add($translation);

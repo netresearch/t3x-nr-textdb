@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  * This file is part of the package netresearch/nr-textdb.
  *
  * For the full copyright and license information, please read the
@@ -14,9 +14,10 @@ namespace Netresearch\NrTextdb\Tests\Unit\Controller;
 use Netresearch\NrTextdb\Controller\TranslationController;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
-use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 use function simplexml_load_string;
+
+use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 /**
  * Test case for XXE (XML External Entity) protection in XLF import functionality.
@@ -63,7 +64,7 @@ XML;
         $data = simplexml_load_string(
             $xxePayload,
             'SimpleXMLElement',
-            LIBXML_NONET
+            LIBXML_NONET,
         );
 
         // Parsing should succeed (valid XML structure)
@@ -77,13 +78,13 @@ XML;
         self::assertStringNotContainsString(
             'root:',
             $sourceValue,
-            'XXE entity should not be resolved - file contents should not be present'
+            'XXE entity should not be resolved - file contents should not be present',
         );
 
         self::assertStringNotContainsString(
             '/bin/',
             $sourceValue,
-            'XXE entity should not be resolved - file contents should not be present'
+            'XXE entity should not be resolved - file contents should not be present',
         );
 
         // The entity reference may appear as empty string or literal reference
@@ -92,7 +93,7 @@ XML;
 
         self::assertTrue(
             $isSecure,
-            'XXE protection should prevent entity resolution. Got: ' . $sourceValue
+            'XXE protection should prevent entity resolution. Got: ' . $sourceValue,
         );
     }
 
@@ -130,7 +131,7 @@ XML;
         $data = simplexml_load_string(
             $xxePayload,
             'SimpleXMLElement',
-            LIBXML_NONET
+            LIBXML_NONET,
         );
 
         // Parsing should succeed (valid XML structure)
@@ -143,7 +144,7 @@ XML;
         self::assertStringNotContainsString(
             'example.com',
             $sourceValue,
-            'SSRF attempt should be blocked - external URL should not be fetched'
+            'SSRF attempt should be blocked - external URL should not be fetched',
         );
 
         // The entity reference should be empty or literal, NOT resolved
@@ -151,7 +152,7 @@ XML;
 
         self::assertTrue(
             $isSecure,
-            'XXE protection should prevent external HTTP requests. Got: ' . $sourceValue
+            'XXE protection should prevent external HTTP requests. Got: ' . $sourceValue,
         );
     }
 
@@ -188,7 +189,7 @@ XML;
         $data = simplexml_load_string(
             $validXlf,
             'SimpleXMLElement',
-            LIBXML_NONET
+            LIBXML_NONET,
         );
 
         // Parsing should succeed
@@ -203,12 +204,12 @@ XML;
         self::assertSame(
             'checkout|button|submit',
             (string) $firstUnit['id'],
-            'First trans-unit ID should match'
+            'First trans-unit ID should match',
         );
         self::assertSame(
             'Proceed to Checkout',
             (string) $firstUnit->source,
-            'First trans-unit source should match'
+            'First trans-unit source should match',
         );
     }
 
@@ -248,7 +249,7 @@ XML;
         $data = simplexml_load_string(
             $billionLaughsPayload,
             'SimpleXMLElement',
-            LIBXML_NONET
+            LIBXML_NONET,
         );
 
         // Parsing may succeed or fail - both are acceptable defensive outcomes
@@ -261,14 +262,14 @@ XML;
             self::assertLessThan(
                 200,
                 strlen($sourceValue),
-                'Entity expansion should be prevented/limited to avoid DoS'
+                'Entity expansion should be prevented/limited to avoid DoS',
             );
         }
 
         // Always perform an assertion: verify we either failed to parse OR content is limited
         self::assertTrue(
             $data === false || strlen((string) $data->file->body->{'trans-unit'}->source) < 200,
-            'Billion laughs attack was mitigated (parsing failed or expansion limited)'
+            'Billion laughs attack was mitigated (parsing failed or expansion limited)',
         );
     }
 
@@ -310,7 +311,7 @@ XML;
         $data = simplexml_load_string(
             $xxePayload,
             'SimpleXMLElement',
-            LIBXML_NONET
+            LIBXML_NONET,
         );
 
         // Parsing should succeed (valid XML structure)
@@ -323,7 +324,7 @@ XML;
         self::assertStringNotContainsString(
             'root:',
             $sourceValue,
-            'PHP wrapper XXE should be blocked - file contents should not be present'
+            'PHP wrapper XXE should be blocked - file contents should not be present',
         );
 
         // Check for base64 encoded content (would indicate successful exploitation)
@@ -334,7 +335,7 @@ XML;
                 self::assertStringNotContainsString(
                     'root',
                     $decoded,
-                    'PHP wrapper should not resolve to file contents'
+                    'PHP wrapper should not resolve to file contents',
                 );
             }
         }

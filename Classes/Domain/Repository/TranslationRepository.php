@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  * This file is part of the package netresearch/nr-textdb.
  *
  * For the full copyright and license information, please read the
@@ -27,7 +27,8 @@ use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
  * @author  Axel Seemann <axel.seemann@netresearch.de>
  * @author  Rico Sonntag <rico.sonntag@netresearch.de>
  * @license Netresearch https://www.netresearch.de
- * @link    https://www.netresearch.de
+ *
+ * @see    https://www.netresearch.de
  *
  * @extends AbstractRepository<Translation>
  */
@@ -65,8 +66,8 @@ class TranslationRepository extends AbstractRepository
         $query->matching(
             $query->logicalAnd(
                 $query->equals('sys_language_uid', $languageUid),
-                $query->in('l10nParent', $originals)
-            )
+                $query->in('l10nParent', $originals),
+            ),
         );
 
         return $query->execute();
@@ -91,8 +92,8 @@ class TranslationRepository extends AbstractRepository
 
         $query->matching(
             $query->logicalAnd(
-                $query->equals('l10nParent', $uid)
-            )
+                $query->equals('l10nParent', $uid),
+            ),
         );
 
         return $query
@@ -149,7 +150,7 @@ class TranslationRepository extends AbstractRepository
 
         if ($constraints !== []) {
             $query->matching(
-                $query->logicalAnd(...$constraints)
+                $query->logicalAnd(...$constraints),
             );
         }
 
@@ -181,7 +182,7 @@ class TranslationRepository extends AbstractRepository
                     $query->equals('component', $component),
                     $query->equals('type', $type),
                     $query->equals('placeholder', $placeholder),
-                )
+                ),
             )
             ->execute()
             ->getFirst();
@@ -213,7 +214,7 @@ class TranslationRepository extends AbstractRepository
                     $query->equals('component', $component),
                     $query->equals('type', $type),
                     $query->equals('placeholder', $placeholder),
-                )
+                ),
             )
             ->execute()
             ->getFirst();

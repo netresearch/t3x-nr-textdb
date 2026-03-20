@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  * This file is part of the package netresearch/nr-textdb.
  *
  * For the full copyright and license information, please read the
@@ -23,7 +23,8 @@ use TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings;
  * @author  Axel Seemann <axel.seemann@netresearch.de>
  * @author  Rico Sonntag <rico.sonntag@netresearch.de>
  * @license Netresearch https://www.netresearch.de
- * @link    https://www.netresearch.de
+ *
+ * @see    https://www.netresearch.de
  *
  * @extends AbstractRepository<Component>
  */
@@ -67,8 +68,8 @@ class ComponentRepository extends AbstractRepository
         $query->matching(
             $query->logicalAnd(
                 $query->equals('name', $name),
-                $query->equals('pid', $this->getConfiguredPageId())
-            )
+                $query->equals('pid', $this->getConfiguredPageId()),
+            ),
         );
 
         $queryResult = $query->execute();

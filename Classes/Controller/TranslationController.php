@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  * This file is part of the package netresearch/nr-textdb.
  *
  * For the full copyright and license information, please read the
@@ -12,6 +12,9 @@ declare(strict_types=1);
 namespace Netresearch\NrTextdb\Controller;
 
 use Exception;
+
+use function is_string;
+
 use Netresearch\NrTextdb\Domain\Model\Translation;
 use Netresearch\NrTextdb\Domain\Repository\ComponentRepository;
 use Netresearch\NrTextdb\Domain\Repository\EnvironmentRepository;
@@ -22,6 +25,9 @@ use Netresearch\NrTextdb\Service\TranslationService;
 use Psr\Http\Message\ResponseInterface;
 use RuntimeException;
 use SimpleXMLElement;
+
+use function sprintf;
+
 use TYPO3\CMS\Backend\Template\Components\ButtonBar;
 use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
@@ -51,15 +57,13 @@ use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use ZipArchive;
 
-use function is_string;
-use function sprintf;
-
 /**
  * TranslationController.
  *
  * @author  Thomas Schöne <thomas.schoene@netresearch.de>
  * @license Netresearch https://www.netresearch.de
- * @link    https://www.netresearch.de
+ *
+ * @see    https://www.netresearch.de
  */
 class TranslationController extends ActionController
 {
@@ -163,7 +167,7 @@ class TranslationController extends ActionController
             $this->moduleTemplate->addFlashMessage(
                 $this->translate('error.storage.pid') ?? 'Please configure a valid storage page ID in the extension configuration.',
                 $this->translate('error.storage.pid.title') ?? 'TextDb',
-                ContextualFeedbackSeverity::ERROR
+                ContextualFeedbackSeverity::ERROR,
             );
         }
 
@@ -199,7 +203,7 @@ class TranslationController extends ActionController
                 $componentId,
                 $typeId,
                 $placeholder,
-                $value
+                $value,
             );
 
         $config['component']   = $componentId;
@@ -221,7 +225,7 @@ class TranslationController extends ActionController
             'action'             => 'list',
             'pagination'         => $this->getPagination(
                 $translations,
-                $this->settings['pagination'] ?? []
+                $this->settings['pagination'] ?? [],
             ),
         ]);
 
@@ -234,7 +238,7 @@ class TranslationController extends ActionController
             [
                 $this->translationRepository->findByUid($uid),
             ],
-            $this->translationRepository->findByPidAndLanguage($uid)
+            $this->translationRepository->findByPidAndLanguage($uid),
         );
 
         $languages    = $this->translationService->getAllLanguages();
@@ -271,7 +275,7 @@ class TranslationController extends ActionController
                     ->createTranslationFromParent(
                         $parentTranslation,
                         $language,
-                        $value
+                        $value,
                     );
 
                 if ($translation instanceof Translation) {
@@ -320,8 +324,8 @@ class TranslationController extends ActionController
             throw new RuntimeException(
                 sprintf(
                     $this->translate('error.directory.creation') ?? 'Directory "%s" was not created',
-                    $exportDir
-                )
+                    $exportDir,
+                ),
             );
         }
 
@@ -336,12 +340,12 @@ class TranslationController extends ActionController
             $this->addFlashMessageToQueue(
                 'Export',
                 $this->getLanguageService()->sL(
-                    'LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.error.filter'
-                )
+                    'LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.error.filter',
+                ),
             );
 
             return $this->redirectToUri(
-                $this->uriBuilder->reset()->uriFor('list')
+                $this->uriBuilder->reset()->uriFor('list'),
             );
         }
 
@@ -358,7 +362,7 @@ class TranslationController extends ActionController
                         (int) $component,
                         (int) $type,
                         is_string($placeholder) ? $placeholder : null,
-                        is_string($value) ? $value : null
+                        is_string($value) ? $value : null,
                     );
 
                 $originals = $this->writeTranslationExportFile(
@@ -366,13 +370,13 @@ class TranslationController extends ActionController
                     $translations,
                     $exportDir,
                     $targetFileName,
-                    $enableTargetMarker
+                    $enableTargetMarker,
                 );
             } else {
                 $translations = $this->translationRepository
                     ->findByTranslationsAndLanguage(
                         $originals,
-                        $language->getLanguageId()
+                        $language->getLanguageId(),
                     );
 
                 $this->writeTranslationExportFile(
@@ -380,7 +384,7 @@ class TranslationController extends ActionController
                     $translations,
                     $exportDir,
                     $targetFileName,
-                    $enableTargetMarker
+                    $enableTargetMarker,
                 );
             }
         }
@@ -394,12 +398,12 @@ class TranslationController extends ActionController
             $this->addFlashMessageToQueue(
                 'Export',
                 $this->getLanguageService()->sL(
-                    'LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.error.archive'
-                )
+                    'LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.error.archive',
+                ),
             );
 
             return $this->redirectToUri(
-                $this->uriBuilder->reset()->uriFor('list')
+                $this->uriBuilder->reset()->uriFor('list'),
             );
         }
 
@@ -410,7 +414,7 @@ class TranslationController extends ActionController
             foreach ($translationFiles as $translationFile) {
                 $archive->addFile(
                     $translationFile,
-                    basename($translationFile)
+                    basename($translationFile),
                 );
             }
         }
@@ -435,19 +439,19 @@ class TranslationController extends ActionController
             ->createResponse()
             ->withAddedHeader(
                 'Content-Type',
-                'application/zip; charset=utf-8'
+                'application/zip; charset=utf-8',
             )
             ->withAddedHeader(
                 'Content-Transfer-Encoding',
-                'binary'
+                'binary',
             )
             ->withAddedHeader(
                 'Content-Length',
-                (string) ($filesize !== false ? $filesize : '')
+                (string) ($filesize !== false ? $filesize : ''),
             )
             ->withAddedHeader(
                 'Content-Disposition',
-                'attachment; filename="textdb_export.zip";'
+                'attachment; filename="textdb_export.zip";',
             )
             ->withBody($this->streamFactory->createStreamFromFile($file));
     }
@@ -494,12 +498,12 @@ class TranslationController extends ActionController
             $this->addFlashMessageToQueue(
                 'Import',
                 $this->getLanguageService()->sL(
-                    'LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.error.import'
-                )
+                    'LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.error.import',
+                ),
             );
 
             return $this->redirectToUri(
-                $this->uriBuilder->reset()->uriFor('import')
+                $this->uriBuilder->reset()->uriFor('import'),
             );
         }
 
@@ -540,7 +544,7 @@ class TranslationController extends ActionController
             $data = simplexml_load_string(
                 $uploadedFileContent,
                 'SimpleXMLElement',
-                LIBXML_NONET
+                LIBXML_NONET,
             );
             $xmlErrors = libxml_get_errors();
 
@@ -567,8 +571,8 @@ class TranslationController extends ActionController
                     throw new RuntimeException(
                         sprintf(
                             $this->translate('error.missing.component') ?? 'Missing component name in key: %s',
-                            $key
-                        )
+                            $key,
+                        ),
                     );
                 }
 
@@ -577,8 +581,8 @@ class TranslationController extends ActionController
                     throw new RuntimeException(
                         sprintf(
                             $this->translate('error.missing.type') ?? 'Missing type name in key: %s',
-                            $key
-                        )
+                            $key,
+                        ),
                     );
                 }
 
@@ -587,8 +591,8 @@ class TranslationController extends ActionController
                     throw new RuntimeException(
                         sprintf(
                             $this->translate('error.missing.placeholder') ?? 'Missing placeholder in key: %s',
-                            $key
-                        )
+                            $key,
+                        ),
                     );
                 }
 
@@ -606,7 +610,7 @@ class TranslationController extends ActionController
                         $forceUpdate,
                         $imported,
                         $updated,
-                        $errors
+                        $errors,
                     );
             }
         }
@@ -617,7 +621,7 @@ class TranslationController extends ActionController
             'errors'   => $errors,
             'language' => implode(
                 ',',
-                $languages
+                $languages,
             ),
         ]);
 
@@ -683,7 +687,7 @@ class TranslationController extends ActionController
                 $serializedConfig,
                 [
                     'allowed_classes' => true,
-                ]
+                ],
             );
         }
 
@@ -721,8 +725,8 @@ class TranslationController extends ActionController
         $markup = file_get_contents(
             ExtensionManagementUtility::extPath(
                 'nr_textdb',
-                'Resources/Private/template.xlf'
-            )
+                'Resources/Private/template.xlf',
+            ),
         );
 
         if ($markup === false) {
@@ -759,14 +763,14 @@ class TranslationController extends ActionController
                 $translation->getPlaceholder(),
                 $marker,
                 $translation->getValue(),
-                $marker
+                $marker,
             );
         }
 
         $fileContent = sprintf(
             $markup,
             $language->getLocale()->getLanguageCode(),
-            $entries
+            $entries,
         );
 
         file_put_contents($exportDir . '/' . $filename, $fileContent);
@@ -815,12 +819,12 @@ class TranslationController extends ActionController
                 ->uriFor(
                     $tableConfiguration['action'],
                     [],
-                    'Translation'
+                    'Translation',
                 );
 
             $icon = $this->iconFactory->getIcon(
                 $tableConfiguration['icon'],
-                IconSize::SMALL
+                IconSize::SMALL,
             );
 
             $viewButton = $buttonBar
@@ -837,7 +841,7 @@ class TranslationController extends ActionController
             $buttonBar->addButton(
                 $viewButton,
                 ButtonBar::BUTTON_POSITION_LEFT,
-                $tableConfiguration['group']
+                $tableConfiguration['group'],
             );
         }
     }
@@ -872,7 +876,7 @@ class TranslationController extends ActionController
             $paginator = new QueryResultPaginator(
                 $items,
                 $currentPage,
-                (int) ($settings['itemsPerPage'] ?? 15)
+                (int) ($settings['itemsPerPage'] ?? 15),
             );
 
             return [
@@ -898,7 +902,7 @@ class TranslationController extends ActionController
             $messageText,
             $messageTitle,
             $severity,
-            true
+            true,
         );
 
         /** @var FlashMessageService $flashMessageService */

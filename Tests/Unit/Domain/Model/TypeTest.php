@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  * This file is part of the package netresearch/nr-textdb.
  *
  * For the full copyright and license information, please read the
@@ -38,7 +38,7 @@ final class TypeTest extends UnitTestCase
     {
         self::assertSame(
             '',
-            $this->subject->getName()
+            $this->subject->getName(),
         );
     }
 
@@ -49,7 +49,7 @@ final class TypeTest extends UnitTestCase
 
         self::assertSame(
             'Conceived at T3CON10',
-            $this->subject->getName()
+            $this->subject->getName(),
         );
     }
 }

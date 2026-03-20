@@ -52,8 +52,7 @@
         "phpstan/phpstan-phpunit": "^2.0",
         "phpstan/phpstan-deprecation-rules": "^2.0",
         "ssch/typo3-rector": "^3.0",
-        "a9f/typo3-fractor": "^0.5",
-        "netresearch/typo3-ci-workflows": "^1.0"
+        "a9f/typo3-fractor": "^0.5"
     },
     "suggest": {
         "netresearch/nr-sync": "*"

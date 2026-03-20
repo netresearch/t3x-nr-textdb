@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  * This file is part of the package netresearch/nr-textdb.
  *
  * For the full copyright and license information, please read the
@@ -19,10 +19,10 @@ return FractorConfiguration::configure()
             __DIR__ . '/../Configuration',
             __DIR__ . '/../Resources',
             __DIR__ . '/../ext_*',
-        ]
+        ],
     )
     ->withSets(
         [
             Typo3LevelSetList::UP_TO_TYPO3_13,
-        ]
+        ],
     );

@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  * This file is part of the package netresearch/nr-textdb.
  *
  * For the full copyright and license information, please read the
@@ -16,12 +16,12 @@ call_user_func(static function (): void {
     ExtensionManagementUtility::addTypoScript(
         'nr_textdb',
         'constants',
-        '@import "EXT:nr_textdb/Configuration/TypoScript/constants.typoscript"'
+        '@import "EXT:nr_textdb/Configuration/TypoScript/constants.typoscript"',
     );
 
     ExtensionManagementUtility::addTypoScript(
         'nr_textdb',
         'setup',
-        '@import "EXT:nr_textdb/Configuration/TypoScript/setup.typoscript"'
+        '@import "EXT:nr_textdb/Configuration/TypoScript/setup.typoscript"',
     );
 });

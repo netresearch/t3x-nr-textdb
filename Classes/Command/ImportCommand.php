@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  * This file is part of the package netresearch/nr-textdb.
  *
  * For the full copyright and license information, please read the
@@ -11,8 +11,13 @@ declare(strict_types=1);
 
 namespace Netresearch\NrTextdb\Command;
 
+use function count;
+
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
 use Netresearch\NrTextdb\Service\ImportService;
+
+use function sprintf;
+
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -28,15 +33,13 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
 use TYPO3\CMS\Extensionmanager\Utility\ListUtility;
 
-use function count;
-use function sprintf;
-
 /**
  * Class ImportCommand.
  *
  * @author  Rico Sonntag <rico.sonntag@netresearch.de>
  * @license Netresearch https://www.netresearch.de
- * @link    https://www.netresearch.de
+ *
+ * @see    https://www.netresearch.de
  */
 class ImportCommand extends Command
 {
@@ -101,16 +104,16 @@ class ImportCommand extends Command
         $this
             ->setDescription('Imports textdb records from language files')
             ->setHelp(
-                'If you want to add textdb records to your extension. Create a file <LanguageCode>.textdb_import.xlf'
+                'If you want to add textdb records to your extension. Create a file <LanguageCode>.textdb_import.xlf',
             )
             ->addArgument(
                 'extensionKey',
                 InputArgument::OPTIONAL,
-                'Extension with language file'
+                'Extension with language file',
             )
             ->addOption(
                 'override',
-                'o'
+                'o',
             );
     }
 
@@ -125,7 +128,7 @@ class ImportCommand extends Command
 
         if (($extensionKey === null) || ($extensionKey === '')) {
             $this->extensions = $this->listUtility->getAvailableAndInstalledExtensions(
-                $this->listUtility->getAvailableExtensions()
+                $this->listUtility->getAvailableExtensions(),
             );
         } else {
             $this->extensions = [
@@ -135,7 +138,7 @@ class ImportCommand extends Command
 
         $this->importTranslationsFromFiles(
             $output,
-            $input->getOption('override')
+            $input->getOption('override'),
         );
 
         return Command::SUCCESS;
@@ -212,7 +215,7 @@ class ImportCommand extends Command
             // Filter all possible "false" values
             $files = array_filter(
                 $files,
-                static fn ($file): bool => $file !== false
+                static fn ($file): bool => $file !== false,
             );
 
             $files = array_merge(...$files);
@@ -249,7 +252,7 @@ class ImportCommand extends Command
                 $forceUpdate,
                 $imported,
                 $updated,
-                $errors
+                $errors,
             );
 
             foreach ($errors as $error) {
@@ -279,8 +282,8 @@ class ImportCommand extends Command
                 'Import translations from file %s for language %s (%d)',
                 $file,
                 $languageKey,
-                $languageUid
-            )
+                $languageUid,
+            ),
         );
 
         $this->importService
@@ -289,7 +292,7 @@ class ImportCommand extends Command
                 $forceUpdate,
                 $imported,
                 $updated,
-                $errors
+                $errors,
             );
     }
 }

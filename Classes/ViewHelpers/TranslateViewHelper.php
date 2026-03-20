@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  * This file is part of the package netresearch/nr-textdb.
  *
  * For the full copyright and license information, please read the
@@ -10,6 +10,8 @@
 declare(strict_types=1);
 
 namespace Netresearch\NrTextdb\ViewHelpers;
+
+use function count;
 
 use Exception;
 use Netresearch\NrTextdb\Domain\Model\Component;
@@ -30,8 +32,6 @@ use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
-use function count;
-
 /**
  * Fluid <a:translate/> implementation
  * Provides a way import LLL Keys from f:translate to textdb.
@@ -39,7 +39,8 @@ use function count;
  * @author  Tobias Hein <tobias.hein@netresearch.de>
  * @author  Rico Sonntag <rico.sonntag@netresearch.de>
  * @license Netresearch https://www.netresearch.de
- * @link    https://www.netresearch.de
+ *
+ * @see    https://www.netresearch.de
  */
 class TranslateViewHelper extends AbstractViewHelper
 {
@@ -93,13 +94,13 @@ class TranslateViewHelper extends AbstractViewHelper
             'key',
             'string',
             'key file',
-            true
+            true,
         );
 
         $this->registerArgument(
             'extensionName',
             'string',
-            'extensionName'
+            'extensionName',
         );
 
         $this->registerArgument(
@@ -107,7 +108,7 @@ class TranslateViewHelper extends AbstractViewHelper
             'string',
             'TextDB environment',
             false,
-            'default'
+            'default',
         );
     }
 
@@ -122,7 +123,7 @@ class TranslateViewHelper extends AbstractViewHelper
     {
         if (static::$component === '') {
             throw new RuntimeException(
-                'Please set a component in your controller via TranslateViewHelper::$component = "my-component".'
+                'Please set a component in your controller via TranslateViewHelper::$component = "my-component".',
             );
         }
 
@@ -172,7 +173,7 @@ class TranslateViewHelper extends AbstractViewHelper
                     $type,
                     $placeholder,
                     $this->getLanguageUid(),
-                    $translationRequested
+                    $translationRequested,
                 );
 
             $this->translationService
@@ -182,7 +183,7 @@ class TranslateViewHelper extends AbstractViewHelper
                     $type,
                     $placeholder,
                     self::LANGUAGE_UID_EN,
-                    $translationOriginal
+                    $translationOriginal,
                 );
         } catch (Exception) {
         }
@@ -225,7 +226,7 @@ class TranslateViewHelper extends AbstractViewHelper
                 $component,
                 $type,
                 $placeholder,
-                $this->getLanguageUid()
+                $this->getLanguageUid(),
             );
 
         return $textdbTranslation instanceof Translation;
