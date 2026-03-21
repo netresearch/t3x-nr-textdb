@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  * This file is part of the package netresearch/nr-textdb.
  *
  * For the full copyright and license information, please read the
@@ -23,7 +23,8 @@ use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
  * @author  Thomas Schöne <thomas.schoene@netresearch.de>
  * @author  Rico Sonntag <rico.sonntag@netresearch.de>
  * @license Netresearch https://www.netresearch.de
- * @link    https://www.netresearch.de
+ *
+ * @see    https://www.netresearch.de
  */
 class TextdbViewHelper extends AbstractViewHelper
 {
@@ -43,7 +44,7 @@ class TextdbViewHelper extends AbstractViewHelper
             'placeholder',
             'string',
             'TextDB value',
-            true
+            true,
         );
 
         $this->registerArgument(
@@ -51,14 +52,14 @@ class TextdbViewHelper extends AbstractViewHelper
             'string',
             'TextDB type',
             true,
-            'P'
+            'P',
         );
 
         $this->registerArgument(
             'component',
             'string',
             'TextDb component',
-            true
+            true,
         );
 
         $this->registerArgument(
@@ -66,7 +67,7 @@ class TextdbViewHelper extends AbstractViewHelper
             'string',
             'TextDB environment',
             false,
-            'default'
+            'default',
         );
     }
 
@@ -94,7 +95,7 @@ class TextdbViewHelper extends AbstractViewHelper
                 $placeholder,
                 $type,
                 $component,
-                $environment
+                $environment,
             );
     }
 

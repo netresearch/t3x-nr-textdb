@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  * This file is part of the package netresearch/nr-textdb.
  *
  * For the full copyright and license information, please read the
@@ -45,7 +45,7 @@ final class TranslationTest extends UnitTestCase
     {
         self::assertSame(
             '',
-            $this->subject->getValue()
+            $this->subject->getValue(),
         );
     }
 
@@ -56,7 +56,7 @@ final class TranslationTest extends UnitTestCase
 
         self::assertSame(
             'Conceived at T3CON10',
-            $this->subject->getValue()
+            $this->subject->getValue(),
         );
     }
 
@@ -65,7 +65,7 @@ final class TranslationTest extends UnitTestCase
     {
         self::assertEquals(
             null,
-            $this->subject->getEnvironment()
+            $this->subject->getEnvironment(),
         );
     }
 
@@ -77,7 +77,7 @@ final class TranslationTest extends UnitTestCase
 
         self::assertSame(
             $environmentFixture,
-            $this->subject->getEnvironment()
+            $this->subject->getEnvironment(),
         );
     }
 
@@ -86,7 +86,7 @@ final class TranslationTest extends UnitTestCase
     {
         self::assertEquals(
             null,
-            $this->subject->getComponent()
+            $this->subject->getComponent(),
         );
     }
 
@@ -98,7 +98,7 @@ final class TranslationTest extends UnitTestCase
 
         self::assertSame(
             $componentFixture,
-            $this->subject->getComponent()
+            $this->subject->getComponent(),
         );
     }
 
@@ -107,7 +107,7 @@ final class TranslationTest extends UnitTestCase
     {
         self::assertEquals(
             null,
-            $this->subject->getType()
+            $this->subject->getType(),
         );
     }
 
@@ -119,7 +119,7 @@ final class TranslationTest extends UnitTestCase
 
         self::assertSame(
             $typeFixture,
-            $this->subject->getType()
+            $this->subject->getType(),
         );
     }
 }

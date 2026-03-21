@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  * This file is part of the package netresearch/nr-textdb.
  *
  * For the full copyright and license information, please read the
@@ -23,7 +23,8 @@ use TYPO3\CMS\Extbase\Persistence\Repository;
  * @author  Axel Seemann <axel.seemann@netresearch.de>
  * @author  Rico Sonntag <rico.sonntag@netresearch.de>
  * @license Netresearch https://www.netresearch.de
- * @link    https://www.netresearch.de
+ *
+ * @see    https://www.netresearch.de
  *
  * @template T of DomainObjectInterface
  *
@@ -59,7 +60,7 @@ class AbstractRepository extends Repository
     {
         return max(
             0,
-            (int) ($this->getExtensionConfiguration('textDbPid') ?? 0)
+            (int) ($this->getExtensionConfiguration('textDbPid') ?? 0),
         );
     }
 

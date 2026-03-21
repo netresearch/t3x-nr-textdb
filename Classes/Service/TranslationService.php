@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  * This file is part of the package netresearch/nr-textdb.
  *
  * For the full copyright and license information, please read the
@@ -35,7 +35,8 @@ use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
  * @author  Thomas Schöne <thomas.schoene@netresearch.de>
  * @author  Rico Sonntag <rico.sonntag@netresearch.de>
  * @license Netresearch https://www.netresearch.de
- * @link    https://www.netresearch.de
+ *
+ * @see    https://www.netresearch.de
  */
 class TranslationService
 {
@@ -100,7 +101,7 @@ class TranslationService
                 $component,
                 $type,
                 $placeholder,
-                $languageUid
+                $languageUid,
             );
 
         // Create a new translation
@@ -114,7 +115,7 @@ class TranslationService
                 $type,
                 $placeholder,
                 $languageUid,
-                Translation::AUTO_CREATE_IDENTIFIER
+                Translation::AUTO_CREATE_IDENTIFIER,
             );
 
             if ($languageUid !== 0) {
@@ -124,7 +125,7 @@ class TranslationService
                         $environment,
                         $component,
                         $type,
-                        $placeholder
+                        $placeholder,
                     );
 
                 // No parent so far, create one to maintain translation order
@@ -135,7 +136,7 @@ class TranslationService
                         $type,
                         $placeholder,
                         0,
-                        Translation::AUTO_CREATE_IDENTIFIER
+                        Translation::AUTO_CREATE_IDENTIFIER,
                     );
 
                     $this->translationRepository->add($parentTranslation);
@@ -274,7 +275,7 @@ class TranslationService
                     $environment,
                     $component,
                     $type,
-                    $placeholder
+                    $placeholder,
                 );
 
             if ($parentTranslation instanceof Translation) {

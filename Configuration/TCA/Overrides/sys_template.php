@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  * This file is part of the package netresearch/nr-textdb.
  *
  * For the full copyright and license information, please read the
@@ -17,6 +17,6 @@ call_user_func(static function (): void {
     ExtensionManagementUtility::addStaticFile(
         'nr_textdb',
         'Configuration/TypoScript/',
-        'Netresearch: TextDB'
+        'Netresearch: TextDB',
     );
 });
