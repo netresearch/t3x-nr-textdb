@@ -34,6 +34,10 @@ class AbstractRepository extends Repository
 {
     private bool $createIfMissing = false;
 
+    private ?int $cachedPageId = null;
+
+    private ?bool $cachedCreateIfMissing = null;
+
     /**
      * Get the extension configuration.
      *
@@ -58,10 +62,14 @@ class AbstractRepository extends Repository
      */
     public function getConfiguredPageId(): int
     {
-        return max(
-            0,
-            (int) ($this->getExtensionConfiguration('textDbPid') ?? 0),
-        );
+        if ($this->cachedPageId !== null) {
+            return $this->cachedPageId;
+        }
+
+        $value              = $this->getExtensionConfiguration('textDbPid');
+        $this->cachedPageId = max(0, (int) (is_scalar($value) ? $value : 0));
+
+        return $this->cachedPageId;
     }
 
     /**
@@ -81,9 +89,15 @@ class AbstractRepository extends Repository
     public function getCreateIfMissing(): bool
     {
         if ($this->createIfMissing) {
-            return $this->createIfMissing;
+            return true;
         }
 
-        return (bool) ($this->getExtensionConfiguration('createIfMissing') ?? false);
+        if ($this->cachedCreateIfMissing !== null) {
+            return $this->cachedCreateIfMissing;
+        }
+
+        $this->cachedCreateIfMissing = (bool) ($this->getExtensionConfiguration('createIfMissing') ?? false);
+
+        return $this->cachedCreateIfMissing;
     }
 }

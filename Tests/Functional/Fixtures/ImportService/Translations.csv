@@ -1,0 +1,4 @@
+"tx_nrtextdb_domain_model_translation"
+,"uid","pid","tstamp","crdate","sys_language_uid","l10n_parent","deleted","hidden","sorting","environment","component","type","placeholder","value"
+,1,1,0,0,0,0,0,0,0,1,1,1,"existing_key","Existing Value"
+,2,1,0,0,0,0,0,0,1,1,1,1,"auto_created_key","auto-created-by-repository"

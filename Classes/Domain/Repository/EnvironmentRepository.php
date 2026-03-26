@@ -33,9 +33,9 @@ class EnvironmentRepository extends AbstractRepository
     /**
      * Local environment cache.
      *
-     * @var Environment[]
+     * @var array<string, Environment|null>
      */
-    public static array $localCache = [];
+    private array $localCache = [];
 
     /**
      * Initialize the object.
@@ -70,21 +70,17 @@ class EnvironmentRepository extends AbstractRepository
             ),
         );
 
-        $queryResult = $query->execute();
+        /** @var Environment|null $environment */
+        $environment = $query->execute()->getFirst();
 
-        if ($queryResult->count() === 0 && $this->getCreateIfMissing()) {
+        if ($environment === null && $this->getCreateIfMissing()) {
             $environment = new Environment();
             $environment->setName($name);
             $environment->setPid($this->getConfiguredPageId());
 
             $this->add($environment);
             $this->persistenceManager->persistAll();
-
-            return $this->setToCache($name, $environment);
         }
-
-        /** @var Environment|null $environment */
-        $environment = $queryResult->getFirst();
 
         return $this->setToCache($name, $environment);
     }
@@ -97,7 +93,7 @@ class EnvironmentRepository extends AbstractRepository
      */
     private function setToCache(string $key, ?Environment $environment): ?Environment
     {
-        static::$localCache[$key] = $environment;
+        $this->localCache[$key] = $environment;
 
         return $environment;
     }
@@ -109,6 +105,6 @@ class EnvironmentRepository extends AbstractRepository
      */
     private function getFromCache(string $key): ?Environment
     {
-        return static::$localCache[$key] ?? null;
+        return $this->localCache[$key] ?? null;
     }
 }

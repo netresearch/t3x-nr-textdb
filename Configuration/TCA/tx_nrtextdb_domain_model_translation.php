@@ -13,8 +13,6 @@ return [
     'ctrl' => [
         'title'                    => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang_db.xlf:tx_nrtextdb_domain_model_translation',
         'label'                    => 'value',
-        'prependAtCopy'            => '',
-        'hideAtCopy'               => false,
         'tstamp'                   => 'tstamp',
         'crdate'                   => 'crdate',
         'sortby'                   => 'sorting',
@@ -26,7 +24,7 @@ return [
         'enablecolumns'            => [
             'disabled' => 'hidden',
         ],
-        'searchFields' => 'value',
+        'searchFields' => 'value,placeholder',
         'iconfile'     => 'EXT:nr_textdb/Resources/Public/Icons/tx_nrtextdb_domain_model_translation.svg',
         'security'     => [
             'ignorePageTypeRestriction' => true,
@@ -66,25 +64,14 @@ return [
             'displayCond' => 'FIELD:sys_language_uid:>:0',
             'label'       => 'LLL:EXT:core/Resources/Private/Language/locallang_general.xlf:LGL.l18n_parent',
             'config'      => [
-                'type'     => 'group',
-                'allowed'  => 'tx_nrtextdb_domain_model_translation',
-                'size'     => 1,
-                'maxitems' => 1,
-                'minitems' => 0,
-                'default'  => 0,
-            ],
-        ],
-        'pid' => [
-            'label'  => 'pid',
-            'config' => [
-                'type' => 'passthrough',
-            ],
-        ],
-        'crdate' => [
-            'label'  => 'LLL:EXT:core/Resources/Private/Language/locallang_general.xlf:LGL.creationDate',
-            'config' => [
-                'type'    => 'datetime',
-                'default' => 0,
+                'type'       => 'select',
+                'renderType' => 'selectSingle',
+                'items'      => [
+                    ['label' => '', 'value' => 0],
+                ],
+                'foreign_table'       => 'tx_nrtextdb_domain_model_translation',
+                'foreign_table_where' => 'AND {#tx_nrtextdb_domain_model_translation}.{#pid}=###CURRENT_PID### AND {#tx_nrtextdb_domain_model_translation}.{#sys_language_uid} IN (-1,0)',
+                'default'             => 0,
             ],
         ],
         'environment' => [
@@ -97,6 +84,7 @@ return [
                 'foreign_table' => 'tx_nrtextdb_domain_model_environment',
                 'minitems'      => 0,
                 'maxitems'      => 1,
+                'default'       => 0,
             ],
         ],
         'component' => [
@@ -109,6 +97,7 @@ return [
                 'foreign_table' => 'tx_nrtextdb_domain_model_component',
                 'minitems'      => 0,
                 'maxitems'      => 1,
+                'default'       => 0,
             ],
         ],
         'type' => [
@@ -121,6 +110,7 @@ return [
                 'foreign_table' => 'tx_nrtextdb_domain_model_type',
                 'minitems'      => 0,
                 'maxitems'      => 1,
+                'default'       => 0,
             ],
         ],
         'placeholder' => [
@@ -130,7 +120,6 @@ return [
             'config'    => [
                 'type'     => 'input',
                 'size'     => 30,
-                'eval'     => 'trim',
                 'required' => true,
             ],
         ],
@@ -141,7 +130,6 @@ return [
                 'type'           => 'text',
                 'cols'           => 30,
                 'rows'           => 3,
-                'eval'           => 'trim',
                 'required'       => true,
                 'enableRichtext' => true,
             ],

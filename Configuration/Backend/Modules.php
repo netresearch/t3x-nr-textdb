@@ -45,7 +45,7 @@ $backendModulesConfiguration = [
     ],
 ];
 
-if (ExtensionManagementUtility::isLoaded('netresearch/nr-sync')) {
+if (ExtensionManagementUtility::isLoaded('nr_sync')) {
     $backendModulesConfiguration['netresearch_sync_textdb'] = [
         'parent'         => 'netresearch_sync',
         'access'         => 'user',

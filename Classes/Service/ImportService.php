@@ -27,7 +27,6 @@ use TYPO3\CMS\Core\Localization\Parser\XliffParser;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 
@@ -55,6 +54,8 @@ class ImportService
 
     private readonly EnvironmentRepository $environmentRepository;
 
+    private readonly SiteFinder $siteFinder;
+
     /**
      * Constructor.
      */
@@ -66,6 +67,7 @@ class ImportService
         ComponentRepository $componentRepository,
         TypeRepository $typeRepository,
         EnvironmentRepository $environmentRepository,
+        SiteFinder $siteFinder,
     ) {
         $this->persistenceManager    = $persistenceManager;
         $this->xliffParser           = $xliffParser;
@@ -74,6 +76,7 @@ class ImportService
         $this->componentRepository   = $componentRepository;
         $this->typeRepository        = $typeRepository;
         $this->environmentRepository = $environmentRepository;
+        $this->siteFinder            = $siteFinder;
     }
 
     /**
@@ -95,15 +98,20 @@ class ImportService
         $languageKey = $this->getLanguageKeyFromFile($file);
         $languageUid = $this->getLanguageId($languageKey);
         $fileContent = $this->xliffParser->getParsedData($file, $languageKey);
-        $entries     = $fileContent[$languageKey];
+        $entries     = $fileContent[$languageKey] ?? [];
+
+        if (!is_array($entries)) {
+            return;
+        }
 
         foreach ($entries as $key => $data) {
+            $key           = (string) $key;
             $componentName = $this->getComponentFromKey($key);
             if ($componentName === null) {
                 throw new RuntimeException(
                     sprintf(
                         LocalizationUtility::translate('error.missing.component', 'NrTextdb') ?? 'Missing component name in key: %s',
-                        (string) $key,
+                        $key,
                     ),
                 );
             }
@@ -113,7 +121,7 @@ class ImportService
                 throw new RuntimeException(
                     sprintf(
                         LocalizationUtility::translate('error.missing.type', 'NrTextdb') ?? 'Missing type name in key: %s',
-                        (string) $key,
+                        $key,
                     ),
                 );
             }
@@ -123,17 +131,20 @@ class ImportService
                 throw new RuntimeException(
                     sprintf(
                         LocalizationUtility::translate('error.missing.placeholder', 'NrTextdb') ?? 'Missing placeholder in key: %s',
-                        (string) $key,
+                        $key,
                     ),
                 );
             }
 
-            $value = $data[0]['target'] ?? null;
-            if ($value === null) {
+            $value = is_array($data) && isset($data[0]) && is_array($data[0])
+                ? ($data[0]['target'] ?? null)
+                : null;
+
+            if (!is_string($value)) {
                 throw new RuntimeException(
                     sprintf(
                         LocalizationUtility::translate('error.missing.value', 'NrTextdb') ?? 'Missing value in key: %s',
-                        (string) $key,
+                        $key,
                     ),
                 );
             }
@@ -150,6 +161,9 @@ class ImportService
                 $errors,
             );
         }
+
+        // Batch persist all entries at once instead of per-entry for performance
+        $this->persistenceManager->persistAll();
     }
 
     /**
@@ -263,19 +277,18 @@ class ImportService
 
                 ++$imported;
             }
-
-            $this->persistenceManager->persistAll();
         } catch (Exception $exception) {
             $errors[] = $exception->getMessage();
+        } finally {
+            // Reset createIfMissing to prevent leaking state on shared singleton repositories
+            $this->environmentRepository->setCreateIfMissing(false);
+            $this->componentRepository->setCreateIfMissing(false);
+            $this->typeRepository->setCreateIfMissing(false);
         }
     }
 
-    /**<
-     * Returns the langauge key from the file name.
-     *
-     * @param string $file
-     *
-     * @return string
+    /**
+     * Returns the language key from the file name.
      */
     private function getLanguageKeyFromFile(string $file): string
     {
@@ -317,10 +330,8 @@ class ImportService
      */
     private function getAllLanguages(): array
     {
-        /** @var SiteFinder $siteFinder */
-        $siteFinder = GeneralUtility::makeInstance(SiteFinder::class);
-        $sites      = $siteFinder->getAllSites();
-        $firstSite  = reset($sites);
+        $sites     = $this->siteFinder->getAllSites();
+        $firstSite = reset($sites);
 
         return ($firstSite instanceof Site) ? $firstSite->getAllLanguages() : [];
     }

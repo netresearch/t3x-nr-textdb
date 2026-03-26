@@ -33,9 +33,9 @@ class TypeRepository extends AbstractRepository
     /**
      * Local type cache.
      *
-     * @var Type[]
+     * @var array<string, Type|null>
      */
-    public static array $localCache = [];
+    private array $localCache = [];
 
     /**
      * Initialize the object.
@@ -72,24 +72,17 @@ class TypeRepository extends AbstractRepository
             ),
         );
 
-        $queryResult = $query->execute();
+        /** @var Type|null $type */
+        $type = $query->execute()->getFirst();
 
-        if (
-            ($queryResult->count() === 0)
-            && $this->getCreateIfMissing()
-        ) {
+        if ($type === null && $this->getCreateIfMissing()) {
             $type = new Type();
             $type->setName($name);
             $type->setPid($this->getConfiguredPageId());
 
             $this->add($type);
             $this->persistenceManager->persistAll();
-
-            return $this->setToCache($name, $type);
         }
-
-        /** @var Type|null $type */
-        $type = $queryResult->getFirst();
 
         return $this->setToCache($name, $type);
     }
@@ -102,7 +95,7 @@ class TypeRepository extends AbstractRepository
      */
     private function setToCache(string $key, ?Type $type): ?Type
     {
-        static::$localCache[$key] = $type;
+        $this->localCache[$key] = $type;
 
         return $type;
     }
@@ -114,6 +107,6 @@ class TypeRepository extends AbstractRepository
      */
     private function getFromCache(string $key): ?Type
     {
-        return static::$localCache[$key] ?? null;
+        return $this->localCache[$key] ?? null;
     }
 }

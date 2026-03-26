@@ -91,9 +91,7 @@ class TranslationRepository extends AbstractRepository
             ->setRespectSysLanguage(false);
 
         $query->matching(
-            $query->logicalAnd(
-                $query->equals('l10nParent', $uid),
-            ),
+            $query->equals('l10nParent', $uid),
         );
 
         return $query

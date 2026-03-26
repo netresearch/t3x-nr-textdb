@@ -10,8 +10,11 @@
             <f:translate key="info.import.message" />
         </f:be.infobox>
 
-        <f:form action="import" method="post" enctype="multipart/form-data" class="form-inline form-inline-spaced">
+        <f:form action="import" method="post" enctype="multipart/form-data" class="d-flex align-items-end gap-3 flex-wrap" aria-label="{f:translate(key: 'import', default: 'Import')}">
             <div class="form-group">
+                <label for="translationFile" class="form-label">
+                    <f:translate key="import.file.label">Translation file</f:translate>
+                </label>
                 <f:form.upload name="translationFile" id="translationFile" class="form-control"/>
             </div>
             <div class="form-group">
@@ -30,7 +33,7 @@
         <f:if condition="{language}">
             <f:be.infobox state="-1">
                 <f:translate key="message.import">Import done for Language:</f:translate>
-                {language}
+                {language -> f:format.htmlspecialchars()}
             </f:be.infobox>
         </f:if>
 
@@ -52,7 +55,7 @@
             <f:be.infobox state="3">
                 <f:translate key="message.errors">The following errors occurs:</f:translate>
                 <br><br>
-                <f:for as="error" each="{errors}">{error}<br></f:for>
+                <f:for as="error" each="{errors}">{error -> f:format.htmlspecialchars()}<br></f:for>
             </f:be.infobox>
         </f:if>
     </f:section>

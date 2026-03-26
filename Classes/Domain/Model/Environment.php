@@ -13,6 +13,7 @@ namespace Netresearch\NrTextdb\Domain\Model;
 
 use TYPO3\CMS\Extbase\Annotation\Validate;
 use TYPO3\CMS\Extbase\DomainObject\AbstractValueObject;
+use TYPO3\CMS\Extbase\Validation\Validator\NotEmptyValidator;
 
 /**
  * Environment.
@@ -28,7 +29,7 @@ class Environment extends AbstractValueObject
     /**
      * name.
      */
-    #[Validate(['validator' => 'NotEmpty'])]
+    #[Validate(['validator' => NotEmptyValidator::class])]
     protected string $name = '';
 
     /**

@@ -1,0 +1,5 @@
+"tx_nrtextdb_domain_model_environment"
+,"uid","pid","deleted","hidden","name"
+,1,1,0,0,"default"
+,2,1,0,0,"staging"
+,3,1,0,0,"production"

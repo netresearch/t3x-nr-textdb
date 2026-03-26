@@ -33,9 +33,9 @@ class ComponentRepository extends AbstractRepository
     /**
      * Local component cache.
      *
-     * @var Component[]
+     * @var array<string, Component|null>
      */
-    public static array $localCache = [];
+    private array $localCache = [];
 
     /**
      * Initialize the object.
@@ -72,21 +72,17 @@ class ComponentRepository extends AbstractRepository
             ),
         );
 
-        $queryResult = $query->execute();
+        /** @var Component|null $component */
+        $component = $query->execute()->getFirst();
 
-        if ($queryResult->count() === 0 && $this->getCreateIfMissing()) {
+        if ($component === null && $this->getCreateIfMissing()) {
             $component = new Component();
             $component->setName($name);
             $component->setPid($this->getConfiguredPageId());
 
             $this->add($component);
             $this->persistenceManager->persistAll();
-
-            return $this->setToCache($name, $component);
         }
-
-        /** @var Component|null $component */
-        $component = $queryResult->getFirst();
 
         return $this->setToCache($name, $component);
     }
@@ -99,7 +95,7 @@ class ComponentRepository extends AbstractRepository
      */
     private function setToCache(string $key, ?Component $component): ?Component
     {
-        static::$localCache[$key] = $component;
+        $this->localCache[$key] = $component;
 
         return $component;
     }
@@ -111,6 +107,6 @@ class ComponentRepository extends AbstractRepository
      */
     private function getFromCache(string $key): ?Component
     {
-        return static::$localCache[$key] ?? null;
+        return $this->localCache[$key] ?? null;
     }
 }

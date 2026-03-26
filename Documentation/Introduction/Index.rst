@@ -84,34 +84,76 @@ Key Features
 Screenshots
 ===========
 
-..  note::
-    Screenshots will be added in a future update. The following features are available
-    in the backend module.
-
 Backend Module
 --------------
 
 The TextDB backend module provides an intuitive interface for managing translations:
 
-* **Translation List View** - Browse and filter all translations with advanced search
-* **Edit Forms** - Intuitive forms for editing translation records
-* **Multi-language Support** - Switch between languages seamlessly
+**Translation List View**
+
+The main list view displays all translations with filtering by component, type,
+placeholder, and value. Pagination is built in for large datasets.
+
+.. code-block:: none
+
+   ┌─────────────────────────────────────────────────────────────┐
+   │  Netresearch TextDB                          [List] [Import]│
+   ├─────────────────────────────────────────────────────────────┤
+   │  Component: [All        ▼]  Type: [All    ▼]               │
+   │  Placeholder: [________]    Value: [________]  [🔍 Search] │
+   ├──────┬───────────┬────────┬──────────────┬─────────────────┤
+   │ Lang │ Component │ Type   │ Placeholder  │ Value           │
+   ├──────┼───────────┼────────┼──────────────┼─────────────────┤
+   │ 🏴 ▶ │ checkout  │ button │ submit       │ Proceed to Pay  │
+   │ 🏴 ▶ │ checkout  │ label  │ email        │ Email Address   │
+   │ 🏴 ▶ │ website   │ label  │ welcome.msg  │ Welcome!        │
+   └──────┴───────────┴────────┴──────────────┴─────────────────┘
+   │◀ ◁  Records 1 - 15  Page [1] / 5  ▷ ▶│  🔄
+
+**Multi-language Translation Editor**
+
+Click the language icons on any row to expand the inline translation editor,
+showing existing translations and allowing new languages to be added:
+
+.. code-block:: none
+
+   ┌──────────────────────────────────────────────┐
+   │  Translation: checkout | button | submit      │
+   ├──────────────────────────────────────────────┤
+   │ 🇬🇧 English    │ [Proceed to Checkout      ] │
+   │ 🇩🇪 German     │ [Zur Kasse gehen          ] │
+   │ 🇫🇷 French     │ [Passer à la caisse       ] │
+   │ 🇪🇸 Spanish    │ [                         ] │  ← new
+   ├──────────────────────────────────────────────┤
+   │                              [💾 Save]       │
+   └──────────────────────────────────────────────┘
 
 Import & Export
 ---------------
 
-* **XLIFF Import** - Import translations from properly formatted XLIFF files
-* **Filtered Export** - Export only the translations you need
-* **Batch Operations** - Handle multiple translations efficiently
+**XLIFF Import Interface**
 
-..  todo::
-    Add screenshots showing:
+Upload XLIFF files to import translations. Optionally override existing values:
 
-    - Main translation list view with filtering options
-    - Translation edit form interface
-    - XLIFF import interface
+.. code-block:: none
 
-    **GitHub Issue:** `#27 <https://github.com/netresearch/t3x-nr-textdb/issues/27>`_
+   ┌─────────────────────────────────────────────────┐
+   │  ℹ️ Upload a textdb XLIFF file to import         │
+   │     translations into the database.              │
+   ├─────────────────────────────────────────────────┤
+   │  File: [Choose File...  textdb_import.xlf]       │
+   │  ☐ Override existing translations                │
+   │                            [📥 Import]           │
+   ├─────────────────────────────────────────────────┤
+   │  ✅ Import done for Language: German              │
+   │  ✅ Translations imported: 42                     │
+   │  ✅ Translations updated: 15                      │
+   └─────────────────────────────────────────────────┘
+
+**Filtered Export**
+
+Export only the translations matching your current filters as a ZIP archive
+containing XLIFF files for all configured languages.
 
 .. _use-cases:
 

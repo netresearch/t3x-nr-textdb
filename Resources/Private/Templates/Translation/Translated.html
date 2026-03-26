@@ -22,14 +22,14 @@
                     additionalAttributes="{data-uid: originalUid}"
             >
                 <div class="table-fit">
-                    <table class="table">
+                    <table class="table" aria-label="{f:translate(key: 'translations', default: 'Translations')}">
                         <f:for each="{translated}" as="translation">
                             <tr class="translated">
                                 <td>
                                     <f:for each="{languages}" as="language">
                                         <f:if condition="{language.languageId} == {translation.sysLanguageUid}">
                                             <core:icon identifier="{language.flagIdentifier}"/>
-                                            {language.title}
+                                            {language.title -> f:format.htmlspecialchars()}
                                         </f:if>
                                     </f:for>
                                 </td>
@@ -45,7 +45,7 @@
                             <tr class="untranslated">
                                 <td>
                                     <core:icon identifier="{language.flagIdentifier}"/>
-                                    {language.title}
+                                    {language.title -> f:format.htmlspecialchars()}
                                 </td>
                                 <td>
                                     <f:form.textarea name="new[{language.languageId}]"
