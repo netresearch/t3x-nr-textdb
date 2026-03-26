@@ -11,12 +11,13 @@
                            additionalAttributes="{data-uid: translation.uid}"
                            arguments="{uid: translation.uid}"
                            class="translated-link-open"
+                           title="{f:translate(key: 'action.show.translations', default: 'Show translations')}"
             >
                 <core:icon identifier="flags-multiple"/>
                 <core:icon identifier="actions-view-list-expand"/>
             </f:link.action>
 
-            <a href="#" data-uid="{translation.uid}" class="translated-link-close" style="display: none;">
+            <a href="#" data-uid="{translation.uid}" class="translated-link-close" style="display: none;" title="{f:translate(key: 'action.hide.translations', default: 'Hide translations')}">
                 <core:icon identifier="flags-multiple"/>
                 <core:icon identifier="actions-view-list-collapse"/>
             </a>
@@ -26,16 +27,16 @@
             </span>
         </td>
         <td>
-            {translation.component.name}
+            {translation.component.name -> f:format.htmlspecialchars()}
         </td>
         <td>
-            {translation.type.name}
+            {translation.type.name -> f:format.htmlspecialchars()}
         </td>
         <td>
-            {translation.placeholder}
+            {translation.placeholder -> f:format.htmlspecialchars()}
         </td>
         <td>
-            {translation.value}
+            {translation.value -> f:format.htmlspecialchars()}
         </td>
     </tr>
 </html>

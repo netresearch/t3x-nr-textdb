@@ -2,12 +2,27 @@
     "name": "netresearch/nr-textdb",
     "type": "typo3-cms-extension",
     "description": "Auto-creating TYPO3 translation database - use ViewHelpers, editors translate in backend, instant updates - by Netresearch",
-    "license": [
-        "GPL-3.0-or-later"
+    "license": "GPL-3.0-or-later",
+    "keywords": [
+        "typo3",
+        "extension",
+        "translation",
+        "localization",
+        "i18n",
+        "l10n",
+        "backend",
+        "textdb",
+        "xliff"
     ],
+    "homepage": "https://github.com/netresearch/t3x-nr-textdb",
+    "support": {
+        "issues": "https://github.com/netresearch/t3x-nr-textdb/issues",
+        "source": "https://github.com/netresearch/t3x-nr-textdb",
+        "docs": "https://docs.typo3.org/p/netresearch/nr-textdb/main/en-us/"
+    },
     "authors": [
         {
-            "name": "Thomas Sch\u00f6ne",
+            "name": "Thomas Schöne",
             "email": "thomas.schoene@netresearch.de",
             "role": "Developer",
             "homepage": "https://www.netresearch.de/"
@@ -43,19 +58,20 @@
         "symfony/console": "^7.0"
     },
     "require-dev": {
-        "typo3/testing-framework": "^9.0",
+        "a9f/typo3-fractor": "^0.5",
         "friendsofphp/php-cs-fixer": "^3.75",
-        "saschaegerer/phpstan-typo3": "^2.0 || ^3.0",
+        "infection/infection": "^0.29",
         "overtrue/phplint": "^9.5",
         "phpstan/phpstan": "^2.0",
-        "phpstan/phpstan-strict-rules": "^2.0",
-        "phpstan/phpstan-phpunit": "^2.0",
         "phpstan/phpstan-deprecation-rules": "^2.0",
+        "phpstan/phpstan-phpunit": "^2.0",
+        "phpstan/phpstan-strict-rules": "^2.0",
+        "saschaegerer/phpstan-typo3": "^2.0 || ^3.0",
         "ssch/typo3-rector": "^3.0",
-        "a9f/typo3-fractor": "^0.5"
+        "typo3/testing-framework": "^9.0"
     },
     "suggest": {
-        "netresearch/nr-sync": "*"
+        "netresearch/nr-sync": "Enables synchronization of TextDB translations between TYPO3 instances"
     },
     "autoload": {
         "psr-4": {
@@ -76,6 +92,7 @@
         "platform-check": false,
         "allow-plugins": {
             "a9f/fractor-extension-installer": true,
+            "infection/extension-installer": true,
             "typo3/class-alias-loader": true,
             "typo3/cms-composer-installers": true
         },
@@ -91,7 +108,7 @@
             "web-dir": ".build/public"
         },
         "branch-alias": {
-            "dev-master": "3.0.x-dev"
+            "dev-main": "3.0.x-dev"
         }
     },
     "scripts": {
@@ -113,6 +130,12 @@
         "ci:test:php:unit": [
             "XDEBUG_MODE=coverage phpunit -c Build/UnitTests.xml"
         ],
+        "ci:test:php:functional": [
+            "phpunit -c Build/FunctionalTests.xml"
+        ],
+        "ci:test:php:mutation": [
+            "infection --configuration=infection.json5 --threads=4"
+        ],
         "ci:test:php:phpstan": [
             "phpstan analyze --configuration Build/phpstan.neon --memory-limit=-1"
         ],
@@ -131,6 +154,7 @@
             "@ci:test:php:rector",
             "@ci:test:php:fractor",
             "@ci:test:php:unit",
+            "@ci:test:php:functional",
             "@ci:test:php:cgl"
         ]
     }

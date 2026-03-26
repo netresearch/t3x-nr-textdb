@@ -37,9 +37,9 @@ return [
             'exclude' => true,
             'label'   => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang_db.xlf:tx_nrtextdb_domain_model_environment.name',
             'config'  => [
-                'type' => 'input',
-                'size' => 30,
-                'eval' => 'trim',
+                'type'     => 'input',
+                'size'     => 30,
+                'required' => true,
             ],
         ],
         'translation' => [

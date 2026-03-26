@@ -81,23 +81,27 @@ The extension provides the following TypoScript constants:
 .. code-block:: typoscript
 
    # File: Configuration/TypoScript/constants.typoscript
-   plugin.tx_nrtextdb {
-       settings {
-           storagePid = {$plugin.tx_nrtextdb.settings.storagePid}
+   module.tx_nrtextdb {
+       persistence {
+           # Default storage PID
+           storagePid =
        }
    }
 
 Setup
 -----
 
-The extension setup is automatically included:
+The extension setup configures the backend module with pagination:
 
 .. code-block:: typoscript
 
    # File: Configuration/TypoScript/setup.typoscript
-   plugin.tx_nrtextdb {
-       persistence {
-           storagePid = {$plugin.tx_nrtextdb.settings.storagePid}
+   module.tx_nrtextdb {
+       settings {
+           pagination {
+               enablePagination = 1
+               itemsPerPage = 15
+           }
        }
    }
 

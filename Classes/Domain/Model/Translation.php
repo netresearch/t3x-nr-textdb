@@ -29,11 +29,9 @@ class Translation extends AbstractEntity
 {
     final public const AUTO_CREATE_IDENTIFIER = 'auto-created-by-repository';
 
-    protected DateTime $crdate;
+    protected ?DateTime $crdate = null;
 
-    protected DateTime $tstamp;
-
-    protected int $sysLanguageUid = 0;
+    protected ?DateTime $tstamp = null;
 
     protected int $l10nParent = 0;
 
@@ -70,7 +68,7 @@ class Translation extends AbstractEntity
     #[Validate(['validator' => NotEmptyValidator::class])]
     protected string $value = '';
 
-    public function getCrdate(): DateTime
+    public function getCrdate(): ?DateTime
     {
         return $this->crdate;
     }
@@ -82,7 +80,7 @@ class Translation extends AbstractEntity
         return $this;
     }
 
-    public function getTstamp(): DateTime
+    public function getTstamp(): ?DateTime
     {
         return $this->tstamp;
     }

@@ -1,5 +1,6 @@
 includes:
     - %currentWorkingDirectory%/.build/vendor/phpstan/phpstan-strict-rules/rules.neon
+    - %currentWorkingDirectory%/.build/vendor/phpstan/phpstan-phpunit/extension.neon
     - %currentWorkingDirectory%/.build/vendor/phpstan/phpstan-deprecation-rules/rules.neon
     - %currentWorkingDirectory%/.build/vendor/saschaegerer/phpstan-typo3/extension.neon
     - %currentWorkingDirectory%/Build/phpstan-baseline.neon
@@ -19,3 +20,4 @@ parameters:
         - %currentWorkingDirectory%/.build/*
         - %currentWorkingDirectory%/ext_emconf.php
         - %currentWorkingDirectory%/Configuration/Backend/Modules.php
+        - %currentWorkingDirectory%/Tests/Functional/*

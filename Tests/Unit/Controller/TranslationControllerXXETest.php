@@ -11,8 +11,7 @@ declare(strict_types=1);
 
 namespace Netresearch\NrTextdb\Tests\Unit\Controller;
 
-use Netresearch\NrTextdb\Controller\TranslationController;
-use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\Test;
 
 use function simplexml_load_string;
@@ -27,7 +26,7 @@ use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
  *
  * @see https://owasp.org/www-community/vulnerabilities/XML_External_Entity_(XXE)_Processing
  */
-#[CoversClass(TranslationController::class)]
+#[CoversNothing]
 final class TranslationControllerXXETest extends UnitTestCase
 {
     /**

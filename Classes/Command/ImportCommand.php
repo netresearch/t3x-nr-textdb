@@ -13,7 +13,6 @@ namespace Netresearch\NrTextdb\Command;
 
 use function count;
 
-use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
 use Netresearch\NrTextdb\Service\ImportService;
 
 use function sprintf;
@@ -22,15 +21,11 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use TYPO3\CMS\Core\Authentication\CommandLineUserAuthentication;
-use TYPO3\CMS\Core\Core\Bootstrap;
 use TYPO3\CMS\Core\Package\Exception\UnknownPackageException;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
 use TYPO3\CMS\Extensionmanager\Utility\ListUtility;
 
 /**
@@ -50,48 +45,30 @@ class ImportCommand extends Command
      */
     private const LANG_FOLDER = 'Resources/Private/Language/';
 
-    private readonly PersistenceManagerInterface $persistenceManager;
-
-    protected TranslationRepository $translationRepository;
-
-    protected ListUtility $listUtility;
-
-    /**
-     * @var string extension with the language file
-     */
-    protected string $extension = '';
+    private readonly ListUtility $listUtility;
 
     /**
      * @var array<array-key, mixed>
      */
-    protected array $extensions = [];
+    private array $extensions = [];
 
     private readonly ImportService $importService;
+
+    private readonly SiteFinder $siteFinder;
 
     /**
      * Constructor.
      */
     public function __construct(
-        PersistenceManagerInterface $persistenceManager,
-        TranslationRepository $translationRepository,
         ListUtility $listUtility,
         ImportService $importService,
+        SiteFinder $siteFinder,
     ) {
         parent::__construct();
 
-        $this->persistenceManager    = $persistenceManager;
-        $this->translationRepository = $translationRepository;
-        $this->listUtility           = $listUtility;
-        $this->importService         = $importService;
-    }
-
-    /**
-     * Bootstrap.
-     */
-    protected function bootstrap(): void
-    {
-        Bootstrap::initializeBackendUser(CommandLineUserAuthentication::class);
-        Bootstrap::initializeBackendAuthentication();
+        $this->listUtility   = $listUtility;
+        $this->importService = $importService;
+        $this->siteFinder    = $siteFinder;
     }
 
     /**
@@ -122,11 +99,9 @@ class ImportCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->bootstrap();
-
         $extensionKey = $input->getArgument('extensionKey');
 
-        if (($extensionKey === null) || ($extensionKey === '')) {
+        if (!is_string($extensionKey) || $extensionKey === '') {
             $this->extensions = $this->listUtility->getAvailableAndInstalledExtensions(
                 $this->listUtility->getAvailableExtensions(),
             );
@@ -138,7 +113,7 @@ class ImportCommand extends Command
 
         $this->importTranslationsFromFiles(
             $output,
-            $input->getOption('override'),
+            (bool) $input->getOption('override'),
         );
 
         return Command::SUCCESS;
@@ -171,16 +146,14 @@ class ImportCommand extends Command
      */
     protected function getAllLanguages(): array
     {
-        /** @var SiteFinder $siteFinder */
-        $siteFinder = GeneralUtility::makeInstance(SiteFinder::class);
-        $sites      = $siteFinder->getAllSites();
-        $firstSite  = reset($sites);
+        $sites     = $this->siteFinder->getAllSites();
+        $firstSite = reset($sites);
 
         return ($firstSite instanceof Site) ? $firstSite->getAllLanguages() : [];
     }
 
     /**
-     * Returns the langauge key from the file name.
+     * Returns the language key from the file name.
      */
     protected function getLanguageKeyFromFile(string $file): string
     {
@@ -237,9 +210,6 @@ class ImportCommand extends Command
      */
     protected function importLanguageFiles(array $files, OutputInterface $output, bool $forceUpdate = false): void
     {
-        $this->translationRepository
-            ->injectPersistenceManager($this->persistenceManager);
-
         $imported = 0;
         $updated  = 0;
 

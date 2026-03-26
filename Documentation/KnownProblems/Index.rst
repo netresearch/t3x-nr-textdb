@@ -227,12 +227,7 @@ Problem: Memory Exhaustion on Export
 
 2. Export smaller subsets using filters
 
-3. Use CLI for large exports:
-
-   .. code-block:: bash
-
-      # Create custom export command
-      vendor/bin/typo3 textdb:export --component=website
+3. Use filters to reduce the export dataset to manageable sizes
 
 .. _reporting-bugs:
 

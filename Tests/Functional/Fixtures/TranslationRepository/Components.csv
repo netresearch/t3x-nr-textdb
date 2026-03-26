@@ -1,0 +1,5 @@
+"tx_nrtextdb_domain_model_component"
+,"uid","pid","tstamp","crdate","deleted","hidden","name"
+,1,1,0,0,0,0,"checkout"
+,2,1,0,0,0,0,"header"
+,3,1,0,0,0,0,"footer"

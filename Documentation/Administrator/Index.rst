@@ -185,21 +185,27 @@ Command Line Interface
 Import Command
 --------------
 
-Import translations via CLI:
+Import translations from extension language files via CLI. The command scans extensions
+for ``textdb_import.xlf`` and ``*.textdb_import.xlf`` files in ``Resources/Private/Language/``.
 
 .. code-block:: bash
 
-   # Import single file
-   vendor/bin/typo3 nr_textdb:import /path/to/translations.xlf
+   # Import from all installed extensions
+   vendor/bin/typo3 nr_textdb:import
 
-   # Import multiple files
-   vendor/bin/typo3 nr_textdb:import /path/to/translations/*.xlf
+   # Import from a specific extension
+   vendor/bin/typo3 nr_textdb:import my_extension
 
-**Command Options:**
+   # Override existing translations
+   vendor/bin/typo3 nr_textdb:import my_extension --override
 
-.. code-block:: bash
+**Arguments:**
 
-   vendor/bin/typo3 nr_textdb:import --help
+* ``extensionKey`` (optional): Extension key to import from. If omitted, scans all installed extensions.
+
+**Options:**
+
+* ``--override`` / ``-o``: Override existing translation records.
 
 Automated Imports
 -----------------
@@ -246,20 +252,6 @@ The extension creates appropriate indexes automatically. Verify with:
 .. code-block:: sql
 
    SHOW INDEXES FROM tx_nrtextdb_domain_model_translation;
-
-**Cache Configuration:**
-
-Ensure proper cache configuration:
-
-.. code-block:: php
-
-   // config/system/additional.php
-   $GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['tx_nrtextdb'] = [
-       'backend' => \TYPO3\CMS\Core\Cache\Backend\Typo3DatabaseBackend::class,
-       'options' => [
-           'defaultLifetime' => 86400, // 24 hours
-       ],
-   ];
 
 Backup Strategy
 ---------------
@@ -433,13 +425,13 @@ Create migration script:
 
 .. code-block:: php
 
-   // Migration example
+   // Migration example (adapt getter names to your source system)
    $translations = $oldRepository->findAll();
    foreach ($translations as $old) {
        $new = new Translation();
        $new->setComponent($componentMapping[$old->getComponent()]);
-       $new->setPlaceholder($old->getKey());
-       $new->setValue($old->getTranslation());
+       $new->setPlaceholder($old->getPlaceholder());
+       $new->setValue($old->getValue());
        $translationRepository->add($new);
    }
    $persistenceManager->persistAll();
@@ -577,18 +569,9 @@ Monitor slow queries:
 Caching Strategy
 ----------------
 
-Configure appropriate cache lifetime:
-
-.. code-block:: php
-
-   $GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['tx_nrtextdb'] = [
-       'backend' => \TYPO3\CMS\Core\Cache\Backend\RedisBackend::class,
-       'options' => [
-           'hostname' => 'localhost',
-           'database' => 3,
-           'defaultLifetime' => 86400,
-       ],
-   ];
+The extension uses in-memory caching for translation lookups within each request.
+For high-traffic sites, ensure TYPO3's page cache is properly configured to cache
+rendered pages containing TextDB translations.
 
 .. _admin-best-practices:
 

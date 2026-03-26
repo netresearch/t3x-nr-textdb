@@ -1,0 +1,15 @@
+"pages"
+,"uid","pid","title","deleted","hidden"
+,1,0,"TextDB Storage",0,0
+
+"tx_nrtextdb_domain_model_environment"
+,"uid","pid","deleted","hidden","name"
+,1,1,0,0,"default"
+
+"tx_nrtextdb_domain_model_component"
+,"uid","pid","deleted","hidden","name"
+,1,1,0,0,"lll-migration-component"
+
+"tx_nrtextdb_domain_model_type"
+,"uid","pid","deleted","hidden","name"
+,1,1,0,0,"label"

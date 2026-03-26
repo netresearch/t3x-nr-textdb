@@ -13,21 +13,8 @@ namespace Netresearch\NrTextdb\ViewHelpers;
 
 use function count;
 
-use Exception;
-use Netresearch\NrTextdb\Domain\Model\Component;
-use Netresearch\NrTextdb\Domain\Model\Environment;
-use Netresearch\NrTextdb\Domain\Model\Translation;
-use Netresearch\NrTextdb\Domain\Model\Type;
-use Netresearch\NrTextdb\Domain\Repository\ComponentRepository;
-use Netresearch\NrTextdb\Domain\Repository\EnvironmentRepository;
-use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
-use Netresearch\NrTextdb\Domain\Repository\TypeRepository;
 use Netresearch\NrTextdb\Service\TranslationService;
 use RuntimeException;
-use TYPO3\CMS\Core\Context\Context;
-use TYPO3\CMS\Core\Context\Exception\AspectNotFoundException;
-use TYPO3\CMS\Core\Context\LanguageAspect;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
@@ -35,6 +22,10 @@ use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 /**
  * Fluid <a:translate/> implementation
  * Provides a way import LLL Keys from f:translate to textdb.
+ *
+ * On first render, this ViewHelper imports the LLL translation into the TextDB
+ * database. On subsequent renders it returns the value from TextDB via the
+ * cached TranslationService, avoiding redundant DB queries.
  *
  * @author  Tobias Hein <tobias.hein@netresearch.de>
  * @author  Rico Sonntag <rico.sonntag@netresearch.de>
@@ -44,21 +35,6 @@ use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
  */
 class TranslateViewHelper extends AbstractViewHelper
 {
-    /**
-     * English UID to import.
-     *
-     * @var int
-     */
-    final public const LANGUAGE_UID_EN = 1;
-
-    private readonly EnvironmentRepository $environmentRepository;
-
-    private readonly ComponentRepository $componentRepository;
-
-    private readonly TypeRepository $typeRepository;
-
-    private readonly TranslationRepository $translationRepository;
-
     private readonly TranslationService $translationService;
 
     /**
@@ -66,21 +42,10 @@ class TranslateViewHelper extends AbstractViewHelper
      */
     public static string $component = '';
 
-    /**
-     * Translation constructor.
-     */
     public function __construct(
-        EnvironmentRepository $environmentRepository,
-        ComponentRepository $componentRepository,
-        TypeRepository $typeRepository,
-        TranslationRepository $translationRepository,
         TranslationService $translationService,
     ) {
-        $this->environmentRepository = $environmentRepository;
-        $this->componentRepository   = $componentRepository;
-        $this->typeRepository        = $typeRepository;
-        $this->translationRepository = $translationRepository;
-        $this->translationService    = $translationService;
+        $this->translationService = $translationService;
     }
 
     /**
@@ -115,6 +80,11 @@ class TranslateViewHelper extends AbstractViewHelper
     /**
      * Render translated string.
      *
+     * Delegates to TranslationService::translate() which uses the in-memory
+     * translation cache. If the entry does not exist and createIfMissing is
+     * enabled, the LLL value is used as the initial value for the auto-created
+     * TextDB record.
+     *
      * @return string The translated key or tag body if key doesn't exist
      *
      * @throws IllegalObjectTypeException
@@ -133,102 +103,35 @@ class TranslateViewHelper extends AbstractViewHelper
         assert(is_string($placeholder));
         assert(is_string($extension) || $extension === null);
 
-        $translationRequested = LocalizationUtility::translate($placeholder, $extension);
-        $translationOriginal  = LocalizationUtility::translate($placeholder, $extension, []);
-
+        // Extract the actual key from LLL:EXT:ext_name/path.xlf:key format
         $placeholderParts = explode(':', $placeholder);
-        if (count($placeholderParts) > 1) {
-            $placeholder = $placeholderParts[3];
+        $textdbKey        = $placeholder;
+
+        if (count($placeholderParts) > 3) {
+            $textdbKey = implode(':', array_slice($placeholderParts, 3));
         }
 
         $environmentName = $this->arguments['environment'];
         assert(is_string($environmentName));
 
-        $environment = $this->environmentRepository->findByName($environmentName);
-        $component   = $this->componentRepository->findByName(static::$component);
-        $type        = $this->typeRepository->findByName('label');
+        // Delegate to TranslationService which has in-memory caching
+        $result = $this->translationService->translate(
+            $textdbKey,
+            'label',
+            static::$component,
+            $environmentName,
+        );
 
-        if (
-            !$environment instanceof Environment
-            || !$component instanceof Component
-            || !$type instanceof Type
-        ) {
-            return $placeholder;
+        // If the result is the placeholder itself (auto-created or missing),
+        // try to return the LLL translation instead
+        if ($result === $textdbKey) {
+            $lllTranslation = LocalizationUtility::translate($placeholder, $extension);
+
+            if ($lllTranslation !== null && $lllTranslation !== '') {
+                return $lllTranslation;
+            }
         }
 
-        if ($this->hasTextDbEntry($environment, $component, $type, $placeholder)) {
-            assert(is_string($translationRequested));
-
-            return $translationRequested;
-        }
-
-        try {
-            assert(is_string($translationRequested));
-            assert(is_string($translationOriginal));
-
-            $this->translationService
-                ->createTranslation(
-                    $environment,
-                    $component,
-                    $type,
-                    $placeholder,
-                    $this->getLanguageUid(),
-                    $translationRequested,
-                );
-
-            $this->translationService
-                ->createTranslation(
-                    $environment,
-                    $component,
-                    $type,
-                    $placeholder,
-                    self::LANGUAGE_UID_EN,
-                    $translationOriginal,
-                );
-        } catch (Exception) {
-        }
-
-        return (string) $translationRequested;
-    }
-
-    /**
-     * Returns the current language uid.
-     *
-     * @return int<-1, max>
-     */
-    private function getLanguageUid(): int
-    {
-        try {
-            /** @var Context $context */
-            $context = GeneralUtility::makeInstance(Context::class);
-
-            /** @var LanguageAspect $languageAspect */
-            $languageAspect = $context->getAspect('language');
-        } catch (AspectNotFoundException) {
-            return 0;
-        }
-
-        return max(-1, $languageAspect->getId());
-    }
-
-    /**
-     * Returns true, if a textdb translation exists.
-     */
-    private function hasTextDbEntry(
-        Environment $environment,
-        Component $component,
-        Type $type,
-        string $placeholder,
-    ): bool {
-        $textdbTranslation = $this->translationRepository
-            ->findByEnvironmentComponentTypePlaceholderAndLanguage(
-                $environment,
-                $component,
-                $type,
-                $placeholder,
-                $this->getLanguageUid(),
-            );
-
-        return $textdbTranslation instanceof Translation;
+        return $result;
     }
 }

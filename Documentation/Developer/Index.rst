@@ -67,9 +67,6 @@ All services use constructor injection via `Configuration/Services.yaml`:
 Localization Infrastructure
 ============================
 
-.. versionadded:: 3.1.0
-   Comprehensive localization infrastructure with 23 languages and Crowdin integration.
-
 The extension includes a robust localization infrastructure supporting **23 languages** for the backend interface.
 
 Supported Languages
@@ -197,7 +194,6 @@ TextDB ViewHelper
           component="website"
           type="label"
           placeholder="welcome.message"
-          default="Welcome!"
       />
 
    **Parameters:**
@@ -213,6 +209,7 @@ TextDB ViewHelper
       :name: textdb-viewhelper-type
       :type: string
       :Required: true
+      :Default: ``P``
 
       Type identifier categorizing the translation (e.g., "label", "message", "error", "button").
 
@@ -223,13 +220,13 @@ TextDB ViewHelper
 
       Unique translation key within the component and type context.
 
-   .. confval:: default
-      :name: textdb-viewhelper-default
+   .. confval:: environment
+      :name: textdb-viewhelper-environment
       :type: string
       :Required: false
-      :Default: ``null``
+      :Default: ``default``
 
-      Fallback text displayed if the translation is not found in the database.
+      Environment name for contextual translations.
 
    **Output:**
 
@@ -242,13 +239,13 @@ Returns the translated text for the current page language.
    <!-- Simple usage -->
    <h1><textdb:textdb component="website" type="label" placeholder="page.title" /></h1>
 
-   <!-- With default value -->
+   <!-- With explicit environment -->
    <p>
        <textdb:textdb
            component="website"
            type="message"
            placeholder="welcome.text"
-           default="Welcome to our website!"
+           environment="production"
        />
    </p>
 
@@ -321,58 +318,77 @@ TranslationService
 
    **Methods:**
 
-   .. php:method:: getTranslation(string $component, string $type, string $placeholder, int $languageUid = 0)
+   translate()
+   ~~~~~~~~~~~
 
-      Retrieves a translation record from the database.
+   .. code-block:: php
 
-      :param string $component: Component identifier
-      :param string $type: Type identifier
-      :param string $placeholder: Translation key
-      :param int $languageUid: Language UID (0 for default language)
-      :returns: Translation domain model or null if not found
-      :returntype: ``\\Netresearch\\NrTextdb\\Domain\\Model\\Translation|null``
+      public function translate(
+          string $placeholder,
+          string $typeName,
+          string $componentName,
+          string $environmentName,
+      ): string
 
-      **Example:**
+   Retrieves a translated string from the database. If ``createIfMissing`` is enabled
+   and the translation doesn't exist, it will be auto-created with a placeholder value.
 
-.. code-block:: php
+   :param string $placeholder: Translation key
+   :param string $typeName: Type name (e.g., "label", "button")
+   :param string $componentName: Component name (e.g., "website", "checkout")
+   :param string $environmentName: Environment name (e.g., "default")
+   :returns: The translated value, or the placeholder if not found
 
-   $translation = $this->translationService->getTranslation(
-       component: 'website',
-       type: 'label',
-       placeholder: 'welcome.message',
-       languageUid: 1
-   );
+   **Example:**
 
-   if ($translation) {
-       echo $translation->getValue();
-   }
+   .. code-block:: php
 
-createTranslation()
-~~~~~~~~~~~~~~~~~~~
+      $value = $this->translationService->translate(
+          placeholder: 'welcome.message',
+          typeName: 'label',
+          componentName: 'website',
+          environmentName: 'default',
+      );
 
-.. code-block:: php
+   createTranslation()
+   ~~~~~~~~~~~~~~~~~~~~
 
-   public function createTranslation(
-       string $component,
-       string $type,
-       string $placeholder,
-       string $value,
-       int $languageUid = 0
-   ): Translation
+   .. code-block:: php
 
-Create new translation record.
+      public function createTranslation(
+          Environment $environment,
+          Component $component,
+          Type $type,
+          string $placeholder,
+          int $sysLanguageUid = 0,
+          string $value = '',
+      ): Translation
 
-**Example:**
+   Creates a new translation record in the database.
 
-.. code-block:: php
+   **Example:**
 
-   $translation = $this->translationService->createTranslation(
-       component: 'shop',
-       type: 'label',
-       placeholder: 'cart.add',
-       value: 'Add to cart',
-       languageUid: 0
-   );
+   .. code-block:: php
+
+      $translation = $this->translationService->createTranslation(
+          environment: $environment,
+          component: $component,
+          type: $type,
+          placeholder: 'cart.add',
+          sysLanguageUid: 0,
+          value: 'Add to cart',
+      );
+
+   getAllLanguages()
+   ~~~~~~~~~~~~~~~~~
+
+   .. code-block:: php
+
+      public function getAllLanguages(): array
+
+   Returns all configured site languages from the first available site.
+
+   :returns: Array of ``SiteLanguage`` objects
 
 ImportService
 -------------
@@ -391,39 +407,57 @@ Service for importing XLIFF files.
 
 **Methods:**
 
-importXliffFile()
-~~~~~~~~~~~~~~~~~
+importFile()
+~~~~~~~~~~~~~
 
 .. code-block:: php
 
-   public function importXliffFile(
-       string $filePath,
-       bool $overwriteExisting = false
-   ): array
+   public function importFile(
+       string $file,
+       bool $forceUpdate,
+       int &$imported,
+       int &$updated,
+       array &$errors,
+   ): void
 
-Import translations from XLIFF file.
-
-**Returns:** Array with import statistics
-
-.. code-block:: php
-
-   [
-       'imported' => 150,
-       'updated' => 25,
-       'skipped' => 10,
-       'errors' => []
-   ]
+Imports translations from a XLIFF file. Counters and errors are passed by reference.
 
 **Example:**
 
 .. code-block:: php
 
-   $result = $this->importService->importXliffFile(
-       filePath: '/path/to/translations.xlf',
-       overwriteExisting: true
+   $imported = 0;
+   $updated  = 0;
+   $errors   = [];
+
+   $this->importService->importFile(
+       file: '/path/to/translations.xlf',
+       forceUpdate: true,
+       imported: $imported,
+       updated: $updated,
+       errors: $errors,
    );
 
-   echo "Imported: {$result['imported']} translations";
+   echo "Imported: {$imported}, Updated: {$updated}";
+
+importEntry()
+~~~~~~~~~~~~~~
+
+.. code-block:: php
+
+   public function importEntry(
+       int $languageUid,
+       ?string $componentName,
+       ?string $typeName,
+       string $placeholder,
+       string $value,
+       bool $forceUpdate,
+       int &$imported,
+       int &$updated,
+       array &$errors,
+   ): void
+
+Imports a single translation entry into the database.
 
 .. _dev-repositories:
 
@@ -437,29 +471,50 @@ Repository for translation records.
 
 **Custom Methods:**
 
-findByComponentAndType()
-~~~~~~~~~~~~~~~~~~~~~~~~~
+findAllByComponentTypePlaceholderValueAndLanguage()
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: php
 
-   public function findByComponentAndType(
-       Component $component,
-       Type $type
+   public function findAllByComponentTypePlaceholderValueAndLanguage(
+       int $component = 0,
+       int $type = 0,
+       ?string $placeholder = null,
+       ?string $value = null,
+       int $languageId = 0,
    ): QueryResultInterface
 
-Find all translations for component and type.
+Find all translations filtered by component UID, type UID, placeholder substring,
+value substring, and/or language ID. All parameters are optional filters.
 
-findByPlaceholder()
-~~~~~~~~~~~~~~~~~~~
+findByEnvironmentComponentTypePlaceholderAndLanguage()
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: php
 
-   public function findByPlaceholder(
+   public function findByEnvironmentComponentTypePlaceholderAndLanguage(
+       Environment $environment,
+       Component $component,
+       Type $type,
        string $placeholder,
-       int $languageUid = 0
+       int $languageUid,
    ): ?Translation
 
-Find translation by placeholder key.
+Find a single translation by exact environment, component, type, placeholder, and language.
+
+findByEnvironmentComponentTypeAndPlaceholder()
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: php
+
+   public function findByEnvironmentComponentTypeAndPlaceholder(
+       Environment $environment,
+       Component $component,
+       Type $type,
+       string $placeholder,
+   ): ?Translation
+
+Find the default language (``sys_language_uid = 0``) translation for the given criteria.
 
 **Example:**
 
@@ -473,10 +528,11 @@ Find translation by placeholder key.
 
    public function myAction(): void
    {
-       $translations = $this->repository->findByComponentAndType(
-           $component,
-           $type
-       );
+       $translations = $this->repository
+           ->findAllByComponentTypePlaceholderValueAndLanguage(
+               component: $componentUid,
+               type: $typeUid,
+           );
 
        foreach ($translations as $translation) {
            // Process translations
@@ -524,10 +580,9 @@ Component Model
 
 .. code-block:: php
 
-   class Component extends AbstractEntity
+   class Component extends AbstractValueObject
    {
        protected string $name = '';
-       protected string $identifier = '';
    }
 
 Type Model
@@ -535,10 +590,9 @@ Type Model
 
 .. code-block:: php
 
-   class Type extends AbstractEntity
+   class Type extends AbstractValueObject
    {
        protected string $name = '';
-       protected string $identifier = '';
    }
 
 Environment Model
@@ -546,10 +600,9 @@ Environment Model
 
 .. code-block:: php
 
-   class Environment extends AbstractEntity
+   class Environment extends AbstractValueObject
    {
        protected string $name = '';
-       protected string $identifier = '';
    }
 
 .. _dev-commands:
@@ -568,7 +621,7 @@ CLI command for importing translations.
 
 .. code-block:: bash
 
-   vendor/bin/typo3 nr_textdb:import [file-path]
+   vendor/bin/typo3 nr_textdb:import [extensionKey] [--override|-o]
 
 **Configuration:**
 
@@ -608,8 +661,11 @@ CLI command for importing translations.
            $files = glob('/path/to/translations/*.xlf');
 
            foreach ($files as $file) {
-               $result = $this->importService->importXliffFile($file);
-               $output->writeln("Imported {$result['imported']} from {$file}");
+               $imported = 0;
+               $updated = 0;
+               $errors = [];
+               $this->importService->importFile($file, false, $imported, $updated, $errors);
+               $output->writeln("Imported: {$imported}, Updated: {$updated} from {$file}");
            }
 
            return Command::SUCCESS;
@@ -658,8 +714,8 @@ Example 1: Programmatic Translation Management
 
        public function createBulkTranslations(array $data): void
        {
-           $component = $this->componentRepository->findByIdentifier('website');
-           $type = $this->typeRepository->findByIdentifier('label');
+           $component = $this->componentRepository->findByName('website');
+           $type = $this->typeRepository->findByName('label');
 
            foreach ($data as $key => $value) {
                $translation = new Translation();
@@ -688,9 +744,9 @@ Example 2: Custom Export Functionality
            private readonly TranslationRepository $repository
        ) {}
 
-       public function exportToJson(string $component): string
+       public function exportToJson(int $componentUid): string
        {
-           $translations = $this->repository->findByComponent($component);
+           $translations = $this->repository->findAllByComponentTypePlaceholderValueAndLanguage(component: $componentUid);
 
            $data = [];
            foreach ($translations as $translation) {
@@ -700,9 +756,9 @@ Example 2: Custom Export Functionality
            return json_encode($data, JSON_PRETTY_PRINT);
        }
 
-       public function exportToCsv(string $component): string
+       public function exportToCsv(int $componentUid): string
        {
-           $translations = $this->repository->findByComponent($component);
+           $translations = $this->repository->findAllByComponentTypePlaceholderValueAndLanguage(component: $componentUid);
 
            $csv = "Placeholder,Value,Language\n";
            foreach ($translations as $translation) {
@@ -741,14 +797,12 @@ Example 3: Frontend Integration
            );
 
            foreach ($menuItems as &$item) {
-               $translation = $this->translationService->getTranslation(
-                   component: 'menu',
-                   type: 'label',
+               $item['title'] = $this->translationService->translate(
                    placeholder: $item['key'],
-                   languageUid: $languageUid
+                   typeName: 'label',
+                   componentName: 'menu',
+                   environmentName: 'default',
                );
-
-               $item['title'] = $translation?->getValue() ?? $item['title'];
            }
 
            return $menuItems;
@@ -845,27 +899,27 @@ Extending the TranslationService
 
    class ExtendedTranslationService extends TranslationService
    {
-       public function getTranslation(
-           string $component,
-           string $type,
+       public function translate(
            string $placeholder,
-           int $languageUid = 0
-       ): ?Translation {
+           string $typeName,
+           string $componentName,
+           string $environmentName,
+       ): string {
            // Add custom caching
-           $cacheKey = "{$component}_{$type}_{$placeholder}_{$languageUid}";
+           $cacheKey = "{$componentName}_{$typeName}_{$placeholder}_{$environmentName}";
            if ($cached = $this->cache->get($cacheKey)) {
                return $cached;
            }
 
-           $translation = parent::getTranslation(
-               $component,
-               $type,
+           $result = parent::translate(
                $placeholder,
-               $languageUid
+               $typeName,
+               $componentName,
+               $environmentName,
            );
 
-           $this->cache->set($cacheKey, $translation);
-           return $translation;
+           $this->cache->set($cacheKey, $result);
+           return $result;
        }
    }
 
@@ -896,13 +950,12 @@ Custom ViewHelper
            $component = $parts[0] ?? 'default';
            $placeholder = $parts[1] ?? $this->arguments['key'];
 
-           $translation = $this->translationService->getTranslation(
-               component: $component,
-               type: 'label',
-               placeholder: $placeholder
+           return $this->translationService->translate(
+               placeholder: $placeholder,
+               typeName: 'label',
+               componentName: $component,
+               environmentName: 'default',
            );
-
-           return $translation?->getValue() ?? $this->arguments['key'];
        }
    }
 
@@ -985,19 +1038,19 @@ Translation Not Found
 .. code-block:: php
 
    // Debug translation lookup
-   $translation = $this->translationService->getTranslation(
-       component: 'website',
-       type: 'label',
+   $value = $this->translationService->translate(
        placeholder: 'test.key',
-       languageUid: 0
+       typeName: 'label',
+       componentName: 'website',
+       environmentName: 'default',
    );
 
-   if (!$translation) {
-       // Check: Component exists?
-       // Check: Type exists?
-       // Check: Record in correct storage folder?
-       // Check: createIfMissing enabled?
-   }
+   // If $value equals the placeholder, the translation was not found.
+   // Check:
+   // - Component 'website' exists in the configured storage folder?
+   // - Type 'label' exists?
+   // - Environment 'default' exists?
+   // - createIfMissing enabled in extension configuration?
 
 .. _dev-resources:
 

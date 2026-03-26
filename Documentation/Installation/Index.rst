@@ -117,9 +117,6 @@ Post-Installation Steps
 Localization
 ============
 
-.. versionadded:: 3.1.0
-   Backend interface available in 23 languages with Crowdin integration.
-
 The extension backend interface is available in **23 languages** out of the box:
 
 **European**: Afrikaans, Czech, Danish, German, Spanish, Finnish, French, Italian, Dutch, Norwegian, Polish, Portuguese, Swedish
@@ -141,9 +138,6 @@ Upgrade Instructions
 
 From Version 2.x to 3.x
 -----------------------
-
-.. versionchanged:: 3.0.0
-   Added TYPO3 13.4 LTS compatibility with breaking changes requiring PHP 8.2+.
 
 Version 3.0 brings TYPO3 13.4 LTS compatibility:
 

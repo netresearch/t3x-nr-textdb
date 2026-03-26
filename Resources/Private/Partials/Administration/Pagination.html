@@ -12,7 +12,7 @@
     </f:comment>
 
     <f:if condition="{paginator.numberOfPages} > 1">
-        <nav class="pagination-wrap">
+        <nav class="pagination-wrap" aria-label="{f:translate(key: 'pagination.label', default: 'Pagination')}">
             <ul class="pagination">
                 <f:if condition="{pagination.previousPageNumber} && {pagination.previousPageNumber} >= {pagination.firstPageNumber}">
                     <f:then>
@@ -62,6 +62,7 @@
                                 size="5"
                                 value="{paginator.currentPageNumber}"
                                 type="number"
+                                aria-label="{f:translate(key: 'pagination.page.input', default: 'Go to page')}"
                             />
                         </form>
                         / {pagination.lastPageNumber}

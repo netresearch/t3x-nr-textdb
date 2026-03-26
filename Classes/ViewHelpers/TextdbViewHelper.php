@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace Netresearch\NrTextdb\ViewHelpers;
 
 use Netresearch\NrTextdb\Service\TranslationService;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
@@ -28,10 +27,13 @@ use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
  */
 class TextdbViewHelper extends AbstractViewHelper
 {
-    /**
-     * Translation service instance.
-     */
-    protected ?TranslationService $translationService = null;
+    private readonly TranslationService $translationService;
+
+    public function __construct(
+        TranslationService $translationService,
+    ) {
+        $this->translationService = $translationService;
+    }
 
     /**
      * Initializes arguments (attributes).
@@ -51,7 +53,7 @@ class TextdbViewHelper extends AbstractViewHelper
             'type',
             'string',
             'TextDB type',
-            true,
+            false,
             'P',
         );
 
@@ -90,24 +92,12 @@ class TextdbViewHelper extends AbstractViewHelper
         assert(is_string($component));
         assert(is_string($environment));
 
-        return $this->getTranslationService()
+        return $this->translationService
             ->translate(
                 $placeholder,
                 $type,
                 $component,
                 $environment,
             );
-    }
-
-    /**
-     * Getter for translationService.
-     */
-    public function getTranslationService(): TranslationService
-    {
-        if (!$this->translationService instanceof TranslationService) {
-            $this->translationService = GeneralUtility::makeInstance(TranslationService::class);
-        }
-
-        return $this->translationService;
     }
 }

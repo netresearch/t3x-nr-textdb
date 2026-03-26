@@ -25,7 +25,6 @@ use TYPO3\CMS\Core\Context\LanguageAspect;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
 use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
 
@@ -50,6 +49,17 @@ class TranslationService
 
     private readonly SiteFinder $siteFinder;
 
+    private readonly PersistenceManagerInterface $persistenceManager;
+
+    private readonly Context $context;
+
+    /**
+     * In-memory translation cache to avoid repeated DB queries within a single request.
+     *
+     * @var array<string, string>
+     */
+    private array $translationCache = [];
+
     /**
      * Translation constructor.
      */
@@ -59,12 +69,16 @@ class TranslationService
         TypeRepository $typeRepository,
         TranslationRepository $translationRepository,
         SiteFinder $siteFinder,
+        PersistenceManagerInterface $persistenceManager,
+        Context $context,
     ) {
         $this->environmentRepository = $environmentRepository;
         $this->componentRepository   = $componentRepository;
         $this->typeRepository        = $typeRepository;
         $this->translationRepository = $translationRepository;
         $this->siteFinder            = $siteFinder;
+        $this->persistenceManager    = $persistenceManager;
+        $this->context               = $context;
     }
 
     /**
@@ -82,15 +96,22 @@ class TranslationService
             return $placeholder;
         }
 
+        $languageUid = $this->getCurrentLanguage();
+
+        // Check in-memory cache first to avoid repeated DB queries within same request
+        $cacheKey = sprintf('%s|%s|%s|%s|%d', $environmentName, $componentName, $typeName, $placeholder, $languageUid);
+        if (isset($this->translationCache[$cacheKey])) {
+            return $this->translationCache[$cacheKey];
+        }
+
         $environment = $this->environmentRepository->findByName($environmentName);
         $component   = $this->componentRepository->findByName($componentName);
         $type        = $this->typeRepository->findByName($typeName);
-        $languageUid = $this->getCurrentLanguage();
 
         if (
-            !$environment instanceof Environment
-            || !$component instanceof Component
-            || !$type instanceof Type
+            !($environment instanceof Environment)
+            || !($component instanceof Component)
+            || !($type instanceof Type)
         ) {
             return $placeholder;
         }
@@ -106,7 +127,7 @@ class TranslationService
 
         // Create a new translation
         if (
-            !$translation instanceof Translation
+            !($translation instanceof Translation)
             && $this->translationRepository->getCreateIfMissing()
         ) {
             $translation = $this->createTranslation(
@@ -142,8 +163,7 @@ class TranslationService
                     $this->translationRepository->add($parentTranslation);
 
                     // Persist the new parent to ensure we got a valid UID for the new record
-                    GeneralUtility::makeInstance(PersistenceManagerInterface::class)
-                        ->persistAll();
+                    $this->persistenceManager->persistAll();
 
                     $parentUid = $parentTranslation->getUid();
                     if ($parentUid !== null) {
@@ -155,15 +175,21 @@ class TranslationService
             $this->translationRepository->add($translation);
 
             // Persist the new translation record
-            GeneralUtility::makeInstance(PersistenceManagerInterface::class)
-                ->persistAll();
+            $this->persistenceManager->persistAll();
         }
 
         if (!$translation instanceof Translation) {
+            $this->translationCache[$cacheKey] = $placeholder;
+
             return $placeholder;
         }
 
-        return $translation->getValue() !== '' ? $translation->getValue() : $translation->getPlaceholder();
+        $result = $translation->getValue() !== '' ? $translation->getValue() : $translation->getPlaceholder();
+
+        // Store in cache for subsequent lookups within same request
+        $this->translationCache[$cacheKey] = $result;
+
+        return $result;
     }
 
     /**
@@ -187,11 +213,8 @@ class TranslationService
     private function getCurrentLanguage(): int
     {
         try {
-            /** @var Context $context */
-            $context = GeneralUtility::makeInstance(Context::class);
-
             /** @var LanguageAspect $languageAspect */
-            $languageAspect = $context->getAspect('language');
+            $languageAspect = $this->context->getAspect('language');
         } catch (AspectNotFoundException) {
             return 0;
         }
@@ -212,15 +235,14 @@ class TranslationService
         string $value,
     ): ?Translation {
         if (
-            !$parentTranslation->getEnvironment() instanceof Environment
-            || !$parentTranslation->getComponent() instanceof Component
-            || !$parentTranslation->getType() instanceof Type
+            !($parentTranslation->getEnvironment() instanceof Environment)
+            || !($parentTranslation->getComponent() instanceof Component)
+            || !($parentTranslation->getType() instanceof Type)
         ) {
             return null;
         }
 
-        /** @var Translation $translation */
-        $translation = GeneralUtility::makeInstance(Translation::class);
+        $translation = new Translation();
         $translation
             ->setEnvironment($parentTranslation->getEnvironment())
             ->setComponent($parentTranslation->getComponent())
@@ -258,8 +280,7 @@ class TranslationService
         int $sysLanguageUid = 0,
         string $value = '',
     ): Translation {
-        /** @var Translation $translation */
-        $translation = GeneralUtility::makeInstance(Translation::class);
+        $translation = new Translation();
         $translation
             ->setEnvironment($environment)
             ->setComponent($component)

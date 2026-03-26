@@ -6,12 +6,26 @@
 ChangeLog
 =========
 
+.. _version-3-0-3:
+
+Version 3.0.3
+=============
+
+Released: 2024-11-27
+
+**Changes:**
+
+* Use ``$_EXTKEY`` in ext_emconf.php and sanitize TER comment
+* Documentation improvements with GitHub integration for docs.typo3.org
+* Changed license to Creative Commons BY 4.0 for documentation
+* Fixed guides.xml schemaLocation and added theme attribute
+
 .. _version-3-0-1:
 
 Version 3.0.1
 =============
 
-Released: 2024-XX-XX
+Released: 2024-11-07
 
 **Changes:**
 
@@ -24,7 +38,7 @@ Released: 2024-XX-XX
 Version 3.0.0
 =============
 
-Released: 2024-XX-XX
+Released: 2024-11-07
 
 **Breaking Changes:**
 
