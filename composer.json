@@ -58,17 +58,7 @@
         "symfony/console": "^7.0"
     },
     "require-dev": {
-        "a9f/typo3-fractor": "^0.5",
-        "friendsofphp/php-cs-fixer": "^3.75",
-        "infection/infection": "^0.29 || ^0.32",
-        "overtrue/phplint": "^9.5",
-        "phpstan/phpstan": "^2.0",
-        "phpstan/phpstan-deprecation-rules": "^2.0",
-        "phpstan/phpstan-phpunit": "^2.0",
-        "phpstan/phpstan-strict-rules": "^2.0",
-        "saschaegerer/phpstan-typo3": "^2.0 || ^3.0",
-        "ssch/typo3-rector": "^3.0",
-        "typo3/testing-framework": "^9.0"
+        "netresearch/typo3-ci-workflows": "^1.1"
     },
     "suggest": {
         "netresearch/nr-sync": "Enables synchronization of TextDB translations between TYPO3 instances"
@@ -92,7 +82,10 @@
         "platform-check": false,
         "allow-plugins": {
             "a9f/fractor-extension-installer": true,
+            "captainhook/hook-installer": true,
+            "dg/bypass-finals": true,
             "infection/extension-installer": true,
+            "phpstan/extension-installer": true,
             "typo3/class-alias-loader": true,
             "typo3/cms-composer-installers": true
         },
