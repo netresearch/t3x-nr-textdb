@@ -24,7 +24,7 @@ return [
         'enablecolumns'            => [
             'disabled' => 'hidden',
         ],
-        'searchFields' => 'value,placeholder',
+
         'iconfile'     => 'EXT:nr_textdb/Resources/Public/Icons/tx_nrtextdb_domain_model_translation.svg',
         'security'     => [
             'ignorePageTypeRestriction' => true,

@@ -393,6 +393,10 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
 
         self::assertSame([], $errors);
 
+        // Flush the Extbase persistence session so the follow-up query
+        // fetches the updated row from the database instead of the identity map cache.
+        $this->get(\TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface::class)->persistAll();
+
         $result = $this->translationRepository
             ->findAllByComponentTypePlaceholderValueAndLanguage(
                 placeholder: 'auto_created_key',

@@ -59,13 +59,13 @@ class Translation extends AbstractEntity
     /**
      * The placeholder.
      */
-    #[Validate(['validator' => NotEmptyValidator::class])]
+    #[Validate(validator: NotEmptyValidator::class)]
     protected string $placeholder = '';
 
     /**
      * The value.
      */
-    #[Validate(['validator' => NotEmptyValidator::class])]
+    #[Validate(validator: NotEmptyValidator::class)]
     protected string $value = '';
 
     public function getCrdate(): ?DateTime
