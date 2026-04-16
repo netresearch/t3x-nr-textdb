@@ -61,7 +61,10 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
                 };
             });
 
-        GeneralUtility::addInstance(ExtensionConfiguration::class, $extensionConfigurationMock);
+        // Register multiple instances since each makeInstance() call consumes one
+        for ($i = 0; $i < 10; $i++) {
+            GeneralUtility::addInstance(ExtensionConfiguration::class, $extensionConfigurationMock);
+        }
 
         // Build a minimal SiteLanguage for English (language id 0)
         $siteLanguage = $this->buildSiteLanguage(0, 'en');

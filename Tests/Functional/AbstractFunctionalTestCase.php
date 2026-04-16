@@ -50,6 +50,7 @@ abstract class AbstractFunctionalTestCase extends FunctionalTestCase
     protected array $coreExtensionsToLoad = [
         'extbase',
         'fluid',
+        'extensionmanager',
     ];
 
     protected bool $initializeDatabase = true;

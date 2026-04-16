@@ -20,7 +20,8 @@ use RuntimeException;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Fluid\View\StandaloneView;
+use TYPO3\CMS\Fluid\Core\Rendering\RenderingContextFactory;
+use TYPO3Fluid\Fluid\View\TemplateView;
 
 /**
  * End-to-end rendering tests for TranslateViewHelper.
@@ -269,9 +270,9 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
     {
         $templateSource = '{namespace nrtextdb=Netresearch\\NrTextdb\\ViewHelpers}' . $templateBody;
 
-        /** @var StandaloneView $view */
-        $view = GeneralUtility::makeInstance(StandaloneView::class);
-        $view->setTemplateSource($templateSource);
+        $renderingContext = $this->get(RenderingContextFactory::class)->create();
+        $view = new TemplateView($renderingContext);
+        $view->getRenderingContext()->getTemplatePaths()->setTemplateSource($templateSource);
 
         return $view->render();
     }
@@ -315,6 +316,9 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
                 },
             );
 
-        GeneralUtility::addInstance(ExtensionConfiguration::class, $mock);
+        // Register multiple instances since each makeInstance() call consumes one
+        for ($i = 0; $i < 10; $i++) {
+            GeneralUtility::addInstance(ExtensionConfiguration::class, $mock);
+        }
     }
 }

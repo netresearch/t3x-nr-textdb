@@ -52,7 +52,10 @@ final class ComponentRepositoryTest extends AbstractFunctionalTestCase
                 };
             });
 
-        GeneralUtility::addInstance(ExtensionConfiguration::class, $extensionConfigurationMock);
+        // Register multiple instances since each makeInstance() call consumes one
+        for ($i = 0; $i < 10; $i++) {
+            GeneralUtility::addInstance(ExtensionConfiguration::class, $extensionConfigurationMock);
+        }
 
         $this->componentRepository = $this->get(ComponentRepository::class);
 
@@ -119,7 +122,9 @@ final class ComponentRepositoryTest extends AbstractFunctionalTestCase
                 };
             });
 
-        GeneralUtility::addInstance(ExtensionConfiguration::class, $extensionConfigurationMock);
+        for ($i = 0; $i < 10; $i++) {
+            GeneralUtility::addInstance(ExtensionConfiguration::class, $extensionConfigurationMock);
+        }
 
         // Use a freshly resolved instance to avoid static-cache pollution
         $repository = $this->get(ComponentRepository::class);
@@ -149,7 +154,9 @@ final class ComponentRepositoryTest extends AbstractFunctionalTestCase
                 };
             });
 
-        GeneralUtility::addInstance(ExtensionConfiguration::class, $extensionConfigurationMock);
+        for ($i = 0; $i < 10; $i++) {
+            GeneralUtility::addInstance(ExtensionConfiguration::class, $extensionConfigurationMock);
+        }
 
         $repository = $this->get(ComponentRepository::class);
         $repository->setCreateIfMissing(true);
@@ -171,7 +178,9 @@ final class ComponentRepositoryTest extends AbstractFunctionalTestCase
                 };
             });
 
-        GeneralUtility::addInstance(ExtensionConfiguration::class, $extensionConfigurationMock2);
+        for ($i = 0; $i < 10; $i++) {
+            GeneralUtility::addInstance(ExtensionConfiguration::class, $extensionConfigurationMock2);
+        }
 
         $repository2 = $this->get(ComponentRepository::class);
         $fetched     = $repository2->findByName('persisted-component');

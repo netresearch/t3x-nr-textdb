@@ -72,12 +72,20 @@ final class TranslationRepositoryTest extends AbstractFunctionalTestCase
             });
 
         GeneralUtility::addInstance(ExtensionConfiguration::class, $extensionConfigurationMock);
+        // Add additional instances since multiple repositories call makeInstance independently
+        GeneralUtility::addInstance(ExtensionConfiguration::class, $extensionConfigurationMock);
+        GeneralUtility::addInstance(ExtensionConfiguration::class, $extensionConfigurationMock);
+        GeneralUtility::addInstance(ExtensionConfiguration::class, $extensionConfigurationMock);
+        GeneralUtility::addInstance(ExtensionConfiguration::class, $extensionConfigurationMock);
 
         $this->translationRepository = $this->get(TranslationRepository::class);
         $this->environmentRepository = $this->get(EnvironmentRepository::class);
         $this->componentRepository   = $this->get(ComponentRepository::class);
         $this->typeRepository        = $this->get(TypeRepository::class);
 
+        $this->importCSVDataSet(
+            __DIR__ . '/../../Fixtures/Pages.csv',
+        );
         $this->importCSVDataSet(
             __DIR__ . '/../../Fixtures/TranslationRepository/Environments.csv',
         );
