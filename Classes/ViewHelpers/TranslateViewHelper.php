@@ -125,10 +125,14 @@ class TranslateViewHelper extends AbstractViewHelper
         // If the result is the placeholder itself (auto-created or missing),
         // try to return the LLL translation instead
         if ($result === $textdbKey) {
-            $lllTranslation = LocalizationUtility::translate($placeholder, $extension);
+            // Only attempt LLL resolution if the key is fully-qualified or an extension name is provided.
+            // In TYPO3 v14, LocalizationUtility::translate() throws if both are missing.
+            if (str_starts_with($placeholder, 'LLL:') || ($extension !== null && $extension !== '')) {
+                $lllTranslation = LocalizationUtility::translate($placeholder, $extension);
 
-            if ($lllTranslation !== null && $lllTranslation !== '') {
-                return $lllTranslation;
+                if ($lllTranslation !== null && $lllTranslation !== '') {
+                    return $lllTranslation;
+                }
             }
         }
 

@@ -15,6 +15,7 @@ use Netresearch\NrTextdb\Domain\Model\Component;
 use Netresearch\NrTextdb\Domain\Model\Environment;
 use Netresearch\NrTextdb\Domain\Model\Translation;
 use Netresearch\NrTextdb\Domain\Model\Type;
+use TYPO3\CMS\Core\Context\LanguageAspect;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException;
 use TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings;
@@ -61,11 +62,12 @@ class TranslationRepository extends AbstractRepository
             ->getQuerySettings()
             ->setIgnoreEnableFields(true)
             ->setRespectStoragePage(false)
-            ->setRespectSysLanguage(false);
+            ->setRespectSysLanguage(false)
+            ->setLanguageAspect(new LanguageAspect($languageUid, $languageUid, LanguageAspect::OVERLAYS_OFF));
 
         $query->matching(
             $query->logicalAnd(
-                $query->equals('sys_language_uid', $languageUid),
+                $query->equals('sysLanguageUid', $languageUid),
                 $query->in('l10nParent', $originals),
             ),
         );
@@ -88,7 +90,8 @@ class TranslationRepository extends AbstractRepository
             ->setIgnoreEnableFields(true)
             ->setRespectStoragePage(true)
             ->setStoragePageIds([$this->getConfiguredPageId()])
-            ->setRespectSysLanguage(false);
+            ->setRespectSysLanguage(false)
+            ->setLanguageAspect(new LanguageAspect(0, 0, LanguageAspect::OVERLAYS_OFF));
 
         $query->matching(
             $query->equals('l10nParent', $uid),
@@ -143,7 +146,10 @@ class TranslationRepository extends AbstractRepository
         }
 
         if ($languageId !== 0) {
-            $constraints[] = $query->equals('_languageUid', $languageId);
+            $query->getQuerySettings()
+                ->setRespectSysLanguage(false)
+                ->setLanguageAspect(new LanguageAspect($languageId, $languageId, LanguageAspect::OVERLAYS_OFF));
+            $constraints[] = $query->equals('sysLanguageUid', $languageId);
         }
 
         if ($constraints !== []) {
@@ -170,12 +176,13 @@ class TranslationRepository extends AbstractRepository
             ->setIgnoreEnableFields(true)
             ->setRespectStoragePage(true)
             ->setStoragePageIds([$this->getConfiguredPageId()])
-            ->setRespectSysLanguage(false);
+            ->setRespectSysLanguage(false)
+            ->setLanguageAspect(new LanguageAspect(0, 0, LanguageAspect::OVERLAYS_OFF));
 
         return $query
             ->matching(
                 $query->logicalAnd(
-                    $query->equals('sys_language_uid', 0),
+                    $query->equals('sysLanguageUid', 0),
                     $query->equals('environment', $environment),
                     $query->equals('component', $component),
                     $query->equals('type', $type),
@@ -202,12 +209,13 @@ class TranslationRepository extends AbstractRepository
             ->setIgnoreEnableFields(true)
             ->setRespectStoragePage(true)
             ->setStoragePageIds([$this->getConfiguredPageId()])
-            ->setRespectSysLanguage(false);
+            ->setRespectSysLanguage(false)
+            ->setLanguageAspect(new LanguageAspect($languageUid, $languageUid, LanguageAspect::OVERLAYS_OFF));
 
         return $query
             ->matching(
                 $query->logicalAnd(
-                    $query->equals('sys_language_uid', $languageUid),
+                    $query->equals('sysLanguageUid', $languageUid),
                     $query->equals('environment', $environment),
                     $query->equals('component', $component),
                     $query->equals('type', $type),
