@@ -29,7 +29,7 @@ class Component extends AbstractValueObject
     /**
      * name.
      */
-    #[Validate(['validator' => NotEmptyValidator::class])]
+    #[Validate(validator: NotEmptyValidator::class)]
     protected string $name = '';
 
     /**
