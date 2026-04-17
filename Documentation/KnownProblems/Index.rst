@@ -47,20 +47,6 @@ Import Performance
 
 **GitHub Issue:** `#30 <https://github.com/netresearch/t3x-nr-textdb/issues/30>`_
 
-Pagination with Large Datasets
--------------------------------
-
-**Issue:** Initial page load slow with >10,000 translation records
-
-**Workaround:**
-  * Use filters to narrow results
-  * Implement custom caching layer
-  * Consider database indexing optimization
-
-**Status:** Performance improvements planned for 3.1.0
-
-**GitHub Issue:** `#31 <https://github.com/netresearch/t3x-nr-textdb/issues/31>`_
-
 Language Fallback
 -----------------
 
