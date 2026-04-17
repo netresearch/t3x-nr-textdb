@@ -26,7 +26,7 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\MockObject\MockObject;
 use RuntimeException;
-use TYPO3\CMS\Core\Localization\Parser\XliffParser;
+use Symfony\Component\Translation\Loader\XliffFileLoader;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
@@ -57,7 +57,7 @@ final class ImportServiceTest extends UnitTestCase
         parent::setUp();
 
         $this->persistenceManager    = $this->createMock(PersistenceManagerInterface::class);
-        $xliffParser                 = $this->createMock(XliffParser::class);
+        $xliffFileLoader             = $this->createMock(XliffFileLoader::class);
         $this->translationService    = $this->createMock(TranslationService::class);
         $this->translationRepository = $this->createMock(TranslationRepository::class);
         $this->componentRepository   = $this->createMock(ComponentRepository::class);
@@ -67,7 +67,7 @@ final class ImportServiceTest extends UnitTestCase
 
         $this->subject = new ImportService(
             $this->persistenceManager,
-            $xliffParser,
+            $xliffFileLoader,
             $this->translationService,
             $this->translationRepository,
             $this->componentRepository,

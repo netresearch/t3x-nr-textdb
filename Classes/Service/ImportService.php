@@ -23,7 +23,7 @@ use Netresearch\NrTextdb\Domain\Repository\EnvironmentRepository;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
 use Netresearch\NrTextdb\Domain\Repository\TypeRepository;
 use RuntimeException;
-use TYPO3\CMS\Core\Localization\Parser\XliffParser;
+use Symfony\Component\Translation\Loader\XliffFileLoader;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
@@ -42,7 +42,7 @@ class ImportService
 {
     private readonly PersistenceManagerInterface $persistenceManager;
 
-    private readonly XliffParser $xliffParser;
+    private readonly XliffFileLoader $xliffFileLoader;
 
     private readonly TranslationService $translationService;
 
@@ -61,7 +61,7 @@ class ImportService
      */
     public function __construct(
         PersistenceManagerInterface $persistenceManager,
-        XliffParser $xliffParser,
+        XliffFileLoader $xliffFileLoader,
         TranslationService $translationService,
         TranslationRepository $translationRepository,
         ComponentRepository $componentRepository,
@@ -70,7 +70,7 @@ class ImportService
         SiteFinder $siteFinder,
     ) {
         $this->persistenceManager    = $persistenceManager;
-        $this->xliffParser           = $xliffParser;
+        $this->xliffFileLoader       = $xliffFileLoader;
         $this->translationService    = $translationService;
         $this->translationRepository = $translationRepository;
         $this->componentRepository   = $componentRepository;
@@ -97,14 +97,10 @@ class ImportService
     ): void {
         $languageKey = $this->getLanguageKeyFromFile($file);
         $languageUid = $this->getLanguageId($languageKey);
-        $fileContent = $this->xliffParser->getParsedData($file, $languageKey);
-        $entries     = $fileContent[$languageKey] ?? [];
+        $catalogue   = $this->xliffFileLoader->load($file, $languageKey);
+        $entries     = $catalogue->all('messages');
 
-        if (!is_array($entries)) {
-            return;
-        }
-
-        foreach ($entries as $key => $data) {
+        foreach ($entries as $key => $value) {
             $key           = (string) $key;
             $componentName = $this->getComponentFromKey($key);
             if ($componentName === null) {
@@ -135,10 +131,6 @@ class ImportService
                     ),
                 );
             }
-
-            $value = is_array($data) && isset($data[0]) && is_array($data[0])
-                ? ($data[0]['target'] ?? null)
-                : null;
 
             if (!is_string($value)) {
                 throw new RuntimeException(
