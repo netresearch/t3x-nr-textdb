@@ -18,6 +18,7 @@ use Netresearch\NrTextdb\Domain\Repository\ComponentRepository;
 use Netresearch\NrTextdb\Domain\Repository\EnvironmentRepository;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
 use Netresearch\NrTextdb\Domain\Repository\TypeRepository;
+use Netresearch\NrTextdb\Service\ImportResult;
 use Netresearch\NrTextdb\Service\ImportService;
 use Netresearch\NrTextdb\Service\TranslationService;
 use Psr\Http\Message\ResponseInterface;
@@ -521,8 +522,7 @@ final class TranslationController extends ActionController
         $languageCode = trim($matches[1], '.');
         $languageCode = $languageCode === '' ? 'en' : $languageCode;
 
-        $imported    = 0;
-        $updated     = 0;
+        $result      = new ImportResult();
         $languages   = [];
         $errors      = [];
         $forceUpdate = $update;
@@ -619,17 +619,15 @@ final class TranslationController extends ActionController
                         $placeholder,
                         trim($value),
                         $forceUpdate,
-                        $imported,
-                        $updated,
-                        $errors,
+                        $result,
                     );
             }
         }
 
         $this->moduleTemplate->assignMultiple([
-            'updated'  => $updated,
-            'imported' => $imported,
-            'errors'   => $errors,
+            'updated'  => $result->getUpdated(),
+            'imported' => $result->getImported(),
+            'errors'   => array_merge($errors, $result->getErrors()),
             'language' => implode(
                 ',',
                 $languages,

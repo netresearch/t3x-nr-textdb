@@ -19,6 +19,7 @@ use Netresearch\NrTextdb\Domain\Repository\ComponentRepository;
 use Netresearch\NrTextdb\Domain\Repository\EnvironmentRepository;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
 use Netresearch\NrTextdb\Domain\Repository\TypeRepository;
+use Netresearch\NrTextdb\Service\ImportResult;
 use Netresearch\NrTextdb\Service\ImportService;
 use Netresearch\NrTextdb\Service\TranslationService;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -80,35 +81,29 @@ final class ImportServiceTest extends UnitTestCase
     #[Test]
     public function importEntrySkipsNullComponentName(): void
     {
-        $imported = 0;
-        $updated  = 0;
-        $errors   = [];
+        $result = new ImportResult();
 
-        $this->subject->importEntry(0, null, 'label', 'key', 'value', false, $imported, $updated, $errors);
+        $this->subject->importEntry(0, null, 'label', 'key', 'value', false, $result);
 
-        self::assertSame(0, $imported);
-        self::assertSame(0, $updated);
+        self::assertSame(0, $result->getImported());
+        self::assertSame(0, $result->getUpdated());
     }
 
     #[Test]
     public function importEntrySkipsNullTypeName(): void
     {
-        $imported = 0;
-        $updated  = 0;
-        $errors   = [];
+        $result = new ImportResult();
 
-        $this->subject->importEntry(0, 'component', null, 'key', 'value', false, $imported, $updated, $errors);
+        $this->subject->importEntry(0, 'component', null, 'key', 'value', false, $result);
 
-        self::assertSame(0, $imported);
-        self::assertSame(0, $updated);
+        self::assertSame(0, $result->getImported());
+        self::assertSame(0, $result->getUpdated());
     }
 
     #[Test]
     public function importEntrySkipsWhenEnvironmentNotFound(): void
     {
-        $imported = 0;
-        $updated  = 0;
-        $errors   = [];
+        $result = new ImportResult();
 
         $this->environmentRepository->method('setCreateIfMissing')->willReturnSelf();
         $this->environmentRepository->method('findByName')->willReturn(null);
@@ -117,18 +112,16 @@ final class ImportServiceTest extends UnitTestCase
         $this->typeRepository->method('setCreateIfMissing')->willReturnSelf();
         $this->typeRepository->method('findByName')->willReturn(new Type());
 
-        $this->subject->importEntry(0, 'comp', 'type', 'key', 'value', false, $imported, $updated, $errors);
+        $this->subject->importEntry(0, 'comp', 'type', 'key', 'value', false, $result);
 
-        self::assertSame(0, $imported);
-        self::assertSame(0, $updated);
+        self::assertSame(0, $result->getImported());
+        self::assertSame(0, $result->getUpdated());
     }
 
     #[Test]
     public function importEntryCreatesNewTranslation(): void
     {
-        $imported = 0;
-        $updated  = 0;
-        $errors   = [];
+        $result = new ImportResult();
 
         $environment = new Environment();
         $component   = new Component();
@@ -147,19 +140,17 @@ final class ImportServiceTest extends UnitTestCase
         $this->translationService->method('createTranslation')->willReturn($translation);
         $this->translationRepository->expects(self::once())->method('add');
 
-        $this->subject->importEntry(0, 'comp', 'type', 'key', 'New Value', false, $imported, $updated, $errors);
+        $this->subject->importEntry(0, 'comp', 'type', 'key', 'New Value', false, $result);
 
-        self::assertSame(1, $imported);
-        self::assertSame(0, $updated);
-        self::assertSame([], $errors);
+        self::assertSame(1, $result->getImported());
+        self::assertSame(0, $result->getUpdated());
+        self::assertSame([], $result->getErrors());
     }
 
     #[Test]
     public function importEntryUpdatesExistingTranslationWithForceUpdate(): void
     {
-        $imported = 0;
-        $updated  = 0;
-        $errors   = [];
+        $result = new ImportResult();
 
         $environment = new Environment();
         $component   = new Component();
@@ -177,19 +168,17 @@ final class ImportServiceTest extends UnitTestCase
             ->willReturn($existing);
         $this->translationRepository->expects(self::once())->method('update');
 
-        $this->subject->importEntry(0, 'comp', 'type', 'key', 'Updated', true, $imported, $updated, $errors);
+        $this->subject->importEntry(0, 'comp', 'type', 'key', 'Updated', true, $result);
 
-        self::assertSame(0, $imported);
-        self::assertSame(1, $updated);
+        self::assertSame(0, $result->getImported());
+        self::assertSame(1, $result->getUpdated());
         self::assertSame('Updated', $existing->getValue());
     }
 
     #[Test]
     public function importEntrySkipsExistingWithoutForceUpdate(): void
     {
-        $imported = 0;
-        $updated  = 0;
-        $errors   = [];
+        $result = new ImportResult();
 
         $environment = new Environment();
         $component   = new Component();
@@ -206,18 +195,16 @@ final class ImportServiceTest extends UnitTestCase
         $this->translationRepository->method('findByEnvironmentComponentTypePlaceholderAndLanguage')
             ->willReturn($existing);
 
-        $this->subject->importEntry(0, 'comp', 'type', 'key', 'New', false, $imported, $updated, $errors);
+        $this->subject->importEntry(0, 'comp', 'type', 'key', 'New', false, $result);
 
-        self::assertSame(0, $imported);
-        self::assertSame(0, $updated);
+        self::assertSame(0, $result->getImported());
+        self::assertSame(0, $result->getUpdated());
     }
 
     #[Test]
     public function importEntryForceUpdatesAutoCreatedEntries(): void
     {
-        $imported = 0;
-        $updated  = 0;
-        $errors   = [];
+        $result = new ImportResult();
 
         $environment = new Environment();
         $component   = new Component();
@@ -236,29 +223,26 @@ final class ImportServiceTest extends UnitTestCase
         $this->translationRepository->expects(self::once())->method('update');
 
         // Even without forceUpdate=true, auto-created entries should be updated
-        $this->subject->importEntry(0, 'comp', 'type', 'key', 'Real value', false, $imported, $updated, $errors);
+        $this->subject->importEntry(0, 'comp', 'type', 'key', 'Real value', false, $result);
 
-        self::assertSame(0, $imported);
-        self::assertSame(1, $updated);
+        self::assertSame(0, $result->getImported());
+        self::assertSame(1, $result->getUpdated());
         self::assertSame('Real value', $existing->getValue());
     }
 
     #[Test]
     public function importEntryCollectsExceptionErrors(): void
     {
-        $imported = 0;
-        $updated  = 0;
-        $errors   = [];
+        $result = new ImportResult();
 
         $this->environmentRepository->method('setCreateIfMissing')->willReturnSelf();
         $this->environmentRepository->method('findByName')
             ->willThrowException(new RuntimeException('DB error'));
 
-        $this->subject->importEntry(0, 'comp', 'type', 'key', 'value', false, $imported, $updated, $errors);
+        $this->subject->importEntry(0, 'comp', 'type', 'key', 'value', false, $result);
 
-        self::assertSame(0, $imported);
-        self::assertSame(0, $updated);
-        self::assertCount(1, $errors);
-        self::assertSame('DB error', $errors[0]);
+        self::assertSame(0, $result->getImported());
+        self::assertSame(0, $result->getUpdated());
+        self::assertSame(['DB error'], $result->getErrors());
     }
 }

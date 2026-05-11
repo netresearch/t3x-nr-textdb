@@ -82,18 +82,18 @@ final class ImportService
     /**
      * Imports a XLIFF file.
      *
-     * @param string   $file        The file to import
-     * @param bool     $forceUpdate TRUE to force update of existing records
-     * @param int      $imported    The number of imported entries
-     * @param int      $updated     The number of updated entries
-     * @param string[] $errors      The error messages during import
+     * Imported / updated counts and per-entry error messages accumulate on
+     * the provided {@see ImportResult}. Callers create the result, pass it
+     * through one or more import calls, then read the totals.
+     *
+     * @param string       $file        The file to import
+     * @param bool         $forceUpdate TRUE to force update of existing records
+     * @param ImportResult $result      Accumulator for imported/updated counts and error messages
      */
     public function importFile(
         string $file,
         bool $forceUpdate,
-        int &$imported,
-        int &$updated,
-        array &$errors,
+        ImportResult $result,
     ): void {
         $languageKey = $this->getLanguageKeyFromFile($file);
         $languageUid = $this->getLanguageId($languageKey);
@@ -156,9 +156,7 @@ final class ImportService
                 $placeholder,
                 $value,
                 $forceUpdate,
-                $imported,
-                $updated,
-                $errors,
+                $result,
             );
         }
 
@@ -169,8 +167,10 @@ final class ImportService
     /**
      * Imports a single entry into the database.
      *
+     * Imported / updated counts and any thrown error message accumulate on
+     * the provided {@see ImportResult}.
+     *
      * @param int<-1, max> $languageUid
-     * @param string[]     $errors
      */
     public function importEntry(
         int $languageUid,
@@ -179,9 +179,7 @@ final class ImportService
         string $placeholder,
         string $value,
         bool $forceUpdate,
-        int &$imported,
-        int &$updated,
-        array &$errors,
+        ImportResult $result,
     ): void {
         try {
             if ($componentName === null || $typeName === null) {
@@ -261,7 +259,7 @@ final class ImportService
 
                 $this->translationRepository->update($translation);
 
-                ++$updated;
+                $result->recordUpdated();
             } else {
                 $translation = $this->translationService
                     ->createTranslation(
@@ -275,10 +273,10 @@ final class ImportService
 
                 $this->translationRepository->add($translation);
 
-                ++$imported;
+                $result->recordImported();
             }
         } catch (Exception $exception) {
-            $errors[] = $exception->getMessage();
+            $result->recordError($exception->getMessage());
         } finally {
             // Reset createIfMissing to prevent leaking state on shared singleton repositories
             $this->environmentRepository->setCreateIfMissing(false);

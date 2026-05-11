@@ -13,6 +13,7 @@ namespace Netresearch\NrTextdb\Tests\Functional\Service;
 
 use Netresearch\NrTextdb\Domain\Model\Translation;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
+use Netresearch\NrTextdb\Service\ImportResult;
 use Netresearch\NrTextdb\Service\ImportService;
 use Netresearch\NrTextdb\Tests\Functional\AbstractFunctionalTestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -97,39 +98,31 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
     #[Test]
     public function importFileWithValidXliffCreatesNewTranslationRecord(): void
     {
-        $imported = 0;
-        $updated  = 0;
-        $errors   = [];
+        $result = new ImportResult();
 
         $this->importService->importFile(
             __DIR__ . '/../Fixtures/ImportService/import_valid.xlf',
             false,
-            $imported,
-            $updated,
-            $errors,
+            $result,
         );
 
-        self::assertSame([], $errors, 'Import should produce no errors.');
-        self::assertSame(1, $imported, 'Exactly one record should have been imported.');
-        self::assertSame(0, $updated, 'No records should have been updated.');
+        self::assertSame([], $result->getErrors(), 'Import should produce no errors.');
+        self::assertSame(1, $result->getImported(), 'Exactly one record should have been imported.');
+        self::assertSame(0, $result->getUpdated(), 'No records should have been updated.');
     }
 
     #[Test]
     public function importFileCreatedRecordIsPersisted(): void
     {
-        $imported = 0;
-        $updated  = 0;
-        $errors   = [];
+        $result = new ImportResult();
 
         $this->importService->importFile(
             __DIR__ . '/../Fixtures/ImportService/import_valid.xlf',
             false,
-            $imported,
-            $updated,
-            $errors,
+            $result,
         );
 
-        self::assertSame([], $errors);
+        self::assertSame([], $result->getErrors());
 
         // Query the database directly via the repository to verify persistence
         $result = $this->translationRepository
@@ -149,62 +142,50 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
     #[Test]
     public function importFileSkipsExistingRecordWhenForceUpdateIsFalse(): void
     {
-        $imported = 0;
-        $updated  = 0;
-        $errors   = [];
+        $result = new ImportResult();
 
         // import_update.xlf contains placeholder=existing_key which already
         // exists in the fixtures with value "Existing Value"
         $this->importService->importFile(
             __DIR__ . '/../Fixtures/ImportService/import_update.xlf',
             false,
-            $imported,
-            $updated,
-            $errors,
+            $result,
         );
 
-        self::assertSame([], $errors);
-        self::assertSame(0, $imported);
-        self::assertSame(0, $updated, 'Existing record should be skipped when forceUpdate=false.');
+        self::assertSame([], $result->getErrors());
+        self::assertSame(0, $result->getImported());
+        self::assertSame(0, $result->getUpdated(), 'Existing record should be skipped when forceUpdate=false.');
     }
 
     #[Test]
     public function importFileUpdatesExistingRecordWhenForceUpdateIsTrue(): void
     {
-        $imported = 0;
-        $updated  = 0;
-        $errors   = [];
+        $result = new ImportResult();
 
         // import_update.xlf: existing_key → "Updated Value"
         $this->importService->importFile(
             __DIR__ . '/../Fixtures/ImportService/import_update.xlf',
             true,
-            $imported,
-            $updated,
-            $errors,
+            $result,
         );
 
-        self::assertSame([], $errors);
-        self::assertSame(0, $imported);
-        self::assertSame(1, $updated, 'The existing record should be updated when forceUpdate=true.');
+        self::assertSame([], $result->getErrors());
+        self::assertSame(0, $result->getImported());
+        self::assertSame(1, $result->getUpdated(), 'The existing record should be updated when forceUpdate=true.');
     }
 
     #[Test]
     public function importFileForceUpdateChangesStoredValue(): void
     {
-        $imported = 0;
-        $updated  = 0;
-        $errors   = [];
+        $result = new ImportResult();
 
         $this->importService->importFile(
             __DIR__ . '/../Fixtures/ImportService/import_update.xlf',
             true,
-            $imported,
-            $updated,
-            $errors,
+            $result,
         );
 
-        self::assertSame([], $errors);
+        self::assertSame([], $result->getErrors());
 
         $result = $this->translationRepository
             ->findAllByComponentTypePlaceholderValueAndLanguage(
@@ -226,9 +207,7 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
     #[Test]
     public function importEntryCreatesNewRecordWhenNoneExists(): void
     {
-        $imported = 0;
-        $updated  = 0;
-        $errors   = [];
+        $result = new ImportResult();
 
         $this->importService->importEntry(
             0,
@@ -237,22 +216,18 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
             'brand_new_placeholder',
             'Brand New Value',
             false,
-            $imported,
-            $updated,
-            $errors,
+            $result,
         );
 
-        self::assertSame([], $errors);
-        self::assertSame(1, $imported);
-        self::assertSame(0, $updated);
+        self::assertSame([], $result->getErrors());
+        self::assertSame(1, $result->getImported());
+        self::assertSame(0, $result->getUpdated());
     }
 
     #[Test]
     public function importEntryDoesNotCreateRecordWhenComponentNameIsNull(): void
     {
-        $imported = 0;
-        $updated  = 0;
-        $errors   = [];
+        $result = new ImportResult();
 
         $this->importService->importEntry(
             0,
@@ -261,22 +236,18 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
             'some_placeholder',
             'Some Value',
             false,
-            $imported,
-            $updated,
-            $errors,
+            $result,
         );
 
-        self::assertSame([], $errors);
-        self::assertSame(0, $imported);
-        self::assertSame(0, $updated);
+        self::assertSame([], $result->getErrors());
+        self::assertSame(0, $result->getImported());
+        self::assertSame(0, $result->getUpdated());
     }
 
     #[Test]
     public function importEntryDoesNotCreateRecordWhenTypeNameIsNull(): void
     {
-        $imported = 0;
-        $updated  = 0;
-        $errors   = [];
+        $result = new ImportResult();
 
         $this->importService->importEntry(
             0,
@@ -285,22 +256,18 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
             'some_placeholder',
             'Some Value',
             false,
-            $imported,
-            $updated,
-            $errors,
+            $result,
         );
 
-        self::assertSame([], $errors);
-        self::assertSame(0, $imported);
-        self::assertSame(0, $updated);
+        self::assertSame([], $result->getErrors());
+        self::assertSame(0, $result->getImported());
+        self::assertSame(0, $result->getUpdated());
     }
 
     #[Test]
     public function importEntrySkipsExistingRecordWithoutForceUpdate(): void
     {
-        $imported = 0;
-        $updated  = 0;
-        $errors   = [];
+        $result = new ImportResult();
 
         // existing_key already exists in fixtures (uid=1, value="Existing Value")
         $this->importService->importEntry(
@@ -310,21 +277,17 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
             'existing_key',
             'Should Not Overwrite',
             false,
-            $imported,
-            $updated,
-            $errors,
+            $result,
         );
 
-        self::assertSame(0, $imported);
-        self::assertSame(0, $updated);
+        self::assertSame(0, $result->getImported());
+        self::assertSame(0, $result->getUpdated());
     }
 
     #[Test]
     public function importEntryUpdatesExistingRecordWithForceUpdate(): void
     {
-        $imported = 0;
-        $updated  = 0;
-        $errors   = [];
+        $result = new ImportResult();
 
         $this->importService->importEntry(
             0,
@@ -333,14 +296,12 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
             'existing_key',
             'Force Updated Value',
             true,   // forceUpdate=true
-            $imported,
-            $updated,
-            $errors,
+            $result,
         );
 
-        self::assertSame([], $errors);
-        self::assertSame(0, $imported);
-        self::assertSame(1, $updated);
+        self::assertSame([], $result->getErrors());
+        self::assertSame(0, $result->getImported());
+        self::assertSame(1, $result->getUpdated());
     }
 
     #[Test]
@@ -348,9 +309,7 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
     {
         // uid=2 in fixtures has value AUTO_CREATE_IDENTIFIER.
         // Even with forceUpdate=false the service must update auto-created records.
-        $imported = 0;
-        $updated  = 0;
-        $errors   = [];
+        $result = new ImportResult();
 
         $this->importService->importEntry(
             0,
@@ -359,22 +318,18 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
             'auto_created_key',
             'Real Value Now',
             false,  // forceUpdate=false, but auto-created → should still update
-            $imported,
-            $updated,
-            $errors,
+            $result,
         );
 
-        self::assertSame([], $errors);
-        self::assertSame(0, $imported, 'Record already exists, so imported must stay 0.');
-        self::assertSame(1, $updated, 'Auto-created record must be updated regardless of forceUpdate flag.');
+        self::assertSame([], $result->getErrors());
+        self::assertSame(0, $result->getImported(), 'Record already exists, so imported must stay 0.');
+        self::assertSame(1, $result->getUpdated(), 'Auto-created record must be updated regardless of forceUpdate flag.');
     }
 
     #[Test]
     public function importEntryAutoCreatedRecordHasUpdatedValueAfterImport(): void
     {
-        $imported = 0;
-        $updated  = 0;
-        $errors   = [];
+        $result = new ImportResult();
 
         $this->importService->importEntry(
             0,
@@ -383,12 +338,10 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
             'auto_created_key',
             'Real Value Now',
             false,
-            $imported,
-            $updated,
-            $errors,
+            $result,
         );
 
-        self::assertSame([], $errors);
+        self::assertSame([], $result->getErrors());
 
         $result = $this->translationRepository
             ->findAllByComponentTypePlaceholderValueAndLanguage(

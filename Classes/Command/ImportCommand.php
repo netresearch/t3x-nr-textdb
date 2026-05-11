@@ -13,6 +13,7 @@ namespace Netresearch\NrTextdb\Command;
 
 use function count;
 
+use Netresearch\NrTextdb\Service\ImportResult;
 use Netresearch\NrTextdb\Service\ImportService;
 
 use function sprintf;
@@ -210,39 +211,33 @@ final class ImportCommand extends Command
      */
     private function importLanguageFiles(array $files, OutputInterface $output, bool $forceUpdate = false): void
     {
-        $imported = 0;
-        $updated  = 0;
+        $result = new ImportResult();
 
         foreach ($files as $file) {
-            $errors = [];
+            $errorOffset = count($result->getErrors());
 
             $this->importFile(
                 $output,
                 $file,
                 $forceUpdate,
-                $imported,
-                $updated,
-                $errors,
+                $result,
             );
 
-            foreach ($errors as $error) {
+            // Print only errors collected during this file's import.
+            $errorsForFile = array_slice($result->getErrors(), $errorOffset);
+            foreach ($errorsForFile as $error) {
                 $output->writeln(sprintf('<error>%s</error>', $error));
             }
         }
 
-        $output->writeln(sprintf('Imported: %s, Updated: %s', $imported, $updated));
+        $output->writeln(sprintf('Imported: %s, Updated: %s', $result->getImported(), $result->getUpdated()));
     }
 
-    /**
-     * @param string[] $errors
-     */
     private function importFile(
         OutputInterface $output,
         string $file,
         bool $forceUpdate,
-        int &$imported,
-        int &$updated,
-        array &$errors,
+        ImportResult $result,
     ): void {
         $languageKey = $this->getLanguageKeyFromFile($file);
         $languageUid = $this->getLanguageId($languageKey);
@@ -260,9 +255,7 @@ final class ImportCommand extends Command
             ->importFile(
                 $file,
                 $forceUpdate,
-                $imported,
-                $updated,
-                $errors,
+                $result,
             );
     }
 }
