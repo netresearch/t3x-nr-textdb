@@ -36,10 +36,28 @@ class TextDbModule
                                 const content = parser.parseFromString(html, "text/html");
                                 const contentReturn = content.querySelector('.return');
 
-                                parentTableRow.insertAdjacentHTML(
-                                    "afterend",
-                                    '<tr id="translation-' + uid+ '"><td colSpan="5">'
-                                    + (contentReturn !== null ? contentReturn.innerHTML : "") + '</td></tr>'
+                                // Build the new row via DOM APIs instead of insertAdjacentHTML
+                                // to avoid HTML injection via the server response.
+                                const newRow = document.createElement("tr");
+                                newRow.id = "translation-" + uid;
+
+                                const newCell = document.createElement("td");
+                                newCell.setAttribute("colspan", "5");
+
+                                if (contentReturn !== null) {
+                                    // Move parsed nodes from the trusted DOMParser document
+                                    // into the new cell. The parser created an inert document
+                                    // (scripts do not execute), and we attach only the parsed
+                                    // child nodes — never raw string HTML.
+                                    while (contentReturn.firstChild !== null) {
+                                        newCell.appendChild(contentReturn.firstChild);
+                                    }
+                                }
+
+                                newRow.appendChild(newCell);
+                                parentTableRow.parentNode.insertBefore(
+                                    newRow,
+                                    parentTableRow.nextSibling
                                 );
 
                                 // Hide loading animation
