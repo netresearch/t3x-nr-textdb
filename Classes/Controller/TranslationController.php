@@ -656,7 +656,7 @@ final class TranslationController extends ActionController
     {
         $parts = explode('|', $key);
 
-        return isset($parts[1]) && ($parts[1] !== '') ? $parts[1] : null;
+        return array_key_exists(1, $parts) && ($parts[1] !== '') ? $parts[1] : null;
     }
 
     /**
@@ -666,7 +666,7 @@ final class TranslationController extends ActionController
     {
         $parts = explode('|', $key);
 
-        return isset($parts[2]) && ($parts[2] !== '') ? $parts[2] : null;
+        return array_key_exists(2, $parts) && ($parts[2] !== '') ? $parts[2] : null;
     }
 
     /**
@@ -941,7 +941,7 @@ final class TranslationController extends ActionController
             ? (int) $this->request->getArgument('currentPage') : 1;
 
         if (
-            isset($settings['enablePagination'])
+            array_key_exists('enablePagination', $settings)
             && ((bool) $settings['enablePagination'])
             && ((int) $settings['itemsPerPage'] > 0)
         ) {

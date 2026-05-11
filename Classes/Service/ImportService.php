@@ -136,7 +136,7 @@ final class ImportService
                 );
             }
 
-            $value = is_array($data) && isset($data[0]) && is_array($data[0])
+            $value = is_array($data) && array_key_exists(0, $data) && is_array($data[0])
                 ? ($data[0]['target'] ?? null)
                 : null;
 
@@ -353,7 +353,7 @@ final class ImportService
     {
         $parts = explode('|', $key);
 
-        return isset($parts[1]) && ($parts[1] !== '') ? $parts[1] : null;
+        return array_key_exists(1, $parts) && ($parts[1] !== '') ? $parts[1] : null;
     }
 
     /**
@@ -363,6 +363,6 @@ final class ImportService
     {
         $parts = explode('|', $key);
 
-        return isset($parts[2]) && ($parts[2] !== '') ? $parts[2] : null;
+        return array_key_exists(2, $parts) && ($parts[2] !== '') ? $parts[2] : null;
     }
 }
