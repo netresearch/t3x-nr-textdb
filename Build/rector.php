@@ -33,7 +33,11 @@ return static function (RectorConfig $rectorConfig): void {
         __DIR__ . '/../ext_*.sql',
     ]);
 
-    $rectorConfig->phpstanConfig('Build/phpstan.neon');
+    // Rector loads PHPStan via its own bundled phar, which does not have
+    // ergebnis/phpstan-rules registered. Use a separate config that omits
+    // the `parameters.ergebnis` block to avoid a Nette schema validation
+    // error during type inference.
+    $rectorConfig->phpstanConfig('Build/phpstan-rector.neon');
     $rectorConfig->importNames();
     $rectorConfig->removeUnusedImports();
     $rectorConfig->disableParallel();

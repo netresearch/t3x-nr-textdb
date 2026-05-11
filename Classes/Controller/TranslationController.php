@@ -18,6 +18,7 @@ use Netresearch\NrTextdb\Domain\Repository\ComponentRepository;
 use Netresearch\NrTextdb\Domain\Repository\EnvironmentRepository;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
 use Netresearch\NrTextdb\Domain\Repository\TypeRepository;
+use Netresearch\NrTextdb\Service\ImportResult;
 use Netresearch\NrTextdb\Service\ImportService;
 use Netresearch\NrTextdb\Service\TranslationService;
 use Psr\Http\Message\ResponseInterface;
@@ -25,6 +26,7 @@ use RuntimeException;
 
 use function sprintf;
 
+use Symfony\Component\Filesystem\Filesystem;
 use TYPO3\CMS\Backend\Template\Components\ButtonBar;
 use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
@@ -64,7 +66,7 @@ use ZipArchive;
  *
  * @see    https://www.netresearch.de
  */
-class TranslationController extends ActionController
+final class TranslationController extends ActionController
 {
     private readonly ModuleTemplateFactory $moduleTemplateFactory;
 
@@ -316,7 +318,7 @@ class TranslationController extends ActionController
     public function exportAction(): ResponseInterface
     {
         $exportKey   = bin2hex(random_bytes(16)) . '-textdb-export';
-        $exportDir   = '/tmp/' . $exportKey;
+        $exportDir   = sys_get_temp_dir() . '/' . $exportKey;
         $archivePath = $exportDir . '/export.zip';
 
         if (
@@ -395,8 +397,13 @@ class TranslationController extends ActionController
         $archive = new ZipArchive();
 
         if ($archive->open($archivePath, ZipArchive::CREATE) !== true) {
-            if (file_exists($archivePath)) {
-                unlink($archivePath);
+            // Cleanup safety: $archivePath is built by this controller from a
+            // server-side random_bytes() prefix under sys_get_temp_dir(). We
+            // still assert the path location explicitly so a future change
+            // cannot turn this into an arbitrary delete, and we delegate the
+            // actual removal to Symfony Filesystem instead of bare unlink().
+            if (str_starts_with($archivePath, sys_get_temp_dir() . '/')) {
+                (new Filesystem())->remove($archivePath);
             }
 
             $this->removeDirectory($exportDir);
@@ -521,8 +528,7 @@ class TranslationController extends ActionController
         $languageCode = trim($matches[1], '.');
         $languageCode = $languageCode === '' ? 'en' : $languageCode;
 
-        $imported    = 0;
-        $updated     = 0;
+        $result      = new ImportResult();
         $languages   = [];
         $errors      = [];
         $forceUpdate = $update;
@@ -619,17 +625,15 @@ class TranslationController extends ActionController
                         $placeholder,
                         trim($value),
                         $forceUpdate,
-                        $imported,
-                        $updated,
-                        $errors,
+                        $result,
                     );
             }
         }
 
         $this->moduleTemplate->assignMultiple([
-            'updated'  => $updated,
-            'imported' => $imported,
-            'errors'   => $errors,
+            'updated'  => $result->getUpdated(),
+            'imported' => $result->getImported(),
+            'errors'   => array_merge($errors, $result->getErrors()),
             'language' => implode(
                 ',',
                 $languages,
@@ -656,7 +660,7 @@ class TranslationController extends ActionController
     {
         $parts = explode('|', $key);
 
-        return isset($parts[1]) && ($parts[1] !== '') ? $parts[1] : null;
+        return array_key_exists(1, $parts) && ($parts[1] !== '') ? $parts[1] : null;
     }
 
     /**
@@ -666,7 +670,7 @@ class TranslationController extends ActionController
     {
         $parts = explode('|', $key);
 
-        return isset($parts[2]) && ($parts[2] !== '') ? $parts[2] : null;
+        return array_key_exists(2, $parts) && ($parts[2] !== '') ? $parts[2] : null;
     }
 
     /**
@@ -687,21 +691,21 @@ class TranslationController extends ActionController
     /**
      * Get module config from user data.
      *
+     * The writer (persistConfigInBeUserData) emits JSON. The migration from
+     * serialize()/unserialize() to json_encode/json_decode was declared a
+     * breaking change in commit e3e0334, so any legacy serialized payload
+     * is treated as invalid and discarded — the module simply rebuilds its
+     * filter config from defaults on the next request.
+     *
      * @return array<string, int|string|null>
      */
     private function getConfigFromBeUserData(): array
     {
         $storedConfig = $this->getBackendUser()
-            ->getModuleData(static::class);
+            ->getModuleData(self::class);
 
         if (is_string($storedConfig) && $storedConfig !== '') {
-            // Support both JSON (new) and serialized (legacy) formats
             $data = json_decode($storedConfig, true);
-
-            if (!is_array($data)) {
-                // Fallback for legacy serialized data
-                $data = unserialize($storedConfig, ['allowed_classes' => false]);
-            }
 
             return is_array($data) ? $data : [];
         }
@@ -717,7 +721,7 @@ class TranslationController extends ActionController
     private function persistConfigInBeUserData(array $config): void
     {
         $this->getBackendUser()->pushModuleData(
-            static::class,
+            self::class,
             json_encode($config, JSON_THROW_ON_ERROR),
         );
     }
@@ -882,37 +886,21 @@ class TranslationController extends ActionController
 
     /**
      * Recursively removes a directory and its contents safely.
+     *
+     * Safety contract: this method is only ever called on directories created
+     * by exportAction() under the system temp directory (with a server-side
+     * random_bytes() prefix). The root-path assertion enforces that invariant
+     * so a future change cannot turn this into an arbitrary recursive delete.
+     * Actual removal is delegated to Symfony Filesystem::remove() which handles
+     * recursive traversal, symlink protection, and missing paths internally.
      */
     private function removeDirectory(string $directory): void
     {
-        if (!is_dir($directory)) {
+        if (!str_starts_with($directory, sys_get_temp_dir() . '/')) {
             return;
         }
 
-        $items = scandir($directory);
-        if ($items === false) {
-            return;
-        }
-
-        foreach ($items as $item) {
-            if ($item === '.') {
-                continue;
-            }
-
-            if ($item === '..') {
-                continue;
-            }
-
-            $path = $directory . '/' . $item;
-
-            if (is_dir($path)) {
-                $this->removeDirectory($path);
-            } else {
-                unlink($path);
-            }
-        }
-
-        rmdir($directory);
+        (new Filesystem())->remove($directory);
     }
 
     private function getBackendUser(): BackendUserAuthentication
@@ -941,7 +929,7 @@ class TranslationController extends ActionController
             ? (int) $this->request->getArgument('currentPage') : 1;
 
         if (
-            isset($settings['enablePagination'])
+            array_key_exists('enablePagination', $settings)
             && ((bool) $settings['enablePagination'])
             && ((int) $settings['itemsPerPage'] > 0)
         ) {

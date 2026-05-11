@@ -38,23 +38,23 @@ use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
  *
  * @see    https://www.netresearch.de
  */
-class ImportService
+final readonly class ImportService
 {
-    private readonly PersistenceManagerInterface $persistenceManager;
+    private PersistenceManagerInterface $persistenceManager;
 
-    private readonly XliffParser $xliffParser;
+    private XliffParser $xliffParser;
 
-    private readonly TranslationService $translationService;
+    private TranslationService $translationService;
 
-    private readonly TranslationRepository $translationRepository;
+    private TranslationRepository $translationRepository;
 
-    private readonly ComponentRepository $componentRepository;
+    private ComponentRepository $componentRepository;
 
-    private readonly TypeRepository $typeRepository;
+    private TypeRepository $typeRepository;
 
-    private readonly EnvironmentRepository $environmentRepository;
+    private EnvironmentRepository $environmentRepository;
 
-    private readonly SiteFinder $siteFinder;
+    private SiteFinder $siteFinder;
 
     /**
      * Constructor.
@@ -82,18 +82,18 @@ class ImportService
     /**
      * Imports a XLIFF file.
      *
-     * @param string   $file        The file to import
-     * @param bool     $forceUpdate TRUE to force update of existing records
-     * @param int      $imported    The number of imported entries
-     * @param int      $updated     The number of updated entries
-     * @param string[] $errors      The error messages during import
+     * Imported / updated counts and per-entry error messages accumulate on
+     * the provided {@see ImportResult}. Callers create the result, pass it
+     * through one or more import calls, then read the totals.
+     *
+     * @param string       $file        The file to import
+     * @param bool         $forceUpdate TRUE to force update of existing records
+     * @param ImportResult $result      Accumulator for imported/updated counts and error messages
      */
     public function importFile(
         string $file,
         bool $forceUpdate,
-        int &$imported,
-        int &$updated,
-        array &$errors,
+        ImportResult $result,
     ): void {
         $languageKey = $this->getLanguageKeyFromFile($file);
         $languageUid = $this->getLanguageId($languageKey);
@@ -136,7 +136,7 @@ class ImportService
                 );
             }
 
-            $value = is_array($data) && isset($data[0]) && is_array($data[0])
+            $value = is_array($data) && array_key_exists(0, $data) && is_array($data[0])
                 ? ($data[0]['target'] ?? null)
                 : null;
 
@@ -156,9 +156,7 @@ class ImportService
                 $placeholder,
                 $value,
                 $forceUpdate,
-                $imported,
-                $updated,
-                $errors,
+                $result,
             );
         }
 
@@ -169,8 +167,10 @@ class ImportService
     /**
      * Imports a single entry into the database.
      *
+     * Imported / updated counts and any thrown error message accumulate on
+     * the provided {@see ImportResult}.
+     *
      * @param int<-1, max> $languageUid
-     * @param string[]     $errors
      */
     public function importEntry(
         int $languageUid,
@@ -179,9 +179,7 @@ class ImportService
         string $placeholder,
         string $value,
         bool $forceUpdate,
-        int &$imported,
-        int &$updated,
-        array &$errors,
+        ImportResult $result,
     ): void {
         try {
             if ($componentName === null || $typeName === null) {
@@ -261,7 +259,7 @@ class ImportService
 
                 $this->translationRepository->update($translation);
 
-                ++$updated;
+                $result->recordUpdated();
             } else {
                 $translation = $this->translationService
                     ->createTranslation(
@@ -275,10 +273,10 @@ class ImportService
 
                 $this->translationRepository->add($translation);
 
-                ++$imported;
+                $result->recordImported();
             }
         } catch (Exception $exception) {
-            $errors[] = $exception->getMessage();
+            $result->recordError($exception->getMessage());
         } finally {
             // Reset createIfMissing to prevent leaking state on shared singleton repositories
             $this->environmentRepository->setCreateIfMissing(false);
@@ -353,7 +351,7 @@ class ImportService
     {
         $parts = explode('|', $key);
 
-        return isset($parts[1]) && ($parts[1] !== '') ? $parts[1] : null;
+        return array_key_exists(1, $parts) && ($parts[1] !== '') ? $parts[1] : null;
     }
 
     /**
@@ -363,6 +361,6 @@ class ImportService
     {
         $parts = explode('|', $key);
 
-        return isset($parts[2]) && ($parts[2] !== '') ? $parts[2] : null;
+        return array_key_exists(2, $parts) && ($parts[2] !== '') ? $parts[2] : null;
     }
 }

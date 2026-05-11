@@ -1,0 +1,24 @@
+# Rector-only PHPStan config.
+#
+# Why a separate file: Rector loads the project's PHPStan config through
+# its bundled phpstan.phar — which does not have ergebnis/phpstan-rules
+# registered (phpstan/extension-installer only writes its
+# GeneratedConfig.php into the project's vendor/, not into the Rector phar).
+# As a result, the `parameters: ergebnis: { ... }` block in Build/phpstan.neon
+# trips a Nette\Schema\ValidationException ("Unexpected item 'parameters › ergebnis'")
+# when Rector loads it.
+#
+# This file mirrors the type-inference bits Rector actually needs (level,
+# treatPhpDocTypesAsCertain, excludePaths) and omits the ergebnis schema.
+
+parameters:
+    level: 10
+
+    treatPhpDocTypesAsCertain: false
+    inferPrivatePropertyTypeFromConstructor: true
+
+    excludePaths:
+        - %currentWorkingDirectory%/.build/*
+        - %currentWorkingDirectory%/ext_emconf.php
+        - %currentWorkingDirectory%/Configuration/Backend/Modules.php
+        - %currentWorkingDirectory%/Tests/Functional/*

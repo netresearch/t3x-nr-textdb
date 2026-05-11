@@ -100,7 +100,7 @@ class TranslationService
 
         // Check in-memory cache first to avoid repeated DB queries within same request
         $cacheKey = sprintf('%s|%s|%s|%s|%d', $environmentName, $componentName, $typeName, $placeholder, $languageUid);
-        if (isset($this->translationCache[$cacheKey])) {
+        if (array_key_exists($cacheKey, $this->translationCache)) {
             return $this->translationCache[$cacheKey];
         }
 

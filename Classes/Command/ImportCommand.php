@@ -13,6 +13,7 @@ namespace Netresearch\NrTextdb\Command;
 
 use function count;
 
+use Netresearch\NrTextdb\Service\ImportResult;
 use Netresearch\NrTextdb\Service\ImportService;
 
 use function sprintf;
@@ -21,6 +22,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Throwable;
 use TYPO3\CMS\Core\Package\Exception\UnknownPackageException;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
@@ -36,7 +38,7 @@ use TYPO3\CMS\Extensionmanager\Utility\ListUtility;
  *
  * @see    https://www.netresearch.de
  */
-class ImportCommand extends Command
+final class ImportCommand extends Command
 {
     /**
      * Path for the language file within an extension.
@@ -124,7 +126,7 @@ class ImportCommand extends Command
      *
      * @param string $languageCode Language Code
      */
-    protected function getLanguageId(string $languageCode): int
+    private function getLanguageId(string $languageCode): int
     {
         if ($languageCode === 'default') {
             $languageCode = 'en';
@@ -144,7 +146,7 @@ class ImportCommand extends Command
      *
      * @return SiteLanguage[]
      */
-    protected function getAllLanguages(): array
+    private function getAllLanguages(): array
     {
         $sites     = $this->siteFinder->getAllSites();
         $firstSite = reset($sites);
@@ -155,7 +157,7 @@ class ImportCommand extends Command
     /**
      * Returns the language key from the file name.
      */
-    protected function getLanguageKeyFromFile(string $file): string
+    private function getLanguageKeyFromFile(string $file): string
     {
         $fileParts = explode('.', basename($file));
 
@@ -166,7 +168,7 @@ class ImportCommand extends Command
         return $fileParts[0];
     }
 
-    protected function importTranslationsFromFiles(OutputInterface $output, bool $forceUpdate = false): void
+    private function importTranslationsFromFiles(OutputInterface $output, bool $forceUpdate = false): void
     {
         foreach (array_keys($this->extensions) as $extKey) {
             $folderPath = ExtensionManagementUtility::extPath($extKey) . self::LANG_FOLDER;
@@ -206,43 +208,48 @@ class ImportCommand extends Command
     /**
      * Import the language files into the database.
      *
+     * Per-file failures are recorded on the {@see ImportResult} accumulator
+     * and surfaced via the command output, but do not abort the loop. A
+     * single malformed file therefore no longer prevents the remaining
+     * files from being processed.
+     *
      * @param string[] $files
      */
-    protected function importLanguageFiles(array $files, OutputInterface $output, bool $forceUpdate = false): void
+    private function importLanguageFiles(array $files, OutputInterface $output, bool $forceUpdate = false): void
     {
-        $imported = 0;
-        $updated  = 0;
+        $result = new ImportResult();
 
         foreach ($files as $file) {
-            $errors = [];
+            $errorOffset = count($result->getErrors());
 
-            $this->importFile(
-                $output,
-                $file,
-                $forceUpdate,
-                $imported,
-                $updated,
-                $errors,
-            );
+            try {
+                $this->importFile(
+                    $output,
+                    $file,
+                    $forceUpdate,
+                    $result,
+                );
+            } catch (Throwable $exception) {
+                $result->recordError(
+                    sprintf('Failed to import file %s: %s', $file, $exception->getMessage()),
+                );
+            }
 
-            foreach ($errors as $error) {
+            // Print only errors collected during this file's import.
+            $errorsForFile = array_slice($result->getErrors(), $errorOffset);
+            foreach ($errorsForFile as $error) {
                 $output->writeln(sprintf('<error>%s</error>', $error));
             }
         }
 
-        $output->writeln(sprintf('Imported: %s, Updated: %s', $imported, $updated));
+        $output->writeln(sprintf('Imported: %s, Updated: %s', $result->getImported(), $result->getUpdated()));
     }
 
-    /**
-     * @param string[] $errors
-     */
-    protected function importFile(
+    private function importFile(
         OutputInterface $output,
         string $file,
         bool $forceUpdate,
-        int &$imported,
-        int &$updated,
-        array &$errors,
+        ImportResult $result,
     ): void {
         $languageKey = $this->getLanguageKeyFromFile($file);
         $languageUid = $this->getLanguageId($languageKey);
@@ -260,9 +267,7 @@ class ImportCommand extends Command
             ->importFile(
                 $file,
                 $forceUpdate,
-                $imported,
-                $updated,
-                $errors,
+                $result,
             );
     }
 }

@@ -30,7 +30,7 @@ use TYPO3\CMS\Extbase\Persistence\Repository;
  *
  * @extends  Repository<T>
  */
-class AbstractRepository extends Repository
+abstract class AbstractRepository extends Repository
 {
     private bool $createIfMissing = false;
 

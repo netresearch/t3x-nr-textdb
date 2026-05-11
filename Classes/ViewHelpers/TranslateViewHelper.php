@@ -33,7 +33,7 @@ use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
  *
  * @see    https://www.netresearch.de
  */
-class TranslateViewHelper extends AbstractViewHelper
+final class TranslateViewHelper extends AbstractViewHelper
 {
     private readonly TranslationService $translationService;
 
@@ -91,7 +91,7 @@ class TranslateViewHelper extends AbstractViewHelper
      */
     public function render(): string
     {
-        if (static::$component === '') {
+        if (self::$component === '') {
             throw new RuntimeException(
                 'Please set a component in your controller via TranslateViewHelper::$component = "my-component".',
             );
@@ -118,7 +118,7 @@ class TranslateViewHelper extends AbstractViewHelper
         $result = $this->translationService->translate(
             $textdbKey,
             'label',
-            static::$component,
+            self::$component,
             $environmentName,
         );
 

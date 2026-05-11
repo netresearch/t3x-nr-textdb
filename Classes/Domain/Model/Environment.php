@@ -24,13 +24,13 @@ use TYPO3\CMS\Extbase\Validation\Validator\NotEmptyValidator;
  *
  * @see    https://www.netresearch.de
  */
-class Environment extends AbstractValueObject
+final class Environment extends AbstractValueObject
 {
     /**
      * name.
      */
     #[Validate(['validator' => NotEmptyValidator::class])]
-    protected string $name = '';
+    private string $name = '';
 
     /**
      * Returns the name.
