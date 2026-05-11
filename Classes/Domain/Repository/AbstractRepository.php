@@ -60,7 +60,7 @@ abstract class AbstractRepository extends Repository
      *
      * @return int<0, max>
      */
-    final public function getConfiguredPageId(): int
+    public function getConfiguredPageId(): int
     {
         if ($this->cachedPageId !== null) {
             return $this->cachedPageId;
@@ -76,7 +76,7 @@ abstract class AbstractRepository extends Repository
      * Set to true if a translation part should automatically be created if it is missing in a database.
      * This will override the extension setting if it's set to true.
      */
-    final public function setCreateIfMissing(bool $createIfMissing): static
+    public function setCreateIfMissing(bool $createIfMissing): static
     {
         $this->createIfMissing = $createIfMissing;
 
@@ -86,7 +86,7 @@ abstract class AbstractRepository extends Repository
     /**
      * Returns true if the placeholder or parts of the translation should be created if it is missing.
      */
-    final public function getCreateIfMissing(): bool
+    public function getCreateIfMissing(): bool
     {
         if ($this->createIfMissing) {
             return true;

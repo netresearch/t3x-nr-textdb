@@ -57,3 +57,26 @@ parameters:
                 - Netresearch\NrTextdb\Domain\Repository\TranslationRepository
                 - Netresearch\NrTextdb\Domain\Repository\TypeRepository
                 - Netresearch\NrTextdb\Service\TranslationService
+        # The following ergebnis rules fundamentally conflict with the TYPO3
+        # Extbase persistence idiom: Extbase reflectively populates entity
+        # properties after construction, so domain-relation getters MUST be
+        # nullable (`getEnvironment(): ?Environment`), corresponding setters
+        # MUST accept null to clear relations, and repository finder/query
+        # methods MUST accept nullable filters with null defaults. Forcing
+        # non-null returns/parameters would either break Extbase reflection,
+        # break the existing unit tests that assert null on un-set relations,
+        # or require breaking-change API redesign. Tracked separately; the
+        # rules are disabled here so unrelated issues remain enforced.
+        noNullableReturnTypeDeclaration:
+            enabled: false
+        noParameterWithNullableTypeDeclaration:
+            enabled: false
+        noParameterWithNullDefaultValue:
+            enabled: false
+        # AbstractRepository's concrete methods (getConfiguredPageId,
+        # setCreateIfMissing, getCreateIfMissing) cannot be marked `final`
+        # because PHPUnit cannot configure final methods on mocks, and the
+        # concrete subclasses (ComponentRepository, etc.) are mocked in
+        # unit tests with these methods stubbed.
+        finalInAbstractClass:
+            enabled: false
