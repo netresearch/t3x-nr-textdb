@@ -26,6 +26,7 @@ use RuntimeException;
 
 use function sprintf;
 
+use Symfony\Component\Filesystem\Filesystem;
 use TYPO3\CMS\Backend\Template\Components\ButtonBar;
 use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
@@ -397,14 +398,12 @@ final class TranslationController extends ActionController
 
         if ($archive->open($archivePath, ZipArchive::CREATE) !== true) {
             // Cleanup safety: $archivePath is built by this controller from a
-            // server-side random_bytes() prefix under sys_get_temp_dir(), but
-            // we still assert the path location explicitly so a future change
-            // cannot turn this into an arbitrary delete.
-            if (
-                str_starts_with($archivePath, sys_get_temp_dir() . '/')
-                && is_file($archivePath)
-            ) {
-                unlink($archivePath);
+            // server-side random_bytes() prefix under sys_get_temp_dir(). We
+            // still assert the path location explicitly so a future change
+            // cannot turn this into an arbitrary delete, and we delegate the
+            // actual removal to Symfony Filesystem instead of bare unlink().
+            if (str_starts_with($archivePath, sys_get_temp_dir() . '/')) {
+                (new Filesystem())->remove($archivePath);
             }
 
             $this->removeDirectory($exportDir);
@@ -887,37 +886,21 @@ final class TranslationController extends ActionController
 
     /**
      * Recursively removes a directory and its contents safely.
+     *
+     * Safety contract: this method is only ever called on directories created
+     * by exportAction() under the system temp directory (with a server-side
+     * random_bytes() prefix). The root-path assertion enforces that invariant
+     * so a future change cannot turn this into an arbitrary recursive delete.
+     * Actual removal is delegated to Symfony Filesystem::remove() which handles
+     * recursive traversal, symlink protection, and missing paths internally.
      */
     private function removeDirectory(string $directory): void
     {
-        if (!is_dir($directory)) {
+        if (!str_starts_with($directory, sys_get_temp_dir() . '/')) {
             return;
         }
 
-        $items = scandir($directory);
-        if ($items === false) {
-            return;
-        }
-
-        foreach ($items as $item) {
-            if ($item === '.') {
-                continue;
-            }
-
-            if ($item === '..') {
-                continue;
-            }
-
-            $path = $directory . '/' . $item;
-
-            if (is_dir($path)) {
-                $this->removeDirectory($path);
-            } else {
-                unlink($path);
-            }
-        }
-
-        rmdir($directory);
+        (new Filesystem())->remove($directory);
     }
 
     private function getBackendUser(): BackendUserAuthentication
