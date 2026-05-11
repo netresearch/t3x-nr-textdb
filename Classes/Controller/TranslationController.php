@@ -317,7 +317,7 @@ final class TranslationController extends ActionController
     public function exportAction(): ResponseInterface
     {
         $exportKey   = bin2hex(random_bytes(16)) . '-textdb-export';
-        $exportDir   = '/tmp/' . $exportKey;
+        $exportDir   = sys_get_temp_dir() . '/' . $exportKey;
         $archivePath = $exportDir . '/export.zip';
 
         if (
@@ -396,7 +396,14 @@ final class TranslationController extends ActionController
         $archive = new ZipArchive();
 
         if ($archive->open($archivePath, ZipArchive::CREATE) !== true) {
-            if (file_exists($archivePath)) {
+            // Cleanup safety: $archivePath is built by this controller from a
+            // server-side random_bytes() prefix under sys_get_temp_dir(), but
+            // we still assert the path location explicitly so a future change
+            // cannot turn this into an arbitrary delete.
+            if (
+                str_starts_with($archivePath, sys_get_temp_dir() . '/')
+                && is_file($archivePath)
+            ) {
                 unlink($archivePath);
             }
 
