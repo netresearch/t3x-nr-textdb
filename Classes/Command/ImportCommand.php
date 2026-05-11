@@ -22,6 +22,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Throwable;
 use TYPO3\CMS\Core\Package\Exception\UnknownPackageException;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
@@ -207,6 +208,11 @@ final class ImportCommand extends Command
     /**
      * Import the language files into the database.
      *
+     * Per-file failures are recorded on the {@see ImportResult} accumulator
+     * and surfaced via the command output, but do not abort the loop. A
+     * single malformed file therefore no longer prevents the remaining
+     * files from being processed.
+     *
      * @param string[] $files
      */
     private function importLanguageFiles(array $files, OutputInterface $output, bool $forceUpdate = false): void
@@ -216,12 +222,18 @@ final class ImportCommand extends Command
         foreach ($files as $file) {
             $errorOffset = count($result->getErrors());
 
-            $this->importFile(
-                $output,
-                $file,
-                $forceUpdate,
-                $result,
-            );
+            try {
+                $this->importFile(
+                    $output,
+                    $file,
+                    $forceUpdate,
+                    $result,
+                );
+            } catch (Throwable $exception) {
+                $result->recordError(
+                    sprintf('Failed to import file %s: %s', $file, $exception->getMessage()),
+                );
+            }
 
             // Print only errors collected during this file's import.
             $errorsForFile = array_slice($result->getErrors(), $errorOffset);
