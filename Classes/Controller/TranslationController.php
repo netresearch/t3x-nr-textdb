@@ -692,6 +692,12 @@ final class TranslationController extends ActionController
     /**
      * Get module config from user data.
      *
+     * The writer (persistConfigInBeUserData) emits JSON. The migration from
+     * serialize()/unserialize() to json_encode/json_decode was declared a
+     * breaking change in commit e3e0334, so any legacy serialized payload
+     * is treated as invalid and discarded — the module simply rebuilds its
+     * filter config from defaults on the next request.
+     *
      * @return array<string, int|string|null>
      */
     private function getConfigFromBeUserData(): array
@@ -700,13 +706,7 @@ final class TranslationController extends ActionController
             ->getModuleData(self::class);
 
         if (is_string($storedConfig) && $storedConfig !== '') {
-            // Support both JSON (new) and serialized (legacy) formats
             $data = json_decode($storedConfig, true);
-
-            if (!is_array($data)) {
-                // Fallback for legacy serialized data
-                $data = unserialize($storedConfig, ['allowed_classes' => false]);
-            }
 
             return is_array($data) ? $data : [];
         }
