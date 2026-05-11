@@ -25,7 +25,7 @@ use TYPO3\CMS\Extbase\Validation\Validator\NotEmptyValidator;
  *
  * @see    https://www.netresearch.de
  */
-class Translation extends AbstractEntity
+final class Translation extends AbstractEntity
 {
     final public const AUTO_CREATE_IDENTIFIER = 'auto-created-by-repository';
 

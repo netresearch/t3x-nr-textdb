@@ -30,7 +30,7 @@ use TYPO3\CMS\Extbase\Persistence\Repository;
  *
  * @extends  Repository<T>
  */
-class AbstractRepository extends Repository
+abstract class AbstractRepository extends Repository
 {
     private bool $createIfMissing = false;
 
@@ -60,7 +60,7 @@ class AbstractRepository extends Repository
      *
      * @return int<0, max>
      */
-    public function getConfiguredPageId(): int
+    final public function getConfiguredPageId(): int
     {
         if ($this->cachedPageId !== null) {
             return $this->cachedPageId;
@@ -76,7 +76,7 @@ class AbstractRepository extends Repository
      * Set to true if a translation part should automatically be created if it is missing in a database.
      * This will override the extension setting if it's set to true.
      */
-    public function setCreateIfMissing(bool $createIfMissing): static
+    final public function setCreateIfMissing(bool $createIfMissing): static
     {
         $this->createIfMissing = $createIfMissing;
 
@@ -86,7 +86,7 @@ class AbstractRepository extends Repository
     /**
      * Returns true if the placeholder or parts of the translation should be created if it is missing.
      */
-    public function getCreateIfMissing(): bool
+    final public function getCreateIfMissing(): bool
     {
         if ($this->createIfMissing) {
             return true;

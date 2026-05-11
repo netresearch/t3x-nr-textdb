@@ -33,7 +33,7 @@ use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
  *
  * @see    https://www.netresearch.de
  */
-class TranslateViewHelper extends AbstractViewHelper
+final class TranslateViewHelper extends AbstractViewHelper
 {
     private readonly TranslationService $translationService;
 

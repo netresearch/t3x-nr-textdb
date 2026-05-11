@@ -64,7 +64,7 @@ use ZipArchive;
  *
  * @see    https://www.netresearch.de
  */
-class TranslationController extends ActionController
+final class TranslationController extends ActionController
 {
     private readonly ModuleTemplateFactory $moduleTemplateFactory;
 

@@ -36,7 +36,7 @@ use TYPO3\CMS\Extensionmanager\Utility\ListUtility;
  *
  * @see    https://www.netresearch.de
  */
-class ImportCommand extends Command
+final class ImportCommand extends Command
 {
     /**
      * Path for the language file within an extension.
@@ -124,7 +124,7 @@ class ImportCommand extends Command
      *
      * @param string $languageCode Language Code
      */
-    protected function getLanguageId(string $languageCode): int
+    private function getLanguageId(string $languageCode): int
     {
         if ($languageCode === 'default') {
             $languageCode = 'en';
@@ -144,7 +144,7 @@ class ImportCommand extends Command
      *
      * @return SiteLanguage[]
      */
-    protected function getAllLanguages(): array
+    private function getAllLanguages(): array
     {
         $sites     = $this->siteFinder->getAllSites();
         $firstSite = reset($sites);
@@ -155,7 +155,7 @@ class ImportCommand extends Command
     /**
      * Returns the language key from the file name.
      */
-    protected function getLanguageKeyFromFile(string $file): string
+    private function getLanguageKeyFromFile(string $file): string
     {
         $fileParts = explode('.', basename($file));
 
@@ -166,7 +166,7 @@ class ImportCommand extends Command
         return $fileParts[0];
     }
 
-    protected function importTranslationsFromFiles(OutputInterface $output, bool $forceUpdate = false): void
+    private function importTranslationsFromFiles(OutputInterface $output, bool $forceUpdate = false): void
     {
         foreach (array_keys($this->extensions) as $extKey) {
             $folderPath = ExtensionManagementUtility::extPath($extKey) . self::LANG_FOLDER;
@@ -208,7 +208,7 @@ class ImportCommand extends Command
      *
      * @param string[] $files
      */
-    protected function importLanguageFiles(array $files, OutputInterface $output, bool $forceUpdate = false): void
+    private function importLanguageFiles(array $files, OutputInterface $output, bool $forceUpdate = false): void
     {
         $imported = 0;
         $updated  = 0;
@@ -236,7 +236,7 @@ class ImportCommand extends Command
     /**
      * @param string[] $errors
      */
-    protected function importFile(
+    private function importFile(
         OutputInterface $output,
         string $file,
         bool $forceUpdate,

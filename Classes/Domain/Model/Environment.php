@@ -24,7 +24,7 @@ use TYPO3\CMS\Extbase\Validation\Validator\NotEmptyValidator;
  *
  * @see    https://www.netresearch.de
  */
-class Environment extends AbstractValueObject
+final class Environment extends AbstractValueObject
 {
     /**
      * name.

@@ -25,7 +25,7 @@ use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
  *
  * @see    https://www.netresearch.de
  */
-class TextdbViewHelper extends AbstractViewHelper
+final class TextdbViewHelper extends AbstractViewHelper
 {
     private readonly TranslationService $translationService;
 

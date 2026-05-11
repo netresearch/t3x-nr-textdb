@@ -38,7 +38,7 @@ use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
  *
  * @see    https://www.netresearch.de
  */
-class ImportService
+final class ImportService
 {
     private readonly PersistenceManagerInterface $persistenceManager;
 
