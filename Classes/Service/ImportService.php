@@ -38,23 +38,23 @@ use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
  *
  * @see    https://www.netresearch.de
  */
-final class ImportService
+final readonly class ImportService
 {
-    private readonly PersistenceManagerInterface $persistenceManager;
+    private PersistenceManagerInterface $persistenceManager;
 
-    private readonly XliffParser $xliffParser;
+    private XliffParser $xliffParser;
 
-    private readonly TranslationService $translationService;
+    private TranslationService $translationService;
 
-    private readonly TranslationRepository $translationRepository;
+    private TranslationRepository $translationRepository;
 
-    private readonly ComponentRepository $componentRepository;
+    private ComponentRepository $componentRepository;
 
-    private readonly TypeRepository $typeRepository;
+    private TypeRepository $typeRepository;
 
-    private readonly EnvironmentRepository $environmentRepository;
+    private EnvironmentRepository $environmentRepository;
 
-    private readonly SiteFinder $siteFinder;
+    private SiteFinder $siteFinder;
 
     /**
      * Constructor.

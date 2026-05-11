@@ -91,7 +91,7 @@ final class TranslateViewHelper extends AbstractViewHelper
      */
     public function render(): string
     {
-        if (static::$component === '') {
+        if (self::$component === '') {
             throw new RuntimeException(
                 'Please set a component in your controller via TranslateViewHelper::$component = "my-component".',
             );
@@ -118,7 +118,7 @@ final class TranslateViewHelper extends AbstractViewHelper
         $result = $this->translationService->translate(
             $textdbKey,
             'label',
-            static::$component,
+            self::$component,
             $environmentName,
         );
 

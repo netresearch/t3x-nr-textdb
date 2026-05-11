@@ -690,7 +690,7 @@ final class TranslationController extends ActionController
     private function getConfigFromBeUserData(): array
     {
         $storedConfig = $this->getBackendUser()
-            ->getModuleData(static::class);
+            ->getModuleData(self::class);
 
         if (is_string($storedConfig) && $storedConfig !== '') {
             // Support both JSON (new) and serialized (legacy) formats
@@ -715,7 +715,7 @@ final class TranslationController extends ActionController
     private function persistConfigInBeUserData(array $config): void
     {
         $this->getBackendUser()->pushModuleData(
-            static::class,
+            self::class,
             json_encode($config, JSON_THROW_ON_ERROR),
         );
     }

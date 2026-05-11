@@ -27,46 +27,46 @@ use TYPO3\CMS\Extbase\Validation\Validator\NotEmptyValidator;
  */
 final class Translation extends AbstractEntity
 {
-    final public const AUTO_CREATE_IDENTIFIER = 'auto-created-by-repository';
+    public const AUTO_CREATE_IDENTIFIER = 'auto-created-by-repository';
 
-    protected ?DateTime $crdate = null;
+    private ?DateTime $crdate = null;
 
-    protected ?DateTime $tstamp = null;
+    private ?DateTime $tstamp = null;
 
-    protected int $l10nParent = 0;
+    private int $l10nParent = 0;
 
-    protected bool $hidden = false;
+    private bool $hidden = false;
 
-    protected bool $deleted = false;
+    private bool $deleted = false;
 
-    protected int $sorting = 0;
+    private int $sorting = 0;
 
     /**
      * The environment.
      */
-    protected ?Environment $environment = null;
+    private ?Environment $environment = null;
 
     /**
      * The component.
      */
-    protected ?Component $component = null;
+    private ?Component $component = null;
 
     /**
      * The type.
      */
-    protected ?Type $type = null;
+    private ?Type $type = null;
 
     /**
      * The placeholder.
      */
     #[Validate(['validator' => NotEmptyValidator::class])]
-    protected string $placeholder = '';
+    private string $placeholder = '';
 
     /**
      * The value.
      */
     #[Validate(['validator' => NotEmptyValidator::class])]
-    protected string $value = '';
+    private string $value = '';
 
     public function getCrdate(): ?DateTime
     {
@@ -209,7 +209,7 @@ final class Translation extends AbstractEntity
     public function getValue(): string
     {
         if ($this->isAutoCreated()) {
-            return $this->getPlaceholder();
+            return $this->placeholder;
         }
 
         return $this->value;
