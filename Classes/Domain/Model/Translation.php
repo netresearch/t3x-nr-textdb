@@ -29,44 +29,49 @@ final class Translation extends AbstractEntity
 {
     public const AUTO_CREATE_IDENTIFIER = 'auto-created-by-repository';
 
-    private ?DateTime $crdate = null;
+    // Mapped properties must stay `protected`. The Extbase DataMapper writes them
+    // through AbstractDomainObject::_setProperty(), which assigns from the parent
+    // class scope and therefore cannot touch properties declared `private` here
+    // ("Error: Cannot access private property").
 
-    private ?DateTime $tstamp = null;
+    protected ?DateTime $crdate = null;
 
-    private int $l10nParent = 0;
+    protected ?DateTime $tstamp = null;
 
-    private bool $hidden = false;
+    protected int $l10nParent = 0;
 
-    private bool $deleted = false;
+    protected bool $hidden = false;
 
-    private int $sorting = 0;
+    protected bool $deleted = false;
+
+    protected int $sorting = 0;
 
     /**
      * The environment.
      */
-    private ?Environment $environment = null;
+    protected ?Environment $environment = null;
 
     /**
      * The component.
      */
-    private ?Component $component = null;
+    protected ?Component $component = null;
 
     /**
      * The type.
      */
-    private ?Type $type = null;
+    protected ?Type $type = null;
 
     /**
      * The placeholder.
      */
     #[Validate(['validator' => NotEmptyValidator::class])]
-    private string $placeholder = '';
+    protected string $placeholder = '';
 
     /**
      * The value.
      */
     #[Validate(['validator' => NotEmptyValidator::class])]
-    private string $value = '';
+    protected string $value = '';
 
     public function getCrdate(): ?DateTime
     {
