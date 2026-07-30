@@ -15,6 +15,7 @@ use Netresearch\NrTextdb\Domain\Model\Component;
 use Netresearch\NrTextdb\Domain\Model\Environment;
 use Netresearch\NrTextdb\Domain\Model\Translation;
 use Netresearch\NrTextdb\Domain\Model\Type;
+use TYPO3\CMS\Core\Context\LanguageAspect;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException;
 use TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings;
@@ -61,16 +62,42 @@ class TranslationRepository extends AbstractRepository
             ->getQuerySettings()
             ->setIgnoreEnableFields(true)
             ->setRespectStoragePage(false)
-            ->setRespectSysLanguage(false);
+            ->setRespectSysLanguage(false)
+            ->setLanguageAspect($this->rawLanguageAspect($languageUid));
 
         $query->matching(
             $query->logicalAnd(
-                $query->equals('sys_language_uid', $languageUid),
+                $query->equals('sysLanguageUid', $languageUid),
                 $query->in('l10nParent', $originals),
             ),
         );
 
         return $query->execute();
+    }
+
+    /**
+     * Returns the raw record for a uid, regardless of its language.
+     *
+     * Repository::findByUid() honours the language of the current request, so a
+     * localized row addressed by its own uid resolves to null in a backend
+     * context (language 0). The backend module edits rows of every language by
+     * uid, and silently getting null there is what made saving a translation
+     * discard the change (issue #100).
+     */
+    public function findRawByUid(int $uid): ?Translation
+    {
+        $query = $this->createQuery();
+        $query
+            ->getQuerySettings()
+            ->setIgnoreEnableFields(true)
+            ->setRespectStoragePage(false)
+            ->setRespectSysLanguage(false)
+            ->setLanguageAspect($this->rawLanguageAspect(0));
+
+        return $query
+            ->matching($query->equals('uid', $uid))
+            ->execute()
+            ->getFirst();
     }
 
     /**
@@ -88,7 +115,8 @@ class TranslationRepository extends AbstractRepository
             ->setIgnoreEnableFields(true)
             ->setRespectStoragePage(true)
             ->setStoragePageIds([$this->getConfiguredPageId()])
-            ->setRespectSysLanguage(false);
+            ->setRespectSysLanguage(false)
+            ->setLanguageAspect($this->rawLanguageAspect(0));
 
         $query->matching(
             $query->equals('l10nParent', $uid),
@@ -122,7 +150,9 @@ class TranslationRepository extends AbstractRepository
         $query = $this->createQuery();
         $query
             ->getQuerySettings()
-            ->setIgnoreEnableFields(true);
+            ->setIgnoreEnableFields(true)
+            ->setRespectSysLanguage(false)
+            ->setLanguageAspect($this->rawLanguageAspect($languageId));
 
         $constraints = [];
 
@@ -143,7 +173,7 @@ class TranslationRepository extends AbstractRepository
         }
 
         if ($languageId !== 0) {
-            $constraints[] = $query->equals('_languageUid', $languageId);
+            $constraints[] = $query->equals('sysLanguageUid', $languageId);
         }
 
         if ($constraints !== []) {
@@ -170,12 +200,13 @@ class TranslationRepository extends AbstractRepository
             ->setIgnoreEnableFields(true)
             ->setRespectStoragePage(true)
             ->setStoragePageIds([$this->getConfiguredPageId()])
-            ->setRespectSysLanguage(false);
+            ->setRespectSysLanguage(false)
+            ->setLanguageAspect($this->rawLanguageAspect(0));
 
         return $query
             ->matching(
                 $query->logicalAnd(
-                    $query->equals('sys_language_uid', 0),
+                    $query->equals('sysLanguageUid', 0),
                     $query->equals('environment', $environment),
                     $query->equals('component', $component),
                     $query->equals('type', $type),
@@ -202,12 +233,13 @@ class TranslationRepository extends AbstractRepository
             ->setIgnoreEnableFields(true)
             ->setRespectStoragePage(true)
             ->setStoragePageIds([$this->getConfiguredPageId()])
-            ->setRespectSysLanguage(false);
+            ->setRespectSysLanguage(false)
+            ->setLanguageAspect($this->rawLanguageAspect($languageUid));
 
         return $query
             ->matching(
                 $query->logicalAnd(
-                    $query->equals('sys_language_uid', $languageUid),
+                    $query->equals('sysLanguageUid', $languageUid),
                     $query->equals('environment', $environment),
                     $query->equals('component', $component),
                     $query->equals('type', $type),
@@ -216,5 +248,24 @@ class TranslationRepository extends AbstractRepository
             )
             ->execute()
             ->getFirst();
+    }
+
+    /**
+     * Builds the language aspect used by every query in this repository.
+     *
+     * TextDB rows are addressed as raw records: the repository selects an exact
+     * `sys_language_uid` itself and must receive that very row back, never a
+     * language overlay of it. Extbase resolves overlays from the query settings'
+     * language aspect, which defaults to the one in the global Context, so the
+     * aspect has to be pinned explicitly per query.
+     *
+     * Since TYPO3 v14 the Extbase persistence session keys its identity map by
+     * the language aspect as well (see Important #93765), so two queries for
+     * different languages must also carry different aspects — otherwise the
+     * record loaded first is handed out again for the second language.
+     */
+    private function rawLanguageAspect(int $languageUid): LanguageAspect
+    {
+        return new LanguageAspect($languageUid, $languageUid, LanguageAspect::OVERLAYS_OFF);
     }
 }

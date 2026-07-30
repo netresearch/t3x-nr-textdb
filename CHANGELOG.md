@@ -1,3 +1,27 @@
+# 4.0.0
+
+## BREAKING
+
+- [!!!][TASK] Require TYPO3 v14.3 LTS; support for TYPO3 v13 is dropped
+- [!!!][TASK] The default-language XLIFF export no longer emits a `target-language` attribute, so it is read as a source-only template on import
+
+## FEATURE
+
+- [FEATURE] TYPO3 v14.3 compatibility: `ctrl.searchFields` removed from all four TCA tables (Breaking #106972)
+- [FEATURE] Extbase language queries use the `sysLanguageUid` property with an explicit `LanguageAspect` per query
+- [FEATURE] `#[Validate]` uses named arguments and the `TYPO3\CMS\Extbase\Attribute` namespace (Deprecation #97559, #107229)
+- [FEATURE] XLIFF import uses `TYPO3\CMS\Core\Localization\Loader\XliffLoader` instead of the deprecated `XliffParser` (Deprecation #107436)
+- [FEATURE] Doc header buttons are built with `ComponentFactory` instead of the deprecated `ButtonBar::makeLinkButton()` (Deprecation #107823)
+- [FEATURE] `composer.json` carries `extra.typo3/cms.version` and `Package.providesPackages` (Deprecation #108345)
+- [TASK] CI matrix runs TYPO3 `^14.3` on PHP 8.2, 8.3, 8.4 and 8.5
+- [TASK] Agent and contributor instructions state TYPO3 14.3+ and PHP 8.2+ instead of the dropped TYPO3 13.4/PHP 8.1 baseline
+
+## BUGFIX
+
+- [BUGFIX] Backend module: saving a translation updates the existing record instead of adding a duplicate, skips empty values and reports a persistence error as a flash message (#100)
+- [BUGFIX] Mapped domain model properties are `protected` again so the Extbase DataMapper can write them
+- [BUGFIX] The functional test suite no longer swallows setup failures and is executed instead of silently skipped
+
 # 3.0.1
 
 ## TASK

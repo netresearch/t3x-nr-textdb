@@ -16,6 +16,7 @@ use Rector\DeadCode\Rector\ClassMethod\RemoveUselessParamTagRector;
 use Rector\DeadCode\Rector\ClassMethod\RemoveUselessReturnTagRector;
 use Rector\DeadCode\Rector\Property\RemoveUselessVarTagRector;
 use Rector\Php80\Rector\Class_\ClassPropertyAssignToConstructorPromotionRector;
+use Rector\Privatization\Rector\Property\PrivatizeFinalClassPropertyRector;
 use Rector\Set\ValueObject\LevelSetList;
 use Rector\Set\ValueObject\SetList;
 use Ssch\TYPO3Rector\Set\Typo3LevelSetList;
@@ -53,7 +54,7 @@ return static function (RectorConfig $rectorConfig): void {
         SetList::STRICT_BOOLEANS,
         SetList::TYPE_DECLARATION,
         LevelSetList::UP_TO_PHP_82,
-        Typo3LevelSetList::UP_TO_TYPO3_13,
+        Typo3LevelSetList::UP_TO_TYPO3_14,
     ]);
 
     // Skip some rules
@@ -64,5 +65,12 @@ return static function (RectorConfig $rectorConfig): void {
         RemoveUselessReturnTagRector::class,
         RemoveUselessVarTagRector::class,
         RemoveUnusedPrivateMethodParameterRector::class,
+        // Extbase domain models are final, but their mapped properties MUST stay
+        // `protected`: the DataMapper assigns them via
+        // AbstractDomainObject::_setProperty() from the parent class scope, which
+        // fails with "Cannot access private property" on private declarations.
+        PrivatizeFinalClassPropertyRector::class => [
+            __DIR__ . '/../Classes/Domain/Model',
+        ],
     ]);
 };

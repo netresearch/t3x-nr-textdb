@@ -17,12 +17,10 @@ use Netresearch\NrTextdb\ViewHelpers\TextdbViewHelper;
 use Override;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
-use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\LanguageAspect;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Fluid\View\StandaloneView;
 
 /**
  * End-to-end rendering tests for TextdbViewHelper.
@@ -63,7 +61,7 @@ final class TextdbViewHelperTest extends AbstractFunctionalTestCase
         // Point the extension at pid=1 and disable auto-creation by default.
         // Individual tests that need createIfMissing=true call
         // $this->setExtensionConfiguration() explicitly.
-        $this->mockExtensionConfiguration(textDbPid: '1', createIfMissing: '0');
+        $this->setExtensionConfiguration(textDbPid: '1', createIfMissing: '0');
 
         // Load a page record so that pid=1 is a valid storage page.
         $this->importFixture('Pages.csv');
@@ -294,21 +292,6 @@ final class TextdbViewHelperTest extends AbstractFunctionalTestCase
     // =========================================================================
 
     /**
-     * Renders a minimal Fluid template string that registers the extension's
-     * ViewHelper namespace under the alias "nrtextdb".
-     */
-    private function renderFluidTemplate(string $templateBody): string
-    {
-        $templateSource = '{namespace nrtextdb=Netresearch\\NrTextdb\\ViewHelpers}' . $templateBody;
-
-        /** @var StandaloneView $view */
-        $view = GeneralUtility::makeInstance(StandaloneView::class);
-        $view->setTemplateSource($templateSource);
-
-        return $view->render();
-    }
-
-    /**
      * Overrides the language aspect on the shared Context singleton so that
      * TranslationService picks up the expected sys_language_uid.
      */
@@ -316,32 +299,6 @@ final class TextdbViewHelperTest extends AbstractFunctionalTestCase
     {
         GeneralUtility::makeInstance(Context::class)
             ->setAspect('language', new LanguageAspect($languageUid));
-    }
-
-    /**
-     * Registers a mocked ExtensionConfiguration so repository methods return
-     * the desired textDbPid and createIfMissing values without touching the
-     * actual TYPO3 extension configuration storage.
-     */
-    private function mockExtensionConfiguration(string $textDbPid, string $createIfMissing): void
-    {
-        $mock = $this->createMock(ExtensionConfiguration::class);
-        $mock->method('get')
-            ->willReturnCallback(
-                static function (string $ext, string $path) use ($textDbPid, $createIfMissing): string {
-                    if ($ext !== 'nr_textdb') {
-                        return '';
-                    }
-
-                    return match ($path) {
-                        'textDbPid'       => $textDbPid,
-                        'createIfMissing' => $createIfMissing,
-                        default           => '',
-                    };
-                },
-            );
-
-        GeneralUtility::addInstance(ExtensionConfiguration::class, $mock);
     }
 
     /**

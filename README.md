@@ -3,7 +3,7 @@
 > **Manage TYPO3 translations directly in the backend – no more digging through language files**
 
 [![Latest version](https://img.shields.io/github/v/release/netresearch/t3x-nr-textdb?sort=semver)](https://github.com/netresearch/t3x-nr-textdb/releases/latest)
-[![TYPO3 13](https://img.shields.io/badge/TYPO3-13.4-orange.svg)](https://get.typo3.org/version/13)
+[![TYPO3 14](https://img.shields.io/badge/TYPO3-14.3-orange.svg)](https://get.typo3.org/version/14)
 [![PHP 8.2+](https://img.shields.io/badge/PHP-8.2%2B-blue.svg)](https://www.php.net/)
 [![License](https://img.shields.io/github/license/netresearch/t3x-nr-textdb)](https://github.com/netresearch/t3x-nr-textdb/blob/main/LICENSE)
 [![CI](https://github.com/netresearch/t3x-nr-textdb/actions/workflows/ci.yml/badge.svg)](https://github.com/netresearch/t3x-nr-textdb/actions/workflows/ci.yml)
@@ -212,7 +212,7 @@ xmlns:textdb="http://typo3.org/ns/Netresearch/NrTextdb/ViewHelpers"
 - **Extbase ViewHelpers** (`textdb:textdb`, `textdb:translate`)
 - **Console commands** for automated import workflows
 - **Structured data model** (Environment → Component → Type → Placeholder)
-- **TYPO3 v13 compatibility** with modern dependency injection
+- **TYPO3 v14 compatibility** with modern dependency injection
 
 ---
 
@@ -231,7 +231,7 @@ xmlns:textdb="http://typo3.org/ns/Netresearch/NrTextdb/ViewHelpers"
 | **Live Translation Updates** | ✅ Instant | ⚠️ Via Workflow | ✅ Instant | ✅ Instant | ❌ Requires Deployment |
 | **Non-Developer Editing** | ✅ Backend Module | ⚠️ Complex | ✅ Simple | ✅ Basic | ❌ File Access Needed |
 | **Code Quality** | ✅ PHPStan 10 | ⚠️ Lower | ⚠️ Lower | ⚠️ Lower | ✅ High |
-| **TYPO3 v13 Ready** | ✅ Yes | ⚠️ Legacy Support | ❌ Outdated | ❌ Unmaintained | ✅ Yes |
+| **TYPO3 v14 Ready** | ✅ Yes | ⚠️ Legacy Support | ❌ Outdated | ❌ Unmaintained | ✅ Yes |
 
 ### Key Differentiators
 
@@ -297,8 +297,8 @@ xmlns:textdb="http://typo3.org/ns/Netresearch/NrTextdb/ViewHelpers"
 
 ## 📋 Requirements
 
-- **TYPO3**: 13.4.0 - 13.99.99
-- **PHP**: 8.2, 8.3, or 8.4
+- **TYPO3**: 14.3.0 - 14.99.99
+- **PHP**: 8.2, 8.3, 8.4, or 8.5
 - **PHP Extensions**: zip, simplexml, libxml
 - **Composer**: For installation and dependency management
 

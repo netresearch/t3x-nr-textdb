@@ -18,7 +18,6 @@ use Netresearch\NrTextdb\Service\ImportService;
 use Netresearch\NrTextdb\Tests\Functional\AbstractFunctionalTestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
-use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
@@ -49,20 +48,7 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
     {
         parent::setUp();
 
-        // Provide storage page 1 and allow auto-creation
-        $extensionConfigurationMock = $this->createMock(ExtensionConfiguration::class);
-        $extensionConfigurationMock
-            ->method('get')
-            ->withAnyParameters()
-            ->willReturnCallback(static function (string $extension, string $path): string {
-                return match ($path) {
-                    'textDbPid'       => '1',
-                    'createIfMissing' => '1',
-                    default           => '0',
-                };
-            });
-
-        GeneralUtility::addInstance(ExtensionConfiguration::class, $extensionConfigurationMock);
+        $this->setExtensionConfiguration(textDbPid: '1', createIfMissing: '1');
 
         // Build a minimal SiteLanguage for English (language id 0)
         $siteLanguage = $this->buildSiteLanguage(0, 'en');
@@ -198,6 +184,38 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
         /** @var Translation $translation */
         $translation = $result->getFirst();
         self::assertSame('Updated Value', $translation->getValue());
+    }
+
+    #[Test]
+    public function importFileReadsSourceOfADefaultLanguageExport(): void
+    {
+        // The extension's own default-language export (Resources/Private/template.xlf)
+        // carries the texts in <source> and declares no target-language. TYPO3 v14
+        // parses XLIFF through Symfony message catalogues now (Deprecation #107436),
+        // and that stack decides between <source> and <target> by the presence of
+        // target-language — so this file shape has to keep round-tripping.
+        $result = new ImportResult();
+
+        $this->importService->importFile(
+            __DIR__ . '/../Fixtures/ImportService/textdb_import.xlf',
+            false,
+            $result,
+        );
+
+        self::assertSame([], $result->getErrors());
+        self::assertSame(1, $result->getImported());
+
+        $translations = $this->translationRepository
+            ->findAllByComponentTypePlaceholderValueAndLanguage(
+                placeholder: 'source_only_key',
+                languageId: 0,
+            );
+
+        /** @var Translation|null $translation */
+        $translation = $translations->getFirst();
+
+        self::assertInstanceOf(Translation::class, $translation);
+        self::assertSame('Source Only Label', $translation->getValue());
     }
 
     // -------------------------------------------------------------------------

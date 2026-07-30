@@ -338,7 +338,7 @@ Competitive Positioning
 
 **vs. Snowbabel**: TextDB provides advanced filtering, hierarchical organization, and production-grade code quality beyond Snowbabel's basic editing.
 
-**vs. translatelabels**: TextDB offers zero-friction migration and modern TYPO3 v13 support, while translatelabels is unmaintained.
+**vs. translatelabels**: TextDB offers zero-friction migration and modern TYPO3 v14 support, while translatelabels is unmaintained.
 
 **vs. TYPO3 Core**: TextDB provides backend module access and live updates, while TYPO3 Core requires file editing and deployment cycles.
 

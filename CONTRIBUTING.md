@@ -180,7 +180,7 @@ git push origin feature/your-feature-name
 
 ### Prerequisites
 
-- **TYPO3:** 13.4+
+- **TYPO3:** 14.3+
 - **PHP:** 8.2, 8.3, or 8.4
 - **Composer:** 2.x
 - **DDEV:** Recommended for local development
@@ -194,8 +194,8 @@ ddev start
 # Install dependencies
 ddev composer install
 
-# Install TYPO3 v13.4
-ddev install-v13
+# Install TYPO3 v14.3
+ddev install-v14
 
 # Access the site
 ddev launch
@@ -263,7 +263,7 @@ The following tools enforce code quality:
 
 - **php-cs-fixer** - PSR-12 and Symfony style enforcement
 - **PHPStan** - Static analysis at level 10
-- **Rector** - Code modernization to TYPO3 v13
+- **Rector** - Code modernization to TYPO3 v14
 - **Fractor** - TYPO3-specific code improvements
 
 All tools run automatically in CI/CD on pull requests.

@@ -123,8 +123,18 @@ final class TranslateViewHelper extends AbstractViewHelper
         );
 
         // If the result is the placeholder itself (auto-created or missing),
-        // try to return the LLL translation instead
-        if ($result === $textdbKey) {
+        // try to return the LLL translation instead.
+        //
+        // Since TYPO3 v14, LocalizationUtility::translate() throws an
+        // InvalidArgumentException (1498144052) when it cannot derive a language
+        // file from its arguments. The only two argument shapes that are
+        // guaranteed to resolve are a fully-qualified "LLL:EXT:…" key and a
+        // non-empty extension name; a bare key such as "some.label" would abort
+        // the whole rendering instead of falling through to the TextDB value.
+        if (
+            ($result === $textdbKey)
+            && (str_starts_with($placeholder, 'LLL:EXT:') || (($extension !== null) && ($extension !== '')))
+        ) {
             $lllTranslation = LocalizationUtility::translate($placeholder, $extension);
 
             if ($lllTranslation !== null && $lllTranslation !== '') {

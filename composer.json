@@ -51,11 +51,12 @@
         "ext-zip": "*",
         "ext-simplexml": "*",
         "ext-libxml": "*",
-        "typo3/cms-core": "^13.4",
-        "typo3/cms-backend": "^13.4",
-        "typo3/cms-extbase": "^13.4",
-        "typo3/cms-extensionmanager": "^13.4",
-        "symfony/console": "^7.0 || ^8.0"
+        "typo3/cms-core": "^14.3",
+        "typo3/cms-backend": "^14.3",
+        "typo3/cms-extbase": "^14.3",
+        "typo3/cms-extensionmanager": "^14.3",
+        "symfony/console": "^7.0 || ^8.0",
+        "symfony/translation": "^7.0 || ^8.0"
     },
     "require-dev": {
         "netresearch/typo3-ci-workflows": "^1.1"
@@ -98,10 +99,14 @@
     "extra": {
         "typo3/cms": {
             "extension-key": "nr_textdb",
-            "web-dir": ".build/public"
+            "version": "4.0.0",
+            "web-dir": ".build/public",
+            "Package": {
+                "providesPackages": {}
+            }
         },
         "branch-alias": {
-            "dev-main": "3.0.x-dev"
+            "dev-main": "4.0.x-dev"
         }
     },
     "scripts": {

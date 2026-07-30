@@ -102,6 +102,7 @@ final class TextdbViewHelperTest extends UnitTestCase
         ]);
 
         $this->translationService
+            ->expects(self::once())
             ->method('translate')
             ->with('key', 'P', 'comp', 'default')
             ->willReturn('Result');

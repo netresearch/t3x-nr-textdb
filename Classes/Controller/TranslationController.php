@@ -13,7 +13,10 @@ namespace Netresearch\NrTextdb\Controller;
 
 use function is_string;
 
+use Netresearch\NrTextdb\Domain\Model\Component;
+use Netresearch\NrTextdb\Domain\Model\Environment;
 use Netresearch\NrTextdb\Domain\Model\Translation;
+use Netresearch\NrTextdb\Domain\Model\Type;
 use Netresearch\NrTextdb\Domain\Repository\ComponentRepository;
 use Netresearch\NrTextdb\Domain\Repository\EnvironmentRepository;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
@@ -27,7 +30,9 @@ use RuntimeException;
 use function sprintf;
 
 use Symfony\Component\Filesystem\Filesystem;
+use Throwable;
 use TYPO3\CMS\Backend\Template\Components\ButtonBar;
+use TYPO3\CMS\Backend\Template\Components\ComponentFactory;
 use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
@@ -92,6 +97,8 @@ final class TranslationController extends ActionController
 
     private readonly FlashMessageService $flashMessageService;
 
+    private readonly ComponentFactory $componentFactory;
+
     private int $pid = 0;
 
     /**
@@ -109,6 +116,7 @@ final class TranslationController extends ActionController
         TypeRepository $typeRepository,
         ImportService $importService,
         FlashMessageService $flashMessageService,
+        ComponentFactory $componentFactory,
     ) {
         $this->extensionConfiguration = $extensionConfiguration;
         $this->environmentRepository  = $environmentRepository;
@@ -120,6 +128,7 @@ final class TranslationController extends ActionController
         $this->moduleTemplateFactory  = $moduleTemplateFactory;
         $this->iconFactory            = $iconFactory;
         $this->flashMessageService    = $flashMessageService;
+        $this->componentFactory       = $componentFactory;
 
         $this->environmentRepository->setCreateIfMissing(true);
         $this->typeRepository->setCreateIfMissing(true);
@@ -239,7 +248,7 @@ final class TranslationController extends ActionController
 
     public function translatedAction(int $uid): ResponseInterface
     {
-        $original = $this->translationRepository->findByUid($uid);
+        $original = $this->translationRepository->findRawByUid($uid);
         $children = $this->translationRepository->findByPidAndLanguage($uid);
 
         $translated = $original instanceof Translation
@@ -272,34 +281,47 @@ final class TranslationController extends ActionController
      */
     public function translateRecordAction(int $parent, array $new = [], array $update = []): ResponseInterface
     {
-        $parentTranslation = $this->translationRepository->findByUid($parent);
+        $parentTranslation = $this->translationRepository->findRawByUid($parent);
 
         if ($parentTranslation instanceof Translation) {
             foreach ($new as $language => $value) {
-                $translation = $this->translationService
-                    ->createTranslationFromParent(
-                        $parentTranslation,
-                        $language,
-                        $value,
-                    );
-
-                if ($translation instanceof Translation) {
-                    $this->translationRepository->add($translation);
-                }
+                $this->saveNewTranslation($parentTranslation, $language, trim($value));
             }
         }
 
         foreach ($update as $translationUid => $value) {
-            $translation = $this->translationRepository->findByUid($translationUid);
+            $translation = $this->translationRepository->findRawByUid($translationUid);
 
             if ($translation instanceof Translation) {
-                $translation->setValue($value);
+                $translation->setValue(trim($value));
 
                 $this->translationRepository->update($translation);
             }
         }
 
-        $this->persistenceManager->persistAll();
+        try {
+            $this->persistenceManager->persistAll();
+
+            $this->addFlashMessageToQueue(
+                $this->translate('message.translation.save.title') ?? 'TextDb',
+                $this->translate('message.translation.saved') ?? 'The translation was saved.',
+                ContextualFeedbackSeverity::OK,
+            );
+        } catch (Throwable $throwable) {
+            // Without this guard a persistence error (historically a collision
+            // with the unique key on the translation table) escaped the module
+            // as a raw 503 and the editor lost the entered text without any
+            // feedback. See issue #100.
+            $this->persistenceManager->clearState();
+
+            $this->addFlashMessageToQueue(
+                $this->translate('message.translation.save.title') ?? 'TextDb',
+                sprintf(
+                    $this->translate('message.error.translation.save') ?? 'The translation could not be saved: %s',
+                    $throwable->getMessage(),
+                ),
+            );
+        }
 
         return (new ForwardResponse('translated'))
             ->withControllerName('Translation')
@@ -307,6 +329,65 @@ final class TranslationController extends ActionController
             ->withArguments([
                 'uid' => $parent,
             ]);
+    }
+
+    /**
+     * Stores one value submitted through the "untranslated" column of the
+     * translation dialog.
+     *
+     * The dialog renders an empty textarea for every language it considers
+     * untranslated, so a submit carries one entry per language whether or not
+     * the editor typed anything, and the language may well already have a
+     * record — the dialog derives "untranslated" from the overlay lookup, which
+     * misses rows that do exist. Blindly adding a record for each entry
+     * therefore produced empty rows and, on the second save, a collision with
+     * the unique key (sys_language_uid, pid, environment, component, type,
+     * placeholder, deleted). Skipping empties and updating an existing record
+     * makes that collision impossible by construction. See issue #100.
+     *
+     * @param int<-1, max> $language
+     *
+     * @throws IllegalObjectTypeException
+     * @throws UnknownObjectException
+     */
+    private function saveNewTranslation(Translation $parentTranslation, int $language, string $value): void
+    {
+        if ($value === '') {
+            return;
+        }
+
+        $environment = $parentTranslation->getEnvironment();
+        $component   = $parentTranslation->getComponent();
+        $type        = $parentTranslation->getType();
+
+        $existingTranslation = ($environment instanceof Environment) && ($component instanceof Component) && ($type instanceof Type)
+            ? $this->translationRepository->findByEnvironmentComponentTypePlaceholderAndLanguage(
+                $environment,
+                $component,
+                $type,
+                $parentTranslation->getPlaceholder(),
+                $language,
+            )
+            : null;
+
+        if ($existingTranslation instanceof Translation) {
+            $existingTranslation->setValue($value);
+
+            $this->translationRepository->update($existingTranslation);
+
+            return;
+        }
+
+        $translation = $this->translationService
+            ->createTranslationFromParent(
+                $parentTranslation,
+                $language,
+                $value,
+            );
+
+        if ($translation instanceof Translation) {
+            $this->translationRepository->add($translation);
+        }
     }
 
     /**
@@ -345,7 +426,7 @@ final class TranslationController extends ActionController
             $this->addFlashMessageToQueue(
                 'Export',
                 $this->getLanguageService()->sL(
-                    'LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.error.filter',
+                    'nr_textdb.messages:message.error.filter',
                 ),
             );
 
@@ -411,7 +492,7 @@ final class TranslationController extends ActionController
             $this->addFlashMessageToQueue(
                 'Export',
                 $this->getLanguageService()->sL(
-                    'LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.error.archive',
+                    'nr_textdb.messages:message.error.archive',
                 ),
             );
 
@@ -516,7 +597,7 @@ final class TranslationController extends ActionController
             $this->addFlashMessageToQueue(
                 'Import',
                 $this->getLanguageService()->sL(
-                    'LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.error.import',
+                    'nr_textdb.messages:message.error.import',
                 ),
             );
 
@@ -800,9 +881,15 @@ final class TranslationController extends ActionController
             );
         }
 
+        // The default-language export carries the texts in <source> and must not
+        // declare a target-language: TYPO3's XliffLoader (and the XLIFF spec)
+        // treat a file with target-language as a translation and read <target>,
+        // which would import the default language back as empty values.
         $fileContent = sprintf(
             $markup,
-            $language->getLocale()->getLanguageCode(),
+            $enableTargetMarker
+                ? sprintf(' target-language="%s"', $language->getLocale()->getLanguageCode())
+                : '',
             $entries,
         );
 
@@ -865,8 +952,8 @@ final class TranslationController extends ActionController
                 IconSize::SMALL,
             );
 
-            $viewButton = $buttonBar
-                ->makeLinkButton()
+            $viewButton = $this->componentFactory
+                ->createLinkButton()
                 ->setHref($link)
                 ->setDataAttributes([
                     'toggle'    => 'tooltip',

@@ -16,7 +16,7 @@ Current coverage: Unit tests for Domain models and services.
 ## 2. Setup & environment
 
 **Prerequisites:**
-- Same as Classes/AGENTS.md (PHP 8.1+, TYPO3 13.4+)
+- Same as Classes/AGENTS.md (PHP 8.2+, TYPO3 14.3+)
 - TYPO3 Testing Framework: `typo3/testing-framework:^9.0`
 
 **Installation:**

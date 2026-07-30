@@ -23,7 +23,7 @@ use Netresearch\NrTextdb\Domain\Repository\EnvironmentRepository;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
 use Netresearch\NrTextdb\Domain\Repository\TypeRepository;
 use RuntimeException;
-use TYPO3\CMS\Core\Localization\Parser\XliffParser;
+use TYPO3\CMS\Core\Localization\Loader\XliffLoader;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
@@ -42,7 +42,7 @@ final readonly class ImportService
 {
     private PersistenceManagerInterface $persistenceManager;
 
-    private XliffParser $xliffParser;
+    private XliffLoader $xliffLoader;
 
     private TranslationService $translationService;
 
@@ -61,7 +61,7 @@ final readonly class ImportService
      */
     public function __construct(
         PersistenceManagerInterface $persistenceManager,
-        XliffParser $xliffParser,
+        XliffLoader $xliffLoader,
         TranslationService $translationService,
         TranslationRepository $translationRepository,
         ComponentRepository $componentRepository,
@@ -70,7 +70,7 @@ final readonly class ImportService
         SiteFinder $siteFinder,
     ) {
         $this->persistenceManager    = $persistenceManager;
-        $this->xliffParser           = $xliffParser;
+        $this->xliffLoader           = $xliffLoader;
         $this->translationService    = $translationService;
         $this->translationRepository = $translationRepository;
         $this->componentRepository   = $componentRepository;
@@ -97,14 +97,18 @@ final readonly class ImportService
     ): void {
         $languageKey = $this->getLanguageKeyFromFile($file);
         $languageUid = $this->getLanguageId($languageKey);
-        $fileContent = $this->xliffParser->getParsedData($file, $languageKey);
-        $entries     = $fileContent[$languageKey] ?? [];
 
-        if (!is_array($entries)) {
-            return;
-        }
+        // TYPO3 v14 replaced the localization parsers with Symfony Translation
+        // loaders (Deprecation #107436). XliffLoader is the core replacement for
+        // XliffParser: unlike Symfony's own XliffFileLoader it keeps TYPO3's
+        // XLIFF dialect working — `<xliff version="1.0">` documents, the
+        // source-only default-language file, and the `approved` attribute — and
+        // returns a Symfony MessageCatalogue instead of the nested array.
+        $entries = $this->xliffLoader
+            ->load($file, $languageKey)
+            ->all('messages');
 
-        foreach ($entries as $key => $data) {
+        foreach ($entries as $key => $value) {
             $key           = (string) $key;
             $componentName = $this->getComponentFromKey($key);
             if ($componentName === null) {
@@ -135,10 +139,6 @@ final readonly class ImportService
                     ),
                 );
             }
-
-            $value = is_array($data) && array_key_exists(0, $data) && is_array($data[0])
-                ? ($data[0]['target'] ?? null)
-                : null;
 
             if (!is_string($value)) {
                 throw new RuntimeException(
