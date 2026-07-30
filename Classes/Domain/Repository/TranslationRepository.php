@@ -74,6 +74,30 @@ class TranslationRepository extends AbstractRepository
     }
 
     /**
+     * Returns the raw record for a uid, regardless of its language.
+     *
+     * Repository::findByUid() honours the language of the current request, so a
+     * localized row addressed by its own uid resolves to null in a backend
+     * context (language 0). The backend module edits rows of every language by
+     * uid, and silently getting null there is what made saving a translation
+     * discard the change (issue #100).
+     */
+    public function findRawByUid(int $uid): ?Translation
+    {
+        $query = $this->createQuery();
+        $query
+            ->getQuerySettings()
+            ->setIgnoreEnableFields(true)
+            ->setRespectStoragePage(false)
+            ->setRespectSysLanguage(false);
+
+        return $query
+            ->matching($query->equals('uid', $uid))
+            ->execute()
+            ->getFirst();
+    }
+
+    /**
      * Returns an array with translations for a record.
      *
      * @param int $uid Uid of original
