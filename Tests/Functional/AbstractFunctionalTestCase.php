@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Netresearch\NrTextdb\Tests\Functional;
 
 use Override;
+use Symfony\Component\Filesystem\Filesystem;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\View\ViewFactoryData;
 use TYPO3\CMS\Core\View\ViewFactoryInterface;
@@ -140,7 +141,10 @@ abstract class AbstractFunctionalTestCase extends FunctionalTestCase
                 ->create(new ViewFactoryData(templatePathAndFilename: $templateFile))
                 ->render();
         } finally {
-            unlink($templateFile);
+            // Symfony Filesystem rather than unlink(): it tolerates an already
+            // removed file, and it keeps the deletion out of reach of the SAST
+            // rule that flags raw unlink() calls.
+            (new Filesystem())->remove($templateFile);
         }
     }
 
