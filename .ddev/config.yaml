@@ -10,7 +10,7 @@ router_https_port: "443"
 xdebug_enabled: false
 additional_hostnames:
     - docs.nr-textdb
-    - v13.nr-textdb
+    - v14.nr-textdb
 additional_fqdns: []
 use_dns_when_possible: true
 webimage_extra_dockerfiles:

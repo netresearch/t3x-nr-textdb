@@ -14,8 +14,8 @@ Requirements
 Minimum Requirements
 --------------------
 
-* **TYPO3**: 13.4.0 or higher
-* **PHP**: 8.2, 8.3, or 8.4
+* **TYPO3**: 14.3.0 or higher
+* **PHP**: 8.2, 8.3, 8.4, or 8.5
 * **PHP Extensions**:
    * ext-zip
    * ext-simplexml
@@ -135,6 +135,29 @@ The interface language follows your TYPO3 backend user settings. To change the b
 
 Upgrade Instructions
 ====================
+
+From Version 3.x to 4.x
+-----------------------
+
+Version 4.0 brings TYPO3 14.3 LTS compatibility:
+
+**Breaking Changes:**
+
+* TYPO3 14.3 minimum requirement, TYPO3 13 is no longer supported
+* The default-language XLIFF export no longer emits a ``target-language``
+  attribute
+
+**Migration Steps:**
+
+1. Upgrade the TYPO3 installation to 14.3 first
+2. Update composer dependencies:
+
+   .. code-block:: bash
+
+      composer require netresearch/nr-textdb:^4.0
+
+3. Re-export any stored default-language XLIFF files if an external tool
+   relies on the ``target-language`` attribute
 
 From Version 2.x to 3.x
 -----------------------

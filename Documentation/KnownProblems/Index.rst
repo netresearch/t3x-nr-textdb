@@ -14,7 +14,7 @@ Current Limitations
 TYPO3 Version Support
 ---------------------
 
-* **Minimum TYPO3:** 13.4.0
+* **Minimum TYPO3:** 14.3.0
 * **Earlier versions:** Not supported (use version 2.x for TYPO3 12)
 
 PHP Version Requirements
@@ -241,7 +241,7 @@ If you encounter issues not listed here:
       Issue Title: Brief description
 
       Environment:
-      - TYPO3: 13.4.5
+      - TYPO3: 14.3.5
       - PHP: 8.3.2
       - Extension: 3.0.1
       - Database: MariaDB 10.11

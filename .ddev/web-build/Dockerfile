@@ -79,10 +79,10 @@ $prUrl = $githubUrl && $prNumber ? $githubUrl . '/pull/' . $prNumber : null;
         <div class="card">
             <h3>🌐 TYPO3 Environment</h3>
             <div class="version-card">
-                <strong>TYPO3 13.4 LTS</strong>
+                <strong>TYPO3 14.3 LTS</strong>
                 <div class="links">
-                    <a href="https://v13.nr-textdb.ddev.site/" class="btn">Frontend</a>
-                    <a href="https://v13.nr-textdb.ddev.site/typo3/" class="btn">Backend</a>
+                    <a href="https://v14.nr-textdb.ddev.site/" class="btn">Frontend</a>
+                    <a href="https://v14.nr-textdb.ddev.site/typo3/" class="btn">Backend</a>
                 </div>
             </div>
         </div>
@@ -97,7 +97,7 @@ $prUrl = $githubUrl && $prNumber ? $githubUrl . '/pull/' . $prNumber : null;
         <div class="card">
             <h3>⚙️ Quick Commands</h3>
             <ul>
-                <li><code>ddev install-v13</code> - Install TYPO3 13.4 LTS</li>
+                <li><code>ddev install-v14</code> - Install TYPO3 14.3 LTS</li>
                 <li><code>ddev docs</code> - Render documentation</li>
                 <li><code>ddev ssh</code> - SSH into web container</li>
             </ul>
@@ -107,9 +107,9 @@ $prUrl = $githubUrl && $prNumber ? $githubUrl . '/pull/' . $prNumber : null;
 </html>
 PHPEOF
 
-RUN mkdir -p /var/www/html/v13/public/typo3
-RUN echo "<h1>Perform this first</h1> <code>ddev install-v13</code>" > /var/www/html/v13/public/index.html
-RUN echo "<h1>Perform this first</h1> <code>ddev install-v13</code>" > /var/www/html/v13/public/typo3/index.html
+RUN mkdir -p /var/www/html/v14/public/typo3
+RUN echo "<h1>Perform this first</h1> <code>ddev install-v14</code>" > /var/www/html/v14/public/index.html
+RUN echo "<h1>Perform this first</h1> <code>ddev install-v14</code>" > /var/www/html/v14/public/typo3/index.html
 
 ARG uid
 ARG gid

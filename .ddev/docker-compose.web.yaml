@@ -4,7 +4,7 @@ services:
             - EXTENSION_KEY=nr_textdb
             - PACKAGE_NAME=netresearch/nr-textdb
 
-            # TYPO3 v13 config
+            # TYPO3 v14 config
             - TYPO3_DB_DRIVER=mysqli
             - TYPO3_DB_USERNAME=root
             - TYPO3_DB_PASSWORD=root
@@ -19,7 +19,7 @@ services:
               source: ../
               target: /var/www/nr_textdb
               consistency: cached
-            - v13-data:/var/www/html/v13
+            - v14-data:/var/www/html/v14
 volumes:
-    v13-data:
-        name: "${DDEV_SITENAME}-v13-data"
+    v14-data:
+        name: "${DDEV_SITENAME}-v14-data"

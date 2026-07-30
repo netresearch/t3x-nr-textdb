@@ -1,16 +1,16 @@
 #!/bin/bash
 
-## Description: Install TYPO3 13.4 LTS with nr_textdb extension
-## Usage: install-v13
-## Example: ddev install-v13
+## Description: Install TYPO3 14.3 LTS with nr_textdb extension
+## Usage: install-v14
+## Example: ddev install-v14
 
 set -e
 
-VERSION="v13"
-TYPO3_VERSION="^13.4"
+VERSION="v14"
+TYPO3_VERSION="^14.3"
 INSTALL_DIR="/var/www/html/$VERSION"
 
-echo "📦 Installing TYPO3 13.4 LTS..."
+echo "📦 Installing TYPO3 14.3 LTS..."
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 # Create installation directory
@@ -93,7 +93,7 @@ languages:
     flag: us
 rootPageId: 1
 routes: {  }
-websiteTitle: 'TYPO3 13.4 - nr_textdb'
+websiteTitle: 'TYPO3 14.3 - nr_textdb'
 EOF
 fi
 
@@ -107,12 +107,12 @@ chmod -R 755 public/
 chmod -R 775 var/
 
 echo ""
-echo "✅ TYPO3 13.4 LTS installation complete!"
+echo "✅ TYPO3 14.3 LTS installation complete!"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 echo "🌐 Access your installation:"
-echo "   Frontend: https://v13.nr-textdb.ddev.site/"
-echo "   Backend:  https://v13.nr-textdb.ddev.site/typo3/"
+echo "   Frontend: https://v14.nr-textdb.ddev.site/"
+echo "   Backend:  https://v14.nr-textdb.ddev.site/typo3/"
 echo ""
 echo "🔑 Login credentials:"
 echo "   Username: admin"

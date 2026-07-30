@@ -27,7 +27,7 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\MockObject\MockObject;
 use RuntimeException;
-use TYPO3\CMS\Core\Localization\Parser\XliffParser;
+use TYPO3\CMS\Core\Localization\Loader\XliffLoader;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
@@ -57,8 +57,10 @@ final class ImportServiceTest extends UnitTestCase
     {
         parent::setUp();
 
-        $this->persistenceManager    = $this->createMock(PersistenceManagerInterface::class);
-        $xliffParser                 = $this->createMock(XliffParser::class);
+        $this->persistenceManager = $this->createMock(PersistenceManagerInterface::class);
+        // XliffLoader is final in TYPO3 v14 and cannot be doubled. The methods
+        // exercised here never touch it, so the real loader is handed in.
+        $xliffLoader                 = new XliffLoader();
         $this->translationService    = $this->createMock(TranslationService::class);
         $this->translationRepository = $this->createMock(TranslationRepository::class);
         $this->componentRepository   = $this->createMock(ComponentRepository::class);
@@ -68,7 +70,7 @@ final class ImportServiceTest extends UnitTestCase
 
         $this->subject = new ImportService(
             $this->persistenceManager,
-            $xliffParser,
+            $xliffLoader,
             $this->translationService,
             $this->translationRepository,
             $this->componentRepository,

@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace Netresearch\NrTextdb\Domain\Model;
 
-use TYPO3\CMS\Extbase\Annotation\Validate;
+use TYPO3\CMS\Extbase\Attribute\Validate;
 use TYPO3\CMS\Extbase\DomainObject\AbstractValueObject;
 use TYPO3\CMS\Extbase\Validation\Validator\NotEmptyValidator;
 
@@ -26,11 +26,16 @@ use TYPO3\CMS\Extbase\Validation\Validator\NotEmptyValidator;
  */
 final class Type extends AbstractValueObject
 {
+    // Mapped properties must stay `protected`. The Extbase DataMapper writes them
+    // through AbstractDomainObject::_setProperty(), which assigns from the parent
+    // class scope and therefore cannot touch properties declared `private` here
+    // ("Error: Cannot access private property").
+
     /**
      * name.
      */
-    #[Validate(['validator' => NotEmptyValidator::class])]
-    private string $name = '';
+    #[Validate(validator: NotEmptyValidator::class)]
+    protected string $name = '';
 
     /**
      * Returns the name.

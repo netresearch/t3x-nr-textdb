@@ -24,9 +24,8 @@ return [
         'enablecolumns'            => [
             'disabled' => 'hidden',
         ],
-        'searchFields' => 'value,placeholder',
-        'iconfile'     => 'EXT:nr_textdb/Resources/Public/Icons/tx_nrtextdb_domain_model_translation.svg',
-        'security'     => [
+        'iconfile' => 'EXT:nr_textdb/Resources/Public/Icons/tx_nrtextdb_domain_model_translation.svg',
+        'security' => [
             'ignorePageTypeRestriction' => true,
         ],
     ],
@@ -45,9 +44,9 @@ return [
         '1' => [
             'showitem' => '
                     --palette--;;paletteCore,
-                --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:language,
+                --div--;core.form.tabs:language,
                     --palette--;;paletteLanguage,
-                --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:access,
+                --div--;core.form.tabs:access,
                     --palette--;;paletteHidden,',
         ],
     ],

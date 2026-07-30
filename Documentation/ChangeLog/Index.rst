@@ -6,6 +6,29 @@
 ChangeLog
 =========
 
+.. _version-4-0-0:
+
+Version 4.0.0
+=============
+
+**Breaking Changes:**
+
+* ⚠️  TYPO3 14.3 minimum requirement, support for TYPO3 13 dropped
+* ⚠️  The default-language XLIFF export no longer emits a ``target-language``
+  attribute, so the file is recognised as a source-only template
+
+**Features:**
+
+* ✨ TYPO3 14.3 LTS compatibility
+* ✨ PHP 8.2, 8.3, 8.4, 8.5 support
+
+**Fixes:**
+
+* 🐛 Saving a translation in the backend module updates the existing record
+  instead of inserting a duplicate, skips empty values and reports a
+  persistence error as a flash message (`#100
+  <https://github.com/netresearch/t3x-nr-textdb/issues/100>`__)
+
 .. _version-3-0-3:
 
 Version 3.0.3
@@ -275,7 +298,7 @@ Contributions are welcome! Please:
 
    # Start DDEV
    ddev start
-   ddev install-v13
+   ddev install-v14
 
    # Run quality checks
    composer ci:test

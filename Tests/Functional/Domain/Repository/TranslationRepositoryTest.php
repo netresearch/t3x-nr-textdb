@@ -22,8 +22,6 @@ use Netresearch\NrTextdb\Domain\Repository\TypeRepository;
 use Netresearch\NrTextdb\Tests\Functional\AbstractFunctionalTestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
-use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * Functional tests for TranslationRepository.
@@ -56,22 +54,7 @@ final class TranslationRepositoryTest extends AbstractFunctionalTestCase
     {
         parent::setUp();
 
-        // Provide a page id of 1 so repository queries use the fixture pid.
-        // The mock must cover all paths that AbstractRepository::getExtensionConfiguration()
-        // may request (textDbPid and createIfMissing).
-        $extensionConfigurationMock = $this->createMock(ExtensionConfiguration::class);
-        $extensionConfigurationMock
-            ->method('get')
-            ->withAnyParameters()
-            ->willReturnCallback(static function (string $extension, string $path): string {
-                return match ($path) {
-                    'textDbPid'       => '1',
-                    'createIfMissing' => '0',
-                    default           => '0',
-                };
-            });
-
-        GeneralUtility::addInstance(ExtensionConfiguration::class, $extensionConfigurationMock);
+        $this->setExtensionConfiguration(textDbPid: '1', createIfMissing: '0');
 
         $this->translationRepository = $this->get(TranslationRepository::class);
         $this->environmentRepository = $this->get(EnvironmentRepository::class);

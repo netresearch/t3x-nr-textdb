@@ -28,6 +28,7 @@ use function sprintf;
 
 use Symfony\Component\Filesystem\Filesystem;
 use TYPO3\CMS\Backend\Template\Components\ButtonBar;
+use TYPO3\CMS\Backend\Template\Components\ComponentFactory;
 use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
@@ -92,6 +93,8 @@ final class TranslationController extends ActionController
 
     private readonly FlashMessageService $flashMessageService;
 
+    private readonly ComponentFactory $componentFactory;
+
     private int $pid = 0;
 
     /**
@@ -109,6 +112,7 @@ final class TranslationController extends ActionController
         TypeRepository $typeRepository,
         ImportService $importService,
         FlashMessageService $flashMessageService,
+        ComponentFactory $componentFactory,
     ) {
         $this->extensionConfiguration = $extensionConfiguration;
         $this->environmentRepository  = $environmentRepository;
@@ -120,6 +124,7 @@ final class TranslationController extends ActionController
         $this->moduleTemplateFactory  = $moduleTemplateFactory;
         $this->iconFactory            = $iconFactory;
         $this->flashMessageService    = $flashMessageService;
+        $this->componentFactory       = $componentFactory;
 
         $this->environmentRepository->setCreateIfMissing(true);
         $this->typeRepository->setCreateIfMissing(true);
@@ -345,7 +350,7 @@ final class TranslationController extends ActionController
             $this->addFlashMessageToQueue(
                 'Export',
                 $this->getLanguageService()->sL(
-                    'LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.error.filter',
+                    'nr_textdb.messages:message.error.filter',
                 ),
             );
 
@@ -411,7 +416,7 @@ final class TranslationController extends ActionController
             $this->addFlashMessageToQueue(
                 'Export',
                 $this->getLanguageService()->sL(
-                    'LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.error.archive',
+                    'nr_textdb.messages:message.error.archive',
                 ),
             );
 
@@ -516,7 +521,7 @@ final class TranslationController extends ActionController
             $this->addFlashMessageToQueue(
                 'Import',
                 $this->getLanguageService()->sL(
-                    'LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.error.import',
+                    'nr_textdb.messages:message.error.import',
                 ),
             );
 
@@ -800,9 +805,15 @@ final class TranslationController extends ActionController
             );
         }
 
+        // The default-language export carries the texts in <source> and must not
+        // declare a target-language: TYPO3's XliffLoader (and the XLIFF spec)
+        // treat a file with target-language as a translation and read <target>,
+        // which would import the default language back as empty values.
         $fileContent = sprintf(
             $markup,
-            $language->getLocale()->getLanguageCode(),
+            $enableTargetMarker
+                ? sprintf(' target-language="%s"', $language->getLocale()->getLanguageCode())
+                : '',
             $entries,
         );
 
@@ -865,8 +876,8 @@ final class TranslationController extends ActionController
                 IconSize::SMALL,
             );
 
-            $viewButton = $buttonBar
-                ->makeLinkButton()
+            $viewButton = $this->componentFactory
+                ->createLinkButton()
                 ->setHref($link)
                 ->setDataAttributes([
                     'toggle'    => 'tooltip',
