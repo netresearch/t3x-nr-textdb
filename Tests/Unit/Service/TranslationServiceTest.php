@@ -66,7 +66,19 @@ final class TranslationServiceTest extends UnitTestCase
         $this->context               = $this->createMock(Context::class);
 
         $languageAspect = new LanguageAspect(0);
-        $this->context->method('getAspect')->with('language')->willReturn($languageAspect);
+        // with() requires expects(), and PHPUnit 13 deprecated both any() and
+        // stubbing with*() without expects(). The callback keeps the argument
+        // assertion without pinning an invocation count — not every test under
+        // test reaches getCurrentLanguage().
+        $this->context
+            ->method('getAspect')
+            ->willReturnCallback(
+                static function (string $aspectName) use ($languageAspect): LanguageAspect {
+                    self::assertSame('language', $aspectName);
+
+                    return $languageAspect;
+                },
+            );
 
         $this->subject = new TranslationService(
             $this->environmentRepository,
