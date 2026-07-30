@@ -6,6 +6,24 @@
 ChangeLog
 =========
 
+.. _version-3-0-4:
+
+Version 3.0.4
+=============
+
+Maintenance release for the TYPO3 v13 line. Version 4.0.0 requires TYPO3 v14.3,
+so v13 installations stay on the 3.x line and receive this fix here.
+
+**Fixes:**
+
+* 🐛 Saving a translation in the backend module updates the existing record
+  instead of inserting a duplicate, skips empty values and reports a
+  persistence error as a flash message (`#100
+  <https://github.com/netresearch/t3x-nr-textdb/issues/100>`__)
+* 🐛 Mapped domain model properties are ``protected`` again, so the Extbase
+  DataMapper can populate them — with ``private`` properties every repository
+  query aborted with "Cannot access private property"
+
 .. _version-3-0-3:
 
 Version 3.0.3

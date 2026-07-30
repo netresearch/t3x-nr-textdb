@@ -1,3 +1,20 @@
+# 3.0.4
+
+Maintenance release for the TYPO3 v13 line. Version 4.0.0 is TYPO3 v14.3 only,
+so v13 installations stay on the 3.x line and get the #100 fix backported here.
+
+## FIX
+
+- Backend module: saving a translation updates the existing record instead of
+  inserting a duplicate, empty values are skipped and a persistence failure is
+  reported as a flash message instead of a 503 (#100)
+- Domain models: mapped properties are `protected` again so the Extbase
+  DataMapper can write them
+
+## Contributors
+
+- Sebastian Mendel
+
 # 3.0.1
 
 ## TASK

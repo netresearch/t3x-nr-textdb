@@ -26,11 +26,16 @@ use TYPO3\CMS\Extbase\Validation\Validator\NotEmptyValidator;
  */
 final class Environment extends AbstractValueObject
 {
+    // Mapped properties must stay `protected`. The Extbase DataMapper writes them
+    // through AbstractDomainObject::_setProperty(), which assigns from the parent
+    // class scope and therefore cannot touch properties declared `private` here
+    // ("Error: Cannot access private property").
+
     /**
      * name.
      */
     #[Validate(['validator' => NotEmptyValidator::class])]
-    private string $name = '';
+    protected string $name = '';
 
     /**
      * Returns the name.
