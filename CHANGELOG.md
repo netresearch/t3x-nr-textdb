@@ -14,6 +14,7 @@
 - [FEATURE] Doc header buttons are built with `ComponentFactory` instead of the deprecated `ButtonBar::makeLinkButton()` (Deprecation #107823)
 - [FEATURE] `composer.json` carries `extra.typo3/cms.version` and `Package.providesPackages` (Deprecation #108345)
 - [TASK] CI matrix runs TYPO3 `^14.3` on PHP 8.2, 8.3, 8.4 and 8.5
+- [TASK] Agent and contributor instructions state TYPO3 14.3+ and PHP 8.2+ instead of the dropped TYPO3 13.4/PHP 8.1 baseline
 
 ## BUGFIX
 

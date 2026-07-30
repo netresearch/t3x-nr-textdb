@@ -8,7 +8,7 @@ This repository contains a TYPO3 extension for managing translations. When worki
 
 - **Extension Key**: `nr_textdb`
 - **Namespace**: `Netresearch\NrTextdb`
-- **TYPO3 Version**: 13.4+
+- **TYPO3 Version**: 14.3+
 - **PHP Version**: 8.2+
 - **Architecture**: TYPO3 Extbase/Fluid
 
@@ -207,7 +207,7 @@ Before committing changes:
 
 1. **Run from project root**: All composer commands must be run from the repository root
 2. **Check existing AGENTS.md files**: The closest `AGENTS.md` to changed files provides scoped instructions
-3. **TYPO3 v13 patterns**: Use modern patterns (constructor injection, final classes, readonly properties)
+3. **TYPO3 v14 patterns**: Use modern patterns (constructor injection, final classes, readonly properties)
 4. **PSR-4 autoloading**: `Netresearch\NrTextdb` → `Classes/`
 
 ## When Stuck
