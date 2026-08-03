@@ -147,9 +147,9 @@
         <source>Please configure a valid storage page ID in the extension configuration.</source>
         <target state="final">拡張機能の設定で有効なストレージページIDを設定してください。</target>
       </trans-unit>
-      <trans-unit id="error.storage.pid.title" translate="no">
+      <trans-unit id="error.storage.pid.title" translate="no" approved="yes">
         <source>TextDb</source>
-        <target state="needs-translation">TextDb</target>
+        <target state="final">TextDb</target>
       </trans-unit>
       <trans-unit id="error.directory.creation" approved="yes">
         <source>Directory "%s" was not created</source>
@@ -174,6 +174,18 @@
       <trans-unit id="error.missing.value" approved="yes">
         <source>Missing value in key: %s</source>
         <target state="final">キーに値がありません：%s</target>
+      </trans-unit>
+      <trans-unit id="message.translation.saved">
+        <source>The translation was saved.</source>
+        <target state="needs-translation">The translation was saved.</target>
+      </trans-unit>
+      <trans-unit id="message.translation.save.title" translate="no">
+        <source>TextDb</source>
+        <target state="needs-translation">TextDb</target>
+      </trans-unit>
+      <trans-unit id="message.error.translation.save">
+        <source>The translation could not be saved: %s</source>
+        <target state="needs-translation">The translation could not be saved: %s</target>
       </trans-unit>
     </body>
   </file>
