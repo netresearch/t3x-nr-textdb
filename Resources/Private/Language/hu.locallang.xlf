@@ -177,15 +177,15 @@
       </trans-unit>
       <trans-unit id="message.translation.saved">
         <source>The translation was saved.</source>
-        <target state="needs-translation">The translation was saved.</target>
+        <target state="translated">A fordítás el lett mentve.</target>
       </trans-unit>
       <trans-unit id="message.translation.save.title" translate="no">
         <source>TextDb</source>
-        <target state="needs-translation">TextDb</target>
+        <target state="translated">TextDb</target>
       </trans-unit>
       <trans-unit id="message.error.translation.save">
         <source>The translation could not be saved: %s</source>
-        <target state="needs-translation">The translation could not be saved: %s</target>
+        <target state="translated">A fordítás nem menthető el: %s</target>
       </trans-unit>
     </body>
   </file>
