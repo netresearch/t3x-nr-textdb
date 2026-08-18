@@ -157,7 +157,7 @@ class ImportCommand extends Command implements LoggerAwareInterface
             );
         } else {
             $this->extensions = [
-                $this->listUtility->getExtension($extensionKey),
+                $extensionKey => $this->listUtility->getExtension($extensionKey),
             ];
         }
 
