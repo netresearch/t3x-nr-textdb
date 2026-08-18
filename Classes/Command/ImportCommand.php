@@ -152,7 +152,7 @@ class ImportCommand extends Command
             );
         } else {
             $this->extensions = [
-                $this->listUtility->getExtension($extensionKey),
+                $extensionKey => $this->listUtility->getExtension($extensionKey),
             ];
         }
 
