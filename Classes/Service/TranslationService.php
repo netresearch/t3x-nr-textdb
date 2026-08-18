@@ -155,7 +155,7 @@ class TranslationService
                     );
 
                 // No parent so far, create one to maintain translation order
-                if (!($parentTranslation instanceof Translation)) {
+                if (!$parentTranslation instanceof Translation) {
                     $parentTranslation = $this->createTranslation(
                         $environment,
                         $component,
@@ -182,7 +182,7 @@ class TranslationService
                 ->persistAll();
         }
 
-        if (!($translation instanceof Translation)) {
+        if (!$translation instanceof Translation) {
             return $placeholder;
         }
 
