@@ -7,7 +7,6 @@
  * LICENSE file that was distributed with this source code.
  */
 
-
 $EM_CONF['nr_textdb'] = [
     'title'          => 'Netresearch - TextDB',
     'description'    => 'Allows you to edit the translations in the back end',
