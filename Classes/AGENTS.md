@@ -1,10 +1,10 @@
-<!-- Managed by agent: keep sections & order; edit content, not structure. Last updated: 2025-11-07 -->
+<!-- Managed by agent: keep sections & order; edit content, not structure. Last updated: 2026-08-19 -->
 
 # Classes/AGENTS.md
 
 PHP backend classes for nr_textdb TYPO3 extension.
 
-## 1. Overview
+## Overview
 
 Backend implementation for editing TYPO3 translations. Architecture follows TYPO3 Extbase patterns:
 
@@ -15,7 +15,7 @@ Backend implementation for editing TYPO3 translations. Architecture follows TYPO
 - **Service/**: Business logic services
 - **ViewHelpers/**: Fluid template helpers
 
-## 2. Setup & environment
+## Setup & environment
 
 **Prerequisites:**
 - PHP 8.2+ (extension requirements: ext-zip, ext-simplexml, ext-libxml)
@@ -34,7 +34,7 @@ composer install
 - Namespace: `Netresearch\NrTextdb`
 - Web dir: `.build/public`
 
-## 3. Build & tests
+## Build & tests
 
 **Run from project root** (not from Classes/):
 
@@ -62,11 +62,17 @@ composer ci:fractor  # apply
 # Unit tests with coverage
 composer ci:test:php:unit
 
+# Functional tests (SQLite, see Build/FunctionalTests.xml)
+composer ci:test:php:functional
+
+# Mutation tests (Infection)
+composer ci:test:php:mutation
+
 # Run all checks
 composer ci:test
 ```
 
-## 4. Code style & conventions
+## Code style & conventions
 
 **TYPO3 CGL compliance:**
 - PSR-12 base + TYPO3 Coding Guidelines
@@ -114,7 +120,7 @@ final class TranslationController extends ActionController
 }
 ```
 
-## 5. Security & safety
+## Security & safety
 
 - **Never commit credentials:** Check `.gitignore` for sensitive files
 - **Validate user input:** Always sanitize in controllers before passing to services
@@ -122,22 +128,22 @@ final class TranslationController extends ActionController
 - **SQL injection:** Use QueryBuilder or Repository methods, never raw SQL
 - **Access control:** Use TYPO3 backend user permissions
 
-## 6. PR/commit checklist
+## PR/commit checklist
 
 Before committing Classes/ changes:
 
 - [ ] `composer ci:test:php:lint` passes
-- [ ] `composer ci:test:php:phpstan` passes (level 9, strict rules)
+- [ ] `composer ci:test:php:phpstan` passes (level 10, strict rules)
 - [ ] `composer ci:test:php:cgl` passes (or apply with `composer ci:cgl`)
 - [ ] `composer ci:test:php:rector` passes
 - [ ] `composer ci:test:php:fractor` passes
-- [ ] Added/updated unit tests in `Tests/Unit/`
+- [ ] Added/updated tests in `Tests/Unit/` and/or `Tests/Functional/`
 - [ ] Type hints on all methods/properties
 - [ ] `declare(strict_types=1);` at top of file
 - [ ] Constructor property promotion used
 - [ ] No unused imports
 
-## 7. Good vs. bad examples
+## Good vs. bad examples
 
 ### ✅ Good: Modern Extbase controller with DI
 
@@ -267,14 +273,15 @@ final class Translation extends AbstractEntity
 }
 ```
 
-## 8. When stuck
+## When stuck
 
 **TYPO3 Documentation:**
 - Main: https://docs.typo3.org/
-- Extbase/Fluid: https://docs.typo3.org/m/typo3/book-extbasefluid/
+- Extbase: https://docs.typo3.org/m/typo3/reference-coreapi/main/en-us/ExtensionArchitecture/Extbase/Index.html
 - Core API: https://docs.typo3.org/m/typo3/reference-coreapi/
 
 **Project-specific:**
+- Component map and data flow: `docs/ARCHITECTURE.md` (repo root)
 - Check similar controllers in `Controller/` for patterns
 - Review existing repositories in `Domain/Repository/`
 - Read `README.md` for extension overview
@@ -286,7 +293,7 @@ final class Translation extends AbstractEntity
 - Rector config: `Build/rector.php`
 - Fractor config: `Build/fractor.php`
 
-## 9. House Rules
+## House Rules
 
 **TYPO3-specific overrides:**
 - Use TYPO3 v14 patterns (constructor injection, not `@inject`)

@@ -1,4 +1,4 @@
-<!-- Managed by agent: keep sections & order; edit content, not structure. Last updated: 2025-11-07 -->
+<!-- Managed by agent: keep sections & order; edit content, not structure. Last updated: 2026-08-19 -->
 
 # AGENTS.md (root)
 
@@ -12,8 +12,9 @@
 - Never commit secrets or PII
 - Follow TYPO3 CGL (Coding Guidelines)
 - PSR-4 autoloading: `Netresearch\NrTextdb` → `Classes/`
+- Component map for agents: `docs/ARCHITECTURE.md`; execution plans: `docs/exec-plans/`
 
-## Minimal pre-commit checks
+## Commands
 
 - Lint: `composer ci:test:php:lint`
 - Static Analysis: `composer ci:test:php:phpstan`
@@ -21,7 +22,10 @@
 - Rector: `composer ci:test:php:rector`
 - Fractor: `composer ci:test:php:fractor`
 - Unit Tests: `composer ci:test:php:unit`
+- Functional Tests: `composer ci:test:php:functional`
+- Mutation Tests: `composer ci:test:php:mutation`
 - All checks: `composer ci:test`
+- Make shortcuts: `make help` (cgl, cgl-fix, phpstan, rector, test, test-unit)
 
 ## Index of scoped AGENTS.md
 
