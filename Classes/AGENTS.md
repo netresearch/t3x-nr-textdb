@@ -25,14 +25,14 @@ Backend implementation for editing TYPO3 translations. Architecture follows TYPO
 **Installation:**
 ```bash
 composer install
-# Dependencies installed to .build/vendor
-# Binaries in .build/bin
+# Dependencies installed to .Build/vendor
+# Binaries in .Build/bin
 ```
 
 **TYPO3 Extension:**
 - Extension key: `nr_textdb`
 - Namespace: `Netresearch\NrTextdb`
-- Web dir: `.build/public`
+- Web dir: `.Build/public`
 
 ## Build & tests
 

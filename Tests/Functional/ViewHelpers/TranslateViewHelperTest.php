@@ -37,7 +37,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  *      the raw placeholder is returned instead.
  *
  * Run:
- *   .build/bin/phpunit -c Build/FunctionalTests.xml \
+ *   .Build/bin/phpunit -c Build/FunctionalTests.xml \
  *       Tests/Functional/ViewHelpers/TranslateViewHelperTest.php
  */
 #[CoversClass(TranslateViewHelper::class)]
