@@ -54,7 +54,13 @@ use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use ZipArchive;
 
+use function is_array;
+use function is_numeric;
 use function is_string;
+use function max;
+use function mb_check_encoding;
+use function trim;
+use function unserialize;
 
 /**
  * TranslationController.
@@ -212,26 +218,29 @@ class TranslationController extends ActionController
      */
     public function listAction(): ResponseInterface
     {
-        $config      = $this->getConfigFromBeUserData();
-        $componentId = $config['component'] ?? 0;
-        $typeId      = $config['type'] ?? 0;
-        $placeholder = $config['placeholder'] ?? null;
-        $value       = $config['value'] ?? null;
+        [
+            'component'   => $componentId,
+            'type'        => $typeId,
+            'placeholder' => $placeholder,
+            'value'       => $value,
+        ] = $this->getConfigFromBeUserData();
 
+        // Backend module arguments arrive without a plugin namespace, so these are
+        // the raw query parameters and may carry any type, arrays included.
         if ($this->request->hasArgument('component')) {
-            $componentId = (int) $this->request->getArgument('component');
+            $componentId = $this->normalizeRecordFilter($this->request->getArgument('component'));
         }
 
         if ($this->request->hasArgument('type')) {
-            $typeId = (int) $this->request->getArgument('type');
+            $typeId = $this->normalizeRecordFilter($this->request->getArgument('type'));
         }
 
         if ($this->request->hasArgument('placeholder')) {
-            $placeholder = trim((string) $this->request->getArgument('placeholder'));
+            $placeholder = $this->normalizeTextFilter($this->request->getArgument('placeholder'));
         }
 
         if ($this->request->hasArgument('value')) {
-            $value = trim((string) $this->request->getArgument('value'));
+            $value = $this->normalizeTextFilter($this->request->getArgument('value'));
         }
 
         $defaultComponent   = $this->componentRepository->findByUid($componentId);
@@ -247,12 +256,12 @@ class TranslationController extends ActionController
                 $value
             );
 
-        $config['component']   = $componentId;
-        $config['type']        = $typeId;
-        $config['placeholder'] = $placeholder;
-        $config['value']       = $value;
-
-        $this->persistConfigInBeUserData($config);
+        $this->persistConfigInBeUserData([
+            'component'   => $componentId,
+            'type'        => $typeId,
+            'placeholder' => $placeholder,
+            'value'       => $value,
+        ]);
 
         $this->view->assignMultiple([
             'defaultComponent'   => $defaultComponent,
@@ -411,8 +420,8 @@ class TranslationController extends ActionController
             if ($language->getLanguageId() === 0) {
                 $translations = $this->translationRepository
                     ->findAllByComponentTypePlaceholderValueAndLanguage(
-                        (int) $component,
-                        (int) $type,
+                        $component,
+                        $type,
                         $placeholder,
                         $value
                     );
@@ -708,32 +717,94 @@ class TranslationController extends ActionController
     /**
      * Get module config from user data.
      *
-     * @return array<array-key, int|string>
+     * The four filter keys are always present and always carry their declared
+     * type. exportAction() compares component and type with ===, so a missing
+     * or differently typed value would silently defeat its "no filter
+     * selected" guard. The stored payload cannot be trusted for that. It lives
+     * in be_users.uc, which a backend user can write through the usersettings
+     * endpoint of the core, and unserialize() on a payload that is not a valid
+     * serialized array does not return an array. A scalar result like false
+     * flows safely through the ?? below either way, but allowed_classes false
+     * turns any encoded object in the payload into a __PHP_Incomplete_Class
+     * instance instead, and indexing an object with [] throws an uncaught
+     * Error, not something ?? catches, which is what the is_array() check
+     * below actually guards against. allowed_classes is false for the same
+     * reason the core itself uses it on this exact kind of data
+     * (AbstractUserAuthentication::unpack_uc()): the payload is written by the
+     * backend user through the usersettings endpoint, so it is not just
+     * untrusted for its shape, unserialize() would otherwise instantiate and
+     * unserialize arbitrary classes from it before the array check below ever
+     * runs.
+     *
+     * @return array{component: int, type: int, placeholder: string|null, value: string|null}
      */
     private function getConfigFromBeUserData(): array
     {
         $serializedConfig = $this->getBackendUser()->getModuleData(static::class);
 
-        if (!is_string($serializedConfig)) {
-            return [];
+        $data = (is_string($serializedConfig) && ($serializedConfig !== ''))
+            ? unserialize(
+                $serializedConfig,
+                [
+                    'allowed_classes' => false,
+                ],
+            )
+            : null;
+
+        if (!is_array($data)) {
+            $data = [];
         }
 
-        if ($serializedConfig === '') {
-            return [];
+        return [
+            'component'   => $this->normalizeRecordFilter($data['component'] ?? null),
+            'type'        => $this->normalizeRecordFilter($data['type'] ?? null),
+            'placeholder' => $this->normalizeTextFilter($data['placeholder'] ?? null),
+            'value'       => $this->normalizeTextFilter($data['value'] ?? null),
+        ];
+    }
+
+    /**
+     * Narrows an untrusted filter value to a non-negative integer, 0 for
+     * anything that is not usable as one. Backend module arguments arrive as
+     * raw query parameters, so this also has to accept the numeric string a
+     * submitted filter actually is, not just int. Used both for the
+     * component/type record uid filters and, with an outer clamp to 1, for
+     * the pagination page number.
+     */
+    private function normalizeRecordFilter(mixed $value): int
+    {
+        if (!is_numeric($value)) {
+            return 0;
         }
 
-        return unserialize(
-            $serializedConfig,
-            [
-                'allowed_classes' => true,
-            ]
+        return max(
+            0,
+            (int) $value,
         );
+    }
+
+    /**
+     * Narrows an untrusted filter value to a search term.
+     */
+    private function normalizeTextFilter(mixed $value): ?string
+    {
+        if (
+            !is_string($value)
+            || !mb_check_encoding(
+                $value,
+                'UTF-8',
+            )
+        ) {
+            return null;
+        }
+
+        return trim($value);
     }
 
     /**
      * Save current config in backend user settings.
      *
-     * @param array<array-key, int|string> $config
+     * @param array{component: int, type: int, placeholder: string|null, value: string|null} $config
      */
     private function persistConfigInBeUserData(array $config): void
     {
