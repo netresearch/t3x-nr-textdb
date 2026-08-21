@@ -27,9 +27,12 @@ use Throwable;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Localization\LanguageService;
+use TYPO3\CMS\Core\Pagination\SimplePagination;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Extbase\Mvc\ExtbaseRequestParameters;
 use TYPO3\CMS\Extbase\Mvc\Request as ExtbaseRequest;
+use TYPO3\CMS\Extbase\Pagination\QueryResultPaginator;
+use TYPO3\CMS\Extbase\Persistence\QueryInterface;
 use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
@@ -748,6 +751,170 @@ final class TranslationControllerTest extends UnitTestCase
         );
     }
 
+    #[Test]
+    #[DataProvider('unusablePageNumberProvider')]
+    public function getPaginationClampsAnUnusablePageNumberToTheFirstPage(mixed $rawPage): void
+    {
+        $result = $this->invokeGetPagination(
+            $rawPage,
+            itemsPerPage: 15,
+        );
+
+        self::assertArrayHasKey(
+            'paginator',
+            $result,
+        );
+        self::assertSame(
+            1,
+            $result['paginator']->getCurrentPageNumber(),
+        );
+    }
+
+    /**
+     * @return array<string, array{string|array<int, string>}>
+     */
+    public static function unusablePageNumberProvider(): array
+    {
+        return [
+            'zero'         => ['0'],
+            'negative'     => ['-1'],
+            'not a number' => ['abc'],
+            'emptied'      => [''],
+            'array'        => [['1']],
+        ];
+    }
+
+    #[Test]
+    public function getPaginationUsesTheRequestedPageNumber(): void
+    {
+        // 30 items at the default 15 per page is two pages, so page 2 is a
+        // real, reachable page, not one AbstractPaginator::updateInternalState()
+        // clamps back down to 1. Only getCurrentPageNumber() proves currentPage
+        // reaches the paginator at all, the normalizeRecordFilter() unit above
+        // only proves the value it computes, not that getPagination() passes
+        // it on.
+        $result = $this->invokeGetPagination(
+            '2',
+            itemsPerPage: 15,
+            totalItems: 30,
+        );
+
+        self::assertSame(
+            2,
+            $result['paginator']->getCurrentPageNumber(),
+        );
+    }
+
+    #[Test]
+    public function getPaginationUsesTheConfiguredItemsPerPage(): void
+    {
+        // 12 items at 5 per page is three pages. Every other test here either
+        // omits itemsPerPage or leaves it at the default 15, so this is the
+        // only one that proves a configured, non-default value reaches the
+        // paginator instead of being silently ignored.
+        $result = $this->invokeGetPagination(
+            '1',
+            itemsPerPage: 5,
+            totalItems: 12,
+        );
+
+        self::assertSame(
+            3,
+            $result['paginator']->getNumberOfPages(),
+        );
+    }
+
+    #[Test]
+    public function getPaginationUsesTheDocumentedDefaultItemsPerPageWhenTheSettingIsMissing(): void
+    {
+        // enablePagination without itemsPerPage is exactly what a site TypoScript
+        // override that only touches the former produces. The old code read
+        // itemsPerPage unguarded in the condition, which evaluated to 0 and
+        // silently disabled pagination instead of falling back to the default.
+        // 12 items split into pages of 15 is one page, split into pages of the
+        // stale PHPDoc default of 10 would be two, so the page count pins the
+        // fallback value itself, not just that pagination stayed on.
+        $result = $this->invokeGetPagination(
+            '1',
+            settings: ['enablePagination' => true],
+            totalItems: 12,
+        );
+
+        self::assertArrayHasKey(
+            'paginator',
+            $result,
+            'Pagination must not be silently disabled.',
+        );
+        self::assertSame(
+            1,
+            $result['paginator']->getNumberOfPages(),
+        );
+    }
+
+    #[Test]
+    public function getPaginationStaysDisabledWithoutEnablePagination(): void
+    {
+        $result = $this->invokeGetPagination(
+            '1',
+            settings: [],
+        );
+
+        self::assertSame(
+            [],
+            $result,
+        );
+    }
+
+    #[Test]
+    public function getPaginationStaysDisabledWithAnItemsPerPageOfZero(): void
+    {
+        // itemsPerPage: 0 is a TypoScript misconfiguration, not an abstract
+        // case, and it used to reach QueryResultPaginator's constructor
+        // unchecked. AbstractPaginator::setItemsPerPage() throws
+        // InvalidArgumentException for anything below 1, so the >0 guard
+        // here is what turns that misconfiguration into pagination staying
+        // off instead of an HTTP 500.
+        $result = $this->invokeGetPagination(
+            '1',
+            itemsPerPage: 0,
+        );
+
+        self::assertSame(
+            [],
+            $result,
+        );
+    }
+
+    /**
+     * Invokes the private getPagination() with a real, minimally constructed
+     * Extbase request, the only property it reads besides its two parameters.
+     *
+     * @param array<string, bool|int>|null $settings
+     *
+     * @return array{}|array{paginator: QueryResultPaginator, pagination: SimplePagination}
+     */
+    private function invokeGetPagination(
+        mixed $rawPage,
+        ?int $itemsPerPage = null,
+        ?array $settings = null,
+        int $totalItems = 3,
+    ): array {
+        $this->wireControllerRequest(['currentPage' => $rawPage]);
+
+        $queryResult = self::createStub(QueryResultInterface::class);
+        $queryResult->method('count')->willReturn($totalItems);
+        $query = self::createStub(QueryInterface::class);
+        $query->method('setLimit')->willReturnSelf();
+        $query->method('setOffset')->willReturnSelf();
+        $query->method('execute')->willReturn($queryResult);
+        $queryResult->method('getQuery')->willReturn($query);
+
+        return $this->invokePrivateMethod(
+            'getPagination',
+            $queryResult,
+            $settings ?? ['enablePagination' => true, 'itemsPerPage' => $itemsPerPage],
+        );
+    }
 }
 
 /**
