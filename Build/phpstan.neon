@@ -13,7 +13,7 @@ parameters:
         - %currentWorkingDirectory%/ext_localconf.php
 
     excludePaths:
-        - %currentWorkingDirectory%/.build/*
+        - %currentWorkingDirectory%/.Build/*
         - %currentWorkingDirectory%/ext_emconf.php
         - %currentWorkingDirectory%/Configuration/Backend/Modules.php
         - %currentWorkingDirectory%/Tests/Functional/*

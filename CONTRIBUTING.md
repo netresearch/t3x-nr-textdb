@@ -208,7 +208,7 @@ ddev launch
 composer install
 
 # Run TYPO3 in development mode
-php -S localhost:8000 -t .build/public
+php -S localhost:8000 -t .Build/public
 ```
 
 ### Running Tests

@@ -29,7 +29,7 @@ use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
  *   typo3DatabaseDriver=pdo_sqlite   (recommended for local use)
  *
  * Run functional tests:
- *   .build/bin/phpunit -c Build/FunctionalTests.xml
+ *   .Build/bin/phpunit -c Build/FunctionalTests.xml
  */
 abstract class AbstractFunctionalTestCase extends FunctionalTestCase
 {

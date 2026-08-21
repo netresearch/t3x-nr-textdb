@@ -13,7 +13,7 @@ use Rector\Config\RectorConfig;
 use Rector\Privatization\Rector\Property\PrivatizeFinalClassPropertyRector;
 use Ssch\TYPO3Rector\Set\Typo3LevelSetList;
 
-$configure = require_once __DIR__ . '/../.build/vendor/netresearch/typo3-ci-workflows/config/rector/rector.php';
+$configure = require_once __DIR__ . '/../.Build/vendor/netresearch/typo3-ci-workflows/config/rector/rector.php';
 
 return static function (RectorConfig $rectorConfig) use ($configure): void {
     // Shared org base config: paths, code-quality sets, rule skips,

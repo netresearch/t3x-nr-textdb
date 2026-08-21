@@ -37,7 +37,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  * All tests run against a real (SQLite) database set up by the TYPO3
  * testing-framework. Run:
  *
- *   .build/bin/phpunit -c Build/FunctionalTests.xml \
+ *   .Build/bin/phpunit -c Build/FunctionalTests.xml \
  *       Tests/Functional/ViewHelpers/TextdbViewHelperTest.php
  */
 #[CoversClass(TextdbViewHelper::class)]
