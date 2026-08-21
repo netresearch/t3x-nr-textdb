@@ -1001,26 +1001,32 @@ class TranslationController extends ActionController
      * Applies default values if settings are not available:
      *
      * - pagination disabled
-     * - itemsPerPage = 10
+     * - itemsPerPage = 15
      *
      * @param QueryResultInterface<Translation> $items
      * @param array<string, int|bool>           $settings
      *
-     * @return array<string, mixed>
+     * @return array{}|array{paginator: QueryResultPaginator, pagination: SimplePagination}
      */
     private function getPagination(QueryResultInterface $items, array $settings): array
     {
         $currentPage = $this->request->hasArgument('currentPage')
-            ? (int) $this->request->getArgument('currentPage') : 1;
+            ? max(
+                1,
+                $this->normalizeRecordFilter($this->request->getArgument('currentPage')),
+            )
+            : 1;
+
+        $itemsPerPage = (int) ($settings['itemsPerPage'] ?? 15);
 
         if (
             ($settings['enablePagination'] ?? false)
-            && ((int) $settings['itemsPerPage'] > 0)
+            && ($itemsPerPage > 0)
         ) {
             $paginator = new QueryResultPaginator(
                 $items,
                 $currentPage,
-                (int) ($settings['itemsPerPage'] ?? 15)
+                $itemsPerPage,
             );
 
             return [
