@@ -470,6 +470,36 @@ final class TranslationControllerTest extends FunctionalTestCase
     }
 
     /**
+     * @param string|string[] $currentPage
+     */
+    #[Test]
+    #[DataProvider('unusablePageNumberProvider')]
+    public function listingTheModuleSurvivesAnUnusablePageNumber(string|array $currentPage): void
+    {
+        // The page field of the pagination partial has no "required", and the
+        // core puts the emptied value straight into the navigation URL, so the
+        // list view is called with currentPage=. The paginator rejects everything
+        // below its first page with an exception.
+        $response = $this->dispatchModuleAction('list', ['currentPage' => $currentPage]);
+
+        self::assertSame(200, $response->getStatusCode());
+    }
+
+    /**
+     * @return array<string, array{string|string[]}>
+     */
+    public static function unusablePageNumberProvider(): array
+    {
+        return [
+            'emptied field' => [''],
+            'zero'          => ['0'],
+            'negative'      => ['-1'],
+            'not a number'  => ['abc'],
+            'array'         => [['1']],
+        ];
+    }
+
+    /**
      * Runs one action of the backend module through the Extbase bootstrap.
      *
      * Calling the action on the controller instance directly skips
