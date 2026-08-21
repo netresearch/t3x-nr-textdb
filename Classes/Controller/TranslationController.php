@@ -11,7 +11,10 @@ declare(strict_types=1);
 
 namespace Netresearch\NrTextdb\Controller;
 
+use function is_numeric;
 use function is_string;
+use function max;
+use function mb_check_encoding;
 
 use Netresearch\NrTextdb\Domain\Model\Component;
 use Netresearch\NrTextdb\Domain\Model\Environment;
@@ -185,26 +188,29 @@ final class TranslationController extends ActionController
             );
         }
 
-        $config      = $this->getConfigFromBeUserData();
-        $componentId = (int) ($config['component'] ?? 0);
-        $typeId      = (int) ($config['type'] ?? 0);
-        $placeholder = is_string($config['placeholder']) ? $config['placeholder'] : null;
-        $value       = is_string($config['value']) ? $config['value'] : null;
+        [
+            'component'   => $componentId,
+            'type'        => $typeId,
+            'placeholder' => $placeholder,
+            'value'       => $value,
+        ] = $this->getConfigFromBeUserData();
 
+        // Backend module arguments arrive without a plugin namespace, so these are
+        // the raw query parameters and may carry any type, arrays included.
         if ($this->request->hasArgument('component')) {
-            $componentId = (int) $this->request->getArgument('component');
+            $componentId = $this->normalizeRecordFilter($this->request->getArgument('component'));
         }
 
         if ($this->request->hasArgument('type')) {
-            $typeId = (int) $this->request->getArgument('type');
+            $typeId = $this->normalizeRecordFilter($this->request->getArgument('type'));
         }
 
         if ($this->request->hasArgument('placeholder')) {
-            $placeholder = trim((string) $this->request->getArgument('placeholder'));
+            $placeholder = $this->normalizeTextFilter($this->request->getArgument('placeholder'));
         }
 
         if ($this->request->hasArgument('value')) {
-            $value = trim((string) $this->request->getArgument('value'));
+            $value = $this->normalizeTextFilter($this->request->getArgument('value'));
         }
 
         $defaultComponent   = $this->componentRepository->findByUid($componentId);
@@ -220,12 +226,14 @@ final class TranslationController extends ActionController
                 $value,
             );
 
-        $config['component']   = $componentId;
-        $config['type']        = $typeId;
-        $config['placeholder'] = $placeholder;
-        $config['value']       = $value;
-
-        $this->persistConfigInBeUserData($config);
+        $this->persistConfigInBeUserData(
+            [
+                'component'   => $componentId,
+                'type'        => $typeId,
+                'placeholder' => $placeholder,
+                'value'       => $value,
+            ],
+        );
 
         $this->moduleTemplate->assignMultiple([
             'defaultComponent'   => $defaultComponent,
@@ -445,10 +453,10 @@ final class TranslationController extends ActionController
             if ($language->getLanguageId() === 0) {
                 $translations = $this->translationRepository
                     ->findAllByComponentTypePlaceholderValueAndLanguage(
-                        (int) $component,
-                        (int) $type,
-                        is_string($placeholder) ? $placeholder : null,
-                        is_string($value) ? $value : null,
+                        $component,
+                        $type,
+                        $placeholder,
+                        $value,
                     );
 
                 $originals = $this->writeTranslationExportFile(
@@ -774,30 +782,81 @@ final class TranslationController extends ActionController
      *
      * The writer (persistConfigInBeUserData) emits JSON. The migration from
      * serialize()/unserialize() to json_encode/json_decode was declared a
-     * breaking change in commit e3e0334, so any legacy serialized payload
-     * is treated as invalid and discarded — the module simply rebuilds its
-     * filter config from defaults on the next request.
+     * breaking change in commit e3e0334. Any legacy serialized payload is
+     * treated as invalid and discarded. The module then rebuilds its filter
+     * config from the defaults on the next request.
      *
-     * @return array<string, int|string|null>
+     * The four filter keys are always present and always carry their declared
+     * type. exportAction() compares component and type with ===, so a missing
+     * or differently typed value would silently defeat its "no filter
+     * selected" guard. The stored payload cannot be trusted for that. It lives
+     * in be_users.uc, which a backend user can write through the usersettings
+     * endpoint of the core.
+     *
+     * @return array{component: int, type: int, placeholder: string|null, value: string|null}
      */
     private function getConfigFromBeUserData(): array
     {
         $storedConfig = $this->getBackendUser()
             ->getModuleData(self::class);
 
-        if (is_string($storedConfig) && $storedConfig !== '') {
-            $data = json_decode($storedConfig, true);
+        $data = (is_string($storedConfig) && ($storedConfig !== ''))
+            ? json_decode($storedConfig, true)
+            : null;
 
-            return is_array($data) ? $data : [];
+        if (!is_array($data)) {
+            $data = [];
         }
 
-        return [];
+        return [
+            'component'   => $this->normalizeRecordFilter($data['component'] ?? null),
+            'type'        => $this->normalizeRecordFilter($data['type'] ?? null),
+            'placeholder' => $this->normalizeTextFilter($data['placeholder'] ?? null),
+            'value'       => $this->normalizeTextFilter($data['value'] ?? null),
+        ];
+    }
+
+    /**
+     * Narrows an untrusted filter value to a record uid.
+     *
+     * Numeric input is coerced the way PHP does it, so "2" and 2.9 both become
+     * 2. Everything else, arrays and booleans included, becomes 0, and so does
+     * a negative number. Both the "no filter selected" guard of exportAction()
+     * and the repository read 0 as "this filter is not set".
+     */
+    private function normalizeRecordFilter(mixed $value): int
+    {
+        if (!is_numeric($value)) {
+            return 0;
+        }
+
+        return max(0, (int) $value);
+    }
+
+    /**
+     * Narrows an untrusted filter value to a search term.
+     *
+     * The encoding check is what keeps listAction() alive. The term is written
+     * back with json_encode(), which throws on malformed UTF-8, and a query
+     * parameter carries arbitrary bytes.
+     */
+    private function normalizeTextFilter(mixed $value): ?string
+    {
+        if (!is_string($value)) {
+            return null;
+        }
+
+        if (!mb_check_encoding($value, 'UTF-8')) {
+            return null;
+        }
+
+        return trim($value);
     }
 
     /**
      * Save current config in backend user settings.
      *
-     * @param array<string, int|string|null> $config
+     * @param array{component: int, type: int, placeholder: string|null, value: string|null} $config
      */
     private function persistConfigInBeUserData(array $config): void
     {
@@ -1012,6 +1071,8 @@ final class TranslationController extends ActionController
      */
     private function getPagination(QueryResultInterface $items, array $settings): array
     {
+        // The paginator rejects anything below its first page with an exception,
+        // and an emptied page field of the pagination partial submits "".
         $currentPage = $this->request->hasArgument('currentPage')
             ? (int) $this->request->getArgument('currentPage') : 1;
 
