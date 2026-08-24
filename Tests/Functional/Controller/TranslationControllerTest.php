@@ -68,7 +68,15 @@ use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
  * logged "Undefined array key" for placeholder and value, and the "no filter
  * selected" guard of exportAction() compared against null.
  *
+ * The third group covers issue #129: translateRecordAction() trusted the
+ * array keys and values of $new/$update coming straight from the request.
+ * Extbase's property mapping does not enforce the documented element shape at
+ * runtime, so a non-int key, a non-string value, or a language id that is not
+ * configured on any site used to crash the action or silently persist an
+ * unreachable translation.
+ *
  * @see https://github.com/netresearch/t3x-nr-textdb/issues/100
+ * @see https://github.com/netresearch/t3x-nr-textdb/issues/129
  */
 #[CoversClass(TranslationController::class)]
 final class TranslationControllerTest extends AbstractFunctionalTestCase
@@ -94,6 +102,8 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         $this->importCSVDataSet(__DIR__ . '/../Fixtures/TranslationRepository/Components.csv');
         $this->importCSVDataSet(__DIR__ . '/../Fixtures/TranslationRepository/Types.csv');
         $this->importCSVDataSet(__DIR__ . '/../Fixtures/TranslationRepository/Translations.csv');
+
+        $this->writeSiteConfiguration();
 
         // Flash messages of the backend module are session bound, so a backend
         // user has to be present for the queue to accept them.
@@ -131,6 +141,11 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
             'Submitting new[0] for an existing default record must not insert a second row.',
         );
         self::assertSame('Send it', $this->fetchValue(1));
+        self::assertSame(
+            ['OK' => [$GLOBALS['LANG']->sL('LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.translation.saved')]],
+            $this->flashMessagesGroupedBySeverity(),
+            'A fully valid submission must not also queue the rejected-entries warning.',
+        );
     }
 
     #[Test]
@@ -156,7 +171,11 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
 
         self::assertSame(1, $this->countRows(placeholder: 'submit', languageUid: 0));
         self::assertSame('Second', $this->fetchValue(1));
-        self::assertSame([], $this->errorFlashMessages(), 'A successful save must not queue an error message.');
+        self::assertSame(
+            ['OK' => array_fill(0, 2, $GLOBALS['LANG']->sL('LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.translation.saved'))],
+            $this->flashMessagesGroupedBySeverity(),
+            'Two successful saves must not also queue a warning or an error message.',
+        );
     }
 
     #[Test]
@@ -166,6 +185,17 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         $this->controller->translateRecordAction(1, [2 => '   ']);
 
         self::assertSame(0, $this->countRows(placeholder: 'submit', languageUid: 2));
+        // A blank value is skipped before it reaches saveNewTranslation(), so
+        // it counts as neither accepted nor rejected. The WARNING below comes
+        // not from a rejection but from $nothingWasSaved: something was
+        // submitted and nothing was accepted, so the (misleading, nothing was
+        // saved) success message must not appear either (issue #129 follow-up).
+        self::assertSame(
+            [
+                'WARNING' => [$GLOBALS['LANG']->sL('LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.translation.rejected')],
+            ],
+            $this->flashMessagesGroupedBySeverity(),
+        );
     }
 
     #[Test]
@@ -219,6 +249,306 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
     }
 
     #[Test]
+    public function translateRecordSkipsAnUpdateValueThatIsNotAString(): void
+    {
+        // Extbase's property mapping does not enforce the array value type
+        // declared in the PHPDoc at runtime. update[5][]=x reaches this method
+        // as ['x'], which used to crash trim() with a TypeError (issue #129,
+        // case 2).
+        $this->controller->translateRecordAction(1, [], [5 => ['x']]);
+
+        self::assertSame('Absenden', $this->fetchValue(5), 'A malformed update value must leave the record untouched.');
+        self::assertSame(
+            [
+                'WARNING' => [$GLOBALS['LANG']->sL('LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.translation.rejected')],
+            ],
+            $this->flashMessagesGroupedBySeverity(),
+        );
+    }
+
+    #[Test]
+    public function translateRecordSkipsANewValueThatIsNotAString(): void
+    {
+        // Same defect on the new[] side: new[0][]=x reaches this method as
+        // [0 => ['x']] and used to crash trim() with a TypeError.
+        $this->controller->translateRecordAction(1, [0 => ['x']]);
+
+        self::assertSame(1, $this->countRows(placeholder: 'submit', languageUid: 0));
+        self::assertSame('Submit', $this->fetchValue(1), 'A malformed new value must not overwrite the existing record.');
+        self::assertSame(
+            [
+                'WARNING' => [$GLOBALS['LANG']->sL('LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.translation.rejected')],
+            ],
+            $this->flashMessagesGroupedBySeverity(),
+        );
+    }
+
+    #[Test]
+    public function translateRecordSkipsAnUpdateKeyThatIsNotAnInteger(): void
+    {
+        // update[foo]=x reaches this method with a string array key, which used
+        // to crash findRawByUid() with a TypeError under strict_types (issue
+        // #129, case 1).
+        $this->controller->translateRecordAction(1, [], ['foo' => 'x']);
+
+        self::assertSame('Absenden', $this->fetchValue(5), 'A malformed update key must leave every record untouched.');
+        self::assertSame(
+            [
+                'WARNING' => [$GLOBALS['LANG']->sL('LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.translation.rejected')],
+            ],
+            $this->flashMessagesGroupedBySeverity(),
+        );
+    }
+
+    #[Test]
+    public function translateRecordSkipsANewKeyThatIsNotAnInteger(): void
+    {
+        // Same defect on the new[] side: a non-numeric array key (e.g. from a
+        // hand-crafted request) reaches this method as a string.
+        $this->controller->translateRecordAction(1, ['foo' => 'x']);
+
+        self::assertSame(1, $this->countRows(placeholder: 'submit', languageUid: 0));
+        self::assertSame(
+            [
+                'WARNING' => [$GLOBALS['LANG']->sL('LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.translation.rejected')],
+            ],
+            $this->flashMessagesGroupedBySeverity(),
+        );
+    }
+
+    #[Test]
+    public function translateRecordSkipsAnUpdateForANonPositiveUid(): void
+    {
+        // update[0]=x and a negative uid can never address a record, findRawByUid()
+        // would just return null for either, and the not-found case counts as
+        // rejected too (see the else branch in translateRecordAction()). The
+        // early guard here only spares a pointless lookup, it is not what
+        // decides the outcome.
+        $this->controller->translateRecordAction(1, [], [0 => 'x', -3 => 'y']);
+
+        self::assertSame(
+            [
+                'WARNING' => [$GLOBALS['LANG']->sL('LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.translation.rejected')],
+            ],
+            $this->flashMessagesGroupedBySeverity(),
+        );
+    }
+
+    #[Test]
+    public function translateRecordSkipsAnUpdateForAUidThatDoesNotExist(): void
+    {
+        // update[999999]=x is well-formed (a positive int key, a string value)
+        // but does not resolve to a record, e.g. deleted between page load and
+        // submit, or a tampered value. Before this fix it was neither accepted
+        // nor rejected, so it was dropped without any signal, same as a
+        // malformed entry used to be before issue #129.
+        $this->controller->translateRecordAction(1, [], [5 => 'Absenden!', 999999 => 'Ghost']);
+
+        self::assertSame('Absenden!', $this->fetchValue(5));
+        self::assertSame(
+            [
+                'WARNING' => [$GLOBALS['LANG']->sL('LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.translation.rejected')],
+                'OK'      => [$GLOBALS['LANG']->sL('LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.translation.saved')],
+            ],
+            $this->flashMessagesGroupedBySeverity(),
+        );
+    }
+
+    #[Test]
+    public function translateRecordSkipsANewEntryWhenTheParentHasNoEnvironmentComponentOrType(): void
+    {
+        // Parent uid 12 carries environment/component/type = 0, the orphaned-row
+        // shape issue #100 already guards against on the update[] side.
+        // saveNewTranslation() returns false for it (createTranslationFromParent()
+        // refuses to build a translation without a real parent relation), and
+        // that must count as rejected too, or a tampered/orphaned parent
+        // silently swallows new[] entries with no signal.
+        $this->controller->translateRecordAction(12, [1 => 'Some text']);
+
+        $connection = GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getConnectionForTable('tx_nrtextdb_domain_model_translation');
+
+        self::assertSame(
+            0,
+            (int) $connection->count(
+                'uid',
+                'tx_nrtextdb_domain_model_translation',
+                [
+                    'placeholder'      => 'orphan_test',
+                    'sys_language_uid' => 1,
+                ],
+            ),
+            'A parent without environment/component/type must not produce a new row.',
+        );
+        self::assertSame(
+            [
+                'WARNING' => [$GLOBALS['LANG']->sL('LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.translation.rejected')],
+            ],
+            $this->flashMessagesGroupedBySeverity(),
+        );
+    }
+
+    #[Test]
+    public function translateRecordSkipsTheWholeNewPayloadWhenTheParentDoesNotExist(): void
+    {
+        // $parent itself does not resolve to a record (tampered or stale
+        // uid). Every new[] entry is unreachable in that case, and dropping
+        // the whole payload without a signal would defeat the same guarantee
+        // the per-entry checks give: a mixed request with a valid update[]
+        // entry alongside it must still warn about the lost new[] payload,
+        // not just report the unrelated update[] success.
+        $this->controller->translateRecordAction(999999, [0 => 'Some text'], [5 => 'Absenden!']);
+
+        self::assertSame('Absenden!', $this->fetchValue(5));
+        self::assertSame(
+            [
+                'WARNING' => [$GLOBALS['LANG']->sL('LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.translation.rejected')],
+                'OK'      => [$GLOBALS['LANG']->sL('LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.translation.saved')],
+            ],
+            $this->flashMessagesGroupedBySeverity(),
+        );
+    }
+
+    #[Test]
+    public function translateRecordDoesNotWarnWhenTheInvalidParentHasNoNewPayload(): void
+    {
+        // The parent-not-found rejection only applies when new[] actually
+        // carries a payload that becomes unreachable. An update[]-only save
+        // against a stale/tampered parent id must not spuriously warn about a
+        // "lost" new[] submission that was never there.
+        $this->controller->translateRecordAction(999999, [], [5 => 'Absenden!']);
+
+        self::assertSame('Absenden!', $this->fetchValue(5));
+        self::assertSame(
+            ['OK' => [$GLOBALS['LANG']->sL('LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.translation.saved')]],
+            $this->flashMessagesGroupedBySeverity(),
+        );
+    }
+
+    #[Test]
+    public function translateRecordDoesNotWarnWhenTheInvalidParentsNewPayloadIsAllBlank(): void
+    {
+        // A real dialog submit posts one empty new[<language>] textarea per
+        // untranslated language on every save. If the parent happened to be
+        // deleted in the meantime, an editor who only touched the update[]
+        // side must not be told their untouched textareas "could not be
+        // saved", there was nothing there to lose.
+        $this->controller->translateRecordAction(999999, [1 => '   '], [5 => 'Absenden!']);
+
+        self::assertSame('Absenden!', $this->fetchValue(5));
+        self::assertSame(
+            ['OK' => [$GLOBALS['LANG']->sL('LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.translation.saved')]],
+            $this->flashMessagesGroupedBySeverity(),
+        );
+    }
+
+    #[Test]
+    public function translateRecordWarnsWhenTheInvalidParentsNewPayloadIsMalformed(): void
+    {
+        // A malformed (non-string) new[] value is a payload, not a blank, so
+        // it must count towards the "lost payload" warning the same way a
+        // real typed value does, even though the parent doesn't exist either.
+        $this->controller->translateRecordAction(999999, [0 => ['x']], [5 => 'Absenden!']);
+
+        self::assertSame('Absenden!', $this->fetchValue(5));
+        self::assertSame(
+            [
+                'WARNING' => [$GLOBALS['LANG']->sL('LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.translation.rejected')],
+                'OK'      => [$GLOBALS['LANG']->sL('LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.translation.saved')],
+            ],
+            $this->flashMessagesGroupedBySeverity(),
+        );
+    }
+
+    #[Test]
+    public function translateRecordQueuesNoFlashMessageForAnEmptySubmission(): void
+    {
+        // parent alone, without any new[]/update[] payload, is a no-op: not a
+        // rejection (nothing was submitted to reject) and not a save either.
+        $this->controller->translateRecordAction(1);
+
+        self::assertSame([], $this->flashMessagesGroupedBySeverity());
+    }
+
+    #[Test]
+    public function translateRecordSkipsANewEntryForALanguageThatIsNotConfiguredOnTheFirstSite(): void
+    {
+        // new[999]=Text reaches this method with a syntactically valid but
+        // meaningless language id. Before the fix this silently persisted a
+        // translation that could never be reached again through the translation
+        // dialog, since that only lists the site's configured languages (issue
+        // #129, case 3). getAllLanguages() resolves the first configured site
+        // only (see TranslationService::getAllLanguages()), hence "first site"
+        // rather than "any site" in this test's name.
+        $this->controller->translateRecordAction(1, [999 => 'Some text']);
+
+        self::assertSame(0, $this->countRows(placeholder: 'submit', languageUid: 999));
+        self::assertSame(
+            [
+                'WARNING' => [$GLOBALS['LANG']->sL('LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.translation.rejected')],
+            ],
+            $this->flashMessagesGroupedBySeverity(),
+        );
+    }
+
+    #[Test]
+    public function translateRecordSkipsANewEntryForANegativeLanguageId(): void
+    {
+        // The issue notes negative language ids pass through "in the same way"
+        // as out-of-range positive ones. getAllLanguages() never configures a
+        // negative language id, so this is rejected the same way as case 3.
+        $this->controller->translateRecordAction(1, [-5 => 'Some text']);
+
+        self::assertSame(0, $this->countRows(placeholder: 'submit', languageUid: -5));
+        self::assertSame(
+            [
+                'WARNING' => [$GLOBALS['LANG']->sL('LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.translation.rejected')],
+            ],
+            $this->flashMessagesGroupedBySeverity(),
+        );
+    }
+
+    #[Test]
+    public function translateRecordSavesAMixOfValidAndRejectedEntries(): void
+    {
+        // The valid entry is saved and reported. The rejected one is not
+        // silently dropped either, a real dialog submission always carries at
+        // least one valid update[] entry (the record itself, echoed back), so
+        // an "only warn when nothing at all was saved" rule would never fire
+        // for a tampered entry submitted alongside a normal save.
+        $this->controller->translateRecordAction(1, [0 => 'Send it', 999 => 'Rejected']);
+
+        self::assertSame('Send it', $this->fetchValue(1));
+        self::assertSame(0, $this->countRows(placeholder: 'submit', languageUid: 999));
+        self::assertSame(
+            [
+                'WARNING' => [$GLOBALS['LANG']->sL('LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.translation.rejected')],
+                'OK'      => [$GLOBALS['LANG']->sL('LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.translation.saved')],
+            ],
+            $this->flashMessagesGroupedBySeverity(),
+        );
+    }
+
+    #[Test]
+    public function translateRecordActionThroughTheModuleRouteAcceptsAMalformedUpdateKeyWithoutCrashing(): void
+    {
+        // Confirms the premise of issue #129 end to end: dispatched through the
+        // real Extbase bootstrap rather than called directly, translateRecordAction()
+        // still receives update[foo] with the string key intact, proving Extbase's
+        // property mapping does not enforce the documented array<int, string> shape.
+        $response = $this->dispatchModuleAction(
+            'translateRecord',
+            [
+                'parent' => '1',
+                'update' => ['foo' => 'x'],
+            ],
+        );
+
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame('Absenden', $this->fetchValue(5));
+    }
+
+    #[Test]
     public function exportWithoutAStoredFilterIsRefused(): void
     {
         // A backend user that has never opened the module has no stored config.
@@ -236,7 +566,6 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
     #[Test]
     public function exportWithAStoredFilterIsCarriedOut(): void
     {
-        $this->writeSiteConfiguration();
         $this->storeFilterConfig(['component' => 1]);
 
         $response = $this->dispatchModuleAction('export');
@@ -256,7 +585,6 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
     {
         // The export filters by component and type, and either one on its own is
         // a filter. Only both being unset means "no filter selected".
-        $this->writeSiteConfiguration();
         $this->storeFilterConfig(['type' => 2]);
 
         $response = $this->dispatchModuleAction('export');
@@ -304,7 +632,6 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
     {
         // The repository signature is (int, int, ?string, ?string), so an array
         // or an int reaching it would be a TypeError under strict_types.
-        $this->writeSiteConfiguration();
         $this->storeFilterConfig(
             [
                 'component'   => 1,
@@ -486,14 +813,17 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
     }
 
     /**
-     * Publishes a site with two languages.
+     * Publishes a site with three languages (English, German, French).
      *
-     * The export iterates the languages of the first site. Without one it
-     * produces no file at all. typo3/testing-framework 9 has no helper for this
-     * any more, and a SiteFinder mock via GeneralUtility::addInstance() does not
-     * work here either, because the controller is built by the container. The
-     * configuration is therefore written to the test instance, where tearDown()
-     * removes it again together with its cache.
+     * Called from setUp() for every test: translateRecordAction() now checks
+     * new[] language ids against the site's configured languages (issue
+     * #129), and the export actions iterate the languages of the first site
+     * and produce no file at all without one. typo3/testing-framework 9 has
+     * no helper for this any more, and a SiteFinder mock via
+     * GeneralUtility::addInstance() does not work here either, because the
+     * controller is built by the container. The configuration is therefore
+     * written to the test instance, where tearDown() removes it again
+     * together with its cache.
      */
     private function writeSiteConfiguration(): void
     {
@@ -517,6 +847,10 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
                     title: German
                     locale: de_DE.UTF-8
                     base: /de/
+                  - languageId: 2
+                    title: French
+                    locale: fr_FR.UTF-8
+                    base: /fr/
                 YAML,
         );
 
@@ -604,18 +938,42 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
      */
     private function errorFlashMessages(): array
     {
+        return $this->flashMessagesOfSeverity(ContextualFeedbackSeverity::ERROR);
+    }
+
+    /**
+     * Returns the texts of all queued flash messages of the given severity.
+     * Flushes the whole queue, so a second call (of this or any of the three
+     * severity-specific helpers above) returns an empty result. Call at most
+     * once per test, use flashMessagesGroupedBySeverity() directly if more
+     * than one severity needs checking.
+     *
+     * @return string[]
+     */
+    private function flashMessagesOfSeverity(ContextualFeedbackSeverity $severity): array
+    {
+        return $this->flashMessagesGroupedBySeverity()[$severity->name] ?? [];
+    }
+
+    /**
+     * Returns the texts of all queued flash messages, grouped by severity
+     * name. Flushes the whole queue, so call this (or one of the
+     * severity-specific helpers above) at most once per test.
+     *
+     * @return array<string, string[]>
+     */
+    private function flashMessagesGroupedBySeverity(): array
+    {
         $messages = $this->get(FlashMessageService::class)
             ->getMessageQueueByIdentifier()
             ->getAllMessagesAndFlush();
 
-        $texts = [];
+        $grouped = [];
 
         foreach ($messages as $message) {
-            if ($message->getSeverity() === ContextualFeedbackSeverity::ERROR) {
-                $texts[] = $message->getMessage();
-            }
+            $grouped[$message->getSeverity()->name][] = $message->getMessage();
         }
 
-        return $texts;
+        return $grouped;
     }
 }
