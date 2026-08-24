@@ -20,6 +20,7 @@ Minimum Requirements
    * ext-zip
    * ext-simplexml
    * ext-libxml
+   * ext-mbstring
 
 Recommended
 -----------
@@ -195,7 +196,7 @@ Import fails
 * Verify XLIFF file format matches expected structure
 * Check file permissions on upload
 * Review logs in **Admin Tools > Log**
-* Ensure PHP extensions (ext-zip, ext-simplexml, ext-libxml) are installed
+* Ensure PHP extensions (ext-zip, ext-simplexml, ext-libxml, ext-mbstring) are installed
 
 .. _uninstallation:
 
