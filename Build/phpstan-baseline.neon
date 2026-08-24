@@ -9,24 +9,12 @@ parameters:
 		-
 			message: '#^Cannot cast mixed to int\.$#'
 			identifier: cast.int
-			count: 4
-			path: ../Classes/Controller/TranslationController.php
-
-		-
-			message: '#^Cannot cast mixed to string\.$#'
-			identifier: cast.string
-			count: 2
+			count: 1
 			path: ../Classes/Controller/TranslationController.php
 
 		-
 			message: '#^Parameter \#2 \$settings of method Netresearch\\NrTextdb\\Controller\\TranslationController\:\:getPagination\(\) expects array\<string, bool\|int\>, mixed given\.$#'
 			identifier: argument.type
-			count: 1
-			path: ../Classes/Controller/TranslationController.php
-
-		-
-			message: '#^Method Netresearch\\NrTextdb\\Controller\\TranslationController\:\:getConfigFromBeUserData\(\) should return array\<string, int\|string\|null\> but returns array\<mixed\>\.$#'
-			identifier: return.type
 			count: 1
 			path: ../Classes/Controller/TranslationController.php
 

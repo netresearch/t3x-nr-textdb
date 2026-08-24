@@ -18,7 +18,7 @@ Backend implementation for editing TYPO3 translations. Architecture follows TYPO
 ## Setup & environment
 
 **Prerequisites:**
-- PHP 8.2+ (extension requirements: ext-zip, ext-simplexml, ext-libxml)
+- PHP 8.2+ (extension requirements: ext-zip, ext-simplexml, ext-libxml, ext-mbstring)
 - TYPO3 14.3+
 - Composer 2.x
 
