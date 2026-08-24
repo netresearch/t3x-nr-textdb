@@ -24,8 +24,3 @@ parameters:
 			message: "#^Parameter \\#3 \\$type of method Netresearch\\\\NrTextdb\\\\Service\\\\TranslationService\\:\\:createTranslation\\(\\) expects Netresearch\\\\NrTextdb\\\\Domain\\\\Model\\\\Type, string given\\.$#"
 			count: 2
 			path: ../Classes/ViewHelpers/TranslateViewHelper.php
-
-		-
-			message: "#^Unreachable statement \\- code above always terminates\\.$#"
-			count: 1
-			path: ../Tests/Unit/Controller/TranslationControllerTest.php
