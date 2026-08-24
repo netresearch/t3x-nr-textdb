@@ -592,8 +592,8 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         // whenever the field name matches, even a rejected one. Casting the
         // rejected array to a string to render it crashed the page with
         // "Array to string conversion", live-reproduced against a real
-        // TYPO3 v14.3 backend (sobol typo3-14) before this was changed to a
-        // redirect, which starts a fresh GET with no submitted body left to
+        // TYPO3 v14.3 backend before this was changed to a redirect, which
+        // starts a fresh GET with no submitted body left to
         // repopulate from. A direct translateRecordAction() call cannot
         // reproduce this, it never renders the forward target's view.
         $response = $this->dispatchModuleAction(
