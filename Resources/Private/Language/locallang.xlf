@@ -145,6 +145,9 @@
             <trans-unit id="message.error.translation.save">
                 <source>The translation could not be saved: %s</source>
             </trans-unit>
+            <trans-unit id="message.error.translation.request">
+                <source>The submitted request could not be processed.</source>
+            </trans-unit>
         </body>
     </file>
 </xliff>

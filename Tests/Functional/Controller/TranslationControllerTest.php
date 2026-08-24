@@ -33,6 +33,8 @@ use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Configuration\SiteConfiguration;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Core\SystemEnvironmentBuilder;
+use TYPO3\CMS\Core\Crypto\HashAlgo;
+use TYPO3\CMS\Core\Crypto\HashService;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Http\ServerRequest;
@@ -40,12 +42,14 @@ use TYPO3\CMS\Core\Imaging\IconFactory;
 use TYPO3\CMS\Core\Localization\LanguageServiceFactory;
 use TYPO3\CMS\Core\Messaging\FlashMessageService;
 use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
+use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Core\Bootstrap;
 use TYPO3\CMS\Extbase\Mvc\ExtbaseRequestParameters;
 use TYPO3\CMS\Extbase\Mvc\Request as ExtbaseRequest;
 use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
 use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
+use TYPO3\CMS\Extbase\Security\HashScope;
 
 /**
  * Regression tests for the backend module's save path.
@@ -255,7 +259,7 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         $extbaseRequestParameters = new ExtbaseRequestParameters(TranslationController::class);
         $extbaseRequestParameters
             ->setControllerExtensionName('NrTextdb')
-            ->setPluginName('Translation')
+            ->setPluginName('netresearch_textdb')
             ->setControllerName('Translation')
             ->setControllerActionName('translateRecord')
             ->setFormat('html');
@@ -569,15 +573,13 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         // real Extbase bootstrap rather than called directly, translateRecordAction()
         // still receives update[foo] with the string key intact, proving Extbase's
         // property mapping does not enforce the documented array<int, string> shape.
-        $response = $this->dispatchModuleAction(
-            'translateRecord',
-            [
-                'parent' => '1',
-                'update' => ['foo' => 'x'],
-            ],
-        );
+        $response = $this->dispatchTranslateRecord([
+            'parent' => '1',
+            'update' => ['foo' => 'x'],
+        ]);
 
         self::assertSame(303, $response->getStatusCode());
+        self::assertStringContainsString('Translation/translated', $response->getHeaderLine('Location'));
         self::assertSame('Absenden', $this->fetchValue(5));
     }
 
@@ -596,16 +598,148 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         // starts a fresh GET with no submitted body left to
         // repopulate from. A direct translateRecordAction() call cannot
         // reproduce this, it never renders the forward target's view.
-        $response = $this->dispatchModuleAction(
-            'translateRecord',
-            [
-                'parent' => '1',
-                'update' => [1 => ['x']],
-            ],
-        );
+        $response = $this->dispatchTranslateRecord([
+            'parent' => '1',
+            'update' => [1 => ['x']],
+        ]);
 
         self::assertSame(303, $response->getStatusCode());
+        self::assertStringContainsString('Translation/translated', $response->getHeaderLine('Location'));
         self::assertSame('Absenden', $this->fetchValue(5));
+    }
+
+    #[Test]
+    public function translateRecordThroughTheRouteRedirectsInsteadOfForwardingWhenTheParentArgumentFailsToMap(): void
+    {
+        // parent=abc fails Extbase's own int property mapping before
+        // translateRecordAction() ever runs, so this never reaches its
+        // validation at all. The default ActionController::errorAction()
+        // forwards back to the referring "translated" action via a
+        // ForwardResponse, which the Extbase Dispatcher resolves by
+        // re-dispatching within the same request/response, so the browser
+        // never sees it as a real navigation: the address bar and history
+        // entry stay on the failed request (a POST in real module usage,
+        // this dispatch helper always issues a GET, the forward mechanism
+        // is identical either way), and a page refresh would repeat it.
+        // TranslationController overrides errorAction() to redirect there
+        // instead, verified against this exact input: without the
+        // override, this dispatch renders the referring view inline with a
+        // 200 (Failed asserting that 200 is identical to 303); with it,
+        // the browser gets a real 303 to a fresh GET.
+        //
+        // forwardToReferringRequest() only takes that path if a real,
+        // HMAC-signed __referrer is present, exactly what the "translated"
+        // view's own f:form renders into its hidden fields, so this
+        // extracts one from a real render of that view instead of hand-
+        // building an HMAC.
+        $referrer = $this->extractReferrerFields(
+            (string) $this->dispatchModuleAction(
+                'translated',
+                ['uid' => '1'],
+            )->getBody(),
+        );
+
+        $response = $this->dispatchTranslateRecord([
+            'parent'     => 'abc',
+            '__referrer' => $referrer,
+        ]);
+
+        self::assertSame(303, $response->getStatusCode());
+        self::assertStringContainsString('Translation/translated', $response->getHeaderLine('Location'));
+        self::assertSame(
+            ['ERROR' => [$GLOBALS['LANG']->sL('LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.error.translation.request')]],
+            $this->flashMessagesGroupedBySeverity(),
+        );
+    }
+
+    #[Test]
+    public function translateRecordThroughTheRouteFallsBackToTheDefaultErrorResponseWithoutAReferrer(): void
+    {
+        // Without a __referrer at all (e.g. a direct API call), there is no
+        // '@request' to read, so forwardToReferringRequest() returns null
+        // and errorAction() falls back to the framework's own default
+        // response instead of trying to redirect anywhere. A __referrer
+        // that IS present but fails its HMAC validation is a different
+        // case: that throws, it does not fall back.
+        $response = $this->dispatchTranslateRecord(['parent' => 'abc']);
+
+        self::assertSame(400, $response->getStatusCode());
+    }
+
+    #[Test]
+    public function translateRecordThroughTheRouteRejectsAReferrerTargetingAnUnregisteredAction(): void
+    {
+        // The referrer HMAC scope is installation-global, not bound to this
+        // module, so a validly signed __referrer can name any action,
+        // including one that does not exist as a method at all, or this
+        // controller's own non-routed errorAction() itself (which would
+        // forward back into errorAction() again, an infinite loop). The
+        // errorAction() override only forwards to an allowlisted, known-
+        // safe action, so a target outside that list gets a plain error
+        // response instead of ever attempting an internal forward.
+        $response = $this->dispatchTranslateRecord([
+            'parent'     => 'abc',
+            '__referrer' => $this->buildSignedReferrer('notARegisteredAction'),
+        ]);
+
+        self::assertSame(400, $response->getStatusCode());
+    }
+
+    #[Test]
+    public function translateRecordThroughTheRouteRejectsAReferrerFromAForeignController(): void
+    {
+        // Same installation-global HMAC scope as above, but here the
+        // referrer names a real, routable action, just on a different
+        // controller (as any other Extbase backend module's own form would
+        // sign). Without the controller-name check, this would pass the
+        // action-name allowlist and forward into a controller this module
+        // was never meant to dispatch to.
+        $response = $this->dispatchTranslateRecord([
+            'parent'     => 'abc',
+            '__referrer' => $this->buildSignedReferrer('list', 'SomeOtherController'),
+        ]);
+
+        self::assertSame(400, $response->getStatusCode());
+    }
+
+    #[Test]
+    public function translateRecordThroughTheRouteRejectsAReferrerFromAForeignExtension(): void
+    {
+        // Same as the foreign-controller case above, but with a matching
+        // controller/action name from a different extension entirely
+        // ('Translation'/'list' happens to also be a plausible controller/
+        // action pair elsewhere), so only the extension-name check catches
+        // it.
+        $response = $this->dispatchTranslateRecord([
+            'parent'     => 'abc',
+            '__referrer' => $this->buildSignedReferrer('list', 'Translation', 'SomeOtherExtension'),
+        ]);
+
+        self::assertSame(400, $response->getStatusCode());
+    }
+
+    #[Test]
+    public function knownReferrerActionsMatchesTheModuleConfig(): void
+    {
+        // errorAction()'s KNOWN_REFERRER_ACTIONS allowlist is what makes
+        // its uriFor() call provably safe (a static, parameter-less backend
+        // route for controller "Translation" plus one of these actions
+        // always resolves), but that safety only holds as long as the list
+        // does not drift ahead of what is actually registered. If an
+        // action were ever removed from Configuration/Backend/Modules.php
+        // without also being removed here, the allowlist would let it
+        // through and uriFor() would fail to resolve it after all.
+        $backendModulesConfiguration = require ExtensionManagementUtility::extPath(
+            'nr_textdb',
+            'Configuration/Backend/Modules.php',
+        );
+
+        $reflectionClass = new ReflectionClass(TranslationController::class);
+
+        self::assertSame(
+            $backendModulesConfiguration['netresearch_textdb']['controllerActions'][TranslationController::class],
+            $reflectionClass->getConstant('KNOWN_REFERRER_ACTIONS'),
+        );
     }
 
     #[Test]
@@ -846,9 +980,11 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
      * read the module and its controller from, and the normalized parameters are
      * what the page renderer of the module template resolves asset paths with.
      *
-     * @param array<string, string|string[]> $queryParams Backend module arguments
-     *                                                    arrive without a plugin
-     *                                                    namespace
+     * @param array<string, string|array<array-key, string|string[]>> $queryParams
+     *                                                                             Backend module
+     *                                                                             arguments arrive
+     *                                                                             without a plugin
+     *                                                                             namespace
      */
     private function dispatchModuleAction(string $action, array $queryParams = []): ResponseInterface
     {
@@ -879,9 +1015,11 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
      * which is the only place that assigns $this->uriBuilder, so the
      * translated-view redirect this action returns dies before it is built
      * (same root cause as dispatchModuleAction()'s own docblock, now hit by
-     * every call since issue #129's fix made the redirect unconditional).
+     * every call since translateRecordAction() started redirecting there
+     * unconditionally, a follow-up hardening found while verifying issue
+     * #129's fix rather than part of #129's original scope).
      *
-     * @param array<string, mixed> $queryParams
+     * @param array<string, string|array<array-key, string|string[]>> $queryParams
      */
     private function dispatchTranslateRecord(array $queryParams): ResponseInterface
     {
@@ -1005,6 +1143,67 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         self::assertIsArray($value, 'Translation record ' . $uid . ' is gone.');
 
         return (string) $value['value'];
+    }
+
+    /**
+     * Builds a validly HMAC-signed __referrer[@request] targeting a chosen
+     * controller/action, the same shape forwardToReferringRequest() expects
+     * (ActionController.php), for exercising referrer targets a real
+     * rendered view never points at, such as an action this module does
+     * not register, or a controller belonging to a different module
+     * entirely (the referrer HMAC scope is installation-global).
+     *
+     * @return array<string, string>
+     */
+    private function buildSignedReferrer(
+        string $action,
+        string $controller = 'Translation',
+        string $extension = 'NrTextdb',
+    ): array {
+        $request = json_encode([
+            '@extension'  => $extension,
+            '@controller' => $controller,
+            '@action'     => $action,
+        ], JSON_THROW_ON_ERROR);
+
+        return [
+            '@request' => $this->get(HashService::class)->appendHmac(
+                $request,
+                HashScope::ReferringRequest->prefix(),
+                HashAlgo::SHA3_256,
+            ),
+        ];
+    }
+
+    /**
+     * Extracts the hidden __referrer[...] fields Fluid's f:form renders into
+     * a real view, so a request can be replayed with a real, HMAC-signed
+     * referrer instead of one built by hand.
+     *
+     * @return array<string, string>
+     */
+    private function extractReferrerFields(string $html): array
+    {
+        preg_match_all(
+            '/name="__referrer\[([^"]+)\]" value="([^"]*)"/',
+            $html,
+            $matches,
+            PREG_SET_ORDER,
+        );
+
+        $referrer = [];
+
+        foreach ($matches as $match) {
+            $referrer[$match[1]] = htmlspecialchars_decode($match[2]);
+        }
+
+        self::assertArrayHasKey(
+            '@request',
+            $referrer,
+            'The rendered view must contain a __referrer form to extract fields from.',
+        );
+
+        return $referrer;
     }
 
     /**

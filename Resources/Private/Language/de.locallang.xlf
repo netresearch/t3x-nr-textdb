@@ -191,6 +191,10 @@
         <source>The translation could not be saved: %s</source>
         <target state="needs-translation">The translation could not be saved: %s</target>
       </trans-unit>
+      <trans-unit id="message.error.translation.request">
+        <source>The submitted request could not be processed.</source>
+        <target state="final">Die übermittelte Anfrage konnte nicht verarbeitet werden.</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>
