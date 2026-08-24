@@ -729,7 +729,10 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         // action were ever removed from Configuration/Backend/Modules.php
         // without also being removed here, the allowlist would let it
         // through and uriFor() would fail to resolve it after all.
-        $backendModulesConfiguration = require ExtensionManagementUtility::extPath(
+        // require_once would return true instead of the array here, this
+        // file is already loaded once by TYPO3's own bootstrap by the time
+        // this test runs, and the return value is what this test needs.
+        $backendModulesConfiguration = require ExtensionManagementUtility::extPath( // NOSONAR
             'nr_textdb',
             'Configuration/Backend/Modules.php',
         );
