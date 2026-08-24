@@ -35,8 +35,8 @@ Build/             - Build configuration (phpstan, rector, etc.)
 
 ```bash
 composer install
-# Dependencies installed to .build/vendor
-# Binaries in .build/bin
+# Dependencies installed to .Build/vendor
+# Binaries in .Build/bin
 ```
 
 ### Essential Commands
@@ -200,7 +200,7 @@ Before committing changes:
 - **PHP-CS-Fixer**: `Build/.php-cs-fixer.dist.php`
 - **Rector**: `Build/rector.php`
 - **Fractor**: `Build/fractor.php`
-- **PHPUnit**: `Build/UnitTests.xml`
+- **PHPUnit**: `Build/phpunit.xml`
 - **PHPLint**: `Build/.phplint.yml`
 
 ## Important Notes
