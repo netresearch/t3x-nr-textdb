@@ -54,7 +54,6 @@ use TYPO3\CMS\Core\Pagination\SimplePagination;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
-use TYPO3\CMS\Extbase\Http\ForwardResponse;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use TYPO3\CMS\Extbase\Pagination\QueryResultPaginator;
 use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
@@ -428,12 +427,16 @@ final class TranslationController extends ActionController
             );
         }
 
-        return (new ForwardResponse('translated'))
-            ->withControllerName('Translation')
-            ->withExtensionName('NrTextdb')
-            ->withArguments([
-                'uid' => $parent,
-            ]);
+        // A redirect (not a forward) so the browser issues a fresh GET for the
+        // "translated" view. A forward keeps this same POST request active,
+        // and Fluid's form ViewHelpers repopulate a field from the request's
+        // own submitted value whenever the field name matches, even a
+        // rejected one, casting a rejected array value to a string to render
+        // it crashes the page with "Array to string conversion" although
+        // nothing was persisted.
+        return $this->redirectToUri(
+            $this->uriBuilder->reset()->uriFor('translated', ['uid' => $parent]),
+        );
     }
 
     /**

@@ -24,6 +24,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Psr\Http\Message\ResponseInterface;
+use ReflectionClass;
 use RuntimeException;
 use TYPO3\CMS\Backend\Routing\Router;
 use TYPO3\CMS\Backend\Template\Components\ComponentFactory;
@@ -41,6 +42,9 @@ use TYPO3\CMS\Core\Messaging\FlashMessageService;
 use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Core\Bootstrap;
+use TYPO3\CMS\Extbase\Mvc\ExtbaseRequestParameters;
+use TYPO3\CMS\Extbase\Mvc\Request as ExtbaseRequest;
+use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
 use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
 
 /**
@@ -133,7 +137,7 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         // The dialog renders a new[0] textarea whenever the default-language row
         // is not part of its "translated" list. Before the fix this inserted a
         // second language-0 row for the same placeholder.
-        $this->controller->translateRecordAction(1, [0 => 'Send it']);
+        $this->dispatchTranslateRecord(['parent' => '1', 'new' => [0 => 'Send it']]);
 
         self::assertSame(
             1,
@@ -151,7 +155,7 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
     #[Test]
     public function translateRecordUpdatesAnExistingLocalizedRecordSubmittedAsNew(): void
     {
-        $this->controller->translateRecordAction(1, [1 => 'Abschicken']);
+        $this->dispatchTranslateRecord(['parent' => '1', 'new' => [1 => 'Abschicken']]);
 
         self::assertSame(
             1,
@@ -166,8 +170,8 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
     {
         // The reported reproducer: the first save silently created a duplicate,
         // the second one aborted with "Duplicate entry … for key 'translation'".
-        $this->controller->translateRecordAction(1, [0 => 'First']);
-        $this->controller->translateRecordAction(1, [0 => 'Second']);
+        $this->dispatchTranslateRecord(['parent' => '1', 'new' => [0 => 'First']]);
+        $this->dispatchTranslateRecord(['parent' => '1', 'new' => [0 => 'Second']]);
 
         self::assertSame(1, $this->countRows(placeholder: 'submit', languageUid: 0));
         self::assertSame('Second', $this->fetchValue(1));
@@ -182,7 +186,7 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
     public function translateRecordSkipsEmptySubmittedValues(): void
     {
         // Language 2 has no record at all; an untouched textarea must not create one.
-        $this->controller->translateRecordAction(1, [2 => '   ']);
+        $this->dispatchTranslateRecord(['parent' => '1', 'new' => [2 => '   ']]);
 
         self::assertSame(0, $this->countRows(placeholder: 'submit', languageUid: 2));
         // A blank value is skipped before it reaches saveNewTranslation(), so
@@ -201,7 +205,7 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
     #[Test]
     public function translateRecordCreatesRecordForALanguageThatHasNone(): void
     {
-        $this->controller->translateRecordAction(1, [2 => 'Envoyer']);
+        $this->dispatchTranslateRecord(['parent' => '1', 'new' => [2 => 'Envoyer']]);
 
         self::assertSame(1, $this->countRows(placeholder: 'submit', languageUid: 2));
     }
@@ -212,7 +216,7 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         // update[<uid>] carries the localized uid. Repository::findByUid() is
         // language aware and returned null for the German row in a backend
         // context, so the edit was silently dropped.
-        $this->controller->translateRecordAction(1, [], [5 => 'Absenden!']);
+        $this->dispatchTranslateRecord(['parent' => '1', 'update' => [5 => 'Absenden!']]);
 
         self::assertSame('Absenden!', $this->fetchValue(5));
     }
@@ -240,6 +244,35 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
             $this->get(ComponentFactory::class),
         );
 
+        // translateRecordAction() always redirects now, which needs $request/
+        // $uriBuilder populated by ActionController::processRequest(), and
+        // this manually-constructed instance (needed for the mocked
+        // PersistenceManagerInterface) never goes through it, so both are
+        // built by hand here, minimally, just enough for redirectToUri() not
+        // to crash. Extbase controllers are not shared in the container
+        // (each dispatch gets its own instance), so there is no already-
+        // initialized instance to borrow this state from either.
+        $extbaseRequestParameters = new ExtbaseRequestParameters(TranslationController::class);
+        $extbaseRequestParameters
+            ->setControllerExtensionName('NrTextdb')
+            ->setPluginName('Translation')
+            ->setControllerName('Translation')
+            ->setControllerActionName('translateRecord')
+            ->setFormat('html');
+
+        $extbaseRequest = new ExtbaseRequest(
+            (new ServerRequest('https://example.com/typo3/module/netresearch/textdb', 'POST'))
+                ->withAttribute('applicationType', SystemEnvironmentBuilder::REQUESTTYPE_BE)
+                ->withAttribute('extbase', $extbaseRequestParameters),
+        );
+
+        $uriBuilder = GeneralUtility::makeInstance(UriBuilder::class);
+        $uriBuilder->setRequest($extbaseRequest);
+
+        $reflectionClass = new ReflectionClass(TranslationController::class);
+        $reflectionClass->getProperty('request')->setValue($controller, $extbaseRequest);
+        $reflectionClass->getProperty('uriBuilder')->setValue($controller, $uriBuilder);
+
         $controller->translateRecordAction(1, [0 => 'Send it']);
 
         $messages = $this->errorFlashMessages();
@@ -255,7 +288,7 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         // declared in the PHPDoc at runtime. update[5][]=x reaches this method
         // as ['x'], which used to crash trim() with a TypeError (issue #129,
         // case 2).
-        $this->controller->translateRecordAction(1, [], [5 => ['x']]);
+        $this->dispatchTranslateRecord(['parent' => '1', 'update' => [5 => ['x']]]);
 
         self::assertSame('Absenden', $this->fetchValue(5), 'A malformed update value must leave the record untouched.');
         self::assertSame(
@@ -271,7 +304,7 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
     {
         // Same defect on the new[] side: new[0][]=x reaches this method as
         // [0 => ['x']] and used to crash trim() with a TypeError.
-        $this->controller->translateRecordAction(1, [0 => ['x']]);
+        $this->dispatchTranslateRecord(['parent' => '1', 'new' => [0 => ['x']]]);
 
         self::assertSame(1, $this->countRows(placeholder: 'submit', languageUid: 0));
         self::assertSame('Submit', $this->fetchValue(1), 'A malformed new value must not overwrite the existing record.');
@@ -289,7 +322,7 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         // update[foo]=x reaches this method with a string array key, which used
         // to crash findRawByUid() with a TypeError under strict_types (issue
         // #129, case 1).
-        $this->controller->translateRecordAction(1, [], ['foo' => 'x']);
+        $this->dispatchTranslateRecord(['parent' => '1', 'update' => ['foo' => 'x']]);
 
         self::assertSame('Absenden', $this->fetchValue(5), 'A malformed update key must leave every record untouched.');
         self::assertSame(
@@ -305,7 +338,7 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
     {
         // Same defect on the new[] side: a non-numeric array key (e.g. from a
         // hand-crafted request) reaches this method as a string.
-        $this->controller->translateRecordAction(1, ['foo' => 'x']);
+        $this->dispatchTranslateRecord(['parent' => '1', 'new' => ['foo' => 'x']]);
 
         self::assertSame(1, $this->countRows(placeholder: 'submit', languageUid: 0));
         self::assertSame(
@@ -324,7 +357,7 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         // rejected too (see the else branch in translateRecordAction()). The
         // early guard here only spares a pointless lookup, it is not what
         // decides the outcome.
-        $this->controller->translateRecordAction(1, [], [0 => 'x', -3 => 'y']);
+        $this->dispatchTranslateRecord(['parent' => '1', 'update' => [0 => 'x', -3 => 'y']]);
 
         self::assertSame(
             [
@@ -342,7 +375,7 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         // submit, or a tampered value. Before this fix it was neither accepted
         // nor rejected, so it was dropped without any signal, same as a
         // malformed entry used to be before issue #129.
-        $this->controller->translateRecordAction(1, [], [5 => 'Absenden!', 999999 => 'Ghost']);
+        $this->dispatchTranslateRecord(['parent' => '1', 'update' => [5 => 'Absenden!', 999999 => 'Ghost']]);
 
         self::assertSame('Absenden!', $this->fetchValue(5));
         self::assertSame(
@@ -363,7 +396,7 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         // refuses to build a translation without a real parent relation), and
         // that must count as rejected too, or a tampered/orphaned parent
         // silently swallows new[] entries with no signal.
-        $this->controller->translateRecordAction(12, [1 => 'Some text']);
+        $this->dispatchTranslateRecord(['parent' => '12', 'new' => [1 => 'Some text']]);
 
         $connection = GeneralUtility::makeInstance(ConnectionPool::class)
             ->getConnectionForTable('tx_nrtextdb_domain_model_translation');
@@ -397,7 +430,7 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         // the per-entry checks give: a mixed request with a valid update[]
         // entry alongside it must still warn about the lost new[] payload,
         // not just report the unrelated update[] success.
-        $this->controller->translateRecordAction(999999, [0 => 'Some text'], [5 => 'Absenden!']);
+        $this->dispatchTranslateRecord(['parent' => '999999', 'new' => [0 => 'Some text'], 'update' => [5 => 'Absenden!']]);
 
         self::assertSame('Absenden!', $this->fetchValue(5));
         self::assertSame(
@@ -416,7 +449,7 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         // carries a payload that becomes unreachable. An update[]-only save
         // against a stale/tampered parent id must not spuriously warn about a
         // "lost" new[] submission that was never there.
-        $this->controller->translateRecordAction(999999, [], [5 => 'Absenden!']);
+        $this->dispatchTranslateRecord(['parent' => '999999', 'update' => [5 => 'Absenden!']]);
 
         self::assertSame('Absenden!', $this->fetchValue(5));
         self::assertSame(
@@ -433,7 +466,7 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         // deleted in the meantime, an editor who only touched the update[]
         // side must not be told their untouched textareas "could not be
         // saved", there was nothing there to lose.
-        $this->controller->translateRecordAction(999999, [1 => '   '], [5 => 'Absenden!']);
+        $this->dispatchTranslateRecord(['parent' => '999999', 'new' => [1 => '   '], 'update' => [5 => 'Absenden!']]);
 
         self::assertSame('Absenden!', $this->fetchValue(5));
         self::assertSame(
@@ -448,7 +481,7 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         // A malformed (non-string) new[] value is a payload, not a blank, so
         // it must count towards the "lost payload" warning the same way a
         // real typed value does, even though the parent doesn't exist either.
-        $this->controller->translateRecordAction(999999, [0 => ['x']], [5 => 'Absenden!']);
+        $this->dispatchTranslateRecord(['parent' => '999999', 'new' => [0 => ['x']], 'update' => [5 => 'Absenden!']]);
 
         self::assertSame('Absenden!', $this->fetchValue(5));
         self::assertSame(
@@ -465,7 +498,7 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
     {
         // parent alone, without any new[]/update[] payload, is a no-op: not a
         // rejection (nothing was submitted to reject) and not a save either.
-        $this->controller->translateRecordAction(1);
+        $this->dispatchTranslateRecord(['parent' => '1']);
 
         self::assertSame([], $this->flashMessagesGroupedBySeverity());
     }
@@ -480,7 +513,7 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         // #129, case 3). getAllLanguages() resolves the first configured site
         // only (see TranslationService::getAllLanguages()), hence "first site"
         // rather than "any site" in this test's name.
-        $this->controller->translateRecordAction(1, [999 => 'Some text']);
+        $this->dispatchTranslateRecord(['parent' => '1', 'new' => [999 => 'Some text']]);
 
         self::assertSame(0, $this->countRows(placeholder: 'submit', languageUid: 999));
         self::assertSame(
@@ -497,7 +530,7 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         // The issue notes negative language ids pass through "in the same way"
         // as out-of-range positive ones. getAllLanguages() never configures a
         // negative language id, so this is rejected the same way as case 3.
-        $this->controller->translateRecordAction(1, [-5 => 'Some text']);
+        $this->dispatchTranslateRecord(['parent' => '1', 'new' => [-5 => 'Some text']]);
 
         self::assertSame(0, $this->countRows(placeholder: 'submit', languageUid: -5));
         self::assertSame(
@@ -516,7 +549,7 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         // least one valid update[] entry (the record itself, echoed back), so
         // an "only warn when nothing at all was saved" rule would never fire
         // for a tampered entry submitted alongside a normal save.
-        $this->controller->translateRecordAction(1, [0 => 'Send it', 999 => 'Rejected']);
+        $this->dispatchTranslateRecord(['parent' => '1', 'new' => [0 => 'Send it', 999 => 'Rejected']]);
 
         self::assertSame('Send it', $this->fetchValue(1));
         self::assertSame(0, $this->countRows(placeholder: 'submit', languageUid: 999));
@@ -530,7 +563,7 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
     }
 
     #[Test]
-    public function translateRecordActionThroughTheModuleRouteAcceptsAMalformedUpdateKeyWithoutCrashing(): void
+    public function translateRecordThroughTheRouteAcceptsAMalformedUpdateKey(): void
     {
         // Confirms the premise of issue #129 end to end: dispatched through the
         // real Extbase bootstrap rather than called directly, translateRecordAction()
@@ -544,7 +577,34 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
             ],
         );
 
-        self::assertSame(200, $response->getStatusCode());
+        self::assertSame(303, $response->getStatusCode());
+        self::assertSame('Absenden', $this->fetchValue(5));
+    }
+
+    #[Test]
+    public function translateRecordThroughTheRouteAcceptsAMalformedArrayValue(): void
+    {
+        // The action itself rejects update[1][]=x before touching the record
+        // (see translateRecordSkipsAnUpdateValueThatIsNotAString), but the
+        // forward this action used to return re-rendered the "translated"
+        // view within the SAME request, and Fluid's f:form.textarea
+        // repopulates a field from the request's own submitted value
+        // whenever the field name matches, even a rejected one. Casting the
+        // rejected array to a string to render it crashed the page with
+        // "Array to string conversion", live-reproduced against a real
+        // TYPO3 v14.3 backend (sobol typo3-14) before this was changed to a
+        // redirect, which starts a fresh GET with no submitted body left to
+        // repopulate from. A direct translateRecordAction() call cannot
+        // reproduce this, it never renders the forward target's view.
+        $response = $this->dispatchModuleAction(
+            'translateRecord',
+            [
+                'parent' => '1',
+                'update' => [1 => ['x']],
+            ],
+        );
+
+        self::assertSame(303, $response->getStatusCode());
         self::assertSame('Absenden', $this->fetchValue(5));
     }
 
@@ -810,6 +870,22 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
 
         return $this->get(Bootstrap::class)
             ->handleBackendRequest($request);
+    }
+
+    /**
+     * Dispatches translateRecordAction() through the real Extbase bootstrap.
+     *
+     * Calling the action directly skips ActionController::processRequest(),
+     * which is the only place that assigns $this->uriBuilder, so the
+     * translated-view redirect this action returns dies before it is built
+     * (same root cause as dispatchModuleAction()'s own docblock, now hit by
+     * every call since issue #129's fix made the redirect unconditional).
+     *
+     * @param array<string, mixed> $queryParams
+     */
+    private function dispatchTranslateRecord(array $queryParams): ResponseInterface
+    {
+        return $this->dispatchModuleAction('translateRecord', $queryParams);
     }
 
     /**
