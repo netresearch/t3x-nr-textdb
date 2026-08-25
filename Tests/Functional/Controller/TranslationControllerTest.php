@@ -42,7 +42,6 @@ use TYPO3\CMS\Core\Imaging\IconFactory;
 use TYPO3\CMS\Core\Localization\LanguageServiceFactory;
 use TYPO3\CMS\Core\Messaging\FlashMessageService;
 use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
-use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Core\Bootstrap;
 use TYPO3\CMS\Extbase\Mvc\ExtbaseRequestParameters;
@@ -667,16 +666,19 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
     }
 
     #[Test]
-    public function translateRecordThroughTheRouteRejectsAReferrerTargetingAnUnregisteredAction(): void
+    public function translateRecordThroughTheRouteRejectsAReferrerTargetingAnUnroutableAction(): void
     {
         // The referrer HMAC scope is installation-global, not bound to this
         // module, so a validly signed __referrer can name any action,
         // including one that does not exist as a method at all, or this
-        // controller's own non-routed errorAction() itself (which would
-        // forward back into errorAction() again, an infinite loop). The
-        // errorAction() override only forwards to an allowlisted, known-
-        // safe action, so a target outside that list gets a plain error
-        // response instead of ever attempting an internal forward.
+        // controller's own non-routed errorAction() itself. Neither is a
+        // registered route under this module (Configuration/Backend/
+        // Modules.php's controllerActions), so uriFor() cannot build a URI
+        // for it (mutation-verified: an actual allowlist of action names
+        // added ahead of this test did not change its outcome, uriFor()'s
+        // own route lookup already rejects it), and errorAction() falls
+        // through to a plain error response instead of ever redirecting
+        // anywhere.
         $response = $this->dispatchTranslateRecord([
             'parent'     => 'abc',
             '__referrer' => $this->buildSignedReferrer('notARegisteredAction'),
@@ -686,14 +688,16 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
     }
 
     #[Test]
-    public function translateRecordThroughTheRouteRejectsAReferrerFromAForeignController(): void
+    public function translateRecordThroughTheRouteRejectsAReferrerFromAnUnroutableForeignController(): void
     {
         // Same installation-global HMAC scope as above, but here the
         // referrer names a real, routable action, just on a different
         // controller (as any other Extbase backend module's own form would
-        // sign). Without the controller-name check, this would pass the
-        // action-name allowlist and forward into a controller this module
-        // was never meant to dispatch to.
+        // sign). "SomeOtherController_list" is not a route this module
+        // registers either, so this hits the exact same uriFor() rejection
+        // as the unroutable-action case above, not a dedicated controller
+        // check (mutation-verified, this test still passes with no
+        // controller-name check present at all).
         $response = $this->dispatchTranslateRecord([
             'parent'     => 'abc',
             '__referrer' => $this->buildSignedReferrer('list', 'SomeOtherController'),
@@ -705,44 +709,24 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
     #[Test]
     public function translateRecordThroughTheRouteRejectsAReferrerFromAForeignExtension(): void
     {
-        // Same as the foreign-controller case above, but with a matching
-        // controller/action name from a different extension entirely
-        // ('Translation'/'list' happens to also be a plausible controller/
-        // action pair elsewhere), so only the extension-name check catches
-        // it.
+        // Same as the two cases above, but with a matching controller/
+        // action pair from a different extension entirely ('Translation'/
+        // 'list' happens to also be a plausible controller/action pair
+        // elsewhere). uriFor()'s backend routing builds its route
+        // identifier from THIS request's own module, not the referrer, and
+        // never consults extensionName at all, so unlike the two cases
+        // above, this one WOULD build a valid URI for this module's own
+        // Translation/list route (silently honouring a foreign referrer
+        // onto our own module, not redirecting to the foreign extension
+        // itself) and 303 there without errorAction()'s explicit
+        // extensionName check (mutation-verified, removing that check
+        // turns this into a 303).
         $response = $this->dispatchTranslateRecord([
             'parent'     => 'abc',
             '__referrer' => $this->buildSignedReferrer('list', 'Translation', 'SomeOtherExtension'),
         ]);
 
         self::assertSame(400, $response->getStatusCode());
-    }
-
-    #[Test]
-    public function knownReferrerActionsMatchesTheModuleConfig(): void
-    {
-        // errorAction()'s KNOWN_REFERRER_ACTIONS allowlist is what makes
-        // its uriFor() call provably safe (a static, parameter-less backend
-        // route for controller "Translation" plus one of these actions
-        // always resolves), but that safety only holds as long as the list
-        // does not drift ahead of what is actually registered. If an
-        // action were ever removed from Configuration/Backend/Modules.php
-        // without also being removed here, the allowlist would let it
-        // through and uriFor() would fail to resolve it after all.
-        // require_once would return true instead of the array here, this
-        // file is already loaded once by TYPO3's own bootstrap by the time
-        // this test runs, and the return value is what this test needs.
-        $backendModulesConfiguration = require ExtensionManagementUtility::extPath( // NOSONAR
-            'nr_textdb',
-            'Configuration/Backend/Modules.php',
-        );
-
-        $reflectionClass = new ReflectionClass(TranslationController::class);
-
-        self::assertSame(
-            $backendModulesConfiguration['netresearch_textdb']['controllerActions'][TranslationController::class],
-            $reflectionClass->getConstant('KNOWN_REFERRER_ACTIONS'),
-        );
     }
 
     #[Test]

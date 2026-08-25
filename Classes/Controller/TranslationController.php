@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace Netresearch\NrTextdb\Controller;
 
 use function array_key_exists;
-use function in_array;
 use function is_int;
 use function is_numeric;
 use function is_string;
@@ -79,20 +78,6 @@ use ZipArchive;
  */
 final class TranslationController extends ActionController
 {
-    /**
-     * The action names errorAction() is allowed to redirect back to. Kept
-     * in sync with Configuration/Backend/Modules.php's controllerActions.
-     *
-     * @var list<string>
-     */
-    private const KNOWN_REFERRER_ACTIONS = [
-        'list',
-        'translated',
-        'translateRecord',
-        'import',
-        'export',
-    ];
-
     private readonly ModuleTemplateFactory $moduleTemplateFactory;
 
     private ModuleTemplate $moduleTemplate;
@@ -299,15 +284,9 @@ final class TranslationController extends ActionController
 
     /**
      * Extbase's default errorAction() forwards back to the referring action
-     * (e.g. "parent=abc" on translateRecord, which fails Extbase's own int
-     * property mapping before translateRecordAction() ever runs) via a
-     * ForwardResponse, which the Extbase Dispatcher intercepts and resolves
-     * internally by re-dispatching to the referring action within this same
-     * request/response. The browser never sees that as a separate
-     * navigation: the address bar and history entry stay on the failed
-     * request, so a page refresh would repeat it. This override redirects
-     * to the referring action instead, so the browser does a real, fresh
-     * GET navigation there.
+     * within the same request/response, so the browser never sees a real
+     * navigation and a refresh would repeat the failed request. This
+     * redirects there instead.
      */
     protected function errorAction(): ResponseInterface
     {
@@ -317,40 +296,17 @@ final class TranslationController extends ActionController
             return parent::errorAction();
         }
 
-        // The referrer's HMAC scope is installation-global (TYPO3\CMS\
-        // Extbase\Security\HashScope), not bound to this extension or
-        // controller, so a validly signed __referrer can name any
-        // controller/action in the whole installation, including this
-        // controller's own non-routed errorAction() itself. Only fall
-        // through to an internal forward for a target this controller can
-        // actually, safely dispatch to, everything else gets a plain error
-        // response instead of risking an unresolvable forward (uncaught
-        // exception) or a forward back into errorAction() (infinite loop).
-        if (
-            ($forwardResponse->getControllerName() !== 'Translation')
-            || ($forwardResponse->getExtensionName() !== 'NrTextdb')
-            || !in_array(
-                $forwardResponse->getActionName(),
-                self::KNOWN_REFERRER_ACTIONS,
-                true,
-            )
-        ) {
+        // The referrer's HMAC scope is installation-global, not bound to
+        // this extension, but uriFor() builds the route from this
+        // request's own module identifier, so a foreign controller/action
+        // can never resolve outside this module's five routes (empty $uri
+        // below). extensionName is the one value backend routing ignores,
+        // so it needs this explicit check.
+        if ($forwardResponse->getExtensionName() !== 'NrTextdb') {
             return $this->htmlResponse($this->getFlattenedValidationErrorMessage())
                 ->withStatus(400);
         }
 
-        // uriFor() silently returns an empty string when it cannot build a
-        // backend route for the given identifier (RouteNotFoundException
-        // swallowed internally), which would redirect to the site base
-        // instead of anywhere useful. In practice this cannot happen for
-        // the now known-safe, allowlisted target above, backend routes are
-        // static per action/controller with no parameters that could make
-        // an otherwise-registered one fail to resolve, this is defense in
-        // depth against that assumption ever changing. On the (expected to
-        // be unreachable) empty case, return the same plain error response
-        // as the allowlist check above rather than falling back to
-        // parent::errorAction(), which would re-forward with the same,
-        // still-unvalidated referrer.
         $uri = $this->uriBuilder->reset()->uriFor(
             $forwardResponse->getActionName(),
             $forwardResponse->getArguments() ?? [],
