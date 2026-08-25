@@ -106,6 +106,12 @@
             <trans-unit id="message.error.import">
                 <source>File name does not match the expected pattern.</source>
             </trans-unit>
+            <trans-unit id="message.translation.rejected">
+                <source>One or more of the submitted translations could not be saved. The record, the target language, or the submitted value was not valid.</source>
+            </trans-unit>
+            <trans-unit id="message.error.translation.request">
+                <source>The submitted request could not be processed.</source>
+            </trans-unit>
         </body>
     </file>
 </xliff>

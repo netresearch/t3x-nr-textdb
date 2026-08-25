@@ -331,8 +331,27 @@ class TranslationController extends ActionController
         /** @var Translation|null $parentTranslation */
         $parentTranslation = $this->translationRepository->findByUid($parent);
 
+        $somethingRejected = false;
+
         if ($parentTranslation instanceof Translation) {
+            // The documented shape (array<int, string>) is not enforced by
+            // Extbase's property mapping at runtime, and a syntactically valid
+            // but unconfigured sys_language_uid would otherwise silently
+            // occupy a slot of the unique key that the module's own
+            // "untranslated" list can never show or reach again (issue #129).
+            $allowedLanguages = $this->translationService->getAllLanguages();
+
             foreach ($new as $language => $value) {
+                if (
+                    !is_int($language)
+                    || !is_string($value)
+                    || !array_key_exists($language, $allowedLanguages)
+                ) {
+                    $somethingRejected = true;
+
+                    continue;
+                }
+
                 $translation = $this->translationService
                     ->createTranslationFromParent(
                         $parentTranslation,
@@ -342,18 +361,43 @@ class TranslationController extends ActionController
 
                 if ($translation instanceof Translation) {
                     $this->translationRepository->add($translation);
+                } else {
+                    $somethingRejected = true;
                 }
             }
         }
 
         foreach ($update as $translationUid => $value) {
-            /** @var Translation $translation */
+            if (!is_int($translationUid) || ($translationUid <= 0) || !is_string($value)) {
+                $somethingRejected = true;
+
+                continue;
+            }
+
+            /** @var Translation|null $translation */
             $translation = $this->translationRepository->findRecordByUid($translationUid);
+
+            if (!$translation instanceof Translation) {
+                $somethingRejected = true;
+
+                continue;
+            }
+
             $translation->setValue($value);
             $this->translationRepository->update($translation);
         }
 
         $this->persistenceManager->persistAll();
+
+        if ($somethingRejected) {
+            $this->addFlashMessageToQueue(
+                'Translation',
+                $this->getLanguageService()->sL(
+                    'LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.translation.rejected'
+                ),
+                AbstractMessage::WARNING
+            );
+        }
 
         return (new ForwardResponse('translated'))
             ->withControllerName('Translation')
@@ -361,6 +405,53 @@ class TranslationController extends ActionController
             ->withArguments([
                 'uid' => $parent,
             ]);
+    }
+
+    /**
+     * Extbase's own default errorAction() forwards back to the referring view
+     * on any argument-mapping failure (e.g. a non-numeric parent), using a
+     * referrer whose HMAC signature is installation-global rather than scoped
+     * to this extension. Overridden to redirect instead, restricted to an
+     * explicit check that the forward still resolves within this module's own
+     * routes, closing a path where a validly-signed referrer copied from any
+     * other Extbase backend module could otherwise trigger an internal
+     * forward into a foreign controller/action (issue #129).
+     *
+     * @return ResponseInterface
+     */
+    protected function errorAction(): ResponseInterface
+    {
+        $forwardResponse = $this->forwardToReferringRequest();
+
+        if (!$forwardResponse instanceof ForwardResponse) {
+            return parent::errorAction();
+        }
+
+        if ($forwardResponse->getExtensionName() !== 'NrTextdb') {
+            return $this->htmlResponse($this->getFlattenedValidationErrorMessage())
+                ->withStatus(400);
+        }
+
+        $uri = $this->uriBuilder->reset()->uriFor(
+            $forwardResponse->getActionName(),
+            $forwardResponse->getArguments() ?? [],
+            $forwardResponse->getControllerName(),
+            $forwardResponse->getExtensionName(),
+        );
+
+        if ($uri === '') {
+            return $this->htmlResponse($this->getFlattenedValidationErrorMessage())
+                ->withStatus(400);
+        }
+
+        $this->addFlashMessageToQueue(
+            'Translation',
+            $this->getLanguageService()->sL(
+                'LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.error.translation.request'
+            )
+        );
+
+        return $this->redirectToUri($uri);
     }
 
     /**
