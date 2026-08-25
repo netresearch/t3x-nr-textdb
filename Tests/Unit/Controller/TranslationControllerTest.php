@@ -12,6 +12,10 @@ declare(strict_types=1);
 namespace Netresearch\NrTextdb\Tests\Unit\Controller;
 
 use Netresearch\NrTextdb\Controller\TranslationController;
+use Netresearch\NrTextdb\Domain\Model\Component;
+use Netresearch\NrTextdb\Domain\Model\Environment;
+use Netresearch\NrTextdb\Domain\Model\Translation;
+use Netresearch\NrTextdb\Domain\Model\Type;
 use Netresearch\NrTextdb\Domain\Repository\ComponentRepository;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
 use Netresearch\NrTextdb\Domain\Repository\TypeRepository;
@@ -19,6 +23,7 @@ use Netresearch\NrTextdb\Service\TranslationService;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionProperty;
@@ -26,13 +31,17 @@ use RuntimeException;
 use Throwable;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Http\ServerRequest;
+use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Localization\Locale;
 use TYPO3\CMS\Core\Pagination\SimplePagination;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
+use TYPO3\CMS\Extbase\Http\ForwardResponse;
 use TYPO3\CMS\Extbase\Mvc\ExtbaseRequestParameters;
 use TYPO3\CMS\Extbase\Mvc\Request as ExtbaseRequest;
+use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
 use TYPO3\CMS\Extbase\Pagination\QueryResultPaginator;
+use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
 use TYPO3\CMS\Extbase\Persistence\QueryInterface;
 use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
@@ -440,14 +449,14 @@ final class TranslationControllerTest extends UnitTestCase
         );
     }
 
-    private function setControllerProperty(string $name, object $value): void
+    private function setControllerProperty(string $name, object $value, ?TranslationController $controller = null): void
     {
         $property = new ReflectionProperty(
             TranslationController::class,
             $name,
         );
         $property->setValue(
-            $this->controller,
+            $controller ?? $this->controller,
             $value,
         );
     }
@@ -937,6 +946,152 @@ final class TranslationControllerTest extends UnitTestCase
             $queryResult,
             $settings ?? ['enablePagination' => true, 'itemsPerPage' => $itemsPerPage],
         );
+    }
+
+    #[Test]
+    public function errorActionRejectsAForwardToAForeignExtension(): void
+    {
+        // The referrer's HMAC scope is installation-global, not bound to this
+        // extension. Before this fix, a crafted/tampered validation-error
+        // forward naming a foreign extension reached uriFor() unchecked; this
+        // is the check that now rejects it before that call.
+        $controller = $this->partialMockControllerForwarding(
+            (new ForwardResponse('someAction'))->withExtensionName('SomeOtherExtension'),
+        );
+
+        $response = $controller->errorAction();
+
+        self::assertSame(400, $response->getStatusCode());
+    }
+
+    #[Test]
+    public function errorActionRejectsAForwardThatResolvesToNoRoute(): void
+    {
+        // A forward naming an action/controller pair that does not resolve to
+        // one of this module's own routes leaves uriFor() with nothing to
+        // build a target link, uriFor() itself is the one thing this Unit
+        // test cannot exercise without a container, its own stub reproduces
+        // the "no route" outcome directly.
+        $controller = $this->partialMockControllerForwarding(
+            (new ForwardResponse('unroutableAction'))->withExtensionName('NrTextdb'),
+        );
+
+        $uriBuilder = self::createStub(UriBuilder::class);
+        $uriBuilder->method('reset')->willReturnSelf();
+        $uriBuilder->method('uriFor')->willReturn('');
+        $this->setControllerProperty('uriBuilder', $uriBuilder, $controller);
+
+        $response = $controller->errorAction();
+
+        self::assertSame(400, $response->getStatusCode());
+    }
+
+    /**
+     * @return TranslationController&MockObject
+     */
+    private function partialMockControllerForwarding(ForwardResponse $forwardResponse): TranslationController
+    {
+        $controller = $this->getMockBuilder(TranslationController::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['forwardToReferringRequest'])
+            ->getMock();
+        $controller->method('forwardToReferringRequest')
+            ->willReturn($forwardResponse);
+
+        return $controller;
+    }
+
+    #[Test]
+    public function translateRecordActionRejectsAndAcceptsNewEntriesByValidity(): void
+    {
+        // new[] keys/values arrive as raw, attacker-reachable POST data, not
+        // as anything Extbase's property mapping validates against the
+        // documented "language uid => string" shape. Each rejected entry
+        // here reproduces a distinct way the pre-fix code trusted that shape:
+        // a non-int key, a non-string value, and a language uid unreachable
+        // through translatedAction()'s own "untranslated" list.
+        $parentTranslation = new Translation();
+        $parentTranslation->setEnvironment(new Environment());
+        $parentTranslation->setComponent(new Component());
+        $parentTranslation->setType(new Type());
+
+        $translationRepository = self::createMock(TranslationRepository::class);
+        $translationRepository->method('findByUid')->willReturn($parentTranslation);
+        $translationRepository->expects(self::once())
+            ->method('add');
+        $this->setControllerProperty('translationRepository', $translationRepository);
+
+        $translationService = self::createStub(TranslationService::class);
+        $translationService->method('getAllLanguages')->willReturn([0 => new SiteLanguage(0, 'en', new Uri(), []), 1 => new SiteLanguage(1, 'de', new Uri(), [])]);
+        $translationService->method('createTranslationFromParent')->willReturn(new Translation());
+        $this->setControllerProperty('translationService', $translationService);
+
+        $this->setControllerProperty('persistenceManager', self::createStub(PersistenceManager::class));
+
+        try {
+            $this->controller->translateRecordAction(1, [
+                'not-an-int'  => 'value for a string key',
+                2             => 999,
+                999           => 'unconfigured language id',
+                1             => '   ',
+                0             => 'a valid, accepted value',
+            ]);
+        } catch (Throwable) {
+            // addFlashMessageToQueue() calls LocalizationUtility::translate(),
+            // which needs a booted container this Unit test does not provide.
+            // By this point add() has already run for every entry the
+            // validation let through, which is what this test is about.
+        }
+    }
+
+    #[Test]
+    public function translateRecordActionRejectsAndAcceptsUpdateEntriesByValidity(): void
+    {
+        $translation = new Translation();
+
+        $translationRepository = self::createMock(TranslationRepository::class);
+        $translationRepository->method('findByUid')->willReturn($translation);
+        $translationRepository->expects(self::once())
+            ->method('update')
+            ->with(self::callback(static fn (Translation $updated): bool => $updated->getValue() === 'trimmed'));
+        $this->setControllerProperty('translationRepository', $translationRepository);
+
+        $this->setControllerProperty('persistenceManager', self::createStub(PersistenceManager::class));
+
+        try {
+            $this->controller->translateRecordAction(0, [], [
+                'not-an-int' => 'value for a string key',
+                -1           => 'a negative uid',
+                5            => ['not', 'a', 'string'],
+                7            => '  trimmed  ',
+            ]);
+        } catch (Throwable) {
+            // See translateRecordActionRejectsAndAcceptsNewEntriesByValidity().
+        }
+    }
+
+    #[Test]
+    public function translateRecordActionClearsPersistenceStateOnAPersistenceFailure(): void
+    {
+        // Without this guard a persistence error (e.g. a collision with the
+        // unique key on the translation table) escaped the module as a raw
+        // 500 and the editor lost the entered text without any feedback.
+        $translationRepository = self::createStub(TranslationRepository::class);
+        $translationRepository->method('findByUid')->willReturn(null);
+        $this->setControllerProperty('translationRepository', $translationRepository);
+
+        $persistenceManager = self::createMock(PersistenceManager::class);
+        $persistenceManager->method('persistAll')
+            ->willThrowException(new RuntimeException('Duplicate entry'));
+        $persistenceManager->expects(self::once())
+            ->method('clearState');
+        $this->setControllerProperty('persistenceManager', $persistenceManager);
+
+        try {
+            $this->controller->translateRecordAction(1, [], [1 => 'value']);
+        } catch (Throwable) {
+            // See translateRecordActionRejectsAndAcceptsNewEntriesByValidity().
+        }
     }
 }
 
