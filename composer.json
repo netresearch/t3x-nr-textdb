@@ -85,6 +85,7 @@
             "a9f/fractor-extension-installer": true,
             "captainhook/hook-installer": true,
             "dg/bypass-finals": true,
+            "ergebnis/composer-normalize": true,
             "infection/extension-installer": true,
             "phpstan/extension-installer": true,
             "typo3/class-alias-loader": true,
