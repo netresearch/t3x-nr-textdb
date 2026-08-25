@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Netresearch\NrTextdb\Tests\Unit\Controller;
 
 use Netresearch\NrTextdb\Controller\TranslationController;
+use Netresearch\NrTextdb\Domain\Model\Translation;
 use Netresearch\NrTextdb\Domain\Repository\ComponentRepository;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
 use Netresearch\NrTextdb\Domain\Repository\TypeRepository;
@@ -24,16 +25,23 @@ use ReflectionMethod;
 use ReflectionProperty;
 use RuntimeException;
 use Throwable;
+use TypeError;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
+use TYPO3\CMS\Core\Http\ResponseFactory;
 use TYPO3\CMS\Core\Http\ServerRequest;
+use TYPO3\CMS\Core\Http\StreamFactory;
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Pagination\SimplePagination;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
+use TYPO3\CMS\Extbase\Http\ForwardResponse;
+use TYPO3\CMS\Extbase\Mvc\Controller\Arguments;
 use TYPO3\CMS\Extbase\Mvc\ExtbaseRequestParameters;
 use TYPO3\CMS\Extbase\Mvc\Request as ExtbaseRequest;
 use TYPO3\CMS\Extbase\Pagination\QueryResultPaginator;
+use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
 use TYPO3\CMS\Extbase\Persistence\QueryInterface;
 use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
+use TYPO3\CMS\Extbase\Security\Cryptography\HashService;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 use function glob;
@@ -75,6 +83,19 @@ use function unserialize;
  * plain array read, so testing them through reflection on a real controller
  * instance is a faithful, side-effect-free reproduction of the actual code
  * path, not a mock of the behaviour under test.
+ *
+ * The third group covers issue #129: translateRecordAction() trusted the
+ * array keys and values of new[]/update[] coming straight from the request.
+ * A non-int update[] key reached findRecordByUid('foo') and raised an
+ * uncaught TypeError under strict_types, an array value raised one from
+ * setValue(), and a syntactically valid but unconfigured sys_language_uid
+ * (new[999]=Text) was persisted regardless, permanently occupying a slot of
+ * the unique key for a translation the module's own "untranslated" list
+ * could never show again. errorAction() is covered too: Extbase's own
+ * default implementation forwards back to the referring view using a
+ * referrer whose HMAC signature is installation-global rather than scoped to
+ * this extension, so a validly-signed referrer copied from any other Extbase
+ * backend module could target a foreign controller/action.
  *
  * @author Rico Sonntag <rico.sonntag@netresearch.de>
  */
@@ -422,6 +443,202 @@ final class TranslationControllerTest extends UnitTestCase
             $capturedQueryArguments,
             'listAction() must use the persisted filter unmodified when no request arguments override it.',
         );
+    }
+
+    #[Test]
+    public function translateRecordActionRejectsANonIntegerUpdateKeyWithoutCrashing(): void
+    {
+        // Case 1 of issue #129: update['foo']=x used to reach
+        // findRecordByUid('foo') and raise an uncaught TypeError under
+        // strict_types before the key was ever validated.
+        $translationRepository = self::createMock(TranslationRepository::class);
+        $translationRepository->method('findByUid')->willReturn(null);
+        $translationRepository->expects(self::never())->method('findRecordByUid');
+        $translationRepository->expects(self::never())->method('update');
+
+        $this->wireTranslateRecordActionDependencies($translationRepository);
+
+        try {
+            $this->controller->translateRecordAction(1, [], ['foo' => 'x']);
+        } catch (Throwable $throwable) {
+            self::assertNotInstanceOf(
+                TypeError::class,
+                $throwable,
+                'A non-int update[] key must be rejected before the lookup, not crash it.',
+            );
+        }
+    }
+
+    #[Test]
+    public function translateRecordActionRejectsAnArrayUpdateValueWithoutCrashing(): void
+    {
+        // Case 2 of issue #129: update[1][]=x used to reach setValue() with
+        // an array and raise an uncaught TypeError under strict_types.
+        $translationRepository = self::createMock(TranslationRepository::class);
+        $translationRepository->method('findByUid')->willReturn(null);
+        $translationRepository->expects(self::never())->method('findRecordByUid');
+        $translationRepository->expects(self::never())->method('update');
+
+        $this->wireTranslateRecordActionDependencies($translationRepository);
+
+        try {
+            $this->controller->translateRecordAction(1, [], [1 => ['x']]);
+        } catch (Throwable $throwable) {
+            self::assertNotInstanceOf(
+                TypeError::class,
+                $throwable,
+                'An array update[] value must be rejected before setValue(), not crash it.',
+            );
+        }
+    }
+
+    #[Test]
+    public function translateRecordActionRejectsAWellFormedButNonExistentUpdateUid(): void
+    {
+        // A record deleted between page load and submit, or a tampered but
+        // well-formed uid: findRecordByUid() returns null, and the pre-fix
+        // code called setValue() on it unconditionally.
+        $translationRepository = self::createMock(TranslationRepository::class);
+        $translationRepository->method('findByUid')->willReturn(null);
+        $translationRepository->method('findRecordByUid')->willReturn(null);
+        $translationRepository->expects(self::never())->method('update');
+
+        $this->wireTranslateRecordActionDependencies($translationRepository);
+
+        try {
+            $this->controller->translateRecordAction(1, [], [1 => 'x']);
+        } catch (Throwable) {
+        }
+    }
+
+    #[Test]
+    public function translateRecordActionRejectsAnUnconfiguredLanguageId(): void
+    {
+        // Case 3 of issue #129: new[999]=Text was persisted regardless of
+        // whether language 999 is configured on any site, permanently
+        // occupying a slot of the unique key.
+        $parentTranslation = self::createStub(Translation::class);
+
+        $translationRepository = self::createMock(TranslationRepository::class);
+        $translationRepository->method('findByUid')->willReturn($parentTranslation);
+        $translationRepository->expects(self::never())->method('add');
+
+        $translationService = self::createMock(TranslationService::class);
+        $translationService->method('getAllLanguages')->willReturn([0 => self::createStub(SiteLanguage::class)]);
+        $translationService->expects(self::never())->method('createTranslationFromParent');
+
+        $this->wireTranslateRecordActionDependencies($translationRepository, $translationService);
+
+        try {
+            $this->controller->translateRecordAction(1, [999 => 'Text'], []);
+        } catch (Throwable) {
+        }
+    }
+
+    #[Test]
+    public function translateRecordActionAcceptsAWellFormedSubmission(): void
+    {
+        // The guard above must not reject valid input: a configured language
+        // id with a string value still has to reach createTranslationFromParent().
+        $parentTranslation = self::createStub(Translation::class);
+        $newTranslation    = self::createStub(Translation::class);
+
+        $translationRepository = self::createMock(TranslationRepository::class);
+        $translationRepository->method('findByUid')->willReturn($parentTranslation);
+        $translationRepository->expects(self::once())->method('add')->with($newTranslation);
+
+        $translationService = self::createMock(TranslationService::class);
+        $translationService->method('getAllLanguages')->willReturn([1 => self::createStub(SiteLanguage::class)]);
+        $translationService->expects(self::once())
+            ->method('createTranslationFromParent')
+            ->with($parentTranslation, 1, 'Send it')
+            ->willReturn($newTranslation);
+
+        $this->wireTranslateRecordActionDependencies($translationRepository, $translationService);
+
+        try {
+            $this->controller->translateRecordAction(1, [1 => 'Send it'], []);
+        } catch (Throwable) {
+        }
+    }
+
+    /**
+     * Wires the repositories/services translateRecordAction() needs, stubbed
+     * just enough to observe whether the malformed-input guard let a call
+     * through. persistAll() and addFlashMessageToQueue() run unconditionally
+     * at the end of the action and touch a real backend user session this
+     * reflection-constructed controller never sets up, callers wrap the
+     * action call in try/catch(Throwable) and assert the repository/service
+     * expectations above, which are already satisfied by the time that
+     * happens.
+     */
+    private function wireTranslateRecordActionDependencies(
+        TranslationRepository $translationRepository,
+        ?TranslationService $translationService = null,
+    ): void {
+        // addFlashMessageToQueue() registers a real FlashMessageService
+        // singleton via GeneralUtility::makeInstance(), which UnitTestCase's
+        // tearDown() integrity check flags unless the test declares it expects
+        // that framework state change.
+        $this->resetSingletonInstances = true;
+
+        $GLOBALS['LANG'] = self::createStub(LanguageService::class);
+
+        $this->setControllerProperty('translationRepository', $translationRepository);
+        $this->setControllerProperty('persistenceManager', self::createStub(PersistenceManager::class));
+        $this->setControllerProperty(
+            'translationService',
+            $translationService ?? self::createStub(TranslationService::class),
+        );
+    }
+
+    #[Test]
+    public function errorActionBlocksAForwardIntoAForeignExtension(): void
+    {
+        // The referrer's HMAC signature is installation-global, not scoped to
+        // this extension, so a validly-signed referrer copied from any other
+        // Extbase backend module must still be rejected here (issue #129).
+        // GeneralUtility::hmac() (which HashService delegates to) needs a
+        // non-empty encryption key, UnitTestCase does not seed one.
+        $GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey'] = str_repeat('a', 96);
+
+        $hashService = new HashService();
+
+        $referrerRequest = $hashService->appendHmac(
+            json_encode([
+                '@extension'  => 'SomeOtherExtension',
+                '@controller' => 'Foreign',
+                '@action'     => 'index',
+            ]),
+        );
+
+        $this->wireControllerRequest([
+            '__referrer' => [
+                '@request' => $referrerRequest,
+            ],
+        ]);
+        $this->setControllerProperty('hashService', $hashService);
+        // forwardToReferringRequest() attaches $this->arguments->validate() to
+        // the built ForwardResponse; $this->arguments is only ever populated
+        // by initializeActionMethodArguments(), which a Unit test does not run.
+        $this->setControllerProperty('arguments', new Arguments());
+        $this->wireErrorActionResponseFactories();
+
+        $response = $this->invokePrivateMethod('errorAction');
+
+        self::assertSame(400, $response->getStatusCode());
+    }
+
+    /**
+     * Both errorAction() branches under test fall through to htmlResponse(),
+     * which needs the PSR-17 factories a real Bootstrap-dispatched controller
+     * injects via injectResponseFactory()/injectStreamFactory(), neither of
+     * which runs on this reflection-constructed instance.
+     */
+    private function wireErrorActionResponseFactories(): void
+    {
+        $this->setControllerProperty('responseFactory', new ResponseFactory());
+        $this->setControllerProperty('streamFactory', new StreamFactory());
     }
 
     private function setControllerProperty(string $name, object $value): void
