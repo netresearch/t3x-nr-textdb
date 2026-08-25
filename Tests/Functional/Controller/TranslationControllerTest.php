@@ -227,7 +227,7 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
     #[Test]
     public function translateRecordSurfacesAPersistenceFailureAsFlashMessage(): void
     {
-        $persistenceManager = $this->createMock(PersistenceManagerInterface::class);
+        $persistenceManager = self::createStub(PersistenceManagerInterface::class);
         $persistenceManager
             ->method('persistAll')
             ->willThrowException(new RuntimeException('Duplicate entry'));
