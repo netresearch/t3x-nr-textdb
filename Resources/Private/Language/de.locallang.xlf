@@ -175,9 +175,21 @@
         <source>Missing value in key: %s</source>
         <target state="final">Fehlender Wert in Schlüssel: %s</target>
       </trans-unit>
+      <trans-unit id="message.translation.saved">
+        <source>The translation was saved.</source>
+        <target state="final">Die Übersetzung wurde gespeichert.</target>
+      </trans-unit>
       <trans-unit id="message.translation.rejected">
         <source>One or more of the submitted translations could not be saved. The record, the target language, or the submitted value was not valid.</source>
         <target state="final">Eine oder mehrere der übermittelten Übersetzungen konnten nicht gespeichert werden. Der Datensatz, die Zielsprache oder der übermittelte Wert war ungültig.</target>
+      </trans-unit>
+      <trans-unit id="message.translation.save.title" translate="no">
+        <source>TextDb</source>
+        <target state="needs-translation">TextDb</target>
+      </trans-unit>
+      <trans-unit id="message.error.translation.save">
+        <source>The translation could not be saved: %s</source>
+        <target state="needs-translation">The translation could not be saved: %s</target>
       </trans-unit>
       <trans-unit id="message.error.translation.request">
         <source>The submitted request could not be processed.</source>
