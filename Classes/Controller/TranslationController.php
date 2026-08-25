@@ -285,18 +285,9 @@ final class TranslationController extends ActionController
      */
     protected function errorAction(): ResponseInterface
     {
-        // saschaegerer/phpstan-typo3 3.0.0 (the version this TYPO3 13 line's
-        // composer.json resolves) registers forwardToReferringRequest() as an
-        // early-terminating call, so PHPStan infers everything below as dead
-        // code. TYPO3 v13.4's actual implementation
-        // (typo3/cms-extbase Classes/Mvc/Controller/ActionController.php)
-        // follows this normal ?ResponseInterface return path whenever the
-        // request carries no __referrer, or a validly HMAC-signed one; a
-        // malformed or tampered __referrer instead throws
-        // InvalidArgumentNameException or InvalidHashStringException, same
-        // as on TYPO3 v14, and this override does not add handling for that
-        // pre-existing case. The resulting dead-code false positive on the
-        // return path is ignored in Build/phpstan.neon.
+        // False positive from a saschaegerer/phpstan-typo3 3.0.0 quirk; see
+        // the ignoreErrors entry in Build/phpstan.neon for the full
+        // explanation.
         $forwardResponse = $this->forwardToReferringRequest();
 
         if (!$forwardResponse instanceof ForwardResponse) {
