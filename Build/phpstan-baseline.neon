@@ -1,19 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			# False positive: saschaegerer/phpstan-typo3 3.0.0 registers
-			# forwardToReferringRequest() as an early-terminating call, so
-			# PHPStan treats the code after it as dead. TYPO3 v13.4's actual
-			# implementation does follow this normal ?ResponseInterface
-			# return path (verified against the installed vendor source), it
-			# only throws on a malformed/tampered __referrer, a separate,
-			# pre-existing case this override does not add handling for.
-			message: '#^Unreachable statement - code above always terminates\.$#'
-			identifier: deadCode.unreachable
-			count: 1
-			path: ../Classes/Controller/TranslationController.php
-
-		-
 			message: '#^Instanceof between Netresearch\\NrTextdb\\Domain\\Model\\Translation and Netresearch\\NrTextdb\\Domain\\Model\\Translation will always evaluate to true\.$#'
 			identifier: instanceof.alwaysTrue
 			count: 1

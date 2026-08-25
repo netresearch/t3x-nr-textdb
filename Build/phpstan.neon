@@ -18,6 +18,29 @@ parameters:
         - %currentWorkingDirectory%/Configuration/Backend/Modules.php
         - %currentWorkingDirectory%/Tests/Functional/*
 
+    # This entry lives here, hand-maintained, rather than in the auto-generated
+    # Build/phpstan-baseline.neon: `composer ci:test:php:phpstan:baseline`
+    # regenerates that file from a real run's findings and would silently
+    # discard this comment (and the entry itself, once the underlying
+    # forwardToReferringRequest() call it targets stops producing a real
+    # finding for some unrelated reason, at which point this becomes dead
+    # config to remove instead of a stale-but-still-firing baseline line).
+    #
+    # False positive: saschaegerer/phpstan-typo3 3.0.0 registers
+    # forwardToReferringRequest() as an early-terminating call, so PHPStan
+    # treats the code after it as dead. TYPO3 v13.4's actual implementation
+    # does follow this normal ?ResponseInterface return path (verified
+    # against the installed vendor source), it only throws on a
+    # malformed/tampered __referrer, a separate, pre-existing case
+    # Classes/Controller/TranslationController.php's errorAction() override
+    # does not add handling for.
+    ignoreErrors:
+        -
+            message: '#^Unreachable statement - code above always terminates\.$#'
+            identifier: deadCode.unreachable
+            count: 1
+            path: %currentWorkingDirectory%/Classes/Controller/TranslationController.php
+
     # ergebnis/phpstan-rules is auto-registered by phpstan/extension-installer
     # (transitively required via netresearch/typo3-ci-workflows). Its default
     # ruleset (allRules: true) forbids extending TYPO3/Symfony/PHPUnit framework

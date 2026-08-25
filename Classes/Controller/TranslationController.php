@@ -296,7 +296,7 @@ final class TranslationController extends ActionController
         // InvalidArgumentNameException or InvalidHashStringException, same
         // as on TYPO3 v14, and this override does not add handling for that
         // pre-existing case. The resulting dead-code false positive on the
-        // return path is baselined in Build/phpstan-baseline.neon.
+        // return path is ignored in Build/phpstan.neon.
         $forwardResponse = $this->forwardToReferringRequest();
 
         if (!$forwardResponse instanceof ForwardResponse) {
@@ -368,7 +368,6 @@ final class TranslationController extends ActionController
             foreach ($new as $language => $value) {
                 if (
                     !is_int($language)
-                    || ($language < -1)
                     || !is_string($value)
                     || !array_key_exists($language, $allowedLanguages)
                 ) {
