@@ -24,6 +24,12 @@ coverage/
 .php-cs-fixer.cache
 .phplint.cache
 
+# On at least one real build environment, `composer install` reproducibly
+# leaves a top-level var/ at the extension root (live-verified 25.08.2026).
+# The triggering composer-time code path has not been identified, ignoring
+# it defensively until isolated.
+/var/
+
 # DDEV
 .ddev/.homeadditions
 .ddev/.ddev-docker-compose-full.yaml
