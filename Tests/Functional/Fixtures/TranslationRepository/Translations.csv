@@ -11,3 +11,4 @@
 ,9,1,0,0,0,0,1,0,8,1,1,1,"deleted_entry","Should Not Appear"
 ,10,1,0,0,0,0,0,1,9,1,1,1,"hidden_entry","Hidden Entry"
 ,11,1,0,0,0,0,0,0,10,2,1,1,"submit","Staging Submit"
+,12,1,0,0,0,0,0,0,11,0,0,0,"orphan_test","Orphan"

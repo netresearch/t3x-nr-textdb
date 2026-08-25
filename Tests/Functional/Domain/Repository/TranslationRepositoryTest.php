@@ -85,12 +85,12 @@ final class TranslationRepositoryTest extends AbstractFunctionalTestCase
         $result = $this->translationRepository
             ->findAllByComponentTypePlaceholderValueAndLanguage();
 
-        // Fixture contains 11 rows; uid 9 is deleted (still returned because
+        // Fixture contains 12 rows. Uid 9 is deleted (still returned because
         // ignoreEnableFields=true is set inside the method), uid 10 is hidden
         // (same reason). The method does NOT add any where-clause when all
         // parameters keep their defaults, so all non-deleted-via-TCA rows come back.
         // Extbase default query respects the "deleted" flag even with ignoreEnableFields=true
-        // (deleted is a hard exclusion). So uid 9 (deleted=1) is excluded → 10 rows.
+        // (deleted is a hard exclusion). So uid 9 (deleted=1) is excluded → 11 rows.
         self::assertGreaterThanOrEqual(1, $result->count());
     }
 
