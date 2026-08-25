@@ -31,7 +31,6 @@ use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Configuration\SiteConfiguration;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Core\SystemEnvironmentBuilder;
-use TYPO3\CMS\Core\Crypto\HashAlgo;
 use TYPO3\CMS\Core\Crypto\HashService;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Http\NormalizedParams;
@@ -1208,7 +1207,6 @@ final class TranslationControllerTest extends FunctionalTestCase
             '@request' => $this->get(HashService::class)->appendHmac(
                 $request,
                 HashScope::ReferringRequest->prefix(),
-                HashAlgo::SHA3_256,
             ),
         ];
     }
