@@ -366,8 +366,17 @@ final class TranslationController extends ActionController
             $allowedLanguages = $this->translationService->getAllLanguages();
 
             foreach ($new as $language => $value) {
+                // The array_key_exists() check below already rejects any
+                // $language that TYPO3\CMS\Core\Site\Entity\Site::
+                // getAllLanguages() didn't configure, this explicit
+                // "$language < -1" is redundant at runtime. It narrows
+                // $language to int<-1, max> for PHPStan, which
+                // saveNewTranslation() below declares as its parameter type
+                // and which PHPStan does not otherwise infer from
+                // array_key_exists() against a site's language array.
                 if (
                     !is_int($language)
+                    || ($language < -1)
                     || !is_string($value)
                     || !array_key_exists($language, $allowedLanguages)
                 ) {

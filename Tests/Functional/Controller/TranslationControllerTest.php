@@ -1254,10 +1254,10 @@ final class TranslationControllerTest extends FunctionalTestCase
 
     /**
      * Returns the texts of all queued flash messages of the given severity.
-     * Flushes the whole queue, so a second call (of this or any of the three
-     * severity-specific helpers above) returns an empty result. Call at most
-     * once per test, use flashMessagesGroupedBySeverity() directly if more
-     * than one severity needs checking.
+     * Flushes the whole queue, so a second call (of this or errorFlashMessages())
+     * returns an empty result. Call at most once per test, use
+     * flashMessagesGroupedBySeverity() directly if more than one severity
+     * needs checking.
      *
      * @return string[]
      */
@@ -1268,8 +1268,8 @@ final class TranslationControllerTest extends FunctionalTestCase
 
     /**
      * Returns the texts of all queued flash messages, grouped by severity
-     * name. Flushes the whole queue, so call this (or one of the
-     * severity-specific helpers above) at most once per test.
+     * name. Flushes the whole queue, so call this (or errorFlashMessages() or
+     * flashMessagesOfSeverity() above) at most once per test.
      *
      * @return array<string, string[]>
      */
