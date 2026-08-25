@@ -175,6 +175,26 @@
         <source>Missing value in key: %s</source>
         <target state="final">Lipsește valoarea în cheie: %s</target>
       </trans-unit>
+      <trans-unit id="message.translation.saved">
+        <source>The translation was saved.</source>
+        <target state="needs-translation">The translation was saved.</target>
+      </trans-unit>
+      <trans-unit id="message.translation.rejected">
+        <source>One or more of the submitted translations could not be saved. The record, the target language, or the submitted value was not valid.</source>
+        <target state="needs-translation">One or more of the submitted translations could not be saved. The record, the target language, or the submitted value was not valid.</target>
+      </trans-unit>
+      <trans-unit id="message.translation.save.title" translate="no">
+        <source>TextDb</source>
+        <target state="needs-translation">TextDb</target>
+      </trans-unit>
+      <trans-unit id="message.error.translation.save">
+        <source>The translation could not be saved: %s</source>
+        <target state="needs-translation">The translation could not be saved: %s</target>
+      </trans-unit>
+      <trans-unit id="message.error.translation.request">
+        <source>The submitted request could not be processed.</source>
+        <target state="needs-translation">The submitted request could not be processed.</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>
