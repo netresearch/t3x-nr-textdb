@@ -23,14 +23,18 @@ use Netresearch\NrTextdb\Service\TranslationService;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\MockObject\MockObject;
+use Psr\Http\Message\ResponseInterface;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionProperty;
 use RuntimeException;
 use Throwable;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
+use TYPO3\CMS\Core\Http\ResponseFactory;
 use TYPO3\CMS\Core\Http\ServerRequest;
+use TYPO3\CMS\Core\Http\StreamFactory;
 use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Localization\Locale;
@@ -89,6 +93,10 @@ use function unserialize;
  * path, not a mock of the behaviour under test.
  */
 #[CoversClass(TranslationController::class)]
+#[UsesClass(Translation::class)]
+#[UsesClass(Environment::class)]
+#[UsesClass(Component::class)]
+#[UsesClass(Type::class)]
 final class TranslationControllerTest extends UnitTestCase
 {
     private TranslationController $controller;
@@ -959,7 +967,7 @@ final class TranslationControllerTest extends UnitTestCase
             (new ForwardResponse('someAction'))->withExtensionName('SomeOtherExtension'),
         );
 
-        $response = $controller->errorAction();
+        $response = $this->invokeErrorAction($controller);
 
         self::assertSame(400, $response->getStatusCode());
     }
@@ -981,9 +989,19 @@ final class TranslationControllerTest extends UnitTestCase
         $uriBuilder->method('uriFor')->willReturn('');
         $this->setControllerProperty('uriBuilder', $uriBuilder, $controller);
 
-        $response = $controller->errorAction();
+        $response = $this->invokeErrorAction($controller);
 
         self::assertSame(400, $response->getStatusCode());
+    }
+
+    private function invokeErrorAction(TranslationController $controller): ResponseInterface
+    {
+        $method = new ReflectionMethod(
+            TranslationController::class,
+            'errorAction',
+        );
+
+        return $method->invoke($controller);
     }
 
     /**
@@ -998,12 +1016,25 @@ final class TranslationControllerTest extends UnitTestCase
         $controller->method('forwardToReferringRequest')
             ->willReturn($forwardResponse);
 
+        // htmlResponse(), reached on both the foreign-extension and the
+        // empty-uri branch, needs these two PSR-17 factories, only ever
+        // assigned via ActionController's inject*() setters, which
+        // disableOriginalConstructor() and the reflection-constructed
+        // $this->controller both skip.
+        $this->setControllerProperty('responseFactory', new ResponseFactory(), $controller);
+        $this->setControllerProperty('streamFactory', new StreamFactory(), $controller);
+
         return $controller;
     }
 
     #[Test]
     public function translateRecordActionRejectsAndAcceptsNewEntriesByValidity(): void
     {
+        // addFlashMessageToQueue() reaches LocalizationUtility::translate(),
+        // which registers a Locales singleton as a side effect before this
+        // Unit test's missing container makes it fail past that point.
+        $this->resetSingletonInstances = true;
+
         // new[] keys/values arrive as raw, attacker-reachable POST data, not
         // as anything Extbase's property mapping validates against the
         // documented "language uid => string" shape. Each rejected entry
@@ -1030,11 +1061,11 @@ final class TranslationControllerTest extends UnitTestCase
 
         try {
             $this->controller->translateRecordAction(1, [
-                'not-an-int'  => 'value for a string key',
-                2             => 999,
-                999           => 'unconfigured language id',
-                1             => '   ',
-                0             => 'a valid, accepted value',
+                'not-an-int' => 'value for a string key',
+                2            => 999,
+                999          => 'unconfigured language id',
+                1            => '   ',
+                0            => 'a valid, accepted value',
             ]);
         } catch (Throwable) {
             // addFlashMessageToQueue() calls LocalizationUtility::translate(),
@@ -1047,6 +1078,8 @@ final class TranslationControllerTest extends UnitTestCase
     #[Test]
     public function translateRecordActionRejectsAndAcceptsUpdateEntriesByValidity(): void
     {
+        $this->resetSingletonInstances = true;
+
         $translation = new Translation();
 
         $translationRepository = self::createMock(TranslationRepository::class);
@@ -1055,6 +1088,13 @@ final class TranslationControllerTest extends UnitTestCase
             ->method('update')
             ->with(self::callback(static fn (Translation $updated): bool => $updated->getValue() === 'trimmed'));
         $this->setControllerProperty('translationRepository', $translationRepository);
+
+        // $parent (0) resolves through the same findByUid() stub as the
+        // update-loop lookups, entering the new[] branch that reads
+        // getAllLanguages() unconditionally, even though $new is empty here.
+        $translationService = self::createStub(TranslationService::class);
+        $translationService->method('getAllLanguages')->willReturn([]);
+        $this->setControllerProperty('translationService', $translationService);
 
         $this->setControllerProperty('persistenceManager', self::createStub(PersistenceManager::class));
 
@@ -1073,6 +1113,8 @@ final class TranslationControllerTest extends UnitTestCase
     #[Test]
     public function translateRecordActionClearsPersistenceStateOnAPersistenceFailure(): void
     {
+        $this->resetSingletonInstances = true;
+
         // Without this guard a persistence error (e.g. a collision with the
         // unique key on the translation table) escaped the module as a raw
         // 500 and the editor lost the entered text without any feedback.
