@@ -1,6 +1,16 @@
 parameters:
 	ignoreErrors:
 		-
+			# False positive: saschaegerer/phpstan-typo3 3.0.0 registers
+			# forwardToReferringRequest() as an early-terminating call. TYPO3
+			# v13.4's actual implementation returns ?ResponseInterface and
+			# never throws, verified against the installed vendor source.
+			message: '#^Unreachable statement - code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 1
+			path: ../Classes/Controller/TranslationController.php
+
+		-
 			message: '#^Instanceof between Netresearch\\NrTextdb\\Domain\\Model\\Translation and Netresearch\\NrTextdb\\Domain\\Model\\Translation will always evaluate to true\.$#'
 			identifier: instanceof.alwaysTrue
 			count: 1
