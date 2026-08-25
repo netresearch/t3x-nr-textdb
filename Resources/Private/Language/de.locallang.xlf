@@ -29,7 +29,7 @@
       </trans-unit>
       <trans-unit id="tx_nrtextdb_domain_model_translation" approved="yes">
         <source>Translation</source>
-        <target state="final">ÜBersetzung</target>
+        <target state="final">Übersetzung</target>
       </trans-unit>
       <trans-unit id="tx_nrtextdb_domain_model_translation.value" approved="yes">
         <source>Value</source>
