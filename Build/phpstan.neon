@@ -41,6 +41,21 @@ parameters:
             count: 1
             path: %currentWorkingDirectory%/Classes/Controller/TranslationController.php
 
+        # False positive: $language in this loop is a key of
+        # TranslationService::getAllLanguages()'s return value, checked with
+        # array_key_exists() right above the loop, so it can only ever be one
+        # of that array's real keys (a configured, non-negative language id).
+        # With the phpstan/phpstan 2.2.9 + saschaegerer/phpstan-typo3 3.0.0
+        # combination this branch's composer.json currently resolves,
+        # PHPStan does not narrow $language's type from that
+        # array_key_exists() check, and only sees its declared int type
+        # widened back out to a plain int by the foreach.
+        -
+            message: '#^Parameter \#2 \$language of method Netresearch\\NrTextdb\\Controller\\TranslationController\:\:saveNewTranslation\(\) expects int\<\-1, max\>, int given\.$#'
+            identifier: argument.type
+            count: 1
+            path: %currentWorkingDirectory%/Classes/Controller/TranslationController.php
+
     # ergebnis/phpstan-rules is auto-registered by phpstan/extension-installer
     # (transitively required via netresearch/typo3-ci-workflows). Its default
     # ruleset (allRules: true) forbids extending TYPO3/Symfony/PHPUnit framework
