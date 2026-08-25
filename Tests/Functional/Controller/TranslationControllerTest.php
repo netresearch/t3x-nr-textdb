@@ -807,9 +807,6 @@ final class TranslationControllerTest extends FunctionalTestCase
         self::assertSame([], $this->errorFlashMessages());
     }
 
-    /**
-     * @param string $storedConfig Raw payload, as it sits in be_users.uc
-     */
     #[Test]
     public function listingTheModuleTruncatesAFractionalStoredFilter(): void
     {
@@ -827,6 +824,9 @@ final class TranslationControllerTest extends FunctionalTestCase
         );
     }
 
+    /**
+     * @param string $storedConfig Raw payload, as it sits in be_users.uc
+     */
     #[Test]
     #[DataProvider('unusableStoredFilterProvider')]
     public function exportWithAnUnusableStoredFilterIsRefused(string $storedConfig): void
