@@ -342,9 +342,13 @@ class TranslationController extends ActionController
     }
 
     /**
-     * @param int                $parent
-     * @param array<int, string> $new
-     * @param array<int, string> $update
+     * $new and $update come straight from the request. Extbase's property
+     * mapping does not enforce the documented element shape at runtime, so
+     * both loops below validate keys and values before touching a record.
+     *
+     * @param int                                               $parent
+     * @param array<array-key, string|array<array-key, string>> $new    Expected shape: array<int<-1, max>, string>
+     * @param array<array-key, string|array<array-key, string>> $update Expected shape: array<int, string>
      *
      * @return ResponseInterface
      *
