@@ -105,6 +105,21 @@
             <trans-unit id="message.error.import">
                 <target>Der Dateiname stimmt nicht mit dem erwarteten Muster überein.</target>
             </trans-unit>
+            <trans-unit id="message.translation.saved">
+                <target>Die Übersetzung wurde gespeichert.</target>
+            </trans-unit>
+            <trans-unit id="message.translation.rejected">
+                <target>Eine oder mehrere der übermittelten Übersetzungen konnten nicht gespeichert werden. Der Datensatz, die Zielsprache oder der übermittelte Wert war ungültig.</target>
+            </trans-unit>
+            <trans-unit id="message.translation.save.title">
+                <target>TextDb</target>
+            </trans-unit>
+            <trans-unit id="message.error.translation.save">
+                <target>Die Übersetzung konnte nicht gespeichert werden: %s</target>
+            </trans-unit>
+            <trans-unit id="message.error.translation.request">
+                <target>Die übermittelte Anfrage konnte nicht verarbeitet werden.</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>
