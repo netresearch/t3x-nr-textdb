@@ -12,10 +12,7 @@ declare(strict_types=1);
 namespace Netresearch\NrTextdb\Tests\Unit\Controller;
 
 use Netresearch\NrTextdb\Controller\TranslationController;
-use Netresearch\NrTextdb\Domain\Model\Component;
-use Netresearch\NrTextdb\Domain\Model\Environment;
 use Netresearch\NrTextdb\Domain\Model\Translation;
-use Netresearch\NrTextdb\Domain\Model\Type;
 use Netresearch\NrTextdb\Domain\Repository\ComponentRepository;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
 use Netresearch\NrTextdb\Domain\Repository\TypeRepository;
@@ -94,9 +91,6 @@ use function unserialize;
  */
 #[CoversClass(TranslationController::class)]
 #[UsesClass(Translation::class)]
-#[UsesClass(Environment::class)]
-#[UsesClass(Component::class)]
-#[UsesClass(Type::class)]
 final class TranslationControllerTest extends UnitTestCase
 {
     private TranslationController $controller;
@@ -1030,24 +1024,14 @@ final class TranslationControllerTest extends UnitTestCase
     #[Test]
     public function translateRecordActionRejectsAndAcceptsNewEntriesByValidity(): void
     {
-        // addFlashMessageToQueue() reaches LocalizationUtility::translate(),
-        // which registers a Locales singleton as a side effect before this
-        // Unit test's missing container makes it fail past that point.
-        $this->resetSingletonInstances = true;
-
         // new[] keys/values arrive as raw, attacker-reachable POST data, not
         // as anything Extbase's property mapping validates against the
         // documented "language uid => string" shape. Each rejected entry
         // here reproduces a distinct way the pre-fix code trusted that shape:
         // a non-int key, a non-string value, and a language uid unreachable
         // through translatedAction()'s own "untranslated" list.
-        $parentTranslation = new Translation();
-        $parentTranslation->setEnvironment(new Environment());
-        $parentTranslation->setComponent(new Component());
-        $parentTranslation->setType(new Type());
-
         $translationRepository = self::createMock(TranslationRepository::class);
-        $translationRepository->method('findByUid')->willReturn($parentTranslation);
+        $translationRepository->method('findByUid')->willReturn(new Translation());
         $translationRepository->expects(self::once())
             ->method('add');
         $this->setControllerProperty('translationRepository', $translationRepository);
@@ -1059,27 +1043,18 @@ final class TranslationControllerTest extends UnitTestCase
 
         $this->setControllerProperty('persistenceManager', self::createStub(PersistenceManager::class));
 
-        try {
-            $this->controller->translateRecordAction(1, [
-                'not-an-int' => 'value for a string key',
-                2            => 999,
-                999          => 'unconfigured language id',
-                1            => '   ',
-                0            => 'a valid, accepted value',
-            ]);
-        } catch (Throwable) {
-            // addFlashMessageToQueue() calls LocalizationUtility::translate(),
-            // which needs a booted container this Unit test does not provide.
-            // By this point add() has already run for every entry the
-            // validation let through, which is what this test is about.
-        }
+        $this->invokeTranslateRecordAction(1, [
+            'not-an-int' => 'value for a string key',
+            2            => 999,
+            999          => 'unconfigured language id',
+            1            => '   ',
+            0            => 'a valid, accepted value',
+        ]);
     }
 
     #[Test]
     public function translateRecordActionRejectsAndAcceptsUpdateEntriesByValidity(): void
     {
-        $this->resetSingletonInstances = true;
-
         $translation = new Translation();
 
         $translationRepository = self::createMock(TranslationRepository::class);
@@ -1098,23 +1073,17 @@ final class TranslationControllerTest extends UnitTestCase
 
         $this->setControllerProperty('persistenceManager', self::createStub(PersistenceManager::class));
 
-        try {
-            $this->controller->translateRecordAction(0, [], [
-                'not-an-int' => 'value for a string key',
-                -1           => 'a negative uid',
-                5            => ['not', 'a', 'string'],
-                7            => '  trimmed  ',
-            ]);
-        } catch (Throwable) {
-            // See translateRecordActionRejectsAndAcceptsNewEntriesByValidity().
-        }
+        $this->invokeTranslateRecordAction(0, [], [
+            'not-an-int' => 'value for a string key',
+            -1           => 'a negative uid',
+            5            => ['not', 'a', 'string'],
+            7            => '  trimmed  ',
+        ]);
     }
 
     #[Test]
     public function translateRecordActionClearsPersistenceStateOnAPersistenceFailure(): void
     {
-        $this->resetSingletonInstances = true;
-
         // Without this guard a persistence error (e.g. a collision with the
         // unique key on the translation table) escaped the module as a raw
         // 500 and the editor lost the entered text without any feedback.
@@ -1129,10 +1098,27 @@ final class TranslationControllerTest extends UnitTestCase
             ->method('clearState');
         $this->setControllerProperty('persistenceManager', $persistenceManager);
 
+        $this->invokeTranslateRecordAction(1, [], [1 => 'value']);
+    }
+
+    /**
+     * addFlashMessageToQueue() reaches LocalizationUtility::translate(),
+     * which needs a booted container this Unit test does not provide, and
+     * registers a Locales singleton as a side effect before it gets there.
+     * By the time it throws, every repository/persistence-manager
+     * interaction the validation logic under test produces has already run,
+     * which is what these tests actually assert on.
+     *
+     * @param array<array-key, string|array<array-key, string>> $new
+     * @param array<array-key, string|array<array-key, string>> $update
+     */
+    private function invokeTranslateRecordAction(int $parent, array $new = [], array $update = []): void
+    {
+        $this->resetSingletonInstances = true;
+
         try {
-            $this->controller->translateRecordAction(1, [], [1 => 'value']);
+            $this->controller->translateRecordAction($parent, $new, $update);
         } catch (Throwable) {
-            // See translateRecordActionRejectsAndAcceptsNewEntriesByValidity().
         }
     }
 }
