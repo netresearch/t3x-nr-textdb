@@ -22,6 +22,7 @@ use Netresearch\NrTextdb\Service\TranslationService;
 use Psr\Http\Message\ResponseInterface;
 use RuntimeException;
 use SimpleXMLElement;
+use Throwable;
 use TYPO3\CMS\Backend\Template\Components\ButtonBar;
 use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
@@ -52,11 +53,14 @@ use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use ZipArchive;
 
+use function array_key_exists;
 use function is_array;
+use function is_int;
 use function is_numeric;
 use function is_string;
 use function max;
 use function mb_check_encoding;
+use function sprintf;
 use function trim;
 use function unserialize;
 
@@ -355,41 +359,209 @@ class TranslationController extends ActionController
 
         /** @var Translation|null $parentTranslation */
         $parentTranslation = $this->translationRepository->findByUid($parent);
+        $acceptedCount     = 0;
+        $rejectedCount     = 0;
 
         if ($parentTranslation instanceof Translation) {
+            // getAllLanguages() resolves the first configured site only (see
+            // TranslationService::getAllLanguages()), matching the languages
+            // translatedAction() renders as selectable. A language id that is
+            // only configured on another site in a multi-site installation is
+            // rejected here as well, same as it would be unreachable through
+            // the module's own "untranslated" list.
+            $allowedLanguages = $this->translationService->getAllLanguages();
+
             foreach ($new as $language => $value) {
+                if (
+                    !is_int($language)
+                    || ($language < -1)
+                    || !is_string($value)
+                    || !array_key_exists($language, $allowedLanguages)
+                ) {
+                    ++$rejectedCount;
+
+                    continue;
+                }
+
+                $trimmedValue = trim($value);
+
+                if ($trimmedValue === '') {
+                    // An untouched textarea: not a rejection and not a saved
+                    // entry either, it updates neither counter. If it is the
+                    // only thing submitted, $nothingWasSaved still applies
+                    // below.
+                    continue;
+                }
+
                 $translation = $this->translationService
                     ->createTranslationFromParent(
                         $parentTranslation,
                         $language,
-                        $value
+                        $trimmedValue
                     );
 
                 if ($translation instanceof Translation) {
                     $this->translationRepository->add($translation);
+                    ++$acceptedCount;
+                } else {
+                    ++$rejectedCount;
                 }
+            }
+        } else {
+            // A well-formed, blank entry is the only shape the parent-exists
+            // branch above does not count as a rejection either (it is
+            // silently skipped). Everything else, including a malformed
+            // value, counts as payload here too.
+            $newHasPayload = array_filter(
+                $new,
+                static fn (string|array $value): bool => !is_string($value) || (trim($value) !== ''),
+            ) !== [];
+
+            if ($newHasPayload) {
+                // $parent does not resolve to a record (tampered or stale
+                // value), so a submitted new[] payload is unreachable. Count
+                // it once instead of dropping it without any signal, the
+                // individual entries were never validated far enough to
+                // count them apart.
+                ++$rejectedCount;
             }
         }
 
         foreach ($update as $translationUid => $value) {
-            /** @var Translation $translation */
+            if (
+                !is_int($translationUid)
+                // A non-positive uid can never match a record. Rejecting it
+                // here avoids a pointless lookup.
+                || ($translationUid <= 0)
+                || !is_string($value)
+            ) {
+                ++$rejectedCount;
+
+                continue;
+            }
+
+            /** @var Translation|null $translation */
             $translation = $this->translationRepository->findByUid($translationUid);
 
             if ($translation instanceof Translation) {
-                $translation->setValue($value);
+                $translation->setValue(trim($value));
 
                 $this->translationRepository->update($translation);
+                ++$acceptedCount;
+            } else {
+                // A well-formed but non-existent uid (deleted between page
+                // load and submit, or a tampered value) must count as
+                // rejected too, or it is dropped without any signal.
+                ++$rejectedCount;
             }
         }
 
-        $this->persistenceManager->persistAll();
+        // A real dialog submission always carries at least one valid update[]
+        // entry (the record itself, echoed back), so a plain "was anything
+        // rejected" flag would rarely fire from the UI and a tampered/invalid
+        // entry submitted alongside a normal save would be dropped silently.
+        // The two conditions below are independent and both flash messages
+        // can appear together, so a partially rejected submission is never
+        // reported as an unqualified success.
+        $nothingWasSaved   = (($new !== []) || ($update !== [])) && ($acceptedCount === 0);
+        $somethingRejected = $rejectedCount > 0;
 
-        return (new ForwardResponse('translated'))
-            ->withControllerName('Translation')
-            ->withExtensionName('NrTextdb')
-            ->withArguments([
-                'uid' => $parent,
-            ]);
+        try {
+            $this->persistenceManager->persistAll();
+
+            if ($nothingWasSaved || $somethingRejected) {
+                $this->addFlashMessageToQueue(
+                    $this->translate('message.translation.save.title') ?? 'TextDb',
+                    $this->translate('message.translation.rejected') ?? 'One or more of the submitted translations could not be saved. The record, the target language, or the submitted value was not valid.',
+                    ContextualFeedbackSeverity::WARNING,
+                );
+            }
+
+            if ($acceptedCount > 0) {
+                $this->addFlashMessageToQueue(
+                    $this->translate('message.translation.save.title') ?? 'TextDb',
+                    $this->translate('message.translation.saved') ?? 'The translation was saved.',
+                    ContextualFeedbackSeverity::OK,
+                );
+            }
+        } catch (Throwable $throwable) {
+            // Without this guard a persistence error (e.g. a collision with
+            // the unique key on the translation table) escaped the module as
+            // a raw 500 and the editor lost the entered text without any
+            // feedback.
+            $this->persistenceManager->clearState();
+
+            $this->addFlashMessageToQueue(
+                $this->translate('message.translation.save.title') ?? 'TextDb',
+                sprintf(
+                    $this->translate('message.error.translation.save') ?? 'The translation could not be saved: %s',
+                    $throwable->getMessage(),
+                ),
+            );
+        }
+
+        // A redirect (not a forward) so the browser issues a fresh GET for the
+        // "translated" view. A forward keeps this same POST request active,
+        // and Fluid's form ViewHelpers repopulate a field from the request's
+        // own submitted value whenever the field name matches, even a
+        // rejected one, casting a rejected array value to a string to render
+        // it crashes the page with "Array to string conversion" although
+        // nothing was persisted.
+        return $this->redirectToUri(
+            $this->uriBuilder->reset()->uriFor('translated', ['uid' => $parent]),
+        );
+    }
+
+    /**
+     * Protects against a crafted/tampered validation-error forward whose
+     * controller, action or extension does not belong to this module: the
+     * default errorAction() would otherwise resolve uriFor() against an
+     * arbitrary target.
+     *
+     * @return ResponseInterface
+     */
+    protected function errorAction(): ResponseInterface
+    {
+        $forwardResponse = $this->forwardToReferringRequest();
+
+        if (!$forwardResponse instanceof ForwardResponse) {
+            return parent::errorAction();
+        }
+
+        // The referrer's HMAC scope is installation-global, not bound to
+        // this extension, but uriFor() builds the route from this
+        // request's own module identifier, so a foreign controller/action
+        // can never resolve outside this module's five routes (empty $uri
+        // below). extensionName is the one value backend routing ignores,
+        // so it needs this explicit check.
+        if ($forwardResponse->getExtensionName() !== 'NrTextdb') {
+            return $this->htmlResponse($this->getFlattenedValidationErrorMessage())
+                ->withStatus(400);
+        }
+
+        $uri = $this->uriBuilder->reset()->uriFor(
+            $forwardResponse->getActionName(),
+            $forwardResponse->getArguments() ?? [],
+            $forwardResponse->getControllerName(),
+            $forwardResponse->getExtensionName(),
+        );
+
+        if ($uri === '') {
+            return $this->htmlResponse($this->getFlattenedValidationErrorMessage())
+                ->withStatus(400);
+        }
+
+        // addErrorFlashMessage() enqueues into a request-transient queue
+        // that only a same-request forward render would ever flush, a
+        // redirect ends the request without rendering it, so the message
+        // would be lost. addFlashMessageToQueue() persists it to the
+        // session-stored queue the module's chrome actually reads.
+        $this->addFlashMessageToQueue(
+            $this->translate('message.translation.save.title') ?? 'TextDb',
+            $this->translate('message.error.translation.request') ?? 'The submitted request could not be processed.',
+        );
+
+        return $this->redirectToUri($uri);
     }
 
     /**
@@ -1036,6 +1208,14 @@ class TranslationController extends ActionController
         }
 
         return [];
+    }
+
+    /**
+     * @param array<int|string, mixed> $arguments
+     */
+    private function translate(string $key, array $arguments = []): ?string
+    {
+        return LocalizationUtility::translate($key, 'nr_textdb', $arguments);
     }
 
     /**
