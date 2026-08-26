@@ -1492,7 +1492,7 @@ final class TranslationControllerTest extends UnitTestCase
     public function translateRecordActionNeverAddsANullTranslationFromTheService(): void
     {
         // createTranslationFromParent() returns null when the parent is
-        // missing its environment/component/type (see its own docblock),
+        // missing its environment/component/type (see its implementation),
         // the else branch of the if ($translation instanceof Translation)
         // check right after it is what has to catch that, add() must never
         // run on a null. Its documented rejectedCount side effect isn't
