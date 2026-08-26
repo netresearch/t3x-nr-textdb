@@ -1267,17 +1267,20 @@ final class TranslationControllerTest extends UnitTestCase
 
         $this->stubPersistenceManager();
 
-        $this->invokeTranslateRecordAction(1, [
-            'not-an-int' => 'value for a string key',
-            2            => ['not', 'a', 'string'],
-            999          => 'unconfigured language id',
-            1            => '   ',
-            // Padded on purpose: createTranslationFromParent()'s ->with()
-            // constraint above expects the trimmed value, pinning that a
-            // mutation swapping $trimmedValue back to $value would
-            // otherwise go undetected on an already-clean test string.
-            0 => '  a valid, accepted value  ',
-        ]);
+        $this->invokeTranslateRecordAction(
+            1,
+            [
+                'not-an-int' => 'value for a string key',
+                2            => ['not', 'a', 'string'],
+                999          => 'unconfigured language id',
+                1            => '   ',
+                // Padded on purpose: createTranslationFromParent()'s ->with()
+                // constraint above expects the trimmed value, pinning that a
+                // mutation swapping $trimmedValue back to $value would
+                // otherwise go undetected on an already-clean test string.
+                0 => '  a valid, accepted value  ',
+            ],
+        );
     }
 
     #[Test]
@@ -1302,12 +1305,16 @@ final class TranslationControllerTest extends UnitTestCase
 
         $this->stubPersistenceManager();
 
-        $this->invokeTranslateRecordAction(0, [], [
-            'not-an-int' => 'value for a string key',
-            -1           => 'a negative uid',
-            5            => ['not', 'a', 'string'],
-            7            => '  trimmed  ',
-        ]);
+        $this->invokeTranslateRecordAction(
+            0,
+            [],
+            [
+                'not-an-int' => 'value for a string key',
+                -1           => 'a negative uid',
+                5            => ['not', 'a', 'string'],
+                7            => '  trimmed  ',
+            ],
+        );
     }
 
     #[Test]
@@ -1400,8 +1407,9 @@ final class TranslationControllerTest extends UnitTestCase
     {
         // translatedAction() dereferences findByUid()'s result unguarded
         // (see its own implementation), redirecting an unresolvable $parent
-        // there instead of to "list" would turn the warning flash message
-        // this method already queued into an uncaught 500.
+        // there instead of to "list" is an uncaught 500 regardless of the
+        // (here empty) payload, this test's own submission never reaches
+        // the flash-message queueing this method does for a non-empty one.
         $this->stubTranslationRepositoryFindByUidReturning(null);
 
         $this->stubPersistenceManager();

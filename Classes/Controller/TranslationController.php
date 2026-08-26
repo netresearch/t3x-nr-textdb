@@ -531,8 +531,10 @@ class TranslationController extends ActionController implements LoggerAwareInter
         //
         // $parent redirects to "list" instead when it never resolved:
         // translatedAction() dereferences findByUid()'s result unguarded, an
-        // unresolvable uid there is an uncaught 500 rather than the warning
-        // flash message this method already queued for it above.
+        // unresolvable uid there is an uncaught 500 regardless of whether a
+        // flash message was queued above. When new[]/update[] carried a
+        // rejected entry too, this also avoids replacing that warning with
+        // the 500.
         $parentResolved = $parentTranslation instanceof Translation;
 
         return $this->redirectToUri(
