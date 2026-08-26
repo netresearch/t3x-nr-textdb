@@ -1096,7 +1096,10 @@ final class TranslationControllerTest extends UnitTestCase
         $this->setControllerProperty('translationRepository', $translationRepository);
 
         $translationService = self::createMock(TranslationService::class);
-        $translationService->method('getAllLanguages')->willReturn([0 => new SiteLanguage(0, 'en', new Uri(), []), 1 => new SiteLanguage(1, 'de', new Uri(), [])]);
+        $translationService->method('getAllLanguages')->willReturn([
+            0 => new SiteLanguage(0, 'en', new Uri(), []),
+            1 => new SiteLanguage(1, 'de', new Uri(), []),
+        ]);
         $translationService->expects(self::once())
             ->method('createTranslationFromParent')
             ->with(self::identicalTo($parentTranslation), 0, 'a valid, accepted value')
@@ -1201,7 +1204,9 @@ final class TranslationControllerTest extends UnitTestCase
         $this->setControllerProperty('translationRepository', $translationRepository);
 
         $translationService = self::createStub(TranslationService::class);
-        $translationService->method('getAllLanguages')->willReturn([0 => new SiteLanguage(0, 'en', new Uri(), [])]);
+        $translationService->method('getAllLanguages')->willReturn([
+            0 => new SiteLanguage(0, 'en', new Uri(), []),
+        ]);
         $translationService->method('createTranslationFromParent')->willReturn(null);
         $this->setControllerProperty('translationService', $translationService);
 
