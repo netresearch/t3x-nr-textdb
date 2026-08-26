@@ -467,7 +467,10 @@ final class TranslationControllerTest extends UnitTestCase
 
     private function stubPersistenceManager(): void
     {
-        $this->setControllerProperty('persistenceManager', self::createStub(PersistenceManager::class));
+        $this->setControllerProperty(
+            'persistenceManager',
+            self::createStub(PersistenceManager::class),
+        );
     }
 
     /**
@@ -970,7 +973,10 @@ final class TranslationControllerTest extends UnitTestCase
 
         $response = $this->invokeErrorAction($controller);
 
-        self::assertSame(400, $response->getStatusCode());
+        self::assertSame(
+            400,
+            $response->getStatusCode(),
+        );
     }
 
     #[Test]
@@ -997,11 +1003,18 @@ final class TranslationControllerTest extends UnitTestCase
 
                 return '';
             });
-        $this->setControllerProperty('uriBuilder', $uriBuilder, $controller);
+        $this->setControllerProperty(
+            'uriBuilder',
+            $uriBuilder,
+            $controller,
+        );
 
         $response = $this->invokeErrorAction($controller);
 
-        self::assertSame(400, $response->getStatusCode());
+        self::assertSame(
+            400,
+            $response->getStatusCode(),
+        );
         self::assertSame(
             ['unroutableAction', ['uid' => 1], 'SomeController', 'NrTextdb', null],
             $capturedArguments,
@@ -1026,13 +1039,24 @@ final class TranslationControllerTest extends UnitTestCase
             ->getMock();
         $controller->method('forwardToReferringRequest')
             ->willReturn(null);
-        $this->setControllerProperty('responseFactory', new ResponseFactory(), $controller);
-        $this->setControllerProperty('streamFactory', new StreamFactory(), $controller);
+        $this->setControllerProperty(
+            'responseFactory',
+            new ResponseFactory(),
+            $controller,
+        );
+        $this->setControllerProperty(
+            'streamFactory',
+            new StreamFactory(),
+            $controller,
+        );
 
         try {
             $response = $this->invokeErrorAction($controller);
 
-            self::assertSame(400, $response->getStatusCode());
+            self::assertSame(
+                400,
+                $response->getStatusCode(),
+            );
         } catch (Error $error) {
             self::assertStringNotContainsString(
                 'getExtensionName',
@@ -1070,8 +1094,16 @@ final class TranslationControllerTest extends UnitTestCase
         // assigned via ActionController's inject*() setters, which
         // disableOriginalConstructor() and the reflection-constructed
         // $this->controller both skip.
-        $this->setControllerProperty('responseFactory', new ResponseFactory(), $controller);
-        $this->setControllerProperty('streamFactory', new StreamFactory(), $controller);
+        $this->setControllerProperty(
+            'responseFactory',
+            new ResponseFactory(),
+            $controller,
+        );
+        $this->setControllerProperty(
+            'streamFactory',
+            new StreamFactory(),
+            $controller,
+        );
 
         return $controller;
     }
@@ -1093,7 +1125,10 @@ final class TranslationControllerTest extends UnitTestCase
         $translationRepository->expects(self::once())
             ->method('add')
             ->with(self::identicalTo($createdTranslation));
-        $this->setControllerProperty('translationRepository', $translationRepository);
+        $this->setControllerProperty(
+            'translationRepository',
+            $translationRepository,
+        );
 
         $translationService = self::createMock(TranslationService::class);
         $translationService->method('getAllLanguages')->willReturn([
@@ -1104,7 +1139,10 @@ final class TranslationControllerTest extends UnitTestCase
             ->method('createTranslationFromParent')
             ->with(self::identicalTo($parentTranslation), 0, 'a valid, accepted value')
             ->willReturn($createdTranslation);
-        $this->setControllerProperty('translationService', $translationService);
+        $this->setControllerProperty(
+            'translationService',
+            $translationService,
+        );
 
         $this->stubPersistenceManager();
 
@@ -1127,14 +1165,20 @@ final class TranslationControllerTest extends UnitTestCase
         $translationRepository->expects(self::once())
             ->method('update')
             ->with(self::callback(static fn (Translation $updated): bool => $updated->getValue() === 'trimmed'));
-        $this->setControllerProperty('translationRepository', $translationRepository);
+        $this->setControllerProperty(
+            'translationRepository',
+            $translationRepository,
+        );
 
         // $parent (0) resolves through the same findByUid() stub as the
         // update-loop lookups, entering the new[] branch that reads
         // getAllLanguages() unconditionally, even though $new is empty here.
         $translationService = self::createStub(TranslationService::class);
         $translationService->method('getAllLanguages')->willReturn([]);
-        $this->setControllerProperty('translationService', $translationService);
+        $this->setControllerProperty(
+            'translationService',
+            $translationService,
+        );
 
         $this->stubPersistenceManager();
 
@@ -1155,64 +1199,92 @@ final class TranslationControllerTest extends UnitTestCase
         // runs through to redirectToUri() clean.
         $translationRepository = self::createStub(TranslationRepository::class);
         $translationRepository->method('findByUid')->willReturn(null);
-        $this->setControllerProperty('translationRepository', $translationRepository);
+        $this->setControllerProperty(
+            'translationRepository',
+            $translationRepository,
+        );
 
         $this->stubPersistenceManager();
 
         $uriBuilder = self::createStub(UriBuilder::class);
         $uriBuilder->method('reset')->willReturnSelf();
         $uriBuilder->method('uriFor')->willReturn('/typo3/module/netresearch/textdb/Translation/translated?uid=1');
-        $this->setControllerProperty('uriBuilder', $uriBuilder);
+        $this->setControllerProperty(
+            'uriBuilder',
+            $uriBuilder,
+        );
 
         $response = $this->controller->translateRecordAction(1);
 
-        self::assertSame(303, $response->getStatusCode());
+        self::assertSame(
+            303,
+            $response->getStatusCode(),
+        );
     }
 
     #[Test]
-    public function translateRecordActionCountsAnUnresolvableParentWithANewPayloadAsRejected(): void
+    public function translateRecordActionNeverAddsANewEntryForAnUnresolvableParent(): void
     {
-        // $parent not resolving is only a silent no-op if new[] carried
-        // nothing worth saving in the first place. A non-blank entry here
-        // is unreachable (there is no record left to attach it to), and
-        // must count as rejected instead of being dropped without a trace.
+        // A non-blank new[] entry is unreachable once $parent fails to
+        // resolve (there is no record left to attach it to). The
+        // documented rejectedCount side effect of this branch isn't
+        // separately observable here (its only consumer is a flash
+        // message that needs LocalizationUtility::translate(), which this
+        // Unit test's missing container can't provide), this only pins
+        // that no record gets created for it either.
         $translationRepository = self::createMock(TranslationRepository::class);
         $translationRepository->method('findByUid')->willReturn(null);
         $translationRepository->expects(self::never())
             ->method('add');
-        $this->setControllerProperty('translationRepository', $translationRepository);
+        $this->setControllerProperty(
+            'translationRepository',
+            $translationRepository,
+        );
 
         $this->stubPersistenceManager();
 
-        $this->invokeTranslateRecordAction(1, [0 => 'orphaned payload']);
+        $this->invokeTranslateRecordAction(
+            1,
+            [0 => 'orphaned payload'],
+        );
     }
 
     #[Test]
-    public function translateRecordActionCountsAnUnsavableNewEntryAsRejected(): void
+    public function translateRecordActionNeverAddsANullTranslationFromTheService(): void
     {
         // createTranslationFromParent() returns null when the parent is
         // missing its environment/component/type (see its own docblock),
         // the else branch of the if ($translation instanceof Translation)
         // check right after it is what has to catch that, add() must never
-        // run on a null.
+        // run on a null. Its documented rejectedCount side effect isn't
+        // separately observable here, see the sibling test above.
         $parentTranslation = new Translation();
 
         $translationRepository = self::createMock(TranslationRepository::class);
         $translationRepository->method('findByUid')->willReturn($parentTranslation);
         $translationRepository->expects(self::never())
             ->method('add');
-        $this->setControllerProperty('translationRepository', $translationRepository);
+        $this->setControllerProperty(
+            'translationRepository',
+            $translationRepository,
+        );
 
         $translationService = self::createStub(TranslationService::class);
         $translationService->method('getAllLanguages')->willReturn([
             0 => new SiteLanguage(0, 'en', new Uri(), []),
         ]);
         $translationService->method('createTranslationFromParent')->willReturn(null);
-        $this->setControllerProperty('translationService', $translationService);
+        $this->setControllerProperty(
+            'translationService',
+            $translationService,
+        );
 
         $this->stubPersistenceManager();
 
-        $this->invokeTranslateRecordAction(1, [0 => 'a value the service refuses to accept']);
+        $this->invokeTranslateRecordAction(
+            1,
+            [0 => 'a value the service refuses to accept'],
+        );
     }
 
     #[Test]
@@ -1223,14 +1295,20 @@ final class TranslationControllerTest extends UnitTestCase
         // 500 and the editor lost the entered text without any feedback.
         $translationRepository = self::createStub(TranslationRepository::class);
         $translationRepository->method('findByUid')->willReturn(null);
-        $this->setControllerProperty('translationRepository', $translationRepository);
+        $this->setControllerProperty(
+            'translationRepository',
+            $translationRepository,
+        );
 
         $persistenceManager = self::createMock(PersistenceManager::class);
         $persistenceManager->method('persistAll')
             ->willThrowException(new RuntimeException('Duplicate entry'));
         $persistenceManager->expects(self::once())
             ->method('clearState');
-        $this->setControllerProperty('persistenceManager', $persistenceManager);
+        $this->setControllerProperty(
+            'persistenceManager',
+            $persistenceManager,
+        );
 
         // The exception detail must reach the log, not the editor-facing
         // flash message the previous commit stopped exposing it in.
@@ -1244,7 +1322,11 @@ final class TranslationControllerTest extends UnitTestCase
             );
         $this->controller->setLogger($logger);
 
-        $this->invokeTranslateRecordAction(1, [], [1 => 'value']);
+        $this->invokeTranslateRecordAction(
+            1,
+            [],
+            [1 => 'value'],
+        );
     }
 
     /**

@@ -529,7 +529,10 @@ class TranslationController extends ActionController implements LoggerAwareInter
         // it crashes the page with "Array to string conversion" although
         // nothing was persisted.
         return $this->redirectToUri(
-            $this->uriBuilder->reset()->uriFor('translated', ['uid' => $parent]),
+            $this->uriBuilder->reset()->uriFor(
+                'translated',
+                ['uid' => $parent],
+            ),
         );
     }
 
@@ -1240,9 +1243,18 @@ class TranslationController extends ActionController implements LoggerAwareInter
      */
     private function translate(string $key): ?string
     {
-        return LocalizationUtility::translate($key, 'nr_textdb');
+        return LocalizationUtility::translate(
+            $key,
+            'nr_textdb',
+        );
     }
 
+    /**
+     * Resolves the shared title of every flash message this class raises
+     * around saving a translation, falling back to the extension's own name.
+     *
+     * @return string
+     */
     private function translationSaveTitle(): string
     {
         return $this->translate('message.translation.save.title') ?? 'TextDb';
