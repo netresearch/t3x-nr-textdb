@@ -1247,7 +1247,11 @@ final class TranslationControllerTest extends UnitTestCase
 
         $this->stubPersistenceManager();
 
-        $this->invokeTranslateRecordAction(0, [], [0 => 'a zero uid']);
+        $this->invokeTranslateRecordAction(
+            0,
+            [],
+            [0 => 'a zero uid'],
+        );
     }
 
     #[Test]
