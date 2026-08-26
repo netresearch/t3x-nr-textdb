@@ -575,11 +575,13 @@ class TranslationController extends ActionController implements LoggerAwareInter
                 ->withStatus(400);
         }
 
-        // addErrorFlashMessage() enqueues into a request-transient queue
-        // that only a same-request forward render would ever flush, a
-        // redirect ends the request without rendering it, so the message
-        // would be lost. addFlashMessageToQueue() persists it to the
-        // session-stored queue the module's chrome actually reads.
+        // addErrorFlashMessage() writes to the extbase-plugin-namespaced
+        // flash queue ("extbase.flashmessages.<namespace>"), which this
+        // module's chrome never reads: BackendModule.html's <f:flashMessages>
+        // is pinned to ModuleTemplate's own "core.template.flashMessages"
+        // queue via queueIdentifier. addFlashMessageToQueue() targets that
+        // queue directly, so it is the one to use here, independent of
+        // redirect vs. forward.
         $this->addFlashMessageToQueue(
             $this->translationSaveTitle(),
             $this->translate('message.error.translation.request') ?? 'The submitted request could not be processed.',
