@@ -503,8 +503,8 @@ class TranslationController extends ActionController implements LoggerAwareInter
             // a raw SQL error), logged for diagnosis but never shown to the
             // editor, who only needs to know that nothing was saved.
             $this->logger?->error(
-                'Translation could not be saved: ' . $throwable->getMessage(),
-                ['exception' => $throwable],
+                'Translation could not be saved: {reason}',
+                ['reason' => $throwable->getMessage(), 'exception' => $throwable],
             );
 
             $this->addFlashMessageToQueue(
@@ -1223,6 +1223,13 @@ class TranslationController extends ActionController implements LoggerAwareInter
         return [];
     }
 
+    /**
+     * Resolves a locallang.xlf key of this extension.
+     *
+     * @param string $key
+     *
+     * @return string|null The translated label, or null if the key does not resolve
+     */
     private function translate(string $key): ?string
     {
         return LocalizationUtility::translate($key, 'nr_textdb');

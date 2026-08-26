@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Netresearch\NrTextdb\Tests\Unit\Controller;
 
+use Error;
 use Netresearch\NrTextdb\Controller\TranslationController;
 use Netresearch\NrTextdb\Domain\Model\Translation;
 use Netresearch\NrTextdb\Domain\Repository\ComponentRepository;
@@ -23,6 +24,7 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Log\LoggerInterface;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionProperty;
@@ -979,18 +981,65 @@ final class TranslationControllerTest extends UnitTestCase
         // build a target link, uriFor() itself is the one thing this Unit
         // test cannot exercise without a container, its own stub reproduces
         // the "no route" outcome directly.
-        $controller = $this->partialMockControllerForwarding(
-            (new ForwardResponse('unroutableAction'))->withExtensionName('NrTextdb'),
-        );
+        $forwardResponse = (new ForwardResponse('unroutableAction'))
+            ->withControllerName('SomeController')
+            ->withExtensionName('NrTextdb')
+            ->withArguments(['uid' => 1]);
 
-        $uriBuilder = self::createStub(UriBuilder::class);
+        $controller = $this->partialMockControllerForwarding($forwardResponse);
+
+        $capturedArguments = null;
+        $uriBuilder        = self::createStub(UriBuilder::class);
         $uriBuilder->method('reset')->willReturnSelf();
-        $uriBuilder->method('uriFor')->willReturn('');
+        $uriBuilder->method('uriFor')
+            ->willReturnCallback(static function (...$arguments) use (&$capturedArguments): string {
+                $capturedArguments = $arguments;
+
+                return '';
+            });
         $this->setControllerProperty('uriBuilder', $uriBuilder, $controller);
 
         $response = $this->invokeErrorAction($controller);
 
         self::assertSame(400, $response->getStatusCode());
+        self::assertSame(
+            ['unroutableAction', ['uid' => 1], 'SomeController', 'NrTextdb', null],
+            $capturedArguments,
+            'uriFor() must receive the forward response\'s own action/arguments/controller/extension, in that order.',
+        );
+    }
+
+    #[Test]
+    public function errorActionFallsBackToTheParentImplementationWithoutAReferrer(): void
+    {
+        // forwardToReferringRequest() returns null whenever the request
+        // carries no __referrer, the common case for most validation
+        // errors, not just a crafted/tampered one. Left unguarded, the
+        // extension-name check right after it would call a method on that
+        // null and turn every such error into an uncaught 500 instead of
+        // TYPO3's own graceful 400. This is called twice on the fallback
+        // path: once by errorAction() itself, once more inside
+        // parent::errorAction(), unlike the other two errorAction() tests.
+        $controller = $this->getMockBuilder(TranslationController::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['forwardToReferringRequest'])
+            ->getMock();
+        $controller->method('forwardToReferringRequest')
+            ->willReturn(null);
+        $this->setControllerProperty('responseFactory', new ResponseFactory(), $controller);
+        $this->setControllerProperty('streamFactory', new StreamFactory(), $controller);
+
+        try {
+            $response = $this->invokeErrorAction($controller);
+
+            self::assertSame(400, $response->getStatusCode());
+        } catch (Error $error) {
+            self::assertStringNotContainsString(
+                'getExtensionName',
+                $error->getMessage(),
+                'A regression in the ForwardResponse guard would crash trying to read the extension name off a null instead of falling back cleanly: ' . $error->getMessage(),
+            );
+        }
     }
 
     private function invokeErrorAction(TranslationController $controller): ResponseInterface
@@ -1058,7 +1107,7 @@ final class TranslationControllerTest extends UnitTestCase
 
         $this->invokeTranslateRecordAction(1, [
             'not-an-int' => 'value for a string key',
-            2            => 999,
+            2            => ['not', 'a', 'string'],
             999          => 'unconfigured language id',
             1            => '   ',
             0            => 'a valid, accepted value',
@@ -1177,6 +1226,18 @@ final class TranslationControllerTest extends UnitTestCase
         $persistenceManager->expects(self::once())
             ->method('clearState');
         $this->setControllerProperty('persistenceManager', $persistenceManager);
+
+        // The exception detail must reach the log, not the editor-facing
+        // flash message the previous commit stopped exposing it in.
+        $logger = self::createMock(LoggerInterface::class);
+        $logger->expects(self::once())
+            ->method('error')
+            ->with(
+                'Translation could not be saved: {reason}',
+                self::callback(static fn (array $context): bool => ($context['reason'] ?? null) === 'Duplicate entry'
+                    && ($context['exception'] ?? null) instanceof RuntimeException),
+            );
+        $this->controller->setLogger($logger);
 
         $this->invokeTranslateRecordAction(1, [], [1 => 'value']);
     }
