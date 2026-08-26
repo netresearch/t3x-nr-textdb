@@ -1175,16 +1175,8 @@ final class TranslationControllerTest extends UnitTestCase
         $controller->expects(self::once())
             ->method('forwardToReferringRequest')
             ->willReturn(null);
-        $this->setControllerProperty(
-            'responseFactory',
-            new ResponseFactory(),
-            $controller,
-        );
-        $this->setControllerProperty(
-            'streamFactory',
-            new StreamFactory(),
-            $controller,
-        );
+        $controller->injectResponseFactory(new ResponseFactory());
+        $controller->injectStreamFactory(new StreamFactory());
 
         try {
             $response = $this->invokeErrorAction($controller);
@@ -1230,16 +1222,8 @@ final class TranslationControllerTest extends UnitTestCase
         // assigned via ActionController's inject*() setters, which
         // disableOriginalConstructor() and the reflection-constructed
         // $this->controller both skip.
-        $this->setControllerProperty(
-            'responseFactory',
-            new ResponseFactory(),
-            $controller,
-        );
-        $this->setControllerProperty(
-            'streamFactory',
-            new StreamFactory(),
-            $controller,
-        );
+        $controller->injectResponseFactory(new ResponseFactory());
+        $controller->injectStreamFactory(new StreamFactory());
 
         return $controller;
     }
@@ -1268,7 +1252,10 @@ final class TranslationControllerTest extends UnitTestCase
 
         $translationService = $this->stubTranslationServiceWithLanguages(
             $this->siteLanguage(0),
-            $this->siteLanguage(1, 'de'),
+            $this->siteLanguage(
+                1,
+                'de',
+            ),
         );
         $translationService->expects(self::once())
             ->method('createTranslationFromParent')
