@@ -383,6 +383,14 @@ class TranslationController extends ActionController implements LoggerAwareInter
             foreach ($new as $language => $value) {
                 if (
                     !is_int($language)
+                    // TYPO3 does not enforce a non-negative languageId anywhere
+                    // in core (Site::__construct() and the site_language TCA
+                    // both accept it unranged), only its own configuration UI
+                    // never offers one. array_key_exists() below already
+                    // excludes it for any language actually configured on this
+                    // installation, but this is a convention, not a framework
+                    // guarantee, so it stays an explicit guard of its own.
+                    || ($language < -1)
                     || !is_string($value)
                     || !array_key_exists($language, $allowedLanguages)
                 ) {
