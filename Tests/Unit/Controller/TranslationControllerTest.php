@@ -427,11 +427,12 @@ final class TranslationControllerTest extends UnitTestCase
     #[Test]
     public function listActionUsesThePersistedFilterUnmodifiedWhenNoRequestArgumentsAreSubmitted(): void
     {
-        // persistConfigInBeUserData() re-persists the filter through the real
-        // BackendUserAuthentication::pushModuleData(), which registers a
-        // HashService singleton as a side effect on PHP 8.3 (typo3/testing-framework
-        // 9.x), same reason every other test that reaches that real method
-        // already sets this.
+        // Empirically required on PHP 8.3: without it, tearDown()'s
+        // leftover-singleton integrity check fails. The exact singleton
+        // involved was not pinned down (it is not registered by the
+        // uninitialized-user-session crash pushModuleData() hits below,
+        // that happens before any such call), so this is a measured fix,
+        // not a fully traced one.
         $this->resetSingletonInstances = true;
 
         // The destructuring assignment at the top of listAction() that reads
@@ -1139,12 +1140,26 @@ final class TranslationControllerTest extends UnitTestCase
 
         $translationService = self::createMock(TranslationService::class);
         $translationService->method('getAllLanguages')->willReturn([
-            0 => new SiteLanguage(0, 'en', new Uri(), []),
-            1 => new SiteLanguage(1, 'de', new Uri(), []),
+            0 => new SiteLanguage(
+                0,
+                'en',
+                new Uri(),
+                [],
+            ),
+            1 => new SiteLanguage(
+                1,
+                'de',
+                new Uri(),
+                [],
+            ),
         ]);
         $translationService->expects(self::once())
             ->method('createTranslationFromParent')
-            ->with(self::identicalTo($parentTranslation), 0, 'a valid, accepted value')
+            ->with(
+                self::identicalTo($parentTranslation),
+                0,
+                'a valid, accepted value',
+            )
             ->willReturn($createdTranslation);
         $this->setControllerProperty(
             'translationService',
@@ -1195,6 +1210,44 @@ final class TranslationControllerTest extends UnitTestCase
             5            => ['not', 'a', 'string'],
             7            => '  trimmed  ',
         ]);
+    }
+
+    #[Test]
+    public function translateRecordActionRejectsAZeroUpdateUidEvenIfATranslationWouldResolveForIt(): void
+    {
+        // The actual guard is ($translationUid <= 0). The negative-uid case
+        // above only proves values below 0 are rejected, that alone cannot
+        // tell this guard apart from one weakened to ($translationUid < 0),
+        // which would let exactly 0 slip past into a pointless findByUid(0)
+        // lookup instead of being rejected up front. uid 0 is never a real
+        // TYPO3 record, but the double below returns one for any argument on
+        // purpose, so only the guard itself, not the repository, is what
+        // keeps update() from being called.
+        $translation = new Translation();
+
+        $translationRepository = self::createMock(TranslationRepository::class);
+        $translationRepository->method('findByUid')->willReturn($translation);
+        $translationRepository->expects(self::never())
+            ->method('update');
+        $this->setControllerProperty(
+            'translationRepository',
+            $translationRepository,
+        );
+
+        // $parent (0) resolves through the same findByUid() stub as the
+        // update-loop lookup, entering the new[] branch that reads
+        // getAllLanguages() unconditionally, even though $new is empty here,
+        // same reasoning as the sibling test above.
+        $translationService = self::createStub(TranslationService::class);
+        $translationService->method('getAllLanguages')->willReturn([]);
+        $this->setControllerProperty(
+            'translationService',
+            $translationService,
+        );
+
+        $this->stubPersistenceManager();
+
+        $this->invokeTranslateRecordAction(0, [], [0 => 'a zero uid']);
     }
 
     #[Test]
@@ -1249,7 +1302,12 @@ final class TranslationControllerTest extends UnitTestCase
 
         $translationService = self::createMock(TranslationService::class);
         $translationService->method('getAllLanguages')->willReturn([
-            -2 => new SiteLanguage(-2, 'en', new Uri(), []),
+            -2 => new SiteLanguage(
+                -2,
+                'en',
+                new Uri(),
+                [],
+            ),
         ]);
         $translationService->expects(self::never())
             ->method('createTranslationFromParent');
@@ -1263,6 +1321,55 @@ final class TranslationControllerTest extends UnitTestCase
         $this->invokeTranslateRecordAction(
             1,
             [-2 => 'a value for a negatively configured language'],
+        );
+    }
+
+    #[Test]
+    public function translateRecordActionAcceptsTheDocumentedNegativeOneLanguageBoundary(): void
+    {
+        // The actual guard is ($language < -1), so -1 itself is the
+        // documented floor (@param ... array<int<-1, max>, string>) and must
+        // pass it. Every other language test in this class only proves a
+        // value at or below -2 is rejected, none of them can tell this exact
+        // guard apart from one tightened to ($language < 0), which would
+        // reject -1 too, only a language actually configured under -1
+        // reaching createTranslationFromParent() does.
+        $parentTranslation  = new Translation();
+        $createdTranslation = new Translation();
+
+        $translationRepository = self::createMock(TranslationRepository::class);
+        $translationRepository->method('findByUid')->willReturn($parentTranslation);
+        $translationRepository->expects(self::once())
+            ->method('add')
+            ->with(self::identicalTo($createdTranslation));
+        $this->setControllerProperty(
+            'translationRepository',
+            $translationRepository,
+        );
+
+        $translationService = self::createMock(TranslationService::class);
+        $translationService->method('getAllLanguages')->willReturn([
+            -1 => new SiteLanguage(
+                -1,
+                'en',
+                new Uri(),
+                [],
+            ),
+        ]);
+        $translationService->expects(self::once())
+            ->method('createTranslationFromParent')
+            ->with(self::identicalTo($parentTranslation), -1, 'a value for the documented -1 boundary')
+            ->willReturn($createdTranslation);
+        $this->setControllerProperty(
+            'translationService',
+            $translationService,
+        );
+
+        $this->stubPersistenceManager();
+
+        $this->invokeTranslateRecordAction(
+            1,
+            [-1 => 'a value for the documented -1 boundary'],
         );
     }
 
@@ -1315,7 +1422,12 @@ final class TranslationControllerTest extends UnitTestCase
 
         $translationService = self::createStub(TranslationService::class);
         $translationService->method('getAllLanguages')->willReturn([
-            0 => new SiteLanguage(0, 'en', new Uri(), []),
+            0 => new SiteLanguage(
+                0,
+                'en',
+                new Uri(),
+                [],
+            ),
         ]);
         $translationService->method('createTranslationFromParent')->willReturn(null);
         $this->setControllerProperty(
@@ -1389,7 +1501,11 @@ final class TranslationControllerTest extends UnitTestCase
         $this->resetSingletonInstances = true;
 
         try {
-            $this->controller->translateRecordAction($parent, $new, $update);
+            $this->controller->translateRecordAction(
+                $parent,
+                $new,
+                $update,
+            );
         } catch (Throwable) {
         }
     }

@@ -413,7 +413,7 @@ class TranslationController extends ActionController implements LoggerAwareInter
                     ->createTranslationFromParent(
                         $parentTranslation,
                         $language,
-                        $trimmedValue
+                        $trimmedValue,
                     );
 
                 if ($translation instanceof Translation) {
@@ -430,7 +430,7 @@ class TranslationController extends ActionController implements LoggerAwareInter
             // value, counts as payload here too.
             $newHasPayload = array_filter(
                 $new,
-                static fn (mixed $value): bool => !is_string($value) || (trim($value) !== ''),
+                static fn (string|array $value): bool => !is_string($value) || (trim($value) !== ''),
             ) !== [];
 
             if ($newHasPayload) {
