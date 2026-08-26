@@ -481,6 +481,44 @@ final class TranslationControllerTest extends UnitTestCase
         );
     }
 
+    private function siteLanguage(int $languageId, string $locale = 'en'): SiteLanguage
+    {
+        return new SiteLanguage(
+            $languageId,
+            $locale,
+            new Uri(),
+            [],
+        );
+    }
+
+    /**
+     * Wires a uriFor()-stubbed UriBuilder onto the controller, returning an
+     * object whose $arguments property is filled with the exact arguments
+     * uriFor() was called with, once it has been.
+     */
+    private function stubUriBuilderCapturingArguments(string $returnValue, ?TranslationController $controller = null): object
+    {
+        $capture = new class {
+            public ?array $arguments = null;
+        };
+
+        $uriBuilder = self::createStub(UriBuilder::class);
+        $uriBuilder->method('reset')->willReturnSelf();
+        $uriBuilder->method('uriFor')
+            ->willReturnCallback(static function (...$arguments) use ($capture, $returnValue): string {
+                $capture->arguments = $arguments;
+
+                return $returnValue;
+            });
+        $this->setControllerProperty(
+            'uriBuilder',
+            $uriBuilder,
+            $controller,
+        );
+
+        return $capture;
+    }
+
     /**
      * Wires a real, minimally constructed Extbase request carrying the
      * given arguments onto the controller. ActionController::$request is
@@ -1002,20 +1040,7 @@ final class TranslationControllerTest extends UnitTestCase
 
         $controller = $this->partialMockControllerForwarding($forwardResponse);
 
-        $capturedArguments = null;
-        $uriBuilder        = self::createStub(UriBuilder::class);
-        $uriBuilder->method('reset')->willReturnSelf();
-        $uriBuilder->method('uriFor')
-            ->willReturnCallback(static function (...$arguments) use (&$capturedArguments): string {
-                $capturedArguments = $arguments;
-
-                return '';
-            });
-        $this->setControllerProperty(
-            'uriBuilder',
-            $uriBuilder,
-            $controller,
-        );
+        $capture = $this->stubUriBuilderCapturingArguments('', $controller);
 
         $response = $this->invokeErrorAction($controller);
 
@@ -1025,7 +1050,7 @@ final class TranslationControllerTest extends UnitTestCase
         );
         self::assertSame(
             ['unroutableAction', ['uid' => 1], 'SomeController', 'NrTextdb', null],
-            $capturedArguments,
+            $capture->arguments,
             'uriFor() must receive the forward response\'s own action/arguments/controller/extension, in that order.',
         );
     }
@@ -1053,18 +1078,8 @@ final class TranslationControllerTest extends UnitTestCase
 
         $controller = $this->partialMockControllerForwarding($forwardResponse);
 
-        $capturedArguments = null;
-        $uriBuilder        = self::createStub(UriBuilder::class);
-        $uriBuilder->method('reset')->willReturnSelf();
-        $uriBuilder->method('uriFor')
-            ->willReturnCallback(static function (...$arguments) use (&$capturedArguments): string {
-                $capturedArguments = $arguments;
-
-                return '/typo3/module/netresearch/textdb/Translation/translated?uid=1';
-            });
-        $this->setControllerProperty(
-            'uriBuilder',
-            $uriBuilder,
+        $capture = $this->stubUriBuilderCapturingArguments(
+            '/typo3/module/netresearch/textdb/Translation/translated?uid=1',
             $controller,
         );
 
@@ -1078,7 +1093,7 @@ final class TranslationControllerTest extends UnitTestCase
             );
             self::assertSame(
                 ['translated', ['uid' => 1], 'Translation', 'NrTextdb', null],
-                $capturedArguments,
+                $capture->arguments,
                 'uriFor() must receive the forward response\'s own action/arguments/controller/extension, in that order.',
             );
 
@@ -1098,9 +1113,11 @@ final class TranslationControllerTest extends UnitTestCase
         // null and turn every such error into an uncaught 500 instead of
         // TYPO3's own graceful 400. On this double, parent::errorAction()
         // itself never gets far enough to call forwardToReferringRequest()
-        // a second time, its own first line (addErrorFlashMessage()) hits
-        // this controller's uninitialized actionMethodName property first,
-        // which the catch block below expects and asserts against.
+        // a second time, its own first line (addErrorFlashMessage())
+        // reaches getFlashMessageQueue(), which reads the uninitialized
+        // internalExtensionService property (never wired without the
+        // constructor/inject setters), exactly what the catch block below
+        // already expects.
         $controller = $this->getMockBuilder(TranslationController::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['forwardToReferringRequest'])
@@ -1201,18 +1218,8 @@ final class TranslationControllerTest extends UnitTestCase
 
         $translationService = self::createMock(TranslationService::class);
         $translationService->method('getAllLanguages')->willReturn([
-            0 => new SiteLanguage(
-                0,
-                'en',
-                new Uri(),
-                [],
-            ),
-            1 => new SiteLanguage(
-                1,
-                'de',
-                new Uri(),
-                [],
-            ),
+            0 => $this->siteLanguage(0),
+            1 => $this->siteLanguage(1, 'de'),
         ]);
         $translationService->expects(self::once())
             ->method('createTranslationFromParent')
@@ -1331,13 +1338,7 @@ final class TranslationControllerTest extends UnitTestCase
 
         $this->stubPersistenceManager();
 
-        $uriBuilder = self::createStub(UriBuilder::class);
-        $uriBuilder->method('reset')->willReturnSelf();
-        $uriBuilder->method('uriFor')->willReturn('/typo3/module/netresearch/textdb/Translation/translated?uid=1');
-        $this->setControllerProperty(
-            'uriBuilder',
-            $uriBuilder,
-        );
+        $this->stubUriBuilderCapturingArguments('/typo3/module/netresearch/textdb/Translation/translated?uid=1');
 
         $response = $this->controller->translateRecordAction(1);
 
@@ -1362,25 +1363,13 @@ final class TranslationControllerTest extends UnitTestCase
 
         $this->stubPersistenceManager();
 
-        $capturedArguments = null;
-        $uriBuilder        = self::createStub(UriBuilder::class);
-        $uriBuilder->method('reset')->willReturnSelf();
-        $uriBuilder->method('uriFor')
-            ->willReturnCallback(static function (...$arguments) use (&$capturedArguments): string {
-                $capturedArguments = $arguments;
-
-                return '/typo3/module/netresearch/textdb/Translation/translated?uid=42';
-            });
-        $this->setControllerProperty(
-            'uriBuilder',
-            $uriBuilder,
-        );
+        $capture = $this->stubUriBuilderCapturingArguments('/typo3/module/netresearch/textdb/Translation/translated?uid=42');
 
         $this->controller->translateRecordAction(42);
 
         self::assertSame(
             ['translated', ['uid' => 42], null, null, null],
-            $capturedArguments,
+            $capture->arguments,
             'translateRecordAction() must redirect to its own translated action for the given parent, not a hardcoded or wrong uid.',
         );
     }
@@ -1405,12 +1394,7 @@ final class TranslationControllerTest extends UnitTestCase
 
         $translationService = self::createMock(TranslationService::class);
         $translationService->method('getAllLanguages')->willReturn([
-            -2 => new SiteLanguage(
-                -2,
-                'en',
-                new Uri(),
-                [],
-            ),
+            -2 => $this->siteLanguage(-2),
         ]);
         $translationService->expects(self::never())
             ->method('createTranslationFromParent');
@@ -1452,12 +1436,7 @@ final class TranslationControllerTest extends UnitTestCase
 
         $translationService = self::createMock(TranslationService::class);
         $translationService->method('getAllLanguages')->willReturn([
-            -1 => new SiteLanguage(
-                -1,
-                'en',
-                new Uri(),
-                [],
-            ),
+            -1 => $this->siteLanguage(-1),
         ]);
         $translationService->expects(self::once())
             ->method('createTranslationFromParent')
@@ -1529,12 +1508,7 @@ final class TranslationControllerTest extends UnitTestCase
 
         $translationService = self::createStub(TranslationService::class);
         $translationService->method('getAllLanguages')->willReturn([
-            0 => new SiteLanguage(
-                0,
-                'en',
-                new Uri(),
-                [],
-            ),
+            0 => $this->siteLanguage(0),
         ]);
         $translationService->method('createTranslationFromParent')->willReturn(null);
         $this->setControllerProperty(
@@ -1580,8 +1554,8 @@ final class TranslationControllerTest extends UnitTestCase
             ->method('error')
             ->with(
                 'Translation could not be saved: {reason}',
-                self::callback(static fn (array $context): bool => ($context['reason'] ?? null) === 'Duplicate entry'
-                    && ($context['exception'] ?? null) instanceof RuntimeException),
+                self::callback(static fn (array $context): bool => (($context['reason'] ?? null) === 'Duplicate entry')
+                    && (($context['exception'] ?? null) instanceof RuntimeException)),
             );
         $this->controller->setLogger($logger);
 
