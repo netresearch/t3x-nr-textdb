@@ -1096,14 +1096,17 @@ final class TranslationControllerTest extends UnitTestCase
         // errors, not just a crafted/tampered one. Left unguarded, the
         // extension-name check right after it would call a method on that
         // null and turn every such error into an uncaught 500 instead of
-        // TYPO3's own graceful 400. This is called twice on the fallback
-        // path: once by errorAction() itself, once more inside
-        // parent::errorAction(), unlike the other two errorAction() tests.
+        // TYPO3's own graceful 400. On this double, parent::errorAction()
+        // itself never gets far enough to call forwardToReferringRequest()
+        // a second time, its own first line (addErrorFlashMessage()) hits
+        // this controller's uninitialized actionMethodName property first,
+        // which the catch block below expects and asserts against.
         $controller = $this->getMockBuilder(TranslationController::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['forwardToReferringRequest'])
             ->getMock();
-        $controller->method('forwardToReferringRequest')
+        $controller->expects(self::once())
+            ->method('forwardToReferringRequest')
             ->willReturn(null);
         $this->setControllerProperty(
             'responseFactory',
