@@ -116,7 +116,7 @@
                 <source>TextDb</source>
             </trans-unit>
             <trans-unit id="message.error.translation.save">
-                <source>The translation could not be saved: %s</source>
+                <source>The translation could not be saved.</source>
             </trans-unit>
             <trans-unit id="message.error.translation.request">
                 <source>The submitted request could not be processed.</source>

@@ -20,6 +20,8 @@ use Netresearch\NrTextdb\Domain\Repository\TypeRepository;
 use Netresearch\NrTextdb\Service\ImportService;
 use Netresearch\NrTextdb\Service\TranslationService;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use RuntimeException;
 use SimpleXMLElement;
 use Throwable;
@@ -53,6 +55,7 @@ use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use ZipArchive;
 
+use function array_filter;
 use function array_key_exists;
 use function is_array;
 use function is_int;
@@ -71,8 +74,10 @@ use function unserialize;
  * @license Netresearch https://www.netresearch.de
  * @link    https://www.netresearch.de
  */
-class TranslationController extends ActionController
+class TranslationController extends ActionController implements LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     /**
      * @var ModuleTemplateFactory
      */
@@ -378,7 +383,6 @@ class TranslationController extends ActionController
             foreach ($new as $language => $value) {
                 if (
                     !is_int($language)
-                    || ($language < -1)
                     || !is_string($value)
                     || !array_key_exists($language, $allowedLanguages)
                 ) {
@@ -418,7 +422,7 @@ class TranslationController extends ActionController
             // value, counts as payload here too.
             $newHasPayload = array_filter(
                 $new,
-                static fn (string|array $value): bool => !is_string($value) || (trim($value) !== ''),
+                static fn (mixed $value): bool => !is_string($value) || (trim($value) !== ''),
             ) !== [];
 
             if ($newHasPayload) {
@@ -495,12 +499,17 @@ class TranslationController extends ActionController
             // feedback.
             $this->persistenceManager->clearState();
 
+            // The exception message can carry backend-internal detail (e.g.
+            // a raw SQL error), logged for diagnosis but never shown to the
+            // editor, who only needs to know that nothing was saved.
+            $this->logger?->error(
+                'Translation could not be saved: ' . $throwable->getMessage(),
+                ['exception' => $throwable],
+            );
+
             $this->addFlashMessageToQueue(
                 $this->translate('message.translation.save.title') ?? 'TextDb',
-                sprintf(
-                    $this->translate('message.error.translation.save') ?? 'The translation could not be saved: %s',
-                    $throwable->getMessage(),
-                ),
+                $this->translate('message.error.translation.save') ?? 'The translation could not be saved.',
             );
         }
 
@@ -1214,12 +1223,9 @@ class TranslationController extends ActionController
         return [];
     }
 
-    /**
-     * @param array<int|string, mixed> $arguments
-     */
-    private function translate(string $key, array $arguments = []): ?string
+    private function translate(string $key): ?string
     {
-        return LocalizationUtility::translate($key, 'nr_textdb', $arguments);
+        return LocalizationUtility::translate($key, 'nr_textdb');
     }
 
     /**
