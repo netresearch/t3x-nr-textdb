@@ -499,6 +499,9 @@ final class TranslationControllerTest extends UnitTestCase
     private function stubUriBuilderCapturingArguments(string $returnValue, ?TranslationController $controller = null): object
     {
         $capture = new class {
+            /**
+             * @var list<mixed>|null
+             */
             public ?array $arguments = null;
         };
 
@@ -1241,7 +1244,11 @@ final class TranslationControllerTest extends UnitTestCase
             2            => ['not', 'a', 'string'],
             999          => 'unconfigured language id',
             1            => '   ',
-            0            => 'a valid, accepted value',
+            // Padded on purpose: createTranslationFromParent()'s ->with()
+            // constraint above expects the trimmed value, pinning that a
+            // mutation swapping $trimmedValue back to $value would
+            // otherwise go undetected on an already-clean test string.
+            0 => '  a valid, accepted value  ',
         ]);
     }
 
