@@ -1318,6 +1318,39 @@ final class TranslationControllerTest extends UnitTestCase
     }
 
     #[Test]
+    public function translateRecordActionStillAcceptsABlankUpdateValue(): void
+    {
+        // Unlike the new[] loop (which explicitly skips a blank trimmed
+        // value, see its own comment), the update[] loop has no such guard:
+        // clearing an existing translation to empty is a legitimate edit,
+        // an untouched "new" textarea is not the same thing. Nothing here
+        // proved that asymmetry actually works, an accidental blank-skip
+        // ported over from the new[] loop would leave every existing
+        // update[] test green, they all submit a non-blank value.
+        $translation = new Translation();
+
+        $translationRepository = self::createMock(TranslationRepository::class);
+        $translationRepository->method('findByUid')->willReturn($translation);
+        $translationRepository->expects(self::once())
+            ->method('update')
+            ->with(self::callback(static fn (Translation $updated): bool => $updated->getValue() === ''));
+        $this->setControllerProperty(
+            'translationRepository',
+            $translationRepository,
+        );
+
+        $this->stubTranslationServiceWithNoLanguages();
+
+        $this->stubPersistenceManager();
+
+        $this->invokeTranslateRecordAction(
+            0,
+            [],
+            [1 => '   '],
+        );
+    }
+
+    #[Test]
     public function translateRecordActionRejectsAZeroUpdateUidEvenIfATranslationWouldResolveForIt(): void
     {
         // The actual guard is ($translationUid <= 0). The negative-uid case
@@ -1635,6 +1668,43 @@ final class TranslationControllerTest extends UnitTestCase
             0,
             [],
             [1 => 'a valid value'],
+        );
+    }
+
+    #[Test]
+    public function translateRecordActionReachesTheRejectedFlashMessageForABlankOnlyNewSubmission(): void
+    {
+        // $nothingWasSaved is (($new !== []) || ($update !== [])) &&
+        // ($acceptedCount === 0). A blank-only new[] entry for an otherwise
+        // valid language is neither accepted nor rejected (see the skip a
+        // few lines above this), so with update[] empty, the $new !== []
+        // operand is the only thing that can still make $nothingWasSaved
+        // true here, dropping it would silently skip the warning message
+        // instead. Reaching addFlashMessageToQueue() needs a booted
+        // container this Unit test does not provide, same distinguishing
+        // technique as the sibling test above.
+        $this->resetSingletonInstances = true;
+
+        $translation = new Translation();
+        $this->stubTranslationRepositoryFindByUidReturning($translation);
+
+        $translationService = self::createStub(TranslationService::class);
+        $translationService->method('getAllLanguages')->willReturn([
+            0 => $this->siteLanguage(0),
+        ]);
+        $this->setControllerProperty(
+            'translationService',
+            $translationService,
+        );
+
+        $this->stubPersistenceManager();
+
+        $this->expectException(ArgumentCountError::class);
+        $this->expectExceptionMessageMatches('/LanguageServiceFactory::__construct/');
+
+        $this->controller->translateRecordAction(
+            0,
+            [0 => '   '],
         );
     }
 
