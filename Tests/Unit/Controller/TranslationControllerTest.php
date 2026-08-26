@@ -493,6 +493,28 @@ final class TranslationControllerTest extends UnitTestCase
         );
     }
 
+    /**
+     * @return TranslationService&MockObject
+     */
+    private function stubTranslationServiceWithLanguages(SiteLanguage ...$languages): TranslationService
+    {
+        $allowedLanguages = [];
+
+        foreach ($languages as $language) {
+            $allowedLanguages[$language->getLanguageId()] = $language;
+        }
+
+        $translationService = self::createMock(TranslationService::class);
+        $translationService->method('getAllLanguages')->willReturn($allowedLanguages);
+
+        $this->setControllerProperty(
+            'translationService',
+            $translationService,
+        );
+
+        return $translationService;
+    }
+
     private function stubTranslationRepositoryFindByUidReturning(?Translation $translation): void
     {
         $translationRepository = self::createStub(TranslationRepository::class);
@@ -1244,14 +1266,10 @@ final class TranslationControllerTest extends UnitTestCase
             $translationRepository,
         );
 
-        $translationService = self::createMock(TranslationService::class);
-        $translationService->method('getAllLanguages')->willReturn([
-            0 => $this->siteLanguage(0),
-            1 => $this->siteLanguage(
-                1,
-                'de',
-            ),
-        ]);
+        $translationService = $this->stubTranslationServiceWithLanguages(
+            $this->siteLanguage(0),
+            $this->siteLanguage(1, 'de'),
+        );
         $translationService->expects(self::once())
             ->method('createTranslationFromParent')
             ->with(
@@ -1260,10 +1278,6 @@ final class TranslationControllerTest extends UnitTestCase
                 'a valid, accepted value',
             )
             ->willReturn($createdTranslation);
-        $this->setControllerProperty(
-            'translationService',
-            $translationService,
-        );
 
         $this->stubPersistenceManager();
 
@@ -1471,16 +1485,9 @@ final class TranslationControllerTest extends UnitTestCase
 
         $this->stubTranslationRepositoryFindByUidReturning($parentTranslation);
 
-        $translationService = self::createMock(TranslationService::class);
-        $translationService->method('getAllLanguages')->willReturn([
-            -2 => $this->siteLanguage(-2),
-        ]);
+        $translationService = $this->stubTranslationServiceWithLanguages($this->siteLanguage(-2));
         $translationService->expects(self::never())
             ->method('createTranslationFromParent');
-        $this->setControllerProperty(
-            'translationService',
-            $translationService,
-        );
 
         $this->stubPersistenceManager();
 
@@ -1513,10 +1520,7 @@ final class TranslationControllerTest extends UnitTestCase
             $translationRepository,
         );
 
-        $translationService = self::createMock(TranslationService::class);
-        $translationService->method('getAllLanguages')->willReturn([
-            -1 => $this->siteLanguage(-1),
-        ]);
+        $translationService = $this->stubTranslationServiceWithLanguages($this->siteLanguage(-1));
         $translationService->expects(self::once())
             ->method('createTranslationFromParent')
             ->with(
@@ -1525,10 +1529,6 @@ final class TranslationControllerTest extends UnitTestCase
                 'a value for the documented -1 boundary',
             )
             ->willReturn($createdTranslation);
-        $this->setControllerProperty(
-            'translationService',
-            $translationService,
-        );
 
         $this->stubPersistenceManager();
 
@@ -1585,15 +1585,8 @@ final class TranslationControllerTest extends UnitTestCase
             $translationRepository,
         );
 
-        $translationService = self::createStub(TranslationService::class);
-        $translationService->method('getAllLanguages')->willReturn([
-            0 => $this->siteLanguage(0),
-        ]);
+        $translationService = $this->stubTranslationServiceWithLanguages($this->siteLanguage(0));
         $translationService->method('createTranslationFromParent')->willReturn(null);
-        $this->setControllerProperty(
-            'translationService',
-            $translationService,
-        );
 
         $this->stubPersistenceManager();
 
@@ -1688,14 +1681,7 @@ final class TranslationControllerTest extends UnitTestCase
         $translation = new Translation();
         $this->stubTranslationRepositoryFindByUidReturning($translation);
 
-        $translationService = self::createStub(TranslationService::class);
-        $translationService->method('getAllLanguages')->willReturn([
-            0 => $this->siteLanguage(0),
-        ]);
-        $this->setControllerProperty(
-            'translationService',
-            $translationService,
-        );
+        $this->stubTranslationServiceWithLanguages($this->siteLanguage(0));
 
         $this->stubPersistenceManager();
 

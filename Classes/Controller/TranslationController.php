@@ -392,7 +392,10 @@ class TranslationController extends ActionController implements LoggerAwareInter
                     // guarantee, so it stays an explicit guard of its own.
                     || ($language < -1)
                     || !is_string($value)
-                    || !array_key_exists($language, $allowedLanguages)
+                    || !array_key_exists(
+                        $language,
+                        $allowedLanguages,
+                    )
                 ) {
                     ++$rejectedCount;
 
