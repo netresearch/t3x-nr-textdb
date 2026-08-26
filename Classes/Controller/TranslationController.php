@@ -557,18 +557,17 @@ class TranslationController extends ActionController implements LoggerAwareInter
         // request's own module identifier, so a foreign controller/action
         // can never resolve outside this module's five routes (empty $uri
         // below). extensionName is the one value backend routing ignores,
-        // so it needs this explicit check.
-        if ($forwardResponse->getExtensionName() !== 'NrTextdb') {
-            return $this->htmlResponse($this->getFlattenedValidationErrorMessage())
-                ->withStatus(400);
-        }
+        // so it needs this explicit check, skipping uriFor() entirely.
+        $uri = '';
 
-        $uri = $this->uriBuilder->reset()->uriFor(
-            $forwardResponse->getActionName(),
-            $forwardResponse->getArguments(),
-            $forwardResponse->getControllerName(),
-            $forwardResponse->getExtensionName(),
-        );
+        if ($forwardResponse->getExtensionName() === 'NrTextdb') {
+            $uri = $this->uriBuilder->reset()->uriFor(
+                $forwardResponse->getActionName(),
+                $forwardResponse->getArguments(),
+                $forwardResponse->getControllerName(),
+                $forwardResponse->getExtensionName(),
+            );
+        }
 
         if ($uri === '') {
             return $this->htmlResponse($this->getFlattenedValidationErrorMessage())

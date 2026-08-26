@@ -481,6 +481,16 @@ final class TranslationControllerTest extends UnitTestCase
         );
     }
 
+    private function stubTranslationRepositoryFindByUidReturning(?Translation $translation): void
+    {
+        $translationRepository = self::createStub(TranslationRepository::class);
+        $translationRepository->method('findByUid')->willReturn($translation);
+        $this->setControllerProperty(
+            'translationRepository',
+            $translationRepository,
+        );
+    }
+
     private function siteLanguage(int $languageId, string $locale = 'en'): SiteLanguage
     {
         return new SiteLanguage(
@@ -1336,12 +1346,7 @@ final class TranslationControllerTest extends UnitTestCase
         // and update[] empty, addFlashMessageToQueue() (and the booted
         // container it needs) is never reached, translateRecordAction()
         // runs through to redirectToUri() clean.
-        $translationRepository = self::createStub(TranslationRepository::class);
-        $translationRepository->method('findByUid')->willReturn(null);
-        $this->setControllerProperty(
-            'translationRepository',
-            $translationRepository,
-        );
+        $this->stubTranslationRepositoryFindByUidReturning(null);
 
         $this->stubPersistenceManager();
 
@@ -1361,12 +1366,7 @@ final class TranslationControllerTest extends UnitTestCase
         // The sibling test above only asserts the status code, not which
         // action/argument uriFor() was actually asked to build a link for,
         // so a hardcoded or wrong uid there would go unnoticed.
-        $translationRepository = self::createStub(TranslationRepository::class);
-        $translationRepository->method('findByUid')->willReturn(null);
-        $this->setControllerProperty(
-            'translationRepository',
-            $translationRepository,
-        );
+        $this->stubTranslationRepositoryFindByUidReturning(null);
 
         $this->stubPersistenceManager();
 
@@ -1392,12 +1392,7 @@ final class TranslationControllerTest extends UnitTestCase
         // under a negative id to prove the guard still rejects it.
         $parentTranslation = new Translation();
 
-        $translationRepository = self::createStub(TranslationRepository::class);
-        $translationRepository->method('findByUid')->willReturn($parentTranslation);
-        $this->setControllerProperty(
-            'translationRepository',
-            $translationRepository,
-        );
+        $this->stubTranslationRepositoryFindByUidReturning($parentTranslation);
 
         $translationService = self::createMock(TranslationService::class);
         $translationService->method('getAllLanguages')->willReturn([
@@ -1537,12 +1532,7 @@ final class TranslationControllerTest extends UnitTestCase
         // Without this guard a persistence error (e.g. a collision with the
         // unique key on the translation table) escaped the module as a raw
         // 500 and the editor lost the entered text without any feedback.
-        $translationRepository = self::createStub(TranslationRepository::class);
-        $translationRepository->method('findByUid')->willReturn(null);
-        $this->setControllerProperty(
-            'translationRepository',
-            $translationRepository,
-        );
+        $this->stubTranslationRepositoryFindByUidReturning(null);
 
         $persistenceManager = self::createMock(PersistenceManager::class);
         $persistenceManager->method('persistAll')
