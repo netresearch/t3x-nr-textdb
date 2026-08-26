@@ -1358,7 +1358,11 @@ final class TranslationControllerTest extends UnitTestCase
         ]);
         $translationService->expects(self::once())
             ->method('createTranslationFromParent')
-            ->with(self::identicalTo($parentTranslation), -1, 'a value for the documented -1 boundary')
+            ->with(
+                self::identicalTo($parentTranslation),
+                -1,
+                'a value for the documented -1 boundary',
+            )
             ->willReturn($createdTranslation);
         $this->setControllerProperty(
             'translationService',
