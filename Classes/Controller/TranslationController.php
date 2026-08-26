@@ -565,7 +565,7 @@ class TranslationController extends ActionController implements LoggerAwareInter
 
         $uri = $this->uriBuilder->reset()->uriFor(
             $forwardResponse->getActionName(),
-            $forwardResponse->getArguments() ?? [],
+            $forwardResponse->getArguments(),
             $forwardResponse->getControllerName(),
             $forwardResponse->getExtensionName(),
         );
