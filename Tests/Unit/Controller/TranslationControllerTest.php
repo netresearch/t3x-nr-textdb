@@ -482,6 +482,17 @@ final class TranslationControllerTest extends UnitTestCase
         );
     }
 
+    private function stubTranslationServiceWithNoLanguages(): void
+    {
+        $translationService = self::createStub(TranslationService::class);
+        $translationService->method('getAllLanguages')->willReturn([]);
+
+        $this->setControllerProperty(
+            'translationService',
+            $translationService,
+        );
+    }
+
     private function stubTranslationRepositoryFindByUidReturning(?Translation $translation): void
     {
         $translationRepository = self::createStub(TranslationRepository::class);
@@ -1287,12 +1298,7 @@ final class TranslationControllerTest extends UnitTestCase
         // $parent (0) resolves through the same findByUid() stub as the
         // update-loop lookups, entering the new[] branch that reads
         // getAllLanguages() unconditionally, even though $new is empty here.
-        $translationService = self::createStub(TranslationService::class);
-        $translationService->method('getAllLanguages')->willReturn([]);
-        $this->setControllerProperty(
-            'translationService',
-            $translationService,
-        );
+        $this->stubTranslationServiceWithNoLanguages();
 
         $this->stubPersistenceManager();
 
@@ -1330,12 +1336,7 @@ final class TranslationControllerTest extends UnitTestCase
         // update-loop lookup, entering the new[] branch that reads
         // getAllLanguages() unconditionally, even though $new is empty here,
         // same reasoning as the sibling test above.
-        $translationService = self::createStub(TranslationService::class);
-        $translationService->method('getAllLanguages')->willReturn([]);
-        $this->setControllerProperty(
-            'translationService',
-            $translationService,
-        );
+        $this->stubTranslationServiceWithNoLanguages();
 
         $this->stubPersistenceManager();
 
@@ -1379,12 +1380,7 @@ final class TranslationControllerTest extends UnitTestCase
 
         // A resolvable parent enters the new[] branch that reads
         // getAllLanguages() unconditionally, even though $new is empty here.
-        $translationService = self::createStub(TranslationService::class);
-        $translationService->method('getAllLanguages')->willReturn([]);
-        $this->setControllerProperty(
-            'translationService',
-            $translationService,
-        );
+        $this->stubTranslationServiceWithNoLanguages();
 
         $this->stubPersistenceManager();
 
@@ -1620,19 +1616,18 @@ final class TranslationControllerTest extends UnitTestCase
         $translation = new Translation();
         $this->stubTranslationRepositoryFindByUidReturning($translation);
 
-        $translationService = self::createStub(TranslationService::class);
-        $translationService->method('getAllLanguages')->willReturn([]);
-        $this->setControllerProperty(
-            'translationService',
-            $translationService,
-        );
+        $this->stubTranslationServiceWithNoLanguages();
 
         $this->stubPersistenceManager();
 
         $this->expectException(ArgumentCountError::class);
         $this->expectExceptionMessageMatches('/LanguageServiceFactory::__construct/');
 
-        $this->controller->translateRecordAction(0, [], [1 => 'a valid value']);
+        $this->controller->translateRecordAction(
+            0,
+            [],
+            [1 => 'a valid value'],
+        );
     }
 
     /**
