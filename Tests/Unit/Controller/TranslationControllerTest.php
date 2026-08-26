@@ -1031,6 +1031,64 @@ final class TranslationControllerTest extends UnitTestCase
     }
 
     #[Test]
+    public function errorActionProceedsPastBothGuardsForAResolvableForward(): void
+    {
+        // Mirrors errorActionRejectsAForwardThatResolvesToNoRoute with
+        // uriFor() returning a real, non-empty URI instead of '': no
+        // existing test proves the $uri === '' check does not also swallow
+        // a legitimately resolvable forward into the same 400 response.
+        // addFlashMessageToQueue() right after it reaches
+        // LocalizationUtility::translate(), which needs a booted container
+        // this Unit test does not provide and throws before this method
+        // could construct any response at all, there is no path left
+        // afterwards that could still produce the guards' 400, so reaching
+        // that throw (instead of a clean 400 return) is itself what proves
+        // neither guard tripped here.
+        $this->resetSingletonInstances = true;
+
+        $forwardResponse = (new ForwardResponse('translated'))
+            ->withControllerName('Translation')
+            ->withExtensionName('NrTextdb')
+            ->withArguments(['uid' => 1]);
+
+        $controller = $this->partialMockControllerForwarding($forwardResponse);
+
+        $capturedArguments = null;
+        $uriBuilder        = self::createStub(UriBuilder::class);
+        $uriBuilder->method('reset')->willReturnSelf();
+        $uriBuilder->method('uriFor')
+            ->willReturnCallback(static function (...$arguments) use (&$capturedArguments): string {
+                $capturedArguments = $arguments;
+
+                return '/typo3/module/netresearch/textdb/Translation/translated?uid=1';
+            });
+        $this->setControllerProperty(
+            'uriBuilder',
+            $uriBuilder,
+            $controller,
+        );
+
+        try {
+            $response = $this->invokeErrorAction($controller);
+        } catch (Throwable $throwable) {
+            self::assertStringNotContainsString(
+                'getExtensionName',
+                $throwable->getMessage(),
+                'A regression in the ForwardResponse guard would crash trying to read the extension name instead of proceeding to the flash-message translation: ' . $throwable->getMessage(),
+            );
+            self::assertSame(
+                ['translated', ['uid' => 1], 'Translation', 'NrTextdb', null],
+                $capturedArguments,
+                'uriFor() must receive the forward response\'s own action/arguments/controller/extension, in that order.',
+            );
+
+            return;
+        }
+
+        self::fail('errorAction() must not resolve a well-formed, routable forward to the same 400 the foreign-extension/no-route guards return, got status ' . $response->getStatusCode() . '.');
+    }
+
+    #[Test]
     public function errorActionFallsBackToTheParentImplementationWithoutAReferrer(): void
     {
         // forwardToReferringRequest() returns null whenever the request
@@ -1283,6 +1341,44 @@ final class TranslationControllerTest extends UnitTestCase
         self::assertSame(
             303,
             $response->getStatusCode(),
+        );
+    }
+
+    #[Test]
+    public function translateRecordActionRedirectsToTheTranslatedActionForTheGivenParent(): void
+    {
+        // The sibling test above only asserts the status code, not which
+        // action/argument uriFor() was actually asked to build a link for,
+        // so a hardcoded or wrong uid there would go unnoticed.
+        $translationRepository = self::createStub(TranslationRepository::class);
+        $translationRepository->method('findByUid')->willReturn(null);
+        $this->setControllerProperty(
+            'translationRepository',
+            $translationRepository,
+        );
+
+        $this->stubPersistenceManager();
+
+        $capturedArguments = null;
+        $uriBuilder        = self::createStub(UriBuilder::class);
+        $uriBuilder->method('reset')->willReturnSelf();
+        $uriBuilder->method('uriFor')
+            ->willReturnCallback(static function (...$arguments) use (&$capturedArguments): string {
+                $capturedArguments = $arguments;
+
+                return '/typo3/module/netresearch/textdb/Translation/translated?uid=42';
+            });
+        $this->setControllerProperty(
+            'uriBuilder',
+            $uriBuilder,
+        );
+
+        $this->controller->translateRecordAction(42);
+
+        self::assertSame(
+            ['translated', ['uid' => 42], null, null, null],
+            $capturedArguments,
+            'translateRecordAction() must redirect to its own translated action for the given parent, not a hardcoded or wrong uid.',
         );
     }
 
