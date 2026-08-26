@@ -427,6 +427,13 @@ final class TranslationControllerTest extends UnitTestCase
     #[Test]
     public function listActionUsesThePersistedFilterUnmodifiedWhenNoRequestArgumentsAreSubmitted(): void
     {
+        // persistConfigInBeUserData() re-persists the filter through the real
+        // BackendUserAuthentication::pushModuleData(), which registers a
+        // HashService singleton as a side effect on PHP 8.3 (typo3/testing-framework
+        // 9.x), same reason every other test that reaches that real method
+        // already sets this.
+        $this->resetSingletonInstances = true;
+
         // The destructuring assignment at the top of listAction() that reads
         // getConfigFromBeUserData() is only ever overwritten by the four
         // request-argument branches in the test above, never observed by
@@ -1219,6 +1226,43 @@ final class TranslationControllerTest extends UnitTestCase
         self::assertSame(
             303,
             $response->getStatusCode(),
+        );
+    }
+
+    #[Test]
+    public function translateRecordActionRejectsANegativeLanguageIdEvenIfConfigured(): void
+    {
+        // TYPO3 core does not forbid a negative languageId anywhere (see the
+        // commit that restored this guard), only its own configuration UI
+        // never offers one, so array_key_exists() against getAllLanguages()
+        // alone cannot be trusted to always exclude it, unlike every other
+        // test here, this one arranges a site language actually configured
+        // under a negative id to prove the guard still rejects it.
+        $parentTranslation = new Translation();
+
+        $translationRepository = self::createStub(TranslationRepository::class);
+        $translationRepository->method('findByUid')->willReturn($parentTranslation);
+        $this->setControllerProperty(
+            'translationRepository',
+            $translationRepository,
+        );
+
+        $translationService = self::createMock(TranslationService::class);
+        $translationService->method('getAllLanguages')->willReturn([
+            -2 => new SiteLanguage(-2, 'en', new Uri(), []),
+        ]);
+        $translationService->expects(self::never())
+            ->method('createTranslationFromParent');
+        $this->setControllerProperty(
+            'translationService',
+            $translationService,
+        );
+
+        $this->stubPersistenceManager();
+
+        $this->invokeTranslateRecordAction(
+            1,
+            [-2 => 'a value for a negatively configured language'],
         );
     }
 
