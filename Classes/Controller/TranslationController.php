@@ -479,7 +479,7 @@ class TranslationController extends ActionController implements LoggerAwareInter
 
             if ($nothingWasSaved || $somethingRejected) {
                 $this->addFlashMessageToQueue(
-                    $this->translate('message.translation.save.title') ?? 'TextDb',
+                    $this->translationSaveTitle(),
                     $this->translate('message.translation.rejected') ?? 'One or more of the submitted translations could not be saved. The record, the target language, or the submitted value was not valid.',
                     ContextualFeedbackSeverity::WARNING,
                 );
@@ -487,7 +487,7 @@ class TranslationController extends ActionController implements LoggerAwareInter
 
             if ($acceptedCount > 0) {
                 $this->addFlashMessageToQueue(
-                    $this->translate('message.translation.save.title') ?? 'TextDb',
+                    $this->translationSaveTitle(),
                     $this->translate('message.translation.saved') ?? 'The translation was saved.',
                     ContextualFeedbackSeverity::OK,
                 );
@@ -508,7 +508,7 @@ class TranslationController extends ActionController implements LoggerAwareInter
             );
 
             $this->addFlashMessageToQueue(
-                $this->translate('message.translation.save.title') ?? 'TextDb',
+                $this->translationSaveTitle(),
                 $this->translate('message.error.translation.save') ?? 'The translation could not be saved.',
             );
         }
@@ -570,7 +570,7 @@ class TranslationController extends ActionController implements LoggerAwareInter
         // would be lost. addFlashMessageToQueue() persists it to the
         // session-stored queue the module's chrome actually reads.
         $this->addFlashMessageToQueue(
-            $this->translate('message.translation.save.title') ?? 'TextDb',
+            $this->translationSaveTitle(),
             $this->translate('message.error.translation.request') ?? 'The submitted request could not be processed.',
         );
 
@@ -1226,6 +1226,11 @@ class TranslationController extends ActionController implements LoggerAwareInter
     private function translate(string $key): ?string
     {
         return LocalizationUtility::translate($key, 'nr_textdb');
+    }
+
+    private function translationSaveTitle(): string
+    {
+        return $this->translate('message.translation.save.title') ?? 'TextDb';
     }
 
     /**

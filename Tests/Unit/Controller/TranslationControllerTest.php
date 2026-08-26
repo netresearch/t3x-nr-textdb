@@ -463,6 +463,11 @@ final class TranslationControllerTest extends UnitTestCase
         );
     }
 
+    private function stubPersistenceManager(): void
+    {
+        $this->setControllerProperty('persistenceManager', self::createStub(PersistenceManager::class));
+    }
+
     /**
      * Wires a real, minimally constructed Extbase request carrying the
      * given arguments onto the controller. ActionController::$request is
@@ -1049,7 +1054,7 @@ final class TranslationControllerTest extends UnitTestCase
             ->willReturn($createdTranslation);
         $this->setControllerProperty('translationService', $translationService);
 
-        $this->setControllerProperty('persistenceManager', self::createStub(PersistenceManager::class));
+        $this->stubPersistenceManager();
 
         $this->invokeTranslateRecordAction(1, [
             'not-an-int' => 'value for a string key',
@@ -1079,7 +1084,7 @@ final class TranslationControllerTest extends UnitTestCase
         $translationService->method('getAllLanguages')->willReturn([]);
         $this->setControllerProperty('translationService', $translationService);
 
-        $this->setControllerProperty('persistenceManager', self::createStub(PersistenceManager::class));
+        $this->stubPersistenceManager();
 
         $this->invokeTranslateRecordAction(0, [], [
             'not-an-int' => 'value for a string key',
@@ -1100,7 +1105,7 @@ final class TranslationControllerTest extends UnitTestCase
         $translationRepository->method('findByUid')->willReturn(null);
         $this->setControllerProperty('translationRepository', $translationRepository);
 
-        $this->setControllerProperty('persistenceManager', self::createStub(PersistenceManager::class));
+        $this->stubPersistenceManager();
 
         $uriBuilder = self::createStub(UriBuilder::class);
         $uriBuilder->method('reset')->willReturnSelf();
@@ -1125,7 +1130,7 @@ final class TranslationControllerTest extends UnitTestCase
             ->method('add');
         $this->setControllerProperty('translationRepository', $translationRepository);
 
-        $this->setControllerProperty('persistenceManager', self::createStub(PersistenceManager::class));
+        $this->stubPersistenceManager();
 
         $this->invokeTranslateRecordAction(1, [0 => 'orphaned payload']);
     }
@@ -1151,7 +1156,7 @@ final class TranslationControllerTest extends UnitTestCase
         $translationService->method('createTranslationFromParent')->willReturn(null);
         $this->setControllerProperty('translationService', $translationService);
 
-        $this->setControllerProperty('persistenceManager', self::createStub(PersistenceManager::class));
+        $this->stubPersistenceManager();
 
         $this->invokeTranslateRecordAction(1, [0 => 'a value the service refuses to accept']);
     }
