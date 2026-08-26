@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Netresearch\NrTextdb\Tests\Unit\Controller;
 
+use ArgumentCountError;
 use Error;
 use Netresearch\NrTextdb\Controller\TranslationController;
 use Netresearch\NrTextdb\Domain\Model\Translation;
@@ -510,7 +511,7 @@ final class TranslationControllerTest extends UnitTestCase
     {
         $capture = new class {
             /**
-             * @var list<mixed>|null
+             * @var list<string|array<string, int|string>|null>|null
              */
             public ?array $arguments = null;
         };
@@ -1053,7 +1054,10 @@ final class TranslationControllerTest extends UnitTestCase
 
         $controller = $this->partialMockControllerForwarding($forwardResponse);
 
-        $capture = $this->stubUriBuilderCapturingArguments('', $controller);
+        $capture = $this->stubUriBuilderCapturingArguments(
+            '',
+            $controller,
+        );
 
         $response = $this->invokeErrorAction($controller);
 
@@ -1232,7 +1236,10 @@ final class TranslationControllerTest extends UnitTestCase
         $translationService = self::createMock(TranslationService::class);
         $translationService->method('getAllLanguages')->willReturn([
             0 => $this->siteLanguage(0),
-            1 => $this->siteLanguage(1, 'de'),
+            1 => $this->siteLanguage(
+                1,
+                'de',
+            ),
         ]);
         $translationService->expects(self::once())
             ->method('createTranslationFromParent')
@@ -1365,8 +1372,19 @@ final class TranslationControllerTest extends UnitTestCase
     {
         // The sibling test above only asserts the status code, not which
         // action/argument uriFor() was actually asked to build a link for,
-        // so a hardcoded or wrong uid there would go unnoticed.
-        $this->stubTranslationRepositoryFindByUidReturning(null);
+        // so a hardcoded or wrong uid there would go unnoticed. A resolvable
+        // parent on purpose, an unresolvable one redirects to "list"
+        // instead, see the dedicated test below for that.
+        $this->stubTranslationRepositoryFindByUidReturning(new Translation());
+
+        // A resolvable parent enters the new[] branch that reads
+        // getAllLanguages() unconditionally, even though $new is empty here.
+        $translationService = self::createStub(TranslationService::class);
+        $translationService->method('getAllLanguages')->willReturn([]);
+        $this->setControllerProperty(
+            'translationService',
+            $translationService,
+        );
 
         $this->stubPersistenceManager();
 
@@ -1378,6 +1396,28 @@ final class TranslationControllerTest extends UnitTestCase
             ['translated', ['uid' => 42], null, null, null],
             $capture->arguments,
             'translateRecordAction() must redirect to its own translated action for the given parent, not a hardcoded or wrong uid.',
+        );
+    }
+
+    #[Test]
+    public function translateRecordActionRedirectsToTheListActionForAnUnresolvableParent(): void
+    {
+        // translatedAction() dereferences findByUid()'s result unguarded
+        // (see its own implementation), redirecting an unresolvable $parent
+        // there instead of to "list" would turn the warning flash message
+        // this method already queued into an uncaught 500.
+        $this->stubTranslationRepositoryFindByUidReturning(null);
+
+        $this->stubPersistenceManager();
+
+        $capture = $this->stubUriBuilderCapturingArguments('/typo3/module/netresearch/textdb/Translation/list');
+
+        $this->controller->translateRecordAction(42);
+
+        self::assertSame(
+            ['list', [], null, null, null],
+            $capture->arguments,
+            'translateRecordAction() must redirect to "list" instead of "translated" when the parent never resolved.',
         );
     }
 
@@ -1561,6 +1601,38 @@ final class TranslationControllerTest extends UnitTestCase
             [],
             [1 => 'value'],
         );
+    }
+
+    #[Test]
+    public function translateRecordActionReachesTheSavedFlashMessageForASingleAcceptedZeroRejectedSubmission(): void
+    {
+        // Every other test with an accepted entry also has a rejected one,
+        // so the (acceptedCount > 0) branch below the rejected-branch check
+        // is never entered on its own. Reaching addFlashMessageToQueue()
+        // here needs a booted container this Unit test does not provide,
+        // throwing that specific, distinguishable error (rather than the
+        // unrelated one an uninitialized uriBuilder would throw from the
+        // redirect a skipped branch falls through to instead) is what
+        // proves this branch was actually entered for a clean, single-entry
+        // submission.
+        $this->resetSingletonInstances = true;
+
+        $translation = new Translation();
+        $this->stubTranslationRepositoryFindByUidReturning($translation);
+
+        $translationService = self::createStub(TranslationService::class);
+        $translationService->method('getAllLanguages')->willReturn([]);
+        $this->setControllerProperty(
+            'translationService',
+            $translationService,
+        );
+
+        $this->stubPersistenceManager();
+
+        $this->expectException(ArgumentCountError::class);
+        $this->expectExceptionMessageMatches('/LanguageServiceFactory::__construct/');
+
+        $this->controller->translateRecordAction(0, [], [1 => 'a valid value']);
     }
 
     /**

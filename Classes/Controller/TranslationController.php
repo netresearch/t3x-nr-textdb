@@ -528,10 +528,15 @@ class TranslationController extends ActionController implements LoggerAwareInter
         // rejected one, casting a rejected array value to a string to render
         // it crashes the page with "Array to string conversion" although
         // nothing was persisted.
+        //
+        // $parent redirects to "list" instead when it never resolved:
+        // translatedAction() dereferences findByUid()'s result unguarded, an
+        // unresolvable uid there is an uncaught 500 rather than the warning
+        // flash message this method already queued for it above.
         return $this->redirectToUri(
             $this->uriBuilder->reset()->uriFor(
-                'translated',
-                ['uid' => $parent],
+                $parentTranslation instanceof Translation ? 'translated' : 'list',
+                $parentTranslation instanceof Translation ? ['uid' => $parent] : [],
             ),
         );
     }
