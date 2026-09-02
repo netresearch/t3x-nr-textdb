@@ -14,10 +14,10 @@ use TYPO3\CMS\Core\Imaging\IconProvider\SvgIconProvider;
 return [
     'extension-netresearch-module' => [
         'provider' => SvgIconProvider::class,
-        'source'   => 'EXT:nr_textdb/Resources/Public/Icons/Module.svg',
+        'source'   => 'EXT:nr_textdb/Resources/Public/Icons/Extension.svg',
     ],
     'extension-netresearch-textdb' => [
         'provider' => SvgIconProvider::class,
-        'source'   => 'EXT:nr_textdb/Resources/Public/Icons/Extension.svg',
+        'source'   => 'EXT:nr_textdb/Resources/Public/Icons/Module.svg',
     ],
 ];
