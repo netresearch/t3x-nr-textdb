@@ -263,11 +263,11 @@ Icons are registered in `Configuration/Icons.php`:
    return [
        'extension-netresearch-module' => [
            'provider' => SvgIconProvider::class,
-           'source' => 'EXT:nr_textdb/Resources/Public/Icons/Module.svg',
+           'source' => 'EXT:nr_textdb/Resources/Public/Icons/Extension.svg',
        ],
        'extension-netresearch-textdb' => [
            'provider' => SvgIconProvider::class,
-           'source' => 'EXT:nr_textdb/Resources/Public/Icons/Extension.svg',
+           'source' => 'EXT:nr_textdb/Resources/Public/Icons/Module.svg',
        ],
    ];
 
