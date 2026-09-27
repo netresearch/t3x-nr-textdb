@@ -588,10 +588,13 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
     #[Test]
     public function translatedViewLabelsEachTextareaByTheRowHeaderOfItsOwnLanguage(): void
     {
-        // uid 1 has a record in languages 0 and 1, the site also has language 2:
-        // two "translated" rows and one "untranslated" row. Each textarea is
-        // named by the row header of its own row, so the row-header ids must be
-        // unique across all rows of the rendered view.
+        // uid 1 has a record in languages 0 and 1; with Italian added the site
+        // also has languages 2 and 3, so both row types occur twice: two
+        // "translated" and two "untranslated" rows. Each textarea is named by
+        // the row header of its own row, so the row-header ids must be unique
+        // across all rows of the rendered view.
+        $this->writeSiteConfiguration(withItalian: true);
+
         $html = (string) $this->dispatchModuleAction('translated', ['uid' => '1'])->getBody();
 
         $document = new DOMDocument();
@@ -604,7 +607,7 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
 
         $rowHeaders = $xpath->query('//table//tbody/tr/th[@scope="row"]');
         self::assertNotFalse($rowHeaders);
-        self::assertSame(3, $rowHeaders->length);
+        self::assertSame(4, $rowHeaders->length);
 
         $ids = [];
 
@@ -617,7 +620,11 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
 
         $textareas = $xpath->query('//table//tbody/tr/td/textarea');
         self::assertNotFalse($textareas);
-        self::assertSame(3, $textareas->length);
+        self::assertSame(4, $textareas->length);
+
+        $untranslated = $xpath->query('//table//tbody/tr[contains(concat(" ", normalize-space(@class), " "), " untranslated ")]');
+        self::assertNotFalse($untranslated);
+        self::assertSame(2, $untranslated->length);
 
         foreach ($textareas as $textarea) {
             self::assertInstanceOf(DOMElement::class, $textarea);
@@ -1069,7 +1076,8 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
     }
 
     /**
-     * Publishes a site with three languages (English, German, French).
+     * Publishes a site with three languages (English, German, French), or
+     * with Italian as a fourth one.
      *
      * Called from setUp() for every test: translateRecordAction() now checks
      * new[] language ids against the site's configured languages (issue
@@ -1081,7 +1089,7 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
      * written to the test instance, where tearDown() removes it again
      * together with its cache.
      */
-    private function writeSiteConfiguration(): void
+    private function writeSiteConfiguration(bool $withItalian = false): void
     {
         $siteDirectory = Environment::getConfigPath() . '/sites/textdb';
 
@@ -1107,7 +1115,15 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
                     title: French
                     locale: fr_FR.UTF-8
                     base: /fr/
-                YAML,
+
+                YAML
+            . ($withItalian ? <<<'YAML'
+                  - languageId: 3
+                    title: Italian
+                    locale: it_IT.UTF-8
+                    base: /it/
+
+                YAML : ''),
         );
 
         self::assertNotFalse($written, 'Could not write the site configuration.');

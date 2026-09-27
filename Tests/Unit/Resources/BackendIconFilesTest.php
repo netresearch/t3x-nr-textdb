@@ -25,6 +25,8 @@ use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 #[CoversNothing]
 final class BackendIconFilesTest extends UnitTestCase
 {
+    private const PAINT_PROPERTIES = ['stroke', 'fill', 'color', 'stop-color', 'flood-color', 'lighting-color'];
+
     private const ICON_DIR = __DIR__ . '/../../../Resources/Public/Icons/';
 
     /**
@@ -82,34 +84,8 @@ final class BackendIconFilesTest extends UnitTestCase
         foreach ($painted as $element) {
             self::assertInstanceOf(DOMElement::class, $element);
 
-            $paints = [];
-
-            foreach (['stroke', 'fill', 'color'] as $attribute) {
-                if ($element->hasAttribute($attribute)) {
-                    $paints[$attribute] = $element->getAttribute($attribute);
-                }
-            }
-
-            // A colour in a style attribute wins over the presentation attribute.
-            foreach (explode(';', $element->getAttribute('style')) as $declaration) {
-                if (!str_contains($declaration, ':')) {
-                    continue;
-                }
-
-                [$property, $value] = explode(':', $declaration, 2);
-                $property           = strtolower(trim($property));
-
-                if (in_array($property, ['stroke', 'fill', 'color', 'stop-color', 'flood-color', 'lighting-color'], true)) {
-                    $paints['style ' . $property] = $value;
-                }
-            }
-
-            foreach ($paints as $where => $value) {
-                self::assertContains(
-                    trim(str_ireplace('!important', '', $value)),
-                    ['currentColor', 'none'],
-                    $table . '.svg: ' . $where . ' must follow the backend colour scheme',
-                );
+            foreach ($this->paintsOf($element) as $where => $value) {
+                self::assertContains($value, ['currentColor', 'none'], $table . '.svg: ' . $where . ' must follow the backend colour scheme');
             }
         }
     }
@@ -117,21 +93,34 @@ final class BackendIconFilesTest extends UnitTestCase
     #[Test]
     public function moduleGroupIconDrawsTheGlyphInCurrentColorAndKeepsTheAccent(): void
     {
-        $svg   = $this->load(self::ICON_DIR . 'ModuleGroup.svg');
-        $fills = [];
+        $paths = $this->load(self::ICON_DIR . 'ModuleGroup.svg')->getElementsByTagName('path');
+        self::assertSame(2, $paths->length);
 
-        foreach ($svg->getElementsByTagName('path') as $path) {
-            $fills[] = $path->getAttribute('fill');
+        [$accent, $glyph] = [$paths->item(0), $paths->item(1)];
+        self::assertInstanceOf(DOMElement::class, $accent);
+        self::assertInstanceOf(DOMElement::class, $glyph);
+
+        foreach ($this->paintsOf($accent) as $where => $value) {
+            self::assertContains($value, ['#2999a4', 'none'], 'ModuleGroup.svg accent: ' . $where . ' must stay the brand teal');
         }
 
-        self::assertSame(['#2999a4', 'currentColor'], $fills);
+        self::assertSame('#2999a4', $accent->getAttribute('fill'));
+
+        foreach ($this->paintsOf($glyph) as $where => $value) {
+            self::assertContains($value, ['currentColor', 'none'], 'ModuleGroup.svg glyph: ' . $where . ' must follow the backend colour scheme');
+        }
+
+        self::assertSame('currentColor', $glyph->getAttribute('fill'));
     }
 
     /**
      * The Extension Manager shows the logo as <img>, so it cannot follow the
-     * scheme through currentColor. Both fills stay at 3:1 or better against
-     * the Extension Manager rows (striped and hovered) in the light and the
-     * dark scheme; the original #595a62 / #2999a4 dropped to 1.97:1 / 2.59:1.
+     * scheme through currentColor. Measured with TYPO3 14.3.7's backend.css on
+     * the plain rows of the extension list (striped and unstriped, at rest and
+     * hovered, fresh, modern and classic theme, light and dark scheme), both
+     * fills stay at 3.11:1 or better; the original #595a62 / #2999a4 dropped
+     * to 1.93:1 / 2.60:1. Not covered: the tinted "insecure" and "outdated"
+     * rows, which appear only with TER data.
      */
     #[Test]
     public function extensionLogoUsesColoursThatHoldInBothSchemes(): void
@@ -144,6 +133,38 @@ final class BackendIconFilesTest extends UnitTestCase
         }
 
         self::assertSame(['#248791', '#7b7b7b'], $fills);
+    }
+
+    /**
+     * The colours an element paints with: its stroke, fill and color
+     * attributes, and the colour properties of its style attribute, which
+     * win over the attributes.
+     *
+     * @return array<string, string> where => value, "!important" removed
+     */
+    private function paintsOf(DOMElement $element): array
+    {
+        $paints = [];
+
+        foreach (['stroke', 'fill', 'color'] as $attribute) {
+            if ($element->hasAttribute($attribute)) {
+                $paints[$attribute] = $element->getAttribute($attribute);
+            }
+        }
+
+        foreach (explode(';', $element->getAttribute('style')) as $declaration) {
+            [$property, $value] = array_pad(explode(':', $declaration, 2), 2, null);
+            $property           = strtolower(trim((string) $property));
+
+            if ($value !== null && in_array($property, self::PAINT_PROPERTIES, true)) {
+                $paints['style ' . $property] = $value;
+            }
+        }
+
+        return array_map(
+            static fn (string $value): string => trim(str_ireplace('!important', '', $value)),
+            $paints,
+        );
     }
 
     private function load(string $file): DOMDocument
