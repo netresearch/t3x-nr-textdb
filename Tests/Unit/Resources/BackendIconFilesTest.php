@@ -39,6 +39,16 @@ final class BackendIconFilesTest extends UnitTestCase
 
     private const BRAND_TRANSFORM = 'translate(-0.39 -0.04)';
 
+    private const GEOMETRY_ATTRIBUTES = ['d', 'points', 'transform', 'viewBox'];
+
+    private const RECORD_VIEWBOX = '0 0 48 48';
+
+    /**
+     * The rounded frame the component, environment and type icons draw
+     * around their letter.
+     */
+    private const RECORD_FRAME = ['path', ['d' => 'M40.5,5.5H7.5a2,2,0,0,0-2,2v33a2,2,0,0,0,2,2h33a2,2,0,0,0,2-2V7.5A2,2,0,0,0,40.5,5.5Z'], ''];
+
     private const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 
     private const ICON_DIR = __DIR__ . '/../../../Resources/Public/Icons/';
@@ -53,66 +63,93 @@ final class BackendIconFilesTest extends UnitTestCase
      */
     public static function recordIconProvider(): iterable
     {
-        yield 'tx_nrtextdb_domain_model_component' => [
-            'tx_nrtextdb_domain_model_component',
+        yield 'tx_nrtextdb_domain_model_component' => self::recordIcon('tx_nrtextdb_domain_model_component', [
+            self::RECORD_FRAME,
+            ['path', ['d' => self::geometry('M33,28.45a9,9,0,0,1-9,9.05h0a9,9,0,0,1-9-9v-8.9a9,9,0,0,1,9-9h0a9,9,0,0,1,9,9.05')], ''],
+        ]);
+
+        yield 'tx_nrtextdb_domain_model_environment' => self::recordIcon('tx_nrtextdb_domain_model_environment', [
+            self::RECORD_FRAME,
+            ['line', ['x1' => '17.25', 'x2' => '30.75', 'y1' => '37.5', 'y2' => '37.5'], ''],
+            ['line', ['x1' => '17.25', 'x2' => '30.75', 'y1' => '10.5', 'y2' => '10.5'], ''],
+            ['line', ['x1' => '17.25', 'x2' => '26.05', 'y1' => '24', 'y2' => '24'], ''],
+            ['line', ['x1' => '17.25', 'x2' => '17.25', 'y1' => '10.5', 'y2' => '37.5'], ''],
+        ]);
+
+        yield 'tx_nrtextdb_domain_model_translation' => self::recordIcon('tx_nrtextdb_domain_model_translation', self::translationGlyph());
+
+        yield 'tx_nrtextdb_domain_model_type' => self::recordIcon('tx_nrtextdb_domain_model_type', [
+            self::RECORD_FRAME,
+            ['line', ['x1' => '13.84', 'x2' => '34.16', 'y1' => '10.5', 'y2' => '10.5'], ''],
+            ['line', ['x1' => '24', 'x2' => '24', 'y1' => '37.5', 'y2' => '10.5'], ''],
+        ]);
+    }
+
+    /**
+     * The expected tree of a record icon: a <symbol> with the table name as
+     * id, one group drawing its shapes with a currentColor stroke of width 3
+     * and no fill, and a <use> of the symbol, so the file also shows as a
+     * standalone image.
+     *
+     * @param list<array{string, array<string, string>, string}> $shapes
+     *
+     * @return array{string, list<array{string, array<string, string>, string}>}
+     */
+    private static function recordIcon(string $table, array $shapes): array
+    {
+        return [
+            $table,
             [
-                ['svg', ['height' => '16', 'viewBox' => self::geometry('0 0 48 48'), 'width' => '16'], ''],
-                ['symbol', ['id' => 'tx_nrtextdb_domain_model_component', 'viewBox' => self::geometry('0 0 48 48')], ''],
+                ['svg', ['height' => '16', 'viewBox' => self::geometry(self::RECORD_VIEWBOX), 'width' => '16'], ''],
+                ['symbol', ['id' => $table, 'viewBox' => self::geometry(self::RECORD_VIEWBOX)], ''],
                 ['g', ['fill' => 'none', 'stroke' => 'currentColor', 'stroke-linecap' => 'round', 'stroke-linejoin' => 'round', 'stroke-width' => '3'], ''],
-                ['path', ['d' => self::geometry('M40.5,5.5H7.5a2,2,0,0,0-2,2v33a2,2,0,0,0,2,2h33a2,2,0,0,0,2-2V7.5A2,2,0,0,0,40.5,5.5Z')], ''],
-                ['path', ['d' => self::geometry('M33,28.45a9,9,0,0,1-9,9.05h0a9,9,0,0,1-9-9v-8.9a9,9,0,0,1,9-9h0a9,9,0,0,1,9,9.05')], ''],
-                ['use', ['href' => '#tx_nrtextdb_domain_model_component'], ''],
+                ...array_map(self::normalisedRow(...), $shapes),
+                ['use', ['href' => '#' . $table], ''],
             ],
         ];
+    }
 
-        yield 'tx_nrtextdb_domain_model_environment' => [
-            'tx_nrtextdb_domain_model_environment',
-            [
-                ['svg', ['height' => '16', 'viewBox' => self::geometry('0 0 48 48'), 'width' => '16'], ''],
-                ['symbol', ['id' => 'tx_nrtextdb_domain_model_environment', 'viewBox' => self::geometry('0 0 48 48')], ''],
-                ['g', ['fill' => 'none', 'stroke' => 'currentColor', 'stroke-linecap' => 'round', 'stroke-linejoin' => 'round', 'stroke-width' => '3'], ''],
-                ['path', ['d' => self::geometry('M40.5,5.5H7.5a2,2,0,0,0-2,2v33a2,2,0,0,0,2,2h33a2,2,0,0,0,2-2V7.5A2,2,0,0,0,40.5,5.5Z')], ''],
-                ['line', ['x1' => '17.25', 'x2' => '30.75', 'y1' => '37.5', 'y2' => '37.5'], ''],
-                ['line', ['x1' => '17.25', 'x2' => '30.75', 'y1' => '10.5', 'y2' => '10.5'], ''],
-                ['line', ['x1' => '17.25', 'x2' => '26.05', 'y1' => '24', 'y2' => '24'], ''],
-                ['line', ['x1' => '17.25', 'x2' => '17.25', 'y1' => '10.5', 'y2' => '37.5'], ''],
-                ['use', ['href' => '#tx_nrtextdb_domain_model_environment'], ''],
-            ],
-        ];
+    /**
+     * Applies geometry() to the geometry attributes of an expected row, as
+     * normalisedTree() does to the actual one.
+     *
+     * @param array{string, array<string, string>, string} $row
+     *
+     * @return array{string, array<string, string>, string}
+     */
+    private static function normalisedRow(array $row): array
+    {
+        foreach ($row[1] as $name => $value) {
+            if (in_array($name, self::GEOMETRY_ATTRIBUTES, true)) {
+                $row[1][$name] = self::geometry($value);
+            }
+        }
 
-        yield 'tx_nrtextdb_domain_model_translation' => [
-            'tx_nrtextdb_domain_model_translation',
-            [
-                ['svg', ['height' => '16', 'viewBox' => self::geometry('0 0 48 48'), 'width' => '16'], ''],
-                ['symbol', ['id' => 'tx_nrtextdb_domain_model_translation', 'viewBox' => self::geometry('0 0 48 48')], ''],
-                ['g', ['fill' => 'none', 'stroke' => 'currentColor', 'stroke-linecap' => 'round', 'stroke-linejoin' => 'round', 'stroke-width' => '3'], ''],
-                ['line', ['x1' => '10.3148', 'x2' => '14.4567', 'y1' => '35.6362', 'y2' => '24.4924'], ''],
-                ['line', ['x1' => '18.4271', 'x2' => '14.4567', 'y1' => '35.6694', 'y2' => '24.4924'], ''],
-                ['line', ['x1' => '17.0988', 'x2' => '11.6921', 'y1' => '31.9306', 'y2' => '31.9306'], ''],
-                ['line', ['x1' => '25.8582', 'x2' => '38.3148', 'y1' => '13.3468', 'y2' => '13.3468'], ''],
-                ['line', ['x1' => '32.0865', 'x2' => '32.0865', 'y1' => '10.879', 'y2' => '13.3468'], ''],
-                ['path', ['d' => self::geometry('M35.5727,13.3468c0,3.408-3.9563,9.0486-7.9125,9.91')], ''],
-                ['path', ['d' => self::geometry('M28.2871,16.4414c.3917,2.35,4.4656,6.2674,8.089,6.8158')], ''],
-                ['path', ['d' => self::geometry('M26.7456,34.933a5.1656,5.1656,0,0,0,5.1656-5.1655V27.1924')], ''],
-                ['polyline', ['points' => self::geometry('29.581 29.522 31.911 27.192 34.242 29.522')], ''],
-                ['path', ['d' => self::geometry('M19.5371,13.3468a5.1656,5.1656,0,0,0-5.1655,5.1656v2.5751')], ''],
-                ['polyline', ['points' => self::geometry('16.701 18.758 14.372 21.087 12.04 18.758')], ''],
-                ['path', ['d' => self::geometry('M40.5,5.5H7.5a2,2,0,0,0-2,2h0v33a2,2,0,0,0,2,2h33a2,2,0,0,0,2-2h0V7.5a2,2,0,0,0-2-2Z')], ''],
-                ['use', ['href' => '#tx_nrtextdb_domain_model_translation'], ''],
-            ],
-        ];
+        return $row;
+    }
 
-        yield 'tx_nrtextdb_domain_model_type' => [
-            'tx_nrtextdb_domain_model_type',
-            [
-                ['svg', ['height' => '16', 'viewBox' => self::geometry('0 0 48 48'), 'width' => '16'], ''],
-                ['symbol', ['id' => 'tx_nrtextdb_domain_model_type', 'viewBox' => self::geometry('0 0 48 48')], ''],
-                ['g', ['fill' => 'none', 'stroke' => 'currentColor', 'stroke-linecap' => 'round', 'stroke-linejoin' => 'round', 'stroke-width' => '3'], ''],
-                ['path', ['d' => self::geometry('M40.5,5.5H7.5a2,2,0,0,0-2,2v33a2,2,0,0,0,2,2h33a2,2,0,0,0,2-2V7.5A2,2,0,0,0,40.5,5.5Z')], ''],
-                ['line', ['x1' => '13.84', 'x2' => '34.16', 'y1' => '10.5', 'y2' => '10.5'], ''],
-                ['line', ['x1' => '24', 'x2' => '24', 'y1' => '37.5', 'y2' => '10.5'], ''],
-                ['use', ['href' => '#tx_nrtextdb_domain_model_type'], ''],
-            ],
+    /**
+     * The translation glyph: the text-to-character pictogram in its frame.
+     * The translation record icon and the Module.svg tile draw the same
+     * shapes.
+     *
+     * @return list<array{string, array<string, string>, string}>
+     */
+    private static function translationGlyph(): array
+    {
+        return [
+            ['line', ['x1' => '10.3148', 'x2' => '14.4567', 'y1' => '35.6362', 'y2' => '24.4924'], ''],
+            ['line', ['x1' => '18.4271', 'x2' => '14.4567', 'y1' => '35.6694', 'y2' => '24.4924'], ''],
+            ['line', ['x1' => '17.0988', 'x2' => '11.6921', 'y1' => '31.9306', 'y2' => '31.9306'], ''],
+            ['line', ['x1' => '25.8582', 'x2' => '38.3148', 'y1' => '13.3468', 'y2' => '13.3468'], ''],
+            ['line', ['x1' => '32.0865', 'x2' => '32.0865', 'y1' => '10.879', 'y2' => '13.3468'], ''],
+            ['path', ['d' => self::geometry('M35.5727,13.3468c0,3.408-3.9563,9.0486-7.9125,9.91')], ''],
+            ['path', ['d' => self::geometry('M28.2871,16.4414c.3917,2.35,4.4656,6.2674,8.089,6.8158')], ''],
+            ['path', ['d' => self::geometry('M26.7456,34.933a5.1656,5.1656,0,0,0,5.1656-5.1655V27.1924')], ''],
+            ['polyline', ['points' => self::geometry('29.581 29.522 31.911 27.192 34.242 29.522')], ''],
+            ['path', ['d' => self::geometry('M19.5371,13.3468a5.1656,5.1656,0,0,0-5.1655,5.1656v2.5751')], ''],
+            ['polyline', ['points' => self::geometry('16.701 18.758 14.372 21.087 12.04 18.758')], ''],
+            ['path', ['d' => self::geometry('M40.5,5.5H7.5a2,2,0,0,0-2,2h0v33a2,2,0,0,0,2,2h33a2,2,0,0,0,2-2h0V7.5a2,2,0,0,0-2-2Z')], ''],
         ];
     }
 
@@ -229,18 +266,7 @@ final class BackendIconFilesTest extends UnitTestCase
                 ['svg', ['height' => '64px', 'stroke-width' => '1.5', 'viewBox' => self::geometry('0 0 48.00 48.00'), 'width' => '64px'], ''],
                 ['rect', ['fill' => '#2F99A4', 'height' => '48.00', 'rx' => '0', 'stroke-width' => '0', 'width' => '48.00', 'x' => '0', 'y' => '0'], ''],
                 ['g', ['fill' => 'none', 'stroke' => '#ffffff', 'stroke-linecap' => 'round', 'stroke-linejoin' => 'round'], ''],
-                ['line', ['x1' => '10.3148', 'x2' => '14.4567', 'y1' => '35.6362', 'y2' => '24.4924'], ''],
-                ['line', ['x1' => '18.4271', 'x2' => '14.4567', 'y1' => '35.6694', 'y2' => '24.4924'], ''],
-                ['line', ['x1' => '17.0988', 'x2' => '11.6921', 'y1' => '31.9306', 'y2' => '31.9306'], ''],
-                ['line', ['x1' => '25.8582', 'x2' => '38.3148', 'y1' => '13.3468', 'y2' => '13.3468'], ''],
-                ['line', ['x1' => '32.0865', 'x2' => '32.0865', 'y1' => '10.879', 'y2' => '13.3468'], ''],
-                ['path', ['d' => self::geometry('M35.5727,13.3468c0,3.408-3.9563,9.0486-7.9125,9.91')], ''],
-                ['path', ['d' => self::geometry('M28.2871,16.4414c.3917,2.35,4.4656,6.2674,8.089,6.8158')], ''],
-                ['path', ['d' => self::geometry('M26.7456,34.933a5.1656,5.1656,0,0,0,5.1656-5.1655V27.1924')], ''],
-                ['polyline', ['points' => self::geometry('29.581 29.522 31.911 27.192 34.242 29.522')], ''],
-                ['path', ['d' => self::geometry('M19.5371,13.3468a5.1656,5.1656,0,0,0-5.1655,5.1656v2.5751')], ''],
-                ['polyline', ['points' => self::geometry('16.701 18.758 14.372 21.087 12.04 18.758')], ''],
-                ['path', ['d' => self::geometry('M40.5,5.5H7.5a2,2,0,0,0-2,2h0v33a2,2,0,0,0,2,2h33a2,2,0,0,0,2-2h0V7.5a2,2,0,0,0-2-2Z')], ''],
+                ...self::translationGlyph(),
             ],
             $this->normalisedTree($svg),
         );
@@ -292,7 +318,7 @@ final class BackendIconFilesTest extends UnitTestCase
             foreach ($element->attributes as $attribute) {
                 $value = $attribute->nodeValue ?? '';
 
-                $attributes[$attribute->nodeName] = in_array($attribute->nodeName, ['d', 'points', 'transform', 'viewBox'], true)
+                $attributes[$attribute->nodeName] = in_array($attribute->nodeName, self::GEOMETRY_ATTRIBUTES, true)
                     ? self::geometry($value)
                     : $value;
             }
