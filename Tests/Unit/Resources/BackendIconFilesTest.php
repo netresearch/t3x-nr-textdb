@@ -39,6 +39,8 @@ final class BackendIconFilesTest extends UnitTestCase
 
     private const BRAND_TRANSFORM = 'translate(-0.39 -0.04)';
 
+    private const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
+
     private const VISIBILITY_PROPERTIES = ['opacity', 'fill-opacity', 'stroke-opacity', 'display', 'visibility'];
 
     private const PAINT_PROPERTIES = ['stroke', 'fill', 'color', 'stop-color', 'flood-color', 'lighting-color'];
@@ -104,12 +106,15 @@ final class BackendIconFilesTest extends UnitTestCase
                 self::assertContains($value, ['currentColor', 'none'], $table . '.svg: ' . $where . ' must follow the backend colour scheme');
             }
         }
+
+        $this->assertNothingFadedOrHidden($svg, $table . '.svg');
     }
 
     #[Test]
     public function moduleGroupIconDrawsTheGlyphInCurrentColorAndKeepsTheAccent(): void
     {
-        $paths = $this->load(self::ICON_DIR . 'ModuleGroup.svg')->getElementsByTagName('path');
+        $document = $this->load(self::ICON_DIR . 'ModuleGroup.svg');
+        $paths    = $document->getElementsByTagName('path');
         self::assertSame(2, $paths->length);
 
         [$accent, $glyph] = [$paths->item(0), $paths->item(1)];
@@ -127,6 +132,8 @@ final class BackendIconFilesTest extends UnitTestCase
         }
 
         self::assertSame('currentColor', $glyph->getAttribute('fill'));
+
+        $this->assertNothingFadedOrHidden($document, 'ModuleGroup.svg');
     }
 
     /**
@@ -196,11 +203,12 @@ final class BackendIconFilesTest extends UnitTestCase
             ],
             $this->normalisedTree($svg),
         );
+    }
 
-        self::assertSame([], $this->visibilityOf($svg), 'Module.svg <svg> must not be faded or hidden');
-
-        foreach ($svg->getElementsByTagName('*') as $element) {
-            self::assertSame([], $this->visibilityOf($element), 'Module.svg <' . $element->localName . '> must not be faded or hidden');
+    private function assertNothingFadedOrHidden(DOMDocument $document, string $file): void
+    {
+        foreach ($document->getElementsByTagName('*') as $element) {
+            self::assertSame([], $this->visibilityOf($element), $file . ' <' . $element->localName . '> must not be faded or hidden');
         }
     }
 
@@ -233,15 +241,22 @@ final class BackendIconFilesTest extends UnitTestCase
     }
 
     /**
-     * Geometry with insignificant whitespace removed: runs of whitespace
-     * become one space, and whitespace next to a letter, a comma or a
-     * parenthesis is dropped. "M209.6, 0 V31.62" equals "M209.6,0V31.62" and
-     * "translate( -0.39 -0.04 )" equals "translate(-0.39 -0.04)"; a changed
-     * number, or a space inside one ("32 .77"), does not.
+     * Geometry as its token list, joined by single spaces. Tokens follow the
+     * SVG path and transform grammar: a run of letters (a command or a
+     * function name), a number (sign, digits, decimal point, exponent), or
+     * any other single non-whitespace character (comma, parenthesis).
+     * Whitespace between tokens is dropped, whitespace inside a token splits
+     * it. So "M209.6, 0 V31.62" equals "M209.6,0V31.62" and
+     * "translate( -0.39 -0.04 )" equals "translate(-0.39 -0.04)", while
+     * "32 .77", "1 e-5", "1e -5" and "trans late(" each differ from the
+     * token they break. A comma and a space are not treated as the same
+     * separator, although SVG allows either.
      */
     private static function geometry(string $value): string
     {
-        return (string) preg_replace('/\s*([A-Za-z,()])\s*/', '$1', (string) preg_replace('/\s+/', ' ', trim($value)));
+        preg_match_all('/[A-Za-z]+|[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?|\S/', $value, $tokens);
+
+        return implode(' ', $tokens[0]);
     }
 
     /**
@@ -260,6 +275,8 @@ final class BackendIconFilesTest extends UnitTestCase
         $tree = [];
 
         foreach ($elements as $element) {
+            self::assertSame(self::SVG_NAMESPACE, $element->namespaceURI, '<' . $element->localName . '> is not in the SVG namespace');
+
             $attributes = [];
 
             foreach ($element->attributes as $attribute) {
