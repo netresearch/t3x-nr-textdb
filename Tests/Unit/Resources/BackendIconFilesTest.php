@@ -172,25 +172,31 @@ final class BackendIconFilesTest extends UnitTestCase
         $svg = $this->load(self::ICON_DIR . 'Module.svg')->documentElement;
         self::assertInstanceOf(DOMElement::class, $svg);
 
-        $tiles = $svg->getElementsByTagName('rect');
-        self::assertSame(1, $tiles->length);
+        // Every element with every attribute: the #2F99A4 tile, the white
+        // stroke of the glyph, its width, and no opacity or visibility
+        // setting anywhere, so neither part can be recoloured, thinned out
+        // or faded without failing here.
+        self::assertSame(
+            [
+                ['svg', ['height' => '64px', 'stroke-width' => '1.5', 'viewBox' => self::geometry('0 0 48.00 48.00'), 'width' => '64px'], ''],
+                ['rect', ['fill' => '#2F99A4', 'height' => '48.00', 'rx' => '0', 'stroke-width' => '0', 'width' => '48.00', 'x' => '0', 'y' => '0'], ''],
+                ['g', ['fill' => 'none', 'stroke' => '#ffffff', 'stroke-linecap' => 'round', 'stroke-linejoin' => 'round'], ''],
+                ['line', ['x1' => '10.3148', 'x2' => '14.4567', 'y1' => '35.6362', 'y2' => '24.4924'], ''],
+                ['line', ['x1' => '18.4271', 'x2' => '14.4567', 'y1' => '35.6694', 'y2' => '24.4924'], ''],
+                ['line', ['x1' => '17.0988', 'x2' => '11.6921', 'y1' => '31.9306', 'y2' => '31.9306'], ''],
+                ['line', ['x1' => '25.8582', 'x2' => '38.3148', 'y1' => '13.3468', 'y2' => '13.3468'], ''],
+                ['line', ['x1' => '32.0865', 'x2' => '32.0865', 'y1' => '10.879', 'y2' => '13.3468'], ''],
+                ['path', ['d' => self::geometry('M35.5727,13.3468c0,3.408-3.9563,9.0486-7.9125,9.91')], ''],
+                ['path', ['d' => self::geometry('M28.2871,16.4414c.3917,2.35,4.4656,6.2674,8.089,6.8158')], ''],
+                ['path', ['d' => self::geometry('M26.7456,34.933a5.1656,5.1656,0,0,0,5.1656-5.1655V27.1924')], ''],
+                ['polyline', ['points' => self::geometry('29.581 29.522 31.911 27.192 34.242 29.522')], ''],
+                ['path', ['d' => self::geometry('M19.5371,13.3468a5.1656,5.1656,0,0,0-5.1655,5.1656v2.5751')], ''],
+                ['polyline', ['points' => self::geometry('16.701 18.758 14.372 21.087 12.04 18.758')], ''],
+                ['path', ['d' => self::geometry('M40.5,5.5H7.5a2,2,0,0,0-2,2h0v33a2,2,0,0,0,2,2h33a2,2,0,0,0,2-2h0V7.5a2,2,0,0,0-2-2Z')], ''],
+            ],
+            $this->normalisedTree($svg),
+        );
 
-        $tile = $tiles->item(0);
-        self::assertInstanceOf(DOMElement::class, $tile);
-        self::assertSame(['fill' => self::BRAND_TEAL], $this->paintsOf($tile));
-
-        $glyph = $svg->getElementsByTagName('g');
-        self::assertSame(1, $glyph->length);
-
-        $group = $glyph->item(0);
-        self::assertInstanceOf(DOMElement::class, $group);
-        self::assertSame(['stroke' => '#ffffff', 'fill' => 'none'], $this->paintsOf($group));
-
-        foreach ($group->getElementsByTagName('*') as $shape) {
-            self::assertSame([], $this->paintsOf($shape), 'Module.svg: glyph shapes inherit the white stroke');
-        }
-
-        // Neither the tile nor the glyph may be faded or hidden.
         self::assertSame([], $this->visibilityOf($svg), 'Module.svg <svg> must not be faded or hidden');
 
         foreach ($svg->getElementsByTagName('*') as $element) {
@@ -228,13 +234,14 @@ final class BackendIconFilesTest extends UnitTestCase
 
     /**
      * Geometry with insignificant whitespace removed: runs of whitespace
-     * become one space, and whitespace next to a command letter or a comma
-     * is dropped. "M209.6, 0 V31.62" and "M209.6,0V31.62" compare equal,
-     * a changed number does not.
+     * become one space, and whitespace next to a letter, a comma or a
+     * parenthesis is dropped. "M209.6, 0 V31.62" equals "M209.6,0V31.62" and
+     * "translate( -0.39 -0.04 )" equals "translate(-0.39 -0.04)"; a changed
+     * number, or a space inside one ("32 .77"), does not.
      */
     private static function geometry(string $value): string
     {
-        return (string) preg_replace('/\s*([A-Za-z,])\s*/', '$1', (string) preg_replace('/\s+/', ' ', trim($value)));
+        return (string) preg_replace('/\s*([A-Za-z,()])\s*/', '$1', (string) preg_replace('/\s+/', ' ', trim($value)));
     }
 
     /**
@@ -258,7 +265,7 @@ final class BackendIconFilesTest extends UnitTestCase
             foreach ($element->attributes as $attribute) {
                 $value = $attribute->nodeValue ?? '';
 
-                $attributes[$attribute->nodeName] = in_array($attribute->nodeName, ['d', 'transform', 'viewBox'], true)
+                $attributes[$attribute->nodeName] = in_array($attribute->nodeName, ['d', 'points', 'transform', 'viewBox'], true)
                     ? self::geometry($value)
                     : $value;
             }
