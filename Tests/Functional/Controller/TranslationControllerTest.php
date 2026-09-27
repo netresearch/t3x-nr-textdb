@@ -11,6 +11,9 @@ declare(strict_types=1);
 
 namespace Netresearch\NrTextdb\Tests\Functional\Controller;
 
+use DOMDocument;
+use DOMElement;
+use DOMXPath;
 use Netresearch\NrTextdb\Controller\TranslationController;
 use Netresearch\NrTextdb\Domain\Repository\ComponentRepository;
 use Netresearch\NrTextdb\Domain\Repository\EnvironmentRepository;
@@ -580,6 +583,58 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         self::assertSame(303, $response->getStatusCode());
         self::assertStringContainsString('Translation/translated', $response->getHeaderLine('Location'));
         self::assertSame('Absenden', $this->fetchValue(5));
+    }
+
+    #[Test]
+    public function translatedViewLabelsEachTextareaByTheRowHeaderOfItsOwnLanguage(): void
+    {
+        // uid 1 has a record in languages 0 and 1, the site also has language 2:
+        // two "translated" rows and one "untranslated" row. Each textarea is
+        // named by the row header of its own row, so the row-header ids must be
+        // unique across all rows of the rendered view.
+        $html = (string) $this->dispatchModuleAction('translated', ['uid' => '1'])->getBody();
+
+        $document = new DOMDocument();
+        $previous = libxml_use_internal_errors(true);
+        $document->loadHTML($html);
+        libxml_clear_errors();
+        libxml_use_internal_errors($previous);
+
+        $xpath = new DOMXPath($document);
+
+        $rowHeaders = $xpath->query('//table//tbody/tr/th[@scope="row"]');
+        self::assertNotFalse($rowHeaders);
+        self::assertSame(3, $rowHeaders->length);
+
+        $ids = [];
+
+        foreach ($rowHeaders as $rowHeader) {
+            self::assertInstanceOf(DOMElement::class, $rowHeader);
+            $ids[] = $rowHeader->getAttribute('id');
+        }
+
+        self::assertSame(array_values(array_unique($ids)), $ids, 'row header ids must be unique: ' . implode(', ', $ids));
+
+        $textareas = $xpath->query('//table//tbody/tr/td/textarea');
+        self::assertNotFalse($textareas);
+        self::assertSame(3, $textareas->length);
+
+        foreach ($textareas as $textarea) {
+            self::assertInstanceOf(DOMElement::class, $textarea);
+
+            $labelledBy = $textarea->getAttribute('aria-labelledby');
+            $ownHeader  = $xpath->query('ancestor::tr[1]/th[@scope="row"]', $textarea);
+            self::assertNotFalse($ownHeader);
+
+            $header = $ownHeader->item(0);
+            self::assertInstanceOf(DOMElement::class, $header);
+            self::assertSame(
+                $header->getAttribute('id'),
+                $labelledBy,
+                'textarea "' . $textarea->getAttribute('name') . '" must be labelled by its own row header',
+            );
+            self::assertSame($header, $document->getElementById($labelledBy));
+        }
     }
 
     #[Test]

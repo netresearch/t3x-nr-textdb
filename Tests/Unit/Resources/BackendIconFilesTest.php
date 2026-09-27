@@ -75,22 +75,40 @@ final class BackendIconFilesTest extends UnitTestCase
         self::assertNotFalse($symbol);
         self::assertSame(1, $symbol->length, 'sprite symbol #' . $table . ' is missing');
 
-        $painted = $xpath->query('//*[@stroke or @fill]');
+        $painted = $xpath->query('//*[@stroke or @fill or @color or @style]');
         self::assertNotFalse($painted);
         self::assertGreaterThan(0, $painted->length);
 
         foreach ($painted as $element) {
             self::assertInstanceOf(DOMElement::class, $element);
 
-            foreach (['stroke', 'fill'] as $attribute) {
-                if (!$element->hasAttribute($attribute)) {
+            $paints = [];
+
+            foreach (['stroke', 'fill', 'color'] as $attribute) {
+                if ($element->hasAttribute($attribute)) {
+                    $paints[$attribute] = $element->getAttribute($attribute);
+                }
+            }
+
+            // A colour in a style attribute wins over the presentation attribute.
+            foreach (explode(';', $element->getAttribute('style')) as $declaration) {
+                if (!str_contains($declaration, ':')) {
                     continue;
                 }
 
+                [$property, $value] = explode(':', $declaration, 2);
+                $property           = strtolower(trim($property));
+
+                if (in_array($property, ['stroke', 'fill', 'color', 'stop-color', 'flood-color', 'lighting-color'], true)) {
+                    $paints['style ' . $property] = $value;
+                }
+            }
+
+            foreach ($paints as $where => $value) {
                 self::assertContains(
-                    $element->getAttribute($attribute),
+                    trim(str_ireplace('!important', '', $value)),
                     ['currentColor', 'none'],
-                    $table . '.svg: ' . $attribute . ' must follow the backend colour scheme',
+                    $table . '.svg: ' . $where . ' must follow the backend colour scheme',
                 );
             }
         }
