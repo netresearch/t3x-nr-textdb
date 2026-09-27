@@ -39,6 +39,8 @@ final class BackendIconFilesTest extends UnitTestCase
 
     private const BRAND_TRANSFORM = 'translate(-0.39 -0.04)';
 
+    private const VISIBILITY_PROPERTIES = ['opacity', 'fill-opacity', 'stroke-opacity', 'display', 'visibility'];
+
     private const PAINT_PROPERTIES = ['stroke', 'fill', 'color', 'stop-color', 'flood-color', 'lighting-color'];
 
     private const ICON_DIR = __DIR__ . '/../../../Resources/Public/Icons/';
@@ -152,8 +154,8 @@ final class BackendIconFilesTest extends UnitTestCase
             [
                 ['svg', ['viewBox' => '0 0 300 300'], ''],
                 ['title', [], 'Netresearch DTT GmbH'],
-                ['path', ['d' => self::BRAND_FRAME_PATH, 'fill' => self::BRAND_TEAL, 'transform' => self::BRAND_TRANSFORM], ''],
-                ['path', ['d' => self::BRAND_LETTER_PATH, 'fill' => self::BRAND_ANTHRACITE, 'transform' => self::BRAND_TRANSFORM], ''],
+                ['path', ['d' => self::geometry(self::BRAND_FRAME_PATH), 'fill' => self::BRAND_TEAL, 'transform' => self::geometry(self::BRAND_TRANSFORM)], ''],
+                ['path', ['d' => self::geometry(self::BRAND_LETTER_PATH), 'fill' => self::BRAND_ANTHRACITE, 'transform' => self::geometry(self::BRAND_TRANSFORM)], ''],
             ],
             $this->normalisedTree($svg),
         );
@@ -187,6 +189,52 @@ final class BackendIconFilesTest extends UnitTestCase
         foreach ($group->getElementsByTagName('*') as $shape) {
             self::assertSame([], $this->paintsOf($shape), 'Module.svg: glyph shapes inherit the white stroke');
         }
+
+        // Neither the tile nor the glyph may be faded or hidden.
+        self::assertSame([], $this->visibilityOf($svg), 'Module.svg <svg> must not be faded or hidden');
+
+        foreach ($svg->getElementsByTagName('*') as $element) {
+            self::assertSame([], $this->visibilityOf($element), 'Module.svg <' . $element->localName . '> must not be faded or hidden');
+        }
+    }
+
+    /**
+     * Opacity and visibility settings of an element, from attributes and from
+     * its style attribute.
+     *
+     * @return array<string, string>
+     */
+    private function visibilityOf(DOMElement $element): array
+    {
+        $found = [];
+
+        foreach (self::VISIBILITY_PROPERTIES as $property) {
+            if ($element->hasAttribute($property)) {
+                $found[$property] = $element->getAttribute($property);
+            }
+        }
+
+        foreach (explode(';', $element->getAttribute('style')) as $declaration) {
+            [$property, $value] = array_pad(explode(':', $declaration, 2), 2, null);
+            $property           = strtolower(trim((string) $property));
+
+            if ($value !== null && in_array($property, self::VISIBILITY_PROPERTIES, true)) {
+                $found['style ' . $property] = trim($value);
+            }
+        }
+
+        return $found;
+    }
+
+    /**
+     * Geometry with insignificant whitespace removed: runs of whitespace
+     * become one space, and whitespace next to a command letter or a comma
+     * is dropped. "M209.6, 0 V31.62" and "M209.6,0V31.62" compare equal,
+     * a changed number does not.
+     */
+    private static function geometry(string $value): string
+    {
+        return (string) preg_replace('/\s*([A-Za-z,])\s*/', '$1', (string) preg_replace('/\s+/', ' ', trim($value)));
     }
 
     /**
@@ -208,7 +256,11 @@ final class BackendIconFilesTest extends UnitTestCase
             $attributes = [];
 
             foreach ($element->attributes as $attribute) {
-                $attributes[$attribute->nodeName] = $attribute->nodeValue ?? '';
+                $value = $attribute->nodeValue ?? '';
+
+                $attributes[$attribute->nodeName] = in_array($attribute->nodeName, ['d', 'transform', 'viewBox'], true)
+                    ? self::geometry($value)
+                    : $value;
             }
 
             ksort($attributes);
