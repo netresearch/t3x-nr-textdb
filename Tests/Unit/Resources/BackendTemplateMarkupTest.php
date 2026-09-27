@@ -20,8 +20,9 @@ use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 /**
  * Pins the backend module templates to core button classes, accessible names
- * and headings. The Fluid source is read as HTML, so Fluid tags appear as
- * elements named e.g. "f:form.select".
+ * and headings. The Fluid source is read as HTML with the "f:" prefix
+ * rewritten to "f-", so a Fluid tag appears as an element named e.g.
+ * "f-form.select" whatever libxml does with prefixed names.
  */
 #[CoversNothing]
 final class BackendTemplateMarkupTest extends UnitTestCase
@@ -32,7 +33,7 @@ final class BackendTemplateMarkupTest extends UnitTestCase
     public function listSearchButtonIsTheNeutralCoreButton(): void
     {
         $xpath   = $this->load('List.html');
-        $buttons = $xpath->query('//*[local-name()="f:form.button"][@type="submit"]');
+        $buttons = $xpath->query('//*[local-name()="f-form.button"][@type="submit"]');
         self::assertNotFalse($buttons);
         self::assertSame(1, $buttons->length);
 
@@ -48,7 +49,7 @@ final class BackendTemplateMarkupTest extends UnitTestCase
     public function everyListFilterControlHasALabelPointingAtItsId(): void
     {
         $xpath    = $this->load('List.html');
-        $controls = $xpath->query('//*[local-name()="f:form.select" or local-name()="f:form.textfield"]');
+        $controls = $xpath->query('//*[local-name()="f-form.select" or local-name()="f-form.textfield"]');
         self::assertNotFalse($controls);
         self::assertSame(4, $controls->length);
 
@@ -97,7 +98,7 @@ final class BackendTemplateMarkupTest extends UnitTestCase
         self::assertNotFalse($columnHeaders);
         self::assertSame(2, $columnHeaders->length);
 
-        $textareas = $xpath->query('//*[local-name()="f:form.textarea"]');
+        $textareas = $xpath->query('//*[local-name()="f-form.textarea"]');
         self::assertNotFalse($textareas);
         self::assertSame(2, $textareas->length);
 
@@ -117,6 +118,8 @@ final class BackendTemplateMarkupTest extends UnitTestCase
     {
         $contents = file_get_contents(self::TEMPLATE_DIR . $template);
         self::assertIsString($contents);
+
+        $contents = str_replace(['<f:', '</f:'], ['<f-', '</f-'], $contents);
 
         $document = new DOMDocument();
         $previous = libxml_use_internal_errors(true);
