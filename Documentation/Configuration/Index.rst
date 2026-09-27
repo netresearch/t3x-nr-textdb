@@ -263,13 +263,24 @@ Icons are registered in `Configuration/Icons.php`:
    return [
        'extension-netresearch-module' => [
            'provider' => SvgIconProvider::class,
-           'source' => 'EXT:nr_textdb/Resources/Public/Icons/Extension.svg',
+           'source' => 'EXT:nr_textdb/Resources/Public/Icons/ModuleGroup.svg',
        ],
        'extension-netresearch-textdb' => [
            'provider' => SvgIconProvider::class,
            'source' => 'EXT:nr_textdb/Resources/Public/Icons/Module.svg',
        ],
+       'nr-textdb-record-component' => [
+           'provider' => SvgSpriteIconProvider::class,
+           'sprite' => 'EXT:nr_textdb/Resources/Public/Icons/tx_nrtextdb_domain_model_component.svg#tx_nrtextdb_domain_model_component',
+       ],
+       // nr-textdb-record-environment, -translation and -type follow the same pattern
    ];
+
+The glyphs use ``currentColor``, so they follow the backend colour scheme.
+The group icon is rendered inline in the module menu. The record icons are
+sprite icons, referenced from the TCA through ``ctrl.typeicon_classes``, so
+TYPO3 renders them as ``<svg><use>`` instead of ``<img>``.
+``Extension.svg`` stays the extension logo shown in the Extension Manager.
 
 .. _language-configuration:
 

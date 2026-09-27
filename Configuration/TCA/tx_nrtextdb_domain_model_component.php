@@ -21,7 +21,11 @@ return [
             'starttime' => 'starttime',
             'endtime'   => 'endtime',
         ],
-        'iconfile' => 'EXT:nr_textdb/Resources/Public/Icons/tx_nrtextdb_domain_model_component.svg',
+        // Registered in Configuration/Icons.php as an SVG sprite icon, so it is
+        // rendered as <svg><use> and follows the backend colour scheme.
+        'typeicon_classes' => [
+            'default' => 'nr-textdb-record-component',
+        ],
         'security' => [
             'ignorePageTypeRestriction' => true,
         ],
