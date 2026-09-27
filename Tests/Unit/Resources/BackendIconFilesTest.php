@@ -29,6 +29,16 @@ final class BackendIconFilesTest extends UnitTestCase
 
     private const BRAND_ANTHRACITE = '#585961';
 
+    /**
+     * The [n] logo as netresearch-branding/references/typo3-extension-branding.md
+     * ships it: frame path, then letter path, both with the same transform.
+     */
+    private const BRAND_FRAME_PATH = 'M209.6,0V31.62h32.77a26.38,26.38,0,0,1,26.44,26.43V242a26.38,26.38,0,0,1-26.44,26.44H209.6V300h47.93a42.77,42.77,0,0,0,42.86-42.86V42.89A42.76,42.76,0,0,0,257.53,0ZM43.25,0A42.76,42.76,0,0,0,.39,42.89V257.18A42.76,42.76,0,0,0,43.25,300H91.18V268.46H58.4A26.38,26.38,0,0,1,32,242v-184A26.37,26.37,0,0,1,58.4,31.62H91.18V0Z';
+
+    private const BRAND_LETTER_PATH = 'M221.44,120.41c0-34.48-13.94-57.82-48.93-57.82-26.62,0-48.54,7.74-64.17,26.56l-.7-22.06-28.31.06V232.94h31.59V124.69c7.14-18.38,32.14-34.8,53-34.5,27.38.4,25.2,26.24,26,45.81v96.94h31.58';
+
+    private const BRAND_TRANSFORM = 'translate(-0.39 -0.04)';
+
     private const PAINT_PROPERTIES = ['stroke', 'fill', 'color', 'stop-color', 'flood-color', 'lighting-color'];
 
     private const ICON_DIR = __DIR__ . '/../../../Resources/Public/Icons/';
@@ -131,16 +141,75 @@ final class BackendIconFilesTest extends UnitTestCase
      * tile with a white letter (not a sanctioned form of the logo).
      */
     #[Test]
-    public function extensionLogoUsesTheBrandColours(): void
+    public function extensionLogoIsExactlyTheBrandSpec(): void
     {
-        $paths = $this->load(self::ICON_DIR . 'Extension.svg')->getElementsByTagName('path');
-        self::assertSame(2, $paths->length);
+        $svg = $this->load(self::ICON_DIR . 'Extension.svg')->documentElement;
+        self::assertInstanceOf(DOMElement::class, $svg);
 
-        $expected = [self::BRAND_TEAL, self::BRAND_ANTHRACITE];
+        // Every element with every attribute, so an added opacity, stroke,
+        // filter or element fails as well as a changed path or colour.
+        self::assertSame(
+            [
+                ['svg', ['viewBox' => '0 0 300 300'], ''],
+                ['title', [], 'Netresearch DTT GmbH'],
+                ['path', ['d' => self::BRAND_FRAME_PATH, 'fill' => self::BRAND_TEAL, 'transform' => self::BRAND_TRANSFORM], ''],
+                ['path', ['d' => self::BRAND_LETTER_PATH, 'fill' => self::BRAND_ANTHRACITE, 'transform' => self::BRAND_TRANSFORM], ''],
+            ],
+            $this->normalisedTree($svg),
+        );
+    }
 
-        foreach ($paths as $index => $path) {
-            self::assertSame(['fill' => $expected[$index]], $this->paintsOf($path), 'Extension.svg path ' . $index);
+    /**
+     * Module.svg is the TextDB module icon, a tile in the brand teal with the
+     * feature glyph drawn in white on top (typo3-extension-branding.md asks for
+     * #2F99A4 in module icons). White on #2F99A4 is 3.38:1.
+     */
+    #[Test]
+    public function moduleIconIsAWhiteGlyphOnTheBrandTealTile(): void
+    {
+        $svg = $this->load(self::ICON_DIR . 'Module.svg')->documentElement;
+        self::assertInstanceOf(DOMElement::class, $svg);
+
+        $tiles = $svg->getElementsByTagName('rect');
+        self::assertSame(1, $tiles->length);
+
+        $tile = $tiles->item(0);
+        self::assertInstanceOf(DOMElement::class, $tile);
+        self::assertSame(['fill' => self::BRAND_TEAL], $this->paintsOf($tile));
+
+        $glyph = $svg->getElementsByTagName('g');
+        self::assertSame(1, $glyph->length);
+
+        $group = $glyph->item(0);
+        self::assertInstanceOf(DOMElement::class, $group);
+        self::assertSame(['stroke' => '#ffffff', 'fill' => 'none'], $this->paintsOf($group));
+
+        foreach ($group->getElementsByTagName('*') as $shape) {
+            self::assertSame([], $this->paintsOf($shape), 'Module.svg: glyph shapes inherit the white stroke');
         }
+    }
+
+    /**
+     * @return list<array{string, array<string, string>, string}>
+     */
+    private function normalisedTree(DOMElement $root): array
+    {
+        $tree = [];
+
+        foreach ([$root, ...$root->getElementsByTagName('*')] as $element) {
+            $attributes = [];
+
+            foreach ($element->attributes as $attribute) {
+                $attributes[$attribute->nodeName] = $attribute->nodeValue ?? '';
+            }
+
+            ksort($attributes);
+
+            $text   = $element->localName === 'title' ? trim($element->textContent) : '';
+            $tree[] = [(string) $element->localName, $attributes, $text];
+        }
+
+        return $tree;
     }
 
     /**
