@@ -127,6 +127,25 @@ final class BackendIconFilesTest extends UnitTestCase
         self::assertSame(['#2999a4', 'currentColor'], $fills);
     }
 
+    /**
+     * The Extension Manager shows the logo as <img>, so it cannot follow the
+     * scheme through currentColor. Both fills stay at 3:1 or better against
+     * the Extension Manager rows (striped and hovered) in the light and the
+     * dark scheme; the original #595a62 / #2999a4 dropped to 1.97:1 / 2.59:1.
+     */
+    #[Test]
+    public function extensionLogoUsesColoursThatHoldInBothSchemes(): void
+    {
+        $svg   = $this->load(self::ICON_DIR . 'Extension.svg');
+        $fills = [];
+
+        foreach ($svg->getElementsByTagName('path') as $path) {
+            $fills[] = $path->getAttribute('fill');
+        }
+
+        self::assertSame(['#248791', '#7b7b7b'], $fills);
+    }
+
     private function load(string $file): DOMDocument
     {
         $contents = file_get_contents($file);
