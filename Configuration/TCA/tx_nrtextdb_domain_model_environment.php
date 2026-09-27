@@ -21,8 +21,6 @@ return [
             'starttime' => 'starttime',
             'endtime'   => 'endtime',
         ],
-        // Registered in Configuration/Icons.php as an SVG sprite icon, so it is
-        // rendered as <svg><use> and follows the backend colour scheme.
         'typeicon_classes' => [
             'default' => 'nr-textdb-record-environment',
         ],
