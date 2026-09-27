@@ -13,7 +13,7 @@ namespace Netresearch\NrTextdb\Tests\Unit\Resources;
 
 use DOMDocument;
 use DOMElement;
-use DOMProcessingInstruction;
+use DOMXPath;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -59,7 +59,7 @@ final class BackendIconFilesTest extends UnitTestCase
      * and the file itself draws the symbol with <use> so it also shows as a
      * standalone image. Every glyph is a currentColor stroke of width 3.
      *
-     * @return iterable<string, array{string, list<array{string, array<string, string>, string}>}>
+     * @return iterable<string, array{string, list<array{string, int, array<string, string>, string}>}>
      */
     public static function recordIconProvider(): iterable
     {
@@ -93,39 +93,46 @@ final class BackendIconFilesTest extends UnitTestCase
      *
      * @param list<array{string, array<string, string>, string}> $shapes
      *
-     * @return array{string, list<array{string, array<string, string>, string}>}
+     * @return array{string, list<array{string, int, array<string, string>, string}>}
      */
     private static function recordIcon(string $table, array $shapes): array
     {
         return [
             $table,
             [
-                ['svg', ['height' => '16', 'viewBox' => self::geometry(self::RECORD_VIEWBOX), 'width' => '16'], ''],
-                ['symbol', ['id' => $table, 'viewBox' => self::geometry(self::RECORD_VIEWBOX)], ''],
-                ['g', ['fill' => 'none', 'stroke' => 'currentColor', 'stroke-linecap' => 'round', 'stroke-linejoin' => 'round', 'stroke-width' => '3'], ''],
-                ...array_map(self::normalisedRow(...), $shapes),
-                ['use', ['href' => '#' . $table], ''],
+                ['svg', 0, ['height' => '16', 'viewBox' => self::geometry(self::RECORD_VIEWBOX), 'width' => '16'], ''],
+                ['symbol', 1, ['id' => $table, 'viewBox' => self::geometry(self::RECORD_VIEWBOX)], ''],
+                ['g', 2, ['fill' => 'none', 'stroke' => 'currentColor', 'stroke-linecap' => 'round', 'stroke-linejoin' => 'round', 'stroke-width' => '3'], ''],
+                ...self::at(3, $shapes),
+                ['use', 1, ['href' => '#' . $table], ''],
             ],
         ];
     }
 
     /**
-     * Applies geometry() to the geometry attributes of an expected row, as
-     * normalisedTree() does to the actual one.
+     * Places depth-less expected rows (the children of one element) at the
+     * given depth, and applies geometry() to their geometry attributes, as
+     * normalisedTree() does to the actual tree.
      *
-     * @param array{string, array<string, string>, string} $row
+     * @param list<array{string, array<string, string>, string}> $rows
      *
-     * @return array{string, array<string, string>, string}
+     * @return list<array{string, int, array<string, string>, string}>
      */
-    private static function normalisedRow(array $row): array
+    private static function at(int $depth, array $rows): array
     {
-        foreach ($row[1] as $name => $value) {
-            if (in_array($name, self::GEOMETRY_ATTRIBUTES, true)) {
-                $row[1][$name] = self::geometry($value);
+        $placed = [];
+
+        foreach ($rows as [$name, $attributes, $text]) {
+            foreach ($attributes as $attribute => $value) {
+                if (in_array($attribute, self::GEOMETRY_ATTRIBUTES, true)) {
+                    $attributes[$attribute] = self::geometry($value);
+                }
             }
+
+            $placed[] = [$name, $depth, $attributes, $text];
         }
 
-        return $row;
+        return $placed;
     }
 
     /**
@@ -180,7 +187,7 @@ final class BackendIconFilesTest extends UnitTestCase
     }
 
     /**
-     * @param list<array{string, array<string, string>, string}> $expected
+     * @param list<array{string, int, array<string, string>, string}> $expected
      */
     #[Test]
     #[DataProvider('recordIconProvider')]
@@ -206,9 +213,9 @@ final class BackendIconFilesTest extends UnitTestCase
 
         self::assertSame(
             [
-                ['svg', ['height' => '16', 'viewBox' => self::geometry('0 0 300 300'), 'width' => '16'], ''],
-                ['path', ['d' => self::geometry(self::BRAND_FRAME_PATH), 'fill' => self::BRAND_TEAL, 'transform' => self::geometry(self::BRAND_TRANSFORM)], ''],
-                ['path', ['d' => self::geometry(self::BRAND_LETTER_PATH), 'fill' => 'currentColor', 'transform' => self::geometry(self::BRAND_TRANSFORM)], ''],
+                ['svg', 0, ['height' => '16', 'viewBox' => self::geometry('0 0 300 300'), 'width' => '16'], ''],
+                ['path', 1, ['d' => self::geometry(self::BRAND_FRAME_PATH), 'fill' => self::BRAND_TEAL, 'transform' => self::geometry(self::BRAND_TRANSFORM)], ''],
+                ['path', 1, ['d' => self::geometry(self::BRAND_LETTER_PATH), 'fill' => 'currentColor', 'transform' => self::geometry(self::BRAND_TRANSFORM)], ''],
             ],
             $this->normalisedTree($svg),
         );
@@ -237,10 +244,10 @@ final class BackendIconFilesTest extends UnitTestCase
         // filter or element fails as well as a changed path or colour.
         self::assertSame(
             [
-                ['svg', ['viewBox' => '0 0 300 300'], ''],
-                ['title', [], 'Netresearch DTT GmbH'],
-                ['path', ['d' => self::geometry(self::BRAND_FRAME_PATH), 'fill' => self::BRAND_TEAL, 'transform' => self::geometry(self::BRAND_TRANSFORM)], ''],
-                ['path', ['d' => self::geometry(self::BRAND_LETTER_PATH), 'fill' => self::BRAND_ANTHRACITE, 'transform' => self::geometry(self::BRAND_TRANSFORM)], ''],
+                ['svg', 0, ['viewBox' => '0 0 300 300'], ''],
+                ['title', 1, [], 'Netresearch DTT GmbH'],
+                ['path', 1, ['d' => self::geometry(self::BRAND_FRAME_PATH), 'fill' => self::BRAND_TEAL, 'transform' => self::geometry(self::BRAND_TRANSFORM)], ''],
+                ['path', 1, ['d' => self::geometry(self::BRAND_LETTER_PATH), 'fill' => self::BRAND_ANTHRACITE, 'transform' => self::geometry(self::BRAND_TRANSFORM)], ''],
             ],
             $this->normalisedTree($svg),
         );
@@ -263,10 +270,10 @@ final class BackendIconFilesTest extends UnitTestCase
         // or faded without failing here.
         self::assertSame(
             [
-                ['svg', ['height' => '64px', 'stroke-width' => '1.5', 'viewBox' => self::geometry('0 0 48.00 48.00'), 'width' => '64px'], ''],
-                ['rect', ['fill' => '#2F99A4', 'height' => '48.00', 'rx' => '0', 'stroke-width' => '0', 'width' => '48.00', 'x' => '0', 'y' => '0'], ''],
-                ['g', ['fill' => 'none', 'stroke' => '#ffffff', 'stroke-linecap' => 'round', 'stroke-linejoin' => 'round'], ''],
-                ...self::translationGlyph(),
+                ['svg', 0, ['height' => '64px', 'stroke-width' => '1.5', 'viewBox' => self::geometry('0 0 48.00 48.00'), 'width' => '64px'], ''],
+                ['rect', 1, ['fill' => '#2F99A4', 'height' => '48.00', 'rx' => '0', 'stroke-width' => '0', 'width' => '48.00', 'x' => '0', 'y' => '0'], ''],
+                ['g', 1, ['fill' => 'none', 'stroke' => '#ffffff', 'stroke-linecap' => 'round', 'stroke-linejoin' => 'round'], ''],
+                ...self::at(2, self::translationGlyph()),
             ],
             $this->normalisedTree($svg),
         );
@@ -296,7 +303,7 @@ final class BackendIconFilesTest extends UnitTestCase
     }
 
     /**
-     * @return list<array{string, array<string, string>, string}>
+     * @return list<array{string, int, array<string, string>, string}>
      */
     private function normalisedTree(DOMElement $root): array
     {
@@ -325,8 +332,17 @@ final class BackendIconFilesTest extends UnitTestCase
 
             ksort($attributes);
 
+            // The number of parentNode steps to the root: with it, the
+            // document-order list fixes every element's parent, so moving an
+            // element into or out of another one changes the list.
+            $depth = 0;
+
+            for ($node = $element; $node !== $root && $node->parentNode instanceof DOMElement; $node = $node->parentNode) {
+                ++$depth;
+            }
+
             $text   = $element->localName === 'title' ? trim($element->textContent) : '';
-            $tree[] = [(string) $element->localName, $attributes, $text];
+            $tree[] = [(string) $element->localName, $depth, $attributes, $text];
         }
 
         return $tree;
@@ -342,12 +358,14 @@ final class BackendIconFilesTest extends UnitTestCase
 
         // A DOCTYPE can define entities that add content, and an
         // xml-stylesheet processing instruction can restyle the whole icon;
-        // neither shows up in the element tree compared below.
+        // neither shows up in the element tree compared below. Processing
+        // instructions are rejected anywhere in the document: before, inside
+        // or after the root element.
         self::assertNull($document->doctype, basename($file) . ' must not carry a DOCTYPE');
 
-        foreach ($document->childNodes as $node) {
-            self::assertNotInstanceOf(DOMProcessingInstruction::class, $node, basename($file) . ' must not carry a processing instruction');
-        }
+        $instructions = (new DOMXPath($document))->query('//processing-instruction()');
+        self::assertNotFalse($instructions);
+        self::assertSame(0, $instructions->length, basename($file) . ' must not carry a processing instruction');
 
         return $document;
     }
