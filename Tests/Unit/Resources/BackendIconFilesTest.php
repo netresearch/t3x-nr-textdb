@@ -13,7 +13,7 @@ namespace Netresearch\NrTextdb\Tests\Unit\Resources;
 
 use DOMDocument;
 use DOMElement;
-use DOMXPath;
+use DOMProcessingInstruction;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -41,22 +41,79 @@ final class BackendIconFilesTest extends UnitTestCase
 
     private const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 
-    private const VISIBILITY_PROPERTIES = ['opacity', 'fill-opacity', 'stroke-opacity', 'display', 'visibility'];
-
-    private const PAINT_PROPERTIES = ['stroke', 'fill', 'color', 'stop-color', 'flood-color', 'lighting-color'];
-
     private const ICON_DIR = __DIR__ . '/../../../Resources/Public/Icons/';
 
     /**
-     * @return iterable<string, array{string}>
+     * Every record icon as its full expected tree. The icon registry
+     * references "<file>#<table>", so the symbol carries the table name as id,
+     * and the file itself draws the symbol with <use> so it also shows as a
+     * standalone image. Every glyph is a currentColor stroke of width 3.
+     *
+     * @return iterable<string, array{string, list<array{string, array<string, string>, string}>}>
      */
-    public static function recordTableProvider(): iterable
+    public static function recordIconProvider(): iterable
     {
-        foreach (['component', 'environment', 'translation', 'type'] as $type) {
-            $table = 'tx_nrtextdb_domain_model_' . $type;
+        yield 'tx_nrtextdb_domain_model_component' => [
+            'tx_nrtextdb_domain_model_component',
+            [
+                ['svg', ['height' => '16', 'viewBox' => self::geometry('0 0 48 48'), 'width' => '16'], ''],
+                ['symbol', ['id' => 'tx_nrtextdb_domain_model_component', 'viewBox' => self::geometry('0 0 48 48')], ''],
+                ['g', ['fill' => 'none', 'stroke' => 'currentColor', 'stroke-linecap' => 'round', 'stroke-linejoin' => 'round', 'stroke-width' => '3'], ''],
+                ['path', ['d' => self::geometry('M40.5,5.5H7.5a2,2,0,0,0-2,2v33a2,2,0,0,0,2,2h33a2,2,0,0,0,2-2V7.5A2,2,0,0,0,40.5,5.5Z')], ''],
+                ['path', ['d' => self::geometry('M33,28.45a9,9,0,0,1-9,9.05h0a9,9,0,0,1-9-9v-8.9a9,9,0,0,1,9-9h0a9,9,0,0,1,9,9.05')], ''],
+                ['use', ['href' => '#tx_nrtextdb_domain_model_component'], ''],
+            ],
+        ];
 
-            yield $table => [$table];
-        }
+        yield 'tx_nrtextdb_domain_model_environment' => [
+            'tx_nrtextdb_domain_model_environment',
+            [
+                ['svg', ['height' => '16', 'viewBox' => self::geometry('0 0 48 48'), 'width' => '16'], ''],
+                ['symbol', ['id' => 'tx_nrtextdb_domain_model_environment', 'viewBox' => self::geometry('0 0 48 48')], ''],
+                ['g', ['fill' => 'none', 'stroke' => 'currentColor', 'stroke-linecap' => 'round', 'stroke-linejoin' => 'round', 'stroke-width' => '3'], ''],
+                ['path', ['d' => self::geometry('M40.5,5.5H7.5a2,2,0,0,0-2,2v33a2,2,0,0,0,2,2h33a2,2,0,0,0,2-2V7.5A2,2,0,0,0,40.5,5.5Z')], ''],
+                ['line', ['x1' => '17.25', 'x2' => '30.75', 'y1' => '37.5', 'y2' => '37.5'], ''],
+                ['line', ['x1' => '17.25', 'x2' => '30.75', 'y1' => '10.5', 'y2' => '10.5'], ''],
+                ['line', ['x1' => '17.25', 'x2' => '26.05', 'y1' => '24', 'y2' => '24'], ''],
+                ['line', ['x1' => '17.25', 'x2' => '17.25', 'y1' => '10.5', 'y2' => '37.5'], ''],
+                ['use', ['href' => '#tx_nrtextdb_domain_model_environment'], ''],
+            ],
+        ];
+
+        yield 'tx_nrtextdb_domain_model_translation' => [
+            'tx_nrtextdb_domain_model_translation',
+            [
+                ['svg', ['height' => '16', 'viewBox' => self::geometry('0 0 48 48'), 'width' => '16'], ''],
+                ['symbol', ['id' => 'tx_nrtextdb_domain_model_translation', 'viewBox' => self::geometry('0 0 48 48')], ''],
+                ['g', ['fill' => 'none', 'stroke' => 'currentColor', 'stroke-linecap' => 'round', 'stroke-linejoin' => 'round', 'stroke-width' => '3'], ''],
+                ['line', ['x1' => '10.3148', 'x2' => '14.4567', 'y1' => '35.6362', 'y2' => '24.4924'], ''],
+                ['line', ['x1' => '18.4271', 'x2' => '14.4567', 'y1' => '35.6694', 'y2' => '24.4924'], ''],
+                ['line', ['x1' => '17.0988', 'x2' => '11.6921', 'y1' => '31.9306', 'y2' => '31.9306'], ''],
+                ['line', ['x1' => '25.8582', 'x2' => '38.3148', 'y1' => '13.3468', 'y2' => '13.3468'], ''],
+                ['line', ['x1' => '32.0865', 'x2' => '32.0865', 'y1' => '10.879', 'y2' => '13.3468'], ''],
+                ['path', ['d' => self::geometry('M35.5727,13.3468c0,3.408-3.9563,9.0486-7.9125,9.91')], ''],
+                ['path', ['d' => self::geometry('M28.2871,16.4414c.3917,2.35,4.4656,6.2674,8.089,6.8158')], ''],
+                ['path', ['d' => self::geometry('M26.7456,34.933a5.1656,5.1656,0,0,0,5.1656-5.1655V27.1924')], ''],
+                ['polyline', ['points' => self::geometry('29.581 29.522 31.911 27.192 34.242 29.522')], ''],
+                ['path', ['d' => self::geometry('M19.5371,13.3468a5.1656,5.1656,0,0,0-5.1655,5.1656v2.5751')], ''],
+                ['polyline', ['points' => self::geometry('16.701 18.758 14.372 21.087 12.04 18.758')], ''],
+                ['path', ['d' => self::geometry('M40.5,5.5H7.5a2,2,0,0,0-2,2h0v33a2,2,0,0,0,2,2h33a2,2,0,0,0,2-2h0V7.5a2,2,0,0,0-2-2Z')], ''],
+                ['use', ['href' => '#tx_nrtextdb_domain_model_translation'], ''],
+            ],
+        ];
+
+        yield 'tx_nrtextdb_domain_model_type' => [
+            'tx_nrtextdb_domain_model_type',
+            [
+                ['svg', ['height' => '16', 'viewBox' => self::geometry('0 0 48 48'), 'width' => '16'], ''],
+                ['symbol', ['id' => 'tx_nrtextdb_domain_model_type', 'viewBox' => self::geometry('0 0 48 48')], ''],
+                ['g', ['fill' => 'none', 'stroke' => 'currentColor', 'stroke-linecap' => 'round', 'stroke-linejoin' => 'round', 'stroke-width' => '3'], ''],
+                ['path', ['d' => self::geometry('M40.5,5.5H7.5a2,2,0,0,0-2,2v33a2,2,0,0,0,2,2h33a2,2,0,0,0,2-2V7.5A2,2,0,0,0,40.5,5.5Z')], ''],
+                ['line', ['x1' => '13.84', 'x2' => '34.16', 'y1' => '10.5', 'y2' => '10.5'], ''],
+                ['line', ['x1' => '24', 'x2' => '24', 'y1' => '37.5', 'y2' => '10.5'], ''],
+                ['use', ['href' => '#tx_nrtextdb_domain_model_type'], ''],
+            ],
+        ];
     }
 
     /**
@@ -73,6 +130,9 @@ final class BackendIconFilesTest extends UnitTestCase
         }
     }
 
+    /**
+     * Covers an icon file added later, before it gets a pinned tree.
+     */
     #[Test]
     #[DataProvider('iconFileProvider')]
     public function iconHasNoStyleBlock(string $file): void
@@ -82,58 +142,39 @@ final class BackendIconFilesTest extends UnitTestCase
         self::assertSame(0, $svg->getElementsByTagName('style')->length, basename($file) . ' must not carry a <style> block');
     }
 
+    /**
+     * @param list<array{string, array<string, string>, string}> $expected
+     */
     #[Test]
-    #[DataProvider('recordTableProvider')]
-    public function recordIconIsASymbolDrawnInCurrentColor(string $table): void
+    #[DataProvider('recordIconProvider')]
+    public function recordIconIsExactlyItsPinnedTree(string $table, array $expected): void
     {
-        $svg   = $this->load(self::ICON_DIR . $table . '.svg');
-        $xpath = new DOMXPath($svg);
-        $xpath->registerNamespace('svg', 'http://www.w3.org/2000/svg');
+        $svg = $this->load(self::ICON_DIR . $table . '.svg')->documentElement;
+        self::assertInstanceOf(DOMElement::class, $svg);
 
-        // The icon registry references "<file>#<table>", so the symbol must carry that id.
-        $symbol = $xpath->query('//svg:symbol[@id="' . $table . '"]');
-        self::assertNotFalse($symbol);
-        self::assertSame(1, $symbol->length, 'sprite symbol #' . $table . ' is missing');
-
-        $painted = $xpath->query('//*[@stroke or @fill or @color or @style]');
-        self::assertNotFalse($painted);
-        self::assertGreaterThan(0, $painted->length);
-
-        foreach ($painted as $element) {
-            self::assertInstanceOf(DOMElement::class, $element);
-
-            foreach ($this->paintsOf($element) as $where => $value) {
-                self::assertContains($value, ['currentColor', 'none'], $table . '.svg: ' . $where . ' must follow the backend colour scheme');
-            }
-        }
-
-        $this->assertNothingFadedOrHidden($svg, $table . '.svg');
+        self::assertSame($expected, $this->normalisedTree($svg));
     }
 
+    /**
+     * ModuleGroup.svg is the [n] logo as the Netresearch group icon in the
+     * module menu: the frame in the brand teal and the letter in currentColor,
+     * so the letter takes the menu's text colour. Pinned as its full tree, so
+     * an added attribute, element, style, clip, mask or transform fails.
+     */
     #[Test]
-    public function moduleGroupIconDrawsTheGlyphInCurrentColorAndKeepsTheAccent(): void
+    public function moduleGroupIconIsTheLogoWithACurrentColorLetter(): void
     {
-        $document = $this->load(self::ICON_DIR . 'ModuleGroup.svg');
-        $paths    = $document->getElementsByTagName('path');
-        self::assertSame(2, $paths->length);
+        $svg = $this->load(self::ICON_DIR . 'ModuleGroup.svg')->documentElement;
+        self::assertInstanceOf(DOMElement::class, $svg);
 
-        [$accent, $glyph] = [$paths->item(0), $paths->item(1)];
-        self::assertInstanceOf(DOMElement::class, $accent);
-        self::assertInstanceOf(DOMElement::class, $glyph);
-
-        foreach ($this->paintsOf($accent) as $where => $value) {
-            self::assertContains($value, [self::BRAND_TEAL, 'none'], 'ModuleGroup.svg accent: ' . $where . ' must stay the brand teal');
-        }
-
-        self::assertSame(self::BRAND_TEAL, $accent->getAttribute('fill'));
-
-        foreach ($this->paintsOf($glyph) as $where => $value) {
-            self::assertContains($value, ['currentColor', 'none'], 'ModuleGroup.svg glyph: ' . $where . ' must follow the backend colour scheme');
-        }
-
-        self::assertSame('currentColor', $glyph->getAttribute('fill'));
-
-        $this->assertNothingFadedOrHidden($document, 'ModuleGroup.svg');
+        self::assertSame(
+            [
+                ['svg', ['height' => '16', 'viewBox' => self::geometry('0 0 300 300'), 'width' => '16'], ''],
+                ['path', ['d' => self::geometry(self::BRAND_FRAME_PATH), 'fill' => self::BRAND_TEAL, 'transform' => self::geometry(self::BRAND_TRANSFORM)], ''],
+                ['path', ['d' => self::geometry(self::BRAND_LETTER_PATH), 'fill' => 'currentColor', 'transform' => self::geometry(self::BRAND_TRANSFORM)], ''],
+            ],
+            $this->normalisedTree($svg),
+        );
     }
 
     /**
@@ -205,41 +246,6 @@ final class BackendIconFilesTest extends UnitTestCase
         );
     }
 
-    private function assertNothingFadedOrHidden(DOMDocument $document, string $file): void
-    {
-        foreach ($document->getElementsByTagName('*') as $element) {
-            self::assertSame([], $this->visibilityOf($element), $file . ' <' . $element->localName . '> must not be faded or hidden');
-        }
-    }
-
-    /**
-     * Opacity and visibility settings of an element, from attributes and from
-     * its style attribute.
-     *
-     * @return array<string, string>
-     */
-    private function visibilityOf(DOMElement $element): array
-    {
-        $found = [];
-
-        foreach (self::VISIBILITY_PROPERTIES as $property) {
-            if ($element->hasAttribute($property)) {
-                $found[$property] = $element->getAttribute($property);
-            }
-        }
-
-        foreach (explode(';', $element->getAttribute('style')) as $declaration) {
-            [$property, $value] = array_pad(explode(':', $declaration, 2), 2, null);
-            $property           = strtolower(trim((string) $property));
-
-            if ($value !== null && in_array($property, self::VISIBILITY_PROPERTIES, true)) {
-                $found['style ' . $property] = trim($value);
-            }
-        }
-
-        return $found;
-    }
-
     /**
      * Geometry as its token list, joined by single spaces. Tokens follow the
      * SVG path and transform grammar: a run of letters (a command or a
@@ -249,8 +255,12 @@ final class BackendIconFilesTest extends UnitTestCase
      * it. So "M209.6, 0 V31.62" equals "M209.6,0V31.62" and
      * "translate( -0.39 -0.04 )" equals "translate(-0.39 -0.04)", while
      * "32 .77", "1 e-5", "1e -5" and "trans late(" each differ from the
-     * token they break. A comma and a space are not treated as the same
-     * separator, although SVG allows either.
+     * token they break. Numbers and runs of command letters are compared as
+     * written, not by what they draw: "-.7" and "-0.7", ".39" and "0.39",
+     * "ZM" and "Z M", compacted arc flags, a leading "+" and exponent forms
+     * all differ from their written-out equivalents although they render
+     * the same. A comma and a space are not treated as the same separator
+     * either, although SVG allows both.
      */
     private static function geometry(string $value): string
     {
@@ -296,38 +306,6 @@ final class BackendIconFilesTest extends UnitTestCase
         return $tree;
     }
 
-    /**
-     * The colours an element paints with: its stroke, fill and color
-     * attributes, and the colour properties of its style attribute, which
-     * win over the attributes.
-     *
-     * @return array<string, string> where => value, "!important" removed
-     */
-    private function paintsOf(DOMElement $element): array
-    {
-        $paints = [];
-
-        foreach (['stroke', 'fill', 'color'] as $attribute) {
-            if ($element->hasAttribute($attribute)) {
-                $paints[$attribute] = $element->getAttribute($attribute);
-            }
-        }
-
-        foreach (explode(';', $element->getAttribute('style')) as $declaration) {
-            [$property, $value] = array_pad(explode(':', $declaration, 2), 2, null);
-            $property           = strtolower(trim((string) $property));
-
-            if ($value !== null && in_array($property, self::PAINT_PROPERTIES, true)) {
-                $paints['style ' . $property] = $value;
-            }
-        }
-
-        return array_map(
-            static fn (string $value): string => trim(str_ireplace('!important', '', $value)),
-            $paints,
-        );
-    }
-
     private function load(string $file): DOMDocument
     {
         $contents = file_get_contents($file);
@@ -335,6 +313,15 @@ final class BackendIconFilesTest extends UnitTestCase
 
         $document = new DOMDocument();
         self::assertTrue($document->loadXML($contents), basename($file) . ' is not well-formed XML');
+
+        // A DOCTYPE can define entities that add content, and an
+        // xml-stylesheet processing instruction can restyle the whole icon;
+        // neither shows up in the element tree compared below.
+        self::assertNull($document->doctype, basename($file) . ' must not carry a DOCTYPE');
+
+        foreach ($document->childNodes as $node) {
+            self::assertNotInstanceOf(DOMProcessingInstruction::class, $node, basename($file) . ' must not carry a processing instruction');
+        }
 
         return $document;
     }
