@@ -319,6 +319,9 @@ final class BackendIconFilesTest extends UnitTestCase
 
         foreach ($elements as $element) {
             self::assertSame(self::SVG_NAMESPACE, $element->namespaceURI, '<' . $element->localName . '> is not in the SVG namespace');
+            // TYPO3's SvgSanitizer drops a prefixed element such as <s:g>, even
+            // with the prefix bound to the SVG namespace.
+            self::assertSame($element->localName, $element->nodeName, '<' . $element->nodeName . '> must not carry a namespace prefix');
 
             $attributes = [];
 
@@ -342,7 +345,7 @@ final class BackendIconFilesTest extends UnitTestCase
             }
 
             $text   = $element->localName === 'title' ? trim($element->textContent) : '';
-            $tree[] = [(string) $element->localName, $depth, $attributes, $text];
+            $tree[] = [$element->localName, $depth, $attributes, $text];
         }
 
         return $tree;
