@@ -17,10 +17,11 @@
         <f:form action="list" class="mt-4" aria-label="{f:translate(key: 'filter.form.label', default: 'Filter translations')}">
             <div class="row g-3">
                 <div class="form-group">
-                    <label for="component" class="form-label">
+                    <label for="textdb-filter-component" class="form-label">
                         <f:translate key="component">Component</f:translate>
                     </label>
                     <f:form.select name="component"
+                                   id="textdb-filter-component"
                                    class="form-select"
                                    options="{components}"
                                    value="{defaultComponent.uid}"
@@ -30,29 +31,29 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="type" class="form-label">
+                    <label for="textdb-filter-type" class="form-label">
                         <f:translate key="type">Type</f:translate>
                     </label>
-                    <f:form.select name="type" class="form-select" options="{types}" value="{defaultType.uid}"
+                    <f:form.select name="type" id="textdb-filter-type" class="form-select" options="{types}" value="{defaultType.uid}"
                                    optionValueField="uid" optionLabelField="name" prependOptionLabel=""/>
                 </div>
 
                 <div class="form-group">
-                    <label for="placeholder" class="form-label">
+                    <label for="textdb-filter-placeholder" class="form-label">
                         <f:translate key="placeholder">Placeholder</f:translate>
                     </label>
-                    <f:form.textfield name="placeholder" class="form-control" value="{defaultPlaceholder}"/>
+                    <f:form.textfield name="placeholder" id="textdb-filter-placeholder" class="form-control" value="{defaultPlaceholder}"/>
                 </div>
 
                 <div class="form-group">
-                    <label for="value" class="form-label">
+                    <label for="textdb-filter-value" class="form-label">
                         <f:translate key="value">Value</f:translate>
                     </label>
-                    <f:form.textfield name="value" class="form-control" value="{defaultValue}"/>
+                    <f:form.textfield name="value" id="textdb-filter-value" class="form-control" value="{defaultValue}"/>
                 </div>
 
                 <div class="form-group">
-                    <f:form.button type="submit" name="operation" class="btn btn-secondary me-3">
+                    <f:form.button type="submit" name="operation" class="btn btn-default me-3">
                         <core:icon identifier="actions-search" size="small" />
                         <f:translate key="LLL:EXT:core/Resources/Private/Language/locallang_common.xlf:search" />
                     </f:form.button>
