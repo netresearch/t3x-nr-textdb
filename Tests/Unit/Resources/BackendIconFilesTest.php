@@ -194,9 +194,17 @@ final class BackendIconFilesTest extends UnitTestCase
      */
     private function normalisedTree(DOMElement $root): array
     {
+        // A plain list instead of spreading the DOMNodeList: PHP 8.2 does not
+        // spread a DOMNodeList reliably (CI saw a truncated list).
+        $elements = [$root];
+
+        foreach ($root->getElementsByTagName('*') as $descendant) {
+            $elements[] = $descendant;
+        }
+
         $tree = [];
 
-        foreach ([$root, ...$root->getElementsByTagName('*')] as $element) {
+        foreach ($elements as $element) {
             $attributes = [];
 
             foreach ($element->attributes as $attribute) {
