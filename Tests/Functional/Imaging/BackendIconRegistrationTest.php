@@ -64,6 +64,6 @@ final class BackendIconRegistrationTest extends AbstractFunctionalTestCase
 
         self::assertStringContainsString('<svg', $markup);
         self::assertStringContainsString('fill="currentColor"', $markup);
-        self::assertStringContainsString('fill="#2999a4"', $markup);
+        self::assertStringContainsString('fill="#2F99A4"', $markup);
     }
 }

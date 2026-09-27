@@ -25,6 +25,10 @@ use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 #[CoversNothing]
 final class BackendIconFilesTest extends UnitTestCase
 {
+    private const BRAND_TEAL = '#2F99A4';
+
+    private const BRAND_ANTHRACITE = '#585961';
+
     private const PAINT_PROPERTIES = ['stroke', 'fill', 'color', 'stop-color', 'flood-color', 'lighting-color'];
 
     private const ICON_DIR = __DIR__ . '/../../../Resources/Public/Icons/';
@@ -101,10 +105,10 @@ final class BackendIconFilesTest extends UnitTestCase
         self::assertInstanceOf(DOMElement::class, $glyph);
 
         foreach ($this->paintsOf($accent) as $where => $value) {
-            self::assertContains($value, ['#2999a4', 'none'], 'ModuleGroup.svg accent: ' . $where . ' must stay the brand teal');
+            self::assertContains($value, [self::BRAND_TEAL, 'none'], 'ModuleGroup.svg accent: ' . $where . ' must stay the brand teal');
         }
 
-        self::assertSame('#2999a4', $accent->getAttribute('fill'));
+        self::assertSame(self::BRAND_TEAL, $accent->getAttribute('fill'));
 
         foreach ($this->paintsOf($glyph) as $where => $value) {
             self::assertContains($value, ['currentColor', 'none'], 'ModuleGroup.svg glyph: ' . $where . ' must follow the backend colour scheme');
@@ -114,25 +118,29 @@ final class BackendIconFilesTest extends UnitTestCase
     }
 
     /**
-     * The Extension Manager shows the logo as <img>, so it cannot follow the
-     * scheme through currentColor. Measured with TYPO3 14.3.7's backend.css on
-     * the plain rows of the extension list (striped and unstriped, at rest and
-     * hovered, fresh, modern and classic theme, light and dark scheme), both
-     * fills stay at 3.11:1 or better; the original #595a62 / #2999a4 dropped
-     * to 1.93:1 / 2.60:1. Not covered: the tinted "insecure" and "outdated"
-     * rows, which appear only with TER data.
+     * Extension.svg is the Netresearch [n] logo exactly as the
+     * netresearch-branding skill specifies it (typo3-extension-branding.md):
+     * frame #2F99A4, letter #585961, the only valid brand values for the
+     * symbol. The Extension Manager shows it as <img>, so it cannot follow
+     * the colour scheme. Measured with TYPO3 14.3.7's backend.css on the plain
+     * rows of the extension list (striped and unstriped, at rest and hovered,
+     * fresh, modern and classic theme), the lowest ratios are: frame 2.58:1
+     * light / 3.91:1 dark, letter 5.32:1 light / 1.90:1 dark. WCAG 1.4.3 and
+     * 1.4.11 exempt logotypes. Keeping the brand logo was the user's decision
+     * over a non-brand #7b7b7b / #248791 pair (at least 3.11:1) and a teal
+     * tile with a white letter (not a sanctioned form of the logo).
      */
     #[Test]
-    public function extensionLogoUsesColoursThatHoldInBothSchemes(): void
+    public function extensionLogoUsesTheBrandColours(): void
     {
-        $svg   = $this->load(self::ICON_DIR . 'Extension.svg');
-        $fills = [];
+        $paths = $this->load(self::ICON_DIR . 'Extension.svg')->getElementsByTagName('path');
+        self::assertSame(2, $paths->length);
 
-        foreach ($svg->getElementsByTagName('path') as $path) {
-            $fills[] = $path->getAttribute('fill');
+        $expected = [self::BRAND_TEAL, self::BRAND_ANTHRACITE];
+
+        foreach ($paths as $index => $path) {
+            self::assertSame(['fill' => $expected[$index]], $this->paintsOf($path), 'Extension.svg path ' . $index);
         }
-
-        self::assertSame(['#248791', '#7b7b7b'], $fills);
     }
 
     /**
