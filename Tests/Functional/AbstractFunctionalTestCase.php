@@ -93,9 +93,9 @@ abstract class AbstractFunctionalTestCase extends FunctionalTestCase
      * The real global is written instead of registering an ExtensionConfiguration
      * mock via GeneralUtility::addInstance(): every repository and service resolves
      * ExtensionConfiguration lazily through makeInstance(), an added instance is
-     * consumed by the first call only, and any surplus instance would leak into the
-     * next test. Writing the global covers an arbitrary number of consumers and
-     * exercises the real ExtensionConfiguration implementation.
+     * consumed by the first call only. Writing the global covers an arbitrary
+     * number of consumers and exercises the real ExtensionConfiguration
+     * implementation.
      */
     protected function setExtensionConfiguration(string $textDbPid = '1', string $createIfMissing = '0'): void
     {
