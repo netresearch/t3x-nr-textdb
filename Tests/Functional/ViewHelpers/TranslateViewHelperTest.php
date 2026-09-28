@@ -256,6 +256,35 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
         self::assertSame('another-unknown-key', trim($secondOutput));
     }
 
+    #[Test]
+    public function bareKeyWithExtensionNameResolvesTheLllTranslation(): void
+    {
+        TranslateViewHelper::$component = 'lll-migration-component';
+
+        // A bare key is resolvable when an extension name is given:
+        // LocalizationUtility then reads the extension's locallang.xlf.
+        $output = $this->renderFluidTemplate(
+            '{nrtextdb:translate(key: \'tx_nrtextdb_domain_model_environment\', extensionName: \'nr_textdb\', environment: \'default\')}',
+        );
+
+        self::assertSame('Environment', trim($output));
+    }
+
+    #[Test]
+    public function lllKeyWithFilePathOtherThanExtResolvesTheLllTranslation(): void
+    {
+        TranslateViewHelper::$component = 'lll-migration-component';
+
+        // Fully-qualified LLL keys are not limited to the "LLL:EXT:" form;
+        // LocalizationUtility resolves any "LLL:<file>:<key>" reference
+        // without an extension name.
+        $output = $this->renderFluidTemplate(
+            '{nrtextdb:translate(key: \'LLL:typo3conf/ext/nr_textdb/Resources/Private/Language/locallang.xlf:tx_nrtextdb_domain_model_component\', environment: \'default\')}',
+        );
+
+        self::assertSame('Component', trim($output));
+    }
+
     // =========================================================================
     // Helpers
     // =========================================================================

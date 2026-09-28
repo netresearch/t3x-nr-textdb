@@ -127,13 +127,13 @@ final class TranslateViewHelper extends AbstractViewHelper
         //
         // LocalizationUtility::translate() throws an InvalidArgumentException
         // (1498144052) when it cannot derive a language file from its arguments.
-        // The only two argument shapes that are guaranteed to resolve are a
-        // fully-qualified "LLL:EXT:…" key and a non-empty extension name; a bare
-        // key such as "some.label" would abort the whole rendering instead of
-        // falling through to the TextDB value.
+        // It accepts a fully-qualified "LLL:…" key (any file reference, not only
+        // "LLL:EXT:") or a bare key together with a non-empty extension name; a
+        // bare key such as "some.label" without one would abort the whole
+        // rendering instead of falling through to the TextDB value.
         if (
             ($result === $textdbKey)
-            && (str_starts_with($placeholder, 'LLL:EXT:') || (($extension !== null) && ($extension !== '')))
+            && (str_starts_with($placeholder, 'LLL:') || (($extension !== null) && ($extension !== '')))
         ) {
             $lllTranslation = LocalizationUtility::translate($placeholder, $extension);
 
