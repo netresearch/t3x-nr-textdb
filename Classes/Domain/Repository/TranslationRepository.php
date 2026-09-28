@@ -167,7 +167,15 @@ class TranslationRepository extends AbstractRepository
         }
 
         if ($languageId !== 0) {
-            $constraints[] = $query->equals('_languageUid', $languageId);
+            // Filter on the language column directly. "_languageUid" is not a
+            // mapped property: Extbase turned it into a "_language_uid" column
+            // that does not exist, so the query failed with an SQL error. The
+            // language restriction of the default query settings has to be
+            // lifted as well, otherwise it adds "sys_language_uid IN (0,-1)"
+            // for the current (default) language and no row can ever match.
+            $query->getQuerySettings()->setRespectSysLanguage(false);
+
+            $constraints[] = $query->equals('sys_language_uid', $languageId);
         }
 
         if ($constraints !== []) {
