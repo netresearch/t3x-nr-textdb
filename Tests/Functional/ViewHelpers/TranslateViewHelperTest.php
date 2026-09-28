@@ -17,7 +17,6 @@ use Override;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use RuntimeException;
-use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Fluid\View\StandaloneView;
@@ -59,7 +58,7 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
 
         // Enable auto-creation so the import path exercised by
         // TranslateViewHelper works correctly during the first render.
-        $this->mockExtensionConfiguration(textDbPid: '1', createIfMissing: '1');
+        $this->setExtensionConfiguration(textDbPid: '1', createIfMissing: '1');
 
         // Load base fixture: page, environment, component, and type records.
         // No translation records are imported here so each test starts from
@@ -290,31 +289,5 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
             'tx_nrtextdb_domain_model_translation',
             ['placeholder' => $placeholder],
         );
-    }
-
-    /**
-     * Registers a mocked ExtensionConfiguration so repository methods return
-     * the desired textDbPid and createIfMissing values without touching the
-     * actual TYPO3 extension configuration storage.
-     */
-    private function mockExtensionConfiguration(string $textDbPid, string $createIfMissing): void
-    {
-        $mock = $this->createMock(ExtensionConfiguration::class);
-        $mock->method('get')
-            ->willReturnCallback(
-                static function (string $ext, string $path) use ($textDbPid, $createIfMissing): string {
-                    if ($ext !== 'nr_textdb') {
-                        return '';
-                    }
-
-                    return match ($path) {
-                        'textDbPid'       => $textDbPid,
-                        'createIfMissing' => $createIfMissing,
-                        default           => '',
-                    };
-                },
-            );
-
-        GeneralUtility::addInstance(ExtensionConfiguration::class, $mock);
     }
 }

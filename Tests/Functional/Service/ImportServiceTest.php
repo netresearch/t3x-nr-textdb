@@ -18,7 +18,6 @@ use Netresearch\NrTextdb\Service\ImportService;
 use Netresearch\NrTextdb\Tests\Functional\AbstractFunctionalTestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
-use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
@@ -31,7 +30,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  * contains English (uid=0, locale en_US) so that XLIFF files named without a
  * language prefix ("default.*") map to language uid 0.
  *
- * Fixtures use pid=1 as storage page. Extension configuration mock returns
+ * Fixtures use pid=1 as storage page. The extension configuration is set to
  * pid=1 and createIfMissing=1 so the service can auto-create missing records.
  *
  * Fixture pre-existing translations:
@@ -49,20 +48,7 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
     {
         parent::setUp();
 
-        // Provide storage page 1 and allow auto-creation
-        $extensionConfigurationMock = $this->createMock(ExtensionConfiguration::class);
-        $extensionConfigurationMock
-            ->method('get')
-            ->withAnyParameters()
-            ->willReturnCallback(static function (string $extension, string $path): string {
-                return match ($path) {
-                    'textDbPid'       => '1',
-                    'createIfMissing' => '1',
-                    default           => '0',
-                };
-            });
-
-        GeneralUtility::addInstance(ExtensionConfiguration::class, $extensionConfigurationMock);
+        $this->setExtensionConfiguration(textDbPid: '1', createIfMissing: '1');
 
         // Build a minimal SiteLanguage for English (language id 0)
         $siteLanguage = $this->buildSiteLanguage(0, 'en');
