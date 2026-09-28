@@ -256,6 +256,62 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
     }
 
     // =========================================================================
+    // Scenario 5 – Every key shape LocalizationUtility resolves falls back to LLL
+    // =========================================================================
+
+    #[Test]
+    public function translationDomainKeyResolvesTheLllTranslation(): void
+    {
+        TranslateViewHelper::$component = 'lll-migration-component';
+
+        // Translation domain syntax: "<extension>.messages" maps to the
+        // extension's locallang.xlf, no extension name needed.
+        $output = $this->renderFluidTemplate(
+            '{nrtextdb:translate(key: \'nr_textdb.messages:tx_nrtextdb_domain_model_component\', environment: \'default\')}',
+        );
+
+        self::assertSame('Component', trim($output));
+    }
+
+    #[Test]
+    public function lllExtKeyResolvesTheLllTranslation(): void
+    {
+        TranslateViewHelper::$component = 'lll-migration-component';
+
+        $output = $this->renderFluidTemplate(
+            '{nrtextdb:translate(key: \'LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:tx_nrtextdb_domain_model_component\', environment: \'default\')}',
+        );
+
+        self::assertSame('Component', trim($output));
+    }
+
+    #[Test]
+    public function bareKeyWithoutExtensionNameFallsBackToThePlaceholder(): void
+    {
+        TranslateViewHelper::$component = 'lll-migration-component';
+
+        // LocalizationUtility cannot resolve a bare key without an extension
+        // name and throws; the ViewHelper must render the placeholder instead.
+        $output = $this->renderFluidTemplate(
+            '{nrtextdb:translate(key: \'tx_nrtextdb_domain_model_component\', environment: \'default\')}',
+        );
+
+        self::assertSame('tx_nrtextdb_domain_model_component', trim($output));
+    }
+
+    #[Test]
+    public function bareKeyWithExtensionNameResolvesTheLllTranslation(): void
+    {
+        TranslateViewHelper::$component = 'lll-migration-component';
+
+        $output = $this->renderFluidTemplate(
+            '{nrtextdb:translate(key: \'tx_nrtextdb_domain_model_environment\', extensionName: \'nr_textdb\', environment: \'default\')}',
+        );
+
+        self::assertSame('Environment', trim($output));
+    }
+
+    // =========================================================================
     // Helpers
     // =========================================================================
 

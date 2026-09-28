@@ -13,6 +13,7 @@ namespace Netresearch\NrTextdb\ViewHelpers;
 
 use function count;
 
+use InvalidArgumentException;
 use Netresearch\NrTextdb\Service\TranslationService;
 use RuntimeException;
 use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
@@ -124,18 +125,8 @@ final class TranslateViewHelper extends AbstractViewHelper
 
         // If the result is the placeholder itself (auto-created or missing),
         // try to return the LLL translation instead.
-        //
-        // Since TYPO3 v14, LocalizationUtility::translate() throws an
-        // InvalidArgumentException (1498144052) when it cannot derive a language
-        // file from its arguments. The only two argument shapes that are
-        // guaranteed to resolve are a fully-qualified "LLL:EXT:…" key and a
-        // non-empty extension name; a bare key such as "some.label" would abort
-        // the whole rendering instead of falling through to the TextDB value.
-        if (
-            ($result === $textdbKey)
-            && (str_starts_with($placeholder, 'LLL:EXT:') || (($extension !== null) && ($extension !== '')))
-        ) {
-            $lllTranslation = LocalizationUtility::translate($placeholder, $extension);
+        if ($result === $textdbKey) {
+            $lllTranslation = $this->translateLabel($placeholder, $extension);
 
             if ($lllTranslation !== null && $lllTranslation !== '') {
                 return $lllTranslation;
@@ -143,5 +134,34 @@ final class TranslateViewHelper extends AbstractViewHelper
         }
 
         return $result;
+    }
+
+    /**
+     * Resolves a label through LocalizationUtility, or returns null when the
+     * key cannot be resolved to a language file.
+     *
+     * LocalizationUtility::translate() decides itself which keys it can resolve:
+     * "LLL:EXT:…" keys, translation domain keys such as
+     * "my_ext.messages:some.label", and bare keys together with an extension
+     * name. For anything else — a bare key such as "some.label" without an
+     * extension name — it throws an InvalidArgumentException (1498144052),
+     * which would abort the whole rendering instead of falling through to the
+     * TextDB value. The exception is caught here instead of pre-checking the
+     * key shape, the same way core's own f:translate ViewHelper does: the
+     * domain detection core uses (TranslationDomainResolver,
+     * TranslationDomainMapper) is not public API. Any other exception is
+     * rethrown.
+     */
+    private function translateLabel(string $key, ?string $extensionName): ?string
+    {
+        try {
+            return LocalizationUtility::translate($key, $extensionName);
+        } catch (InvalidArgumentException $exception) {
+            if ($exception->getCode() !== 1498144052) {
+                throw $exception;
+            }
+
+            return null;
+        }
     }
 }
