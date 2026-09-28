@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, TYPO3_13]
   pull_request:
   merge_group:
   schedule:
