@@ -6,6 +6,32 @@
 ChangeLog
 =========
 
+.. _version-4-0-1:
+
+Version 4.0.1
+=============
+
+**Fixes:**
+
+* 🐛 ``<nrtextdb:translate>`` resolves translation domain keys such as
+  ``nr_textdb.messages:some.label`` through LocalizationUtility when TextDB
+  holds no value, instead of rendering the raw key (`#161
+  <https://github.com/netresearch/t3x-nr-textdb/pull/161>`__)
+* 🐛 The Netresearch group icon and the record icons draw their glyph in the
+  backend text colour and stay legible in the light and the dark scheme; the
+  backend module views use core markup with accessible names and headings
+  (`#157 <https://github.com/netresearch/t3x-nr-textdb/pull/157>`__)
+* 🐛 The group and module icons are registered against the right SVG files
+  again (`#148 <https://github.com/netresearch/t3x-nr-textdb/pull/148>`__)
+* 🐛 Saving translations in the backend module rejects malformed input and
+  unconfigured languages instead of crashing or persisting an unreachable
+  record (`#129 <https://github.com/netresearch/t3x-nr-textdb/issues/129>`__)
+* 🐛 The backend module works for users without a stored module config, and
+  the export no longer runs unfiltered when no filter is selected (`#130
+  <https://github.com/netresearch/t3x-nr-textdb/pull/130>`__)
+* 🐛 ``nr_textdb:import <extension>`` imports only the requested extension
+  (`#119 <https://github.com/netresearch/t3x-nr-textdb/pull/119>`__)
+
 .. _version-4-0-0:
 
 Version 4.0.0
