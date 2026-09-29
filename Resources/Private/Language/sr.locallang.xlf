@@ -195,6 +195,14 @@
         <source>The submitted request could not be processed.</source>
         <target state="needs-translation">The submitted request could not be processed.</target>
       </trans-unit>
+      <trans-unit id="heading.import">
+        <source>Import translations</source>
+        <target state="needs-translation">Import translations</target>
+      </trans-unit>
+      <trans-unit id="heading.translated">
+        <source>Translations</source>
+        <target state="needs-translation">Translations</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>
