@@ -1,3 +1,21 @@
+# 4.0.1
+
+## BUGFIX
+
+- [BUGFIX] `<nrtextdb:translate>` resolves translation domain keys such as `nr_textdb.messages:some.label` through LocalizationUtility when TextDB holds no value, instead of rendering the raw key (#161)
+- [BUGFIX] Backend icons: the Netresearch group icon and the four record icons draw their glyph in the backend text colour, so they stay legible in the light and the dark scheme; record icons render as sprite icons like the core's (#157)
+- [BUGFIX] Backend module views use the core button, give every filter field and translation textarea an accessible name, and carry an h1 on every view and column headers in the translations table; the Import and translated views have German headings (#157)
+- [BUGFIX] The group and module icons are registered against the right SVG files again (#148)
+- [BUGFIX] Backend module: `translateRecordAction()` rejects malformed `new[]`/`update[]` input and languages not configured on the site instead of crashing or persisting an unreachable record, and reports partially rejected submissions (#139, #129)
+- [BUGFIX] Backend module: a user without a stored module config no longer triggers `Undefined array key` warnings, and the export no longer runs unfiltered when no filter is selected (#130)
+- [BUGFIX] `nr_textdb:import <extension>` imports only the requested extension (#119)
+- [BUGFIX] German label "Übersetzung" corrected (#140)
+
+## TASK
+
+- [TASK] Translation updates from Crowdin (#103)
+- [TASK] CI synced with the organisation's TYPO3 extension templates; the Dependabot configuration is removed (#152)
+
 # 4.0.0
 
 ## BREAKING
