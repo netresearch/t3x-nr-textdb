@@ -1,3 +1,31 @@
+# 3.0.5
+
+Maintenance release for the TYPO3 v13 line. It carries the fixes made on the
+4.x line since 3.0.4 that apply to TYPO3 13.4, plus two 13.4-only fixes.
+
+## FIX
+
+- `<nrtextdb:translate>` no longer aborts rendering for a bare key without
+  `extensionName`, and resolves every fully-qualified LLL key again (#160)
+- Filtering translations by language no longer fails with an SQL error on
+  TYPO3 13.4 (#160)
+- The Netresearch module group icon draws its letter in the module menu's
+  text colour, so it stays legible in the light and the dark scheme (#159)
+- The group and module icons are registered against the right SVG files
+  again (#149)
+- Backend module: `translateRecordAction()` rejects malformed input and
+  languages not configured on the site instead of crashing or persisting an
+  unreachable record (#146, #129)
+- Backend module: a user without a stored module config no longer triggers
+  `Undefined array key` warnings, and the export no longer runs unfiltered
+  when no filter is selected (#131)
+- `nr_textdb:import <extension>` imports only the requested extension (#118)
+
+## TASK
+
+- The functional test suite runs on the TYPO3_13 branch on PHP 8.2 to 8.5
+  instead of skipping most of its tests (#160)
+
 # 3.0.4
 
 Maintenance release for the TYPO3 v13 line. Version 4.0.0 is TYPO3 v14.3 only,

@@ -6,6 +6,35 @@
 ChangeLog
 =========
 
+.. _version-3-0-5:
+
+Version 3.0.5
+=============
+
+Maintenance release for the TYPO3 v13 line. It carries the fixes made on the
+4.x line since 3.0.4 that apply to TYPO3 13.4, plus two 13.4-only fixes.
+
+**Fixes:**
+
+* 🐛 ``<nrtextdb:translate>`` no longer aborts rendering for a bare key
+  without ``extensionName``, and resolves every fully-qualified LLL key again
+  (`#160 <https://github.com/netresearch/t3x-nr-textdb/pull/160>`__)
+* 🐛 Filtering translations by language no longer fails with an SQL error on
+  TYPO3 13.4 (`#160 <https://github.com/netresearch/t3x-nr-textdb/pull/160>`__)
+* 🐛 The Netresearch module group icon draws its letter in the module menu's
+  text colour and stays legible in the light and the dark scheme (`#159
+  <https://github.com/netresearch/t3x-nr-textdb/pull/159>`__)
+* 🐛 The group and module icons are registered against the right SVG files
+  again (`#149 <https://github.com/netresearch/t3x-nr-textdb/pull/149>`__)
+* 🐛 Saving translations in the backend module rejects malformed input and
+  unconfigured languages instead of crashing or persisting an unreachable
+  record (`#129 <https://github.com/netresearch/t3x-nr-textdb/issues/129>`__)
+* 🐛 The backend module works for users without a stored module config, and
+  the export no longer runs unfiltered when no filter is selected (`#131
+  <https://github.com/netresearch/t3x-nr-textdb/pull/131>`__)
+* 🐛 ``nr_textdb:import <extension>`` imports only the requested extension
+  (`#118 <https://github.com/netresearch/t3x-nr-textdb/pull/118>`__)
+
 .. _version-3-0-4:
 
 Version 3.0.4
