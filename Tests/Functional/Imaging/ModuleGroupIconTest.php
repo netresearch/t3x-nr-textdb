@@ -26,19 +26,6 @@ use TYPO3\CMS\Core\Imaging\IconSize;
 #[CoversNothing]
 final class ModuleGroupIconTest extends AbstractFunctionalTestCase
 {
-    /**
-     * The base class leaves out extensionmanager, so the container cannot
-     * autowire ImportCommand and every test is skipped during setup. Loading
-     * it here makes these tests run.
-     *
-     * @var non-empty-string[]
-     */
-    protected array $coreExtensionsToLoad = [
-        'extbase',
-        'fluid',
-        'extensionmanager',
-    ];
-
     #[Test]
     public function groupModuleUsesTheSharedGroupIcon(): void
     {
