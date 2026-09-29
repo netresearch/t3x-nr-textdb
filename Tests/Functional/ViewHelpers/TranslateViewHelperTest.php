@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Netresearch\NrTextdb\Tests\Functional\ViewHelpers;
 
+use InvalidArgumentException;
 use Netresearch\NrTextdb\Service\LabelTranslator;
 use Netresearch\NrTextdb\Service\LabelTranslatorInterface;
 use Netresearch\NrTextdb\Tests\Functional\AbstractFunctionalTestCase;
@@ -315,6 +316,33 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
         );
 
         self::assertSame('foo:bar', trim($output));
+    }
+
+    #[Test]
+    public function invalidArgumentExceptionWithAnotherCodeIsRethrown(): void
+    {
+        TranslateViewHelper::$component = 'lll-migration-component';
+
+        // Only 1498144052 ("cannot map the key to a language file") is the
+        // expected rejection; any other InvalidArgumentException is a real
+        // error and must not be turned into the placeholder.
+        $this->getContainer()->set(
+            LabelTranslatorInterface::class,
+            new class implements LabelTranslatorInterface {
+                #[Override]
+                public function translate(string $key, ?string $extensionName = null): ?string
+                {
+                    throw new InvalidArgumentException('Unrelated failure', 1700000001);
+                }
+            },
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionCode(1700000001);
+
+        $this->renderFluidTemplate(
+            '{nrtextdb:translate(key: \'nr_textdb.messages:tx_nrtextdb_domain_model_component\', environment: \'default\')}',
+        );
     }
 
     #[Test]

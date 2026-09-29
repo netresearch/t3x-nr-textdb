@@ -15,6 +15,8 @@ use InvalidArgumentException;
 
 /**
  * Resolves a label key the way LocalizationUtility::translate() does.
+ *
+ * @internal seam for the TranslateViewHelper and its tests, not part of the extension's public API
  */
 interface LabelTranslatorInterface
 {

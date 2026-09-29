@@ -20,6 +20,8 @@ use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
  * The TranslateViewHelper asks it for the LLL fallback of a key. Being a
  * service behind an interface instead of a static call lets the functional
  * tests count how often the ViewHelper actually asks for a label.
+ *
+ * @internal seam for the TranslateViewHelper and its tests, not part of the extension's public API
  */
 final readonly class LabelTranslator implements LabelTranslatorInterface
 {
