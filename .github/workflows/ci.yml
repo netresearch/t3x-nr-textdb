@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, TYPO3_13]
   pull_request:
   merge_group:
   schedule:
@@ -20,5 +20,10 @@ jobs:
     with:
       php-versions: '["8.2","8.3","8.4","8.5"]'
       typo3-versions: '["^13.4"]'
+      # The functional suite runs against SQLite (Build/FunctionalTests.xml pins
+      # typo3DatabaseDriver=pdo_sqlite). It defaults to off in the reusable
+      # workflow, which left the extension without any functional CI evidence.
+      run-functional-tests: true
+      functional-test-db: sqlite
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

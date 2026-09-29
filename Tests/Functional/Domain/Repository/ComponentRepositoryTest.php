@@ -16,8 +16,6 @@ use Netresearch\NrTextdb\Domain\Repository\ComponentRepository;
 use Netresearch\NrTextdb\Tests\Functional\AbstractFunctionalTestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
-use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * Functional tests for ComponentRepository.
@@ -28,8 +26,8 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  *  - findByName() for a missing record with createIfMissing=false (returns null)
  *  - findByName() for a missing record with createIfMissing=true (creates and returns)
  *
- * Fixture places components on pid=1. Extension configuration is mocked so
- * getConfiguredPageId() returns 1.
+ * Fixture places components on pid=1. The extension configuration is set to
+ * textDbPid=1, so getConfiguredPageId() returns 1.
  */
 #[CoversClass(ComponentRepository::class)]
 final class ComponentRepositoryTest extends AbstractFunctionalTestCase
@@ -40,19 +38,7 @@ final class ComponentRepositoryTest extends AbstractFunctionalTestCase
     {
         parent::setUp();
 
-        $extensionConfigurationMock = $this->createMock(ExtensionConfiguration::class);
-        $extensionConfigurationMock
-            ->method('get')
-            ->withAnyParameters()
-            ->willReturnCallback(static function (string $extension, string $path): string {
-                return match ($path) {
-                    'textDbPid'       => '1',
-                    'createIfMissing' => '0',
-                    default           => '0',
-                };
-            });
-
-        GeneralUtility::addInstance(ExtensionConfiguration::class, $extensionConfigurationMock);
+        $this->setExtensionConfiguration(textDbPid: '1', createIfMissing: '0');
 
         $this->componentRepository = $this->get(ComponentRepository::class);
 
@@ -95,7 +81,7 @@ final class ComponentRepositoryTest extends AbstractFunctionalTestCase
     #[Test]
     public function findByNameReturnsNullForMissingComponentWhenCreateIfMissingIsFalse(): void
     {
-        // createIfMissing is disabled (mocked to return '0')
+        // createIfMissing is disabled (configured as '0' in setUp)
         $component = $this->componentRepository->findByName('does-not-exist');
 
         self::assertNull($component);
@@ -104,22 +90,7 @@ final class ComponentRepositoryTest extends AbstractFunctionalTestCase
     #[Test]
     public function findByNameCreatesAndReturnsMissingComponentWhenCreateIfMissingIsEnabled(): void
     {
-        // Override the mock so createIfMissing returns true for this test.
-        // A fresh repository instance is needed because the static cache from
-        // setUp may still hold the previous mock state.
-        $extensionConfigurationMock = $this->createMock(ExtensionConfiguration::class);
-        $extensionConfigurationMock
-            ->method('get')
-            ->withAnyParameters()
-            ->willReturnCallback(static function (string $extension, string $path): string {
-                return match ($path) {
-                    'textDbPid'       => '1',
-                    'createIfMissing' => '1',
-                    default           => '0',
-                };
-            });
-
-        GeneralUtility::addInstance(ExtensionConfiguration::class, $extensionConfigurationMock);
+        $this->setExtensionConfiguration(textDbPid: '1', createIfMissing: '1');
 
         // Use a freshly resolved instance to avoid static-cache pollution
         $repository = $this->get(ComponentRepository::class);
@@ -137,19 +108,7 @@ final class ComponentRepositoryTest extends AbstractFunctionalTestCase
     #[Test]
     public function findByNameCreatedComponentIsPersistableAndRetrievableBySecondCall(): void
     {
-        $extensionConfigurationMock = $this->createMock(ExtensionConfiguration::class);
-        $extensionConfigurationMock
-            ->method('get')
-            ->withAnyParameters()
-            ->willReturnCallback(static function (string $extension, string $path): string {
-                return match ($path) {
-                    'textDbPid'       => '1',
-                    'createIfMissing' => '1',
-                    default           => '0',
-                };
-            });
-
-        GeneralUtility::addInstance(ExtensionConfiguration::class, $extensionConfigurationMock);
+        $this->setExtensionConfiguration(textDbPid: '1', createIfMissing: '1');
 
         $repository = $this->get(ComponentRepository::class);
         $repository->setCreateIfMissing(true);
@@ -158,20 +117,7 @@ final class ComponentRepositoryTest extends AbstractFunctionalTestCase
         self::assertInstanceOf(Component::class, $created);
         $createdUid = $created->getUid();
 
-        // Retrieve the same record again from a fresh repository without setCreateIfMissing
-        $extensionConfigurationMock2 = $this->createMock(ExtensionConfiguration::class);
-        $extensionConfigurationMock2
-            ->method('get')
-            ->withAnyParameters()
-            ->willReturnCallback(static function (string $extension, string $path): string {
-                return match ($path) {
-                    'textDbPid'       => '1',
-                    'createIfMissing' => '0',
-                    default           => '0',
-                };
-            });
-
-        GeneralUtility::addInstance(ExtensionConfiguration::class, $extensionConfigurationMock2);
+        $this->setExtensionConfiguration(textDbPid: '1', createIfMissing: '0');
 
         $repository2 = $this->get(ComponentRepository::class);
         $fetched     = $repository2->findByName('persisted-component');
