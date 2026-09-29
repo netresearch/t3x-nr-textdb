@@ -148,6 +148,12 @@
             <trans-unit id="message.error.translation.request">
                 <source>The submitted request could not be processed.</source>
             </trans-unit>
+            <trans-unit id="heading.import">
+                <source>Import translations</source>
+            </trans-unit>
+            <trans-unit id="heading.translated">
+                <source>Translations</source>
+            </trans-unit>
         </body>
     </file>
 </xliff>
