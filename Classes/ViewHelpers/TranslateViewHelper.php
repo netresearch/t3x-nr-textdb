@@ -13,10 +13,11 @@ namespace Netresearch\NrTextdb\ViewHelpers;
 
 use function count;
 
+use InvalidArgumentException;
+use Netresearch\NrTextdb\Service\LabelTranslatorInterface;
 use Netresearch\NrTextdb\Service\TranslationService;
 use RuntimeException;
 use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
-use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
 /**
@@ -42,10 +43,14 @@ final class TranslateViewHelper extends AbstractViewHelper
      */
     public static string $component = '';
 
+    private readonly LabelTranslatorInterface $labelTranslator;
+
     public function __construct(
         TranslationService $translationService,
+        LabelTranslatorInterface $labelTranslator,
     ) {
         $this->translationService = $translationService;
+        $this->labelTranslator    = $labelTranslator;
     }
 
     /**
@@ -124,18 +129,8 @@ final class TranslateViewHelper extends AbstractViewHelper
 
         // If the result is the placeholder itself (auto-created or missing),
         // try to return the LLL translation instead.
-        //
-        // Since TYPO3 v14, LocalizationUtility::translate() throws an
-        // InvalidArgumentException (1498144052) when it cannot derive a language
-        // file from its arguments. The only two argument shapes that are
-        // guaranteed to resolve are a fully-qualified "LLL:EXT:…" key and a
-        // non-empty extension name; a bare key such as "some.label" would abort
-        // the whole rendering instead of falling through to the TextDB value.
-        if (
-            ($result === $textdbKey)
-            && (str_starts_with($placeholder, 'LLL:EXT:') || (($extension !== null) && ($extension !== '')))
-        ) {
-            $lllTranslation = LocalizationUtility::translate($placeholder, $extension);
+        if ($result === $textdbKey) {
+            $lllTranslation = $this->translateLabel($placeholder, $extension);
 
             if ($lllTranslation !== null && $lllTranslation !== '') {
                 return $lllTranslation;
@@ -143,5 +138,45 @@ final class TranslateViewHelper extends AbstractViewHelper
         }
 
         return $result;
+    }
+
+    /**
+     * Resolves a label through LocalizationUtility, or returns null when the
+     * key cannot be resolved to a language file.
+     *
+     * LocalizationUtility::translate() decides itself which keys it can resolve:
+     * "LLL:EXT:…" keys, translation domain keys such as
+     * "my_ext.messages:some.label", and bare keys together with an extension
+     * name. For anything else it throws an InvalidArgumentException
+     * (1498144052), which would abort the whole rendering instead of falling
+     * through to the TextDB value.
+     *
+     * A key without any ":" and without an extension name is skipped up front:
+     * LocalizationUtility always throws 1498144052 for it, and throwing and
+     * catching that exception for every unresolved bare key on a page is
+     * expensive. Every other key is handed to LocalizationUtility, because the
+     * domain detection core uses (TranslationDomainResolver,
+     * TranslationDomainMapper) is not public API.
+     *
+     * The exception is the safety net for the remaining keys core rejects.
+     * Core's own f:translate ViewHelper catches every InvalidArgumentException;
+     * this one deliberately catches only code 1498144052 and rethrows anything
+     * else, so an unrelated error is not silently turned into the placeholder.
+     */
+    private function translateLabel(string $key, ?string $extensionName): ?string
+    {
+        if (!str_contains($key, ':') && ($extensionName === null || $extensionName === '')) {
+            return null;
+        }
+
+        try {
+            return $this->labelTranslator->translate($key, $extensionName);
+        } catch (InvalidArgumentException $exception) {
+            if ($exception->getCode() !== 1498144052) {
+                throw $exception;
+            }
+
+            return null;
+        }
     }
 }

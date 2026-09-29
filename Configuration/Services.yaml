@@ -11,6 +11,11 @@ services:
     Netresearch\NrTextdb\Service\TranslationService:
         public: true
 
+    # Public so functional tests can replace it with a counting double.
+    Netresearch\NrTextdb\Service\LabelTranslatorInterface:
+        alias: Netresearch\NrTextdb\Service\LabelTranslator
+        public: true
+
     Netresearch\NrTextdb\Command\ImportCommand:
         tags:
             - name: 'console.command'

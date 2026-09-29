@@ -11,6 +11,9 @@ declare(strict_types=1);
 
 namespace Netresearch\NrTextdb\Tests\Functional\ViewHelpers;
 
+use InvalidArgumentException;
+use Netresearch\NrTextdb\Service\LabelTranslator;
+use Netresearch\NrTextdb\Service\LabelTranslatorInterface;
 use Netresearch\NrTextdb\Tests\Functional\AbstractFunctionalTestCase;
 use Netresearch\NrTextdb\ViewHelpers\TranslateViewHelper;
 use Override;
@@ -253,6 +256,142 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
 
         self::assertSame('another-unknown-key', trim($firstOutput));
         self::assertSame('another-unknown-key', trim($secondOutput));
+    }
+
+    // =========================================================================
+    // Scenario 5 – Every key shape LocalizationUtility resolves falls back to LLL
+    // =========================================================================
+
+    #[Test]
+    public function translationDomainKeyResolvesTheLllTranslation(): void
+    {
+        TranslateViewHelper::$component = 'lll-migration-component';
+
+        // Translation domain syntax: "<extension>.messages" maps to the
+        // extension's locallang.xlf, no extension name needed.
+        $output = $this->renderFluidTemplate(
+            '{nrtextdb:translate(key: \'nr_textdb.messages:tx_nrtextdb_domain_model_component\', environment: \'default\')}',
+        );
+
+        self::assertSame('Component', trim($output));
+    }
+
+    #[Test]
+    public function lllPrefixedTranslationDomainKeyResolvesTheLllTranslation(): void
+    {
+        TranslateViewHelper::$component = 'lll-migration-component';
+
+        // LocalizationUtility strips an "LLL:" prefix from a domain key.
+        $output = $this->renderFluidTemplate(
+            '{nrtextdb:translate(key: \'LLL:nr_textdb.messages:tx_nrtextdb_domain_model_component\', environment: \'default\')}',
+        );
+
+        self::assertSame('Component', trim($output));
+    }
+
+    #[Test]
+    public function bareKeyWithoutExtensionNameFallsBackToThePlaceholder(): void
+    {
+        TranslateViewHelper::$component = 'lll-migration-component';
+
+        // LocalizationUtility cannot resolve a bare key without an extension
+        // name; the ViewHelper must render the placeholder instead of aborting.
+        $output = $this->renderFluidTemplate(
+            '{nrtextdb:translate(key: \'tx_nrtextdb_domain_model_component\', environment: \'default\')}',
+        );
+
+        self::assertSame('tx_nrtextdb_domain_model_component', trim($output));
+    }
+
+    #[Test]
+    public function keyWithColonThatLocalizationUtilityRejectsFallsBackToThePlaceholder(): void
+    {
+        TranslateViewHelper::$component = 'lll-migration-component';
+
+        // "foo:bar" is neither an LLL:EXT: key nor a known translation domain,
+        // so LocalizationUtility throws 1498144052; the ViewHelper must catch it
+        // and render the placeholder.
+        $output = $this->renderFluidTemplate(
+            '{nrtextdb:translate(key: \'foo:bar\', environment: \'default\')}',
+        );
+
+        self::assertSame('foo:bar', trim($output));
+    }
+
+    #[Test]
+    public function invalidArgumentExceptionWithAnotherCodeIsRethrown(): void
+    {
+        TranslateViewHelper::$component = 'lll-migration-component';
+
+        // Only 1498144052 ("cannot map the key to a language file") is the
+        // expected rejection; any other InvalidArgumentException is a real
+        // error and must not be turned into the placeholder.
+        $this->getContainer()->set(
+            LabelTranslatorInterface::class,
+            new class implements LabelTranslatorInterface {
+                #[Override]
+                public function translate(string $key, ?string $extensionName = null): ?string
+                {
+                    throw new InvalidArgumentException('Unrelated failure', 1700000001);
+                }
+            },
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionCode(1700000001);
+
+        $this->renderFluidTemplate(
+            '{nrtextdb:translate(key: \'nr_textdb.messages:tx_nrtextdb_domain_model_component\', environment: \'default\')}',
+        );
+    }
+
+    #[Test]
+    public function bareKeyWithoutExtensionNameIsNotHandedToLocalizationUtility(): void
+    {
+        TranslateViewHelper::$component = 'lll-migration-component';
+
+        $labelTranslator = new class implements LabelTranslatorInterface {
+            /** @var list<string> */
+            public array $requestedKeys = [];
+
+            #[Override]
+            public function translate(string $key, ?string $extensionName = null): ?string
+            {
+                $this->requestedKeys[] = $key;
+
+                return (new LabelTranslator())->translate($key, $extensionName);
+            }
+        };
+        $this->getContainer()->set(LabelTranslatorInterface::class, $labelTranslator);
+
+        // LocalizationUtility always rejects a key without ":" when no extension
+        // name is given, so the ViewHelper must not ask it at all: throwing and
+        // catching that exception for every such key made rendering slow.
+        $this->renderFluidTemplate(
+            '{nrtextdb:translate(key: \'tx_nrtextdb_domain_model_component\', environment: \'default\')}',
+        );
+
+        self::assertSame([], $labelTranslator->requestedKeys);
+
+        // Control: a key LocalizationUtility can resolve does reach it, so the
+        // empty list above is not an unwired double.
+        $this->renderFluidTemplate(
+            '{nrtextdb:translate(key: \'nr_textdb.messages:tx_nrtextdb_domain_model_type\', environment: \'default\')}',
+        );
+
+        self::assertSame(['nr_textdb.messages:tx_nrtextdb_domain_model_type'], $labelTranslator->requestedKeys);
+    }
+
+    #[Test]
+    public function bareKeyWithExtensionNameResolvesTheLllTranslation(): void
+    {
+        TranslateViewHelper::$component = 'lll-migration-component';
+
+        $output = $this->renderFluidTemplate(
+            '{nrtextdb:translate(key: \'tx_nrtextdb_domain_model_environment\', extensionName: \'nr_textdb\', environment: \'default\')}',
+        );
+
+        self::assertSame('Environment', trim($output));
     }
 
     // =========================================================================
