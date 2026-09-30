@@ -3,6 +3,8 @@
 ## Description: Render TYPO3 extension documentation
 ## Usage: docs
 ## Example: ddev docs
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: Netresearch DTT GmbH
 
 set -e
 

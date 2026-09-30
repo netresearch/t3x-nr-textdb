@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: Netresearch DTT GmbH
+
 module.tx_nrtextdb {
     persistence {
         # cat=module.tx_nrtextdb//a; type=string; label=Default storage PID

@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: Netresearch DTT GmbH -->
 # Netresearch TextDB
 
 > **Manage TYPO3 translations directly in the backend – no more digging through language files**
