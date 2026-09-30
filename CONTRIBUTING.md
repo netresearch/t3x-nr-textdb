@@ -11,6 +11,7 @@ Thank you for your interest in contributing to the TYPO3 TextDB extension! We we
 - [Contributing Code](#contributing-code)
 - [Development Setup](#development-setup)
 - [Coding Standards](#coding-standards)
+- [Governance and policies](#governance-and-policies)
 
 ---
 
@@ -300,6 +301,23 @@ By contributing to this project, you agree that your contributions will be licen
 ---
 
 **Thank you for contributing to Netresearch TextDB!** 🎉
+
+## Governance and policies
+
+This extension follows the organisation-wide Netresearch policies:
+
+- [Governance](https://github.com/netresearch/.github/blob/main/GOVERNANCE.md): ownership, roles, how decisions are made and conflicts resolved.
+- [Roadmap](https://github.com/netresearch/.github/blob/main/ROADMAP.md): planned and excluded work for the next twelve months.
+- [Handling of dependency and code analysis findings](https://github.com/netresearch/.github/blob/main/SECURITY.md#handling-of-dependency-and-code-analysis-findings): which vulnerability, licence and static-analysis findings must be fixed, by when, and how exceptions are recorded.
+- [Secret management](https://github.com/netresearch/.github/blob/main/SECURITY.md#secret-management): where CI and release credentials are stored, who may use them, how committed secrets are detected, and when secrets are rotated.
+- [Access roster](https://github.com/netresearch/.github/blob/main/docs/access-roster.md): the people and teams with administrative or write access to this repository.
+
+Checks that run on every pull request in this repository:
+
+- `.github/workflows/checks.yml`: Composer Audit (fails on any advisory for an installed package that is not listed under `config.audit.ignore` in `composer.json`) and Opengrep SAST (fails on findings of severity WARNING or higher), both through `typo3-ci-workflows`' `security.yml`; Dependency Review (fails on newly added dependencies with a vulnerability of severity high or higher); PHP License Audit (`license-check.yml`, fails on an SSPL or BSL licensed Composer dependency); CodeQL with language auto-detection (JavaScript and the workflow files; CodeQL has no PHP analysis, PHPStan and Opengrep cover the PHP code); Betterleaks secret scanning; zizmor for the workflow files; the pull request size check. The fuzz job finds no `Fuzz` test suite in `Build/phpunit.xml` and is skipped. The OpenSSF Scorecard job runs only on pushes to `main` and on the weekly schedule.
+- `.github/workflows/ci.yml`: PHP lint, code style (PHP-CS-Fixer, `Build/.php-cs-fixer.dist.php`), PHPStan (level 10, `Build/phpstan.neon`), Rector, unit tests and functional tests (SQLite) on PHP 8.2 to 8.5 with TYPO3 ^14.3, and the documentation rendering of `Documentation/`. Fractor is not part of the CI run.
+- `.github/workflows/harness-verify.yml`: `Build/Scripts/verify-harness.sh`.
+- `.github/workflows/check-template-drift.yml`: drift of the managed files from the `typo3-extension` template in netresearch/.github.
 
 ## Commit Signing
 
