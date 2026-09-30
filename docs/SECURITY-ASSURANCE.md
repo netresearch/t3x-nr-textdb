@@ -13,6 +13,7 @@ Versions named below are the ones Composer resolved for `typo3/cms-core: ^14.3` 
 | Backend module "Netresearch > TextDB" with the actions `list`, `translated`, `translateRecord`, `import`, `export` | Backend users whose group grants the module (`'access' => 'user'`) | Filter and pagination query parameters, the translation form (`new[]`, `update[]`), one uploaded XLIFF file | `Configuration/Backend/Modules.php`, `Classes/Controller/TranslationController.php` |
 | Fluid ViewHelpers `textdb:textdb` and `textdb:translate` in frontend or backend templates | Anyone who can request a page rendered with such a template | ViewHelper arguments set by the template author | `Classes/ViewHelpers/TextdbViewHelper.php`, `Classes/ViewHelpers/TranslateViewHelper.php`, `Classes/Service/TranslationService.php` |
 | Console command `nr_textdb:import` | Whoever can run the TYPO3 CLI on the host | Optional extension key, `--override`; reads `textdb*.xlf` and `*.textdb*.xlf` from `Resources/Private/Language/` of installed extensions | `Classes/Command/ImportCommand.php`, `Classes/Service/ImportService.php` |
+| Backend module "Netresearch > Sync > TextDB", registered only when the extension `nr_sync` is loaded | Backend users whose group grants that module (`'access' => 'user'`) | Whatever nr_sync's controller reads | `Configuration/Backend/Modules.php`: the route targets nr_sync's `BaseSyncModuleController::indexAction` and hands it the four `tx_nrtextdb_domain_model_*` tables to dump and synchronise |
 
 The extension stores its data in the four tables `tx_nrtextdb_domain_model_*` (`ext_tables.sql`). It ships no frontend plugin, no AJAX route and no middleware.
 
@@ -31,6 +32,7 @@ What you cannot expect:
 - No review of imported content. An import writes the values of the file as they are; a stored value can contain any text, including markup, which is escaped on output but not rejected on input.
 - No protection against record creation from templates that pass request data to the ViewHelpers. With `createIfMissing` enabled (the default in `ext_conf_template.txt`), rendering a ViewHelper with an unknown placeholder, component or environment creates the missing records. Placeholders are meant to be constants in templates; a template that builds them from request parameters lets visitors create records.
 - Database error messages are shown to the module user when saving a translation fails (`translateRecordAction()` adds the exception message to the flash message).
+- A single permission for all TextDB data when `nr_sync` is loaded. The TextDB sync module is granted separately from the TextDB module and gives access to the four TextDB tables through nr_sync's controller, which this extension does not implement.
 - Anything outside this extension: TYPO3 core, the backend login, the web server and the database are covered by their own projects.
 
 ## Threat model and trust boundaries
@@ -47,7 +49,7 @@ What you cannot expect:
 
 ## Secure design principles applied
 
-- Least privilege and complete mediation: the module uses TYPO3's module access check and route token for every action (`Configuration/Backend/Modules.php`); the extension registers no route of its own outside the module.
+- Least privilege and complete mediation: the module uses TYPO3's module access check and route token for every action (`Configuration/Backend/Modules.php`); the extension registers no route outside its backend modules (the TextDB module, and the TextDB sync module when `nr_sync` is loaded).
 - Fail-safe defaults: request values that do not have the expected type are rejected and counted, not coerced into a write (`translateRecordAction()`); an unusable stored filter falls back to "no filter", and an export without a filter is refused (`exportAction()`).
 - Economy of mechanism: output escaping is Fluid's default, not a custom escaper; database access goes through Extbase queries only (`Classes/Domain/Repository/`), with no hand-written SQL.
 - Input is data, never code: stored filters are JSON, not PHP-serialised (`getConfigFromBeUserData()`); the XLIFF parser is called without `LIBXML_NOENT`.
@@ -56,8 +58,8 @@ What you cannot expect:
 
 | Weakness (CWE / OWASP) | Counter | Evidence |
 |------------------------|---------|----------|
-| Missing authorisation (CWE-862, A01:2021) | TYPO3 module access check; no route outside the module | `Configuration/Backend/Modules.php`; see "What you cannot expect" for the scope of that check |
-| Cross-site request forgery (CWE-352) | TYPO3 route token on every backend module request; backend session cookie `SameSite=strict` by default (`typo3/cms-core` `Configuration/DefaultConfiguration.php`, `BE.cookieSameSite`) | `Configuration/Backend/Modules.php` (the actions are module routes, the extension registers no other route) |
+| Missing authorisation (CWE-862, A01:2021) | TYPO3 module access check on the TextDB module and, when `nr_sync` is loaded, on the TextDB sync module; no route outside these modules | `Configuration/Backend/Modules.php`; see "What you cannot expect" for the scope of that check |
+| Cross-site request forgery (CWE-352) | TYPO3 route token on every backend module request; backend session cookie `SameSite=strict` by default (`typo3/cms-core` `Configuration/DefaultConfiguration.php`, `BE.cookieSameSite`) | `Configuration/Backend/Modules.php` (the actions are module routes; the only other route the extension registers is the TextDB sync module's, when `nr_sync` is loaded) |
 | Cross-site scripting (CWE-79, A03:2021) | Fluid escapes ViewHelper output (`AbstractViewHelper::$escapeOutput = true` in Fluid 5.3.2, not overridden by either ViewHelper); the module templates pass record fields through `f:format.htmlspecialchars` and use no `f:format.raw`; the module JavaScript inserts only HTML from the module's own escaped responses | `Tests/Functional/ViewHelpers/TextdbViewHelperTest.php` (`rendersAStoredValueWithMarkupEscaped`), `Resources/Private/Partials/Administration/TranslationItem.html`, `Resources/Public/JavaScript/TextDbModule.js` |
 | XML external entities (CWE-611, A05:2021) | `simplexml_load_string()` with `LIBXML_NONET` and without `LIBXML_NOENT` in `importAction()`; libxml2 2.9 and later do not load external entities without `LIBXML_NOENT`; the CLI import uses TYPO3's `XliffLoader`, which also does not pass `LIBXML_NOENT` | `Tests/Unit/Controller/TranslationControllerXXETest.php` parses a payload with a `file://` entity using the flags of `importAction()`; it does not call the controller |
 | Unrestricted upload (CWE-434), path traversal (CWE-22) | The upload is read from PHP's temporary upload file and never written elsewhere; the client filename is only matched against `^([a-z]{2}\.)?(textdb_(.*)\.xlf)$` to derive the language | `TranslationController::importAction()` |
