@@ -446,6 +446,8 @@ The XLF import functionality implements protection against XML External Entity (
 
 For more information about XXE vulnerabilities, see the [OWASP XXE documentation](https://owasp.org/www-community/vulnerabilities/XML_External_Entity_(XXE)_Processing).
 
+What the extension does and does not protect against, its trust boundaries and the evidence for each control are described in the [security assurance case](docs/SECURITY-ASSURANCE.md).
+
 ### Exporting Translations
 
 1. Open the TextDB backend module
