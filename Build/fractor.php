@@ -28,4 +28,14 @@ return FractorConfiguration::configure()
         [
             Typo3LevelSetList::UP_TO_TYPO3_14,
         ],
+    )
+    ->withSkip(
+        [
+            // A sprintf() skeleton for the export (placeholders inside the
+            // <file> tag), not an XML document.
+            __DIR__ . '/../Resources/Private/template.xlf',
+            // Translations are written by the Crowdin export in its own
+            // format; reformatting them here would be undone by the next sync.
+            '*/Resources/Private/Language/??.locallang*.xlf',
+        ],
     );
