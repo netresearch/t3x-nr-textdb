@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: Netresearch DTT GmbH -->
 # Contributing to Netresearch TextDB
 
 Thank you for your interest in contributing to the TYPO3 TextDB extension! We welcome contributions of all kinds.
@@ -9,6 +11,7 @@ Thank you for your interest in contributing to the TYPO3 TextDB extension! We we
 - [Contributing Code](#contributing-code)
 - [Development Setup](#development-setup)
 - [Coding Standards](#coding-standards)
+- [Governance and policies](#governance-and-policies)
 
 ---
 
@@ -133,7 +136,7 @@ Follow our [coding standards](#coding-standards) and ensure:
 - All PHP files have `declare(strict_types=1)`
 - Type declarations on all methods and properties
 - PHPDoc comments on public methods
-- PSR-12 code style compliance
+- Code style as enforced by PHP-CS-Fixer (`Build/.php-cs-fixer.dist.php`)
 
 ### 4. Test Your Changes
 
@@ -150,8 +153,8 @@ composer ci:test:php:unit
 ### 5. Commit and Push
 
 ```bash
-git add .
-git commit -m "feat: Add your feature description"
+git add <changed files>
+git commit -S --signoff -m "feat: add your feature description"
 git push origin feature/your-feature-name
 ```
 
@@ -181,7 +184,7 @@ git push origin feature/your-feature-name
 ### Prerequisites
 
 - **TYPO3:** 14.3+
-- **PHP:** 8.2, 8.3, or 8.4
+- **PHP:** 8.2, 8.3, 8.4 or 8.5
 - **Composer:** 2.x
 - **DDEV:** Recommended for local development
 
@@ -219,6 +222,7 @@ composer ci:test
 
 # Specific tests
 composer ci:test:php:unit        # Unit tests
+composer ci:test:php:functional  # Functional tests (SQLite)
 composer ci:test:php:phpstan     # Static analysis
 composer ci:test:php:rector      # Code modernization checks
 composer ci:test:php:cgl         # Code style
@@ -227,14 +231,9 @@ composer ci:test:php:cgl         # Code style
 ### Building Documentation
 
 ```bash
-# Build documentation locally
-composer docs:build
-
-# Watch for changes and rebuild
-composer docs:watch
-
-# Serve with live preview
-composer docs:serve
+# Render Documentation/ with the TYPO3 render-guides image into
+# Documentation-GENERATED-temp/ (.ddev/commands/host/docs)
+ddev docs
 ```
 
 ---
@@ -245,7 +244,7 @@ This extension follows strict TYPO3 and PHP coding standards:
 
 ### PHP Standards
 
-- **PSR-12:** Code style compliance
+- **Code style:** PHP-CS-Fixer with the `@PER-CS3x0` and `@Symfony` rule sets (`Build/.php-cs-fixer.dist.php`)
 - **Strict Types:** `declare(strict_types=1)` in all PHP files
 - **Type Declarations:** All properties, parameters, and return types
 - **PHPStan Level 10:** Maximum static analysis strictness
@@ -261,18 +260,18 @@ This extension follows strict TYPO3 and PHP coding standards:
 
 The following tools enforce code quality:
 
-- **php-cs-fixer** - PSR-12 and Symfony style enforcement
+- **php-cs-fixer** - PER-CS 3.0 and Symfony style enforcement
 - **PHPStan** - Static analysis at level 10
 - **Rector** - Code modernization to TYPO3 v14
 - **Fractor** - TYPO3-specific code improvements
 
-All tools run automatically in CI/CD on pull requests.
+PHP-CS-Fixer, PHPStan and Rector run in CI on every pull request. Fractor is not part of the CI run; run `composer ci:test:php:fractor` locally.
 
 ### Testing Standards
 
 - **Unit Tests:** Test classes in `Tests/Unit/` mirroring `Classes/`
 - **Functional Tests:** Integration tests in `Tests/Functional/`
-- **PHPUnit 10.5:** Modern test attributes (`#[Test]`, `#[CoversClass]`)
+- **PHPUnit:** test attributes (`#[Test]`, `#[CoversClass]`); PHPUnit comes with `netresearch/typo3-ci-workflows`, and its version depends on the PHP version
 - **Coverage:** Aim for 60%+ code coverage
 
 ---
@@ -298,6 +297,25 @@ By contributing to this project, you agree that your contributions will be licen
 ---
 
 **Thank you for contributing to Netresearch TextDB!** 🎉
+
+## Governance and policies
+
+This extension follows the organisation-wide Netresearch policies:
+
+- [Governance](https://github.com/netresearch/.github/blob/main/GOVERNANCE.md): ownership, roles, how decisions are made and conflicts resolved.
+- [Roadmap](https://github.com/netresearch/.github/blob/main/ROADMAP.md): planned and excluded work for the next twelve months.
+- [Handling of dependency and code analysis findings](https://github.com/netresearch/.github/blob/main/SECURITY.md#handling-of-dependency-and-code-analysis-findings): which vulnerability, licence and static-analysis findings must be fixed, by when, and how exceptions are recorded.
+- [Secret management](https://github.com/netresearch/.github/blob/main/SECURITY.md#secret-management): where CI and release credentials are stored, who may use them, how committed secrets are detected, and when secrets are rotated.
+- [Access roster](https://github.com/netresearch/.github/blob/main/docs/access-roster.md): the people and teams with administrative or write access to this repository.
+
+The security expectations, threat model and trust boundaries of this extension are in [docs/SECURITY-ASSURANCE.md](docs/SECURITY-ASSURANCE.md).
+
+Checks that run on every pull request in this repository:
+
+- `.github/workflows/checks.yml`: Composer Audit (fails on any advisory for an installed package that is not listed under `config.audit.ignore` in `composer.json`) and Opengrep SAST (fails a pull request as the [organisation rule](https://github.com/netresearch/.github/blob/main/SECURITY.md#static-analysis-sast) sets out), both through `typo3-ci-workflows`' `security.yml`; Dependency Review (fails on newly added dependencies with a vulnerability of severity high or higher); PHP License Audit (`license-check.yml`, fails when `composer licenses` reports a dependency licence that is exactly `SSPL` or `BSL`); CodeQL with language auto-detection (JavaScript and the workflow files; CodeQL has no PHP analysis, PHPStan and Opengrep cover the PHP code); Betterleaks secret scanning; zizmor for the workflow files; `pr-quality` (the pull request size check, and the automatic approval of pull requests that maintainers open); the aggregate gate `All security checks`, which fails when any of these jobs fails. The fuzz job finds no `Fuzz` test suite in `Build/phpunit.xml` and is skipped. The OpenSSF Scorecard job runs only on pushes to `main` and on the weekly schedule.
+- `.github/workflows/ci.yml`: PHP lint, code style (PHP-CS-Fixer, `Build/.php-cs-fixer.dist.php`), PHPStan (level 10, `Build/phpstan.neon`, and, advisory by default, once more against the newest PHPUnit as `PHPStan (unpinned PHPUnit)`), Rector, unit tests and functional tests (SQLite) on PHP 8.2 to 8.5 with TYPO3 ^14.3, and the documentation rendering of `Documentation/`, summarised by the aggregate gate `ci / All CI checks`. Fractor is not part of the CI run.
+- `.github/workflows/harness-verify.yml`: `Build/Scripts/verify-harness.sh`.
+- `.github/workflows/check-template-drift.yml`: drift of the managed files from the `typo3-extension` template in netresearch/.github.
 
 ## Commit Signing
 

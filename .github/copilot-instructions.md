@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: Netresearch DTT GmbH -->
 # Copilot Instructions for nr_textdb
 
 This repository contains a TYPO3 extension for managing translations. When working on this codebase, follow these guidelines.

@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: Netresearch DTT GmbH -->
 # Architecture
 
 <!-- Keep this document current. It's referenced from AGENTS.md and read by agents

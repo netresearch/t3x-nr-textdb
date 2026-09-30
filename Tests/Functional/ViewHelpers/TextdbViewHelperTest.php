@@ -3,6 +3,9 @@
 /*
  * This file is part of the package netresearch/nr-textdb.
  *
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ * SPDX-FileCopyrightText: Netresearch DTT GmbH
+ *
  * For the full copyright and license information, please read the
  * LICENSE file that was distributed with this source code.
  */
@@ -117,6 +120,37 @@ final class TextdbViewHelperTest extends AbstractFunctionalTestCase
         );
 
         self::assertSame('Submit Order', trim($output));
+    }
+
+    #[Test]
+    public function rendersAStoredValueWithMarkupEscaped(): void
+    {
+        // Editors and imports store arbitrary text. The ViewHelper leaves the
+        // escaping to Fluid, so markup in a stored value must reach the page
+        // as text, not as elements.
+        GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
+            ->insert(
+                'tx_nrtextdb_domain_model_translation',
+                [
+                    'pid'              => 1,
+                    'sys_language_uid' => 0,
+                    'environment'      => 1,
+                    'component'        => 1,
+                    'type'             => 1,
+                    'placeholder'      => 'markup-value',
+                    'value'            => '<script>alert(1)</script> & <b title="x">bold</b>',
+                ],
+            );
+
+        $output = $this->renderFluidTemplate(
+            '{nrtextdb:textdb(placeholder: \'markup-value\', component: \'test-component\', environment: \'default\')}',
+        );
+
+        self::assertSame(
+            '&lt;script&gt;alert(1)&lt;/script&gt; &amp; &lt;b title=&quot;x&quot;&gt;bold&lt;/b&gt;',
+            trim($output),
+        );
     }
 
     // =========================================================================

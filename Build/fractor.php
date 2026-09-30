@@ -3,6 +3,9 @@
 /*
  * This file is part of the package netresearch/nr-textdb.
  *
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ * SPDX-FileCopyrightText: Netresearch DTT GmbH
+ *
  * For the full copyright and license information, please read the
  * LICENSE file that was distributed with this source code.
  */
@@ -24,5 +27,15 @@ return FractorConfiguration::configure()
     ->withSets(
         [
             Typo3LevelSetList::UP_TO_TYPO3_14,
+        ],
+    )
+    ->withSkip(
+        [
+            // A sprintf() skeleton for the export (placeholders inside the
+            // <file> tag), not an XML document.
+            __DIR__ . '/../Resources/Private/template.xlf',
+            // Translations are written by the Crowdin export in its own
+            // format; reformatting them here would be undone by the next sync.
+            '*/Resources/Private/Language/??.locallang*.xlf',
         ],
     );
