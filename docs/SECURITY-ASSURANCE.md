@@ -4,7 +4,7 @@
 
 This document states what users of `nr_textdb` can and cannot expect in terms of security, the threat model and trust boundaries of the extension, and how it counters common weaknesses. Every statement refers to the code at the commit that contains this file. Vulnerabilities are reported as described in [SECURITY.md](../SECURITY.md).
 
-Versions named below are the ones Composer resolved for `typo3/cms-core: ^14.3` on 2026-09-30 (the repository tracks no `composer.lock`): TYPO3 14.3.7, Fluid 5.3.2, PHP 8.5 with libxml2 2.9.14.
+Versions named below are the ones Composer resolved for `typo3/cms-core: ^14.3` on 2026-09-30 (the repository tracks no `composer.lock`): TYPO3 14.3.7 and Fluid 5.3.2. The parser behaviour was checked on PHP 8.5.10 with libxml2 2.9.14.
 
 ## What the extension does, security-wise
 
