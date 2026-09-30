@@ -277,8 +277,8 @@ xmlns:textdb="http://typo3.org/ns/Netresearch/NrTextdb/ViewHelpers"
 #### 🔒 4. Production-Grade Quality
 **The TextDB Advantage**:
 - PHPStan level 10 static analysis
-- 95%+ test coverage
-- PSR-12 coding standards
+- Unit and functional test suites, run in CI on every pull request
+- PER-CS 3.0 and Symfony coding standards (PHP-CS-Fixer)
 - Modern PHP 8.2+ features (readonly properties, constructor promotion)
 - Comprehensive CI/CD pipeline
 
@@ -301,7 +301,7 @@ xmlns:textdb="http://typo3.org/ns/Netresearch/NrTextdb/ViewHelpers"
 
 - **TYPO3**: 14.3.0 - 14.99.99
 - **PHP**: 8.2, 8.3, 8.4, or 8.5
-- **PHP Extensions**: zip, simplexml, libxml
+- **PHP Extensions**: zip, simplexml, libxml, mbstring
 - **Composer**: For installation and dependency management
 
 ---
@@ -530,6 +530,7 @@ This executes:
 - ✅ Rector code quality checks
 - ✅ Fractor TYPO3 migrations
 - ✅ Unit tests with coverage
+- ✅ Functional tests (SQLite)
 - ✅ Coding standards (PHP CS Fixer)
 
 ### Individual Test Commands
@@ -540,6 +541,7 @@ composer ci:test:php:phpstan   # PHPStan analysis
 composer ci:test:php:rector    # Rector checks
 composer ci:test:php:fractor   # Fractor checks
 composer ci:test:php:unit      # Unit tests
+composer ci:test:php:functional # Functional tests (SQLite)
 composer ci:test:php:cgl       # Coding standards check
 ```
 
@@ -584,7 +586,7 @@ The extension currently supports **23 languages**, and we're always looking to a
 
 **Development Standards:**
 - PHPStan level 10 compliance required
-- PSR-12 coding standards
+- PER-CS 3.0 and Symfony coding standards (PHP-CS-Fixer)
 - `declare(strict_types=1)` in all PHP files
 - Type declarations on all methods
 - Tests for new features

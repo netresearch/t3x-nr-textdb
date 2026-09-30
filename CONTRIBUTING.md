@@ -136,7 +136,7 @@ Follow our [coding standards](#coding-standards) and ensure:
 - All PHP files have `declare(strict_types=1)`
 - Type declarations on all methods and properties
 - PHPDoc comments on public methods
-- PSR-12 code style compliance
+- Code style as enforced by PHP-CS-Fixer (`Build/.php-cs-fixer.dist.php`)
 
 ### 4. Test Your Changes
 
@@ -153,8 +153,8 @@ composer ci:test:php:unit
 ### 5. Commit and Push
 
 ```bash
-git add .
-git commit -m "feat: Add your feature description"
+git add <changed files>
+git commit -S --signoff -m "feat: add your feature description"
 git push origin feature/your-feature-name
 ```
 
@@ -184,7 +184,7 @@ git push origin feature/your-feature-name
 ### Prerequisites
 
 - **TYPO3:** 14.3+
-- **PHP:** 8.2, 8.3, or 8.4
+- **PHP:** 8.2, 8.3, 8.4 or 8.5
 - **Composer:** 2.x
 - **DDEV:** Recommended for local development
 
@@ -222,6 +222,7 @@ composer ci:test
 
 # Specific tests
 composer ci:test:php:unit        # Unit tests
+composer ci:test:php:functional  # Functional tests (SQLite)
 composer ci:test:php:phpstan     # Static analysis
 composer ci:test:php:rector      # Code modernization checks
 composer ci:test:php:cgl         # Code style
@@ -230,14 +231,9 @@ composer ci:test:php:cgl         # Code style
 ### Building Documentation
 
 ```bash
-# Build documentation locally
-composer docs:build
-
-# Watch for changes and rebuild
-composer docs:watch
-
-# Serve with live preview
-composer docs:serve
+# Render Documentation/ with the TYPO3 render-guides image into
+# Documentation-GENERATED-temp/ (.ddev/commands/host/docs)
+ddev docs
 ```
 
 ---
@@ -248,7 +244,7 @@ This extension follows strict TYPO3 and PHP coding standards:
 
 ### PHP Standards
 
-- **PSR-12:** Code style compliance
+- **Code style:** PHP-CS-Fixer with the `@PER-CS3x0` and `@Symfony` rule sets (`Build/.php-cs-fixer.dist.php`)
 - **Strict Types:** `declare(strict_types=1)` in all PHP files
 - **Type Declarations:** All properties, parameters, and return types
 - **PHPStan Level 10:** Maximum static analysis strictness
@@ -264,18 +260,18 @@ This extension follows strict TYPO3 and PHP coding standards:
 
 The following tools enforce code quality:
 
-- **php-cs-fixer** - PSR-12 and Symfony style enforcement
+- **php-cs-fixer** - PER-CS 3.0 and Symfony style enforcement
 - **PHPStan** - Static analysis at level 10
 - **Rector** - Code modernization to TYPO3 v14
 - **Fractor** - TYPO3-specific code improvements
 
-All tools run automatically in CI/CD on pull requests.
+PHP-CS-Fixer, PHPStan and Rector run in CI on every pull request. Fractor is not part of the CI run; run `composer ci:test:php:fractor` locally.
 
 ### Testing Standards
 
 - **Unit Tests:** Test classes in `Tests/Unit/` mirroring `Classes/`
 - **Functional Tests:** Integration tests in `Tests/Functional/`
-- **PHPUnit 10.5:** Modern test attributes (`#[Test]`, `#[CoversClass]`)
+- **PHPUnit:** test attributes (`#[Test]`, `#[CoversClass]`); PHPUnit comes with `netresearch/typo3-ci-workflows`, and its version depends on the PHP version
 - **Coverage:** Aim for 60%+ code coverage
 
 ---
