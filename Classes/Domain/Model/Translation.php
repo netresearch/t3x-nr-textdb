@@ -24,7 +24,7 @@ use TYPO3\CMS\Extbase\Validation\Validator\NotEmptyValidator;
  *
  * @author  Thomas Schöne <thomas.schoene@netresearch.de>
  * @author  Rico Sonntag <rico.sonntag@netresearch.de>
- * @license Netresearch https://www.netresearch.de
+ * @license GPL-3.0-or-later
  *
  * @see    https://www.netresearch.de
  */

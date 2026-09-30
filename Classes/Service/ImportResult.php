@@ -24,7 +24,7 @@ namespace Netresearch\NrTextdb\Service;
  * completes.
  *
  * @author  Netresearch DTT GmbH <typo3.dev@netresearch.de>
- * @license Netresearch https://www.netresearch.de
+ * @license GPL-3.0-or-later
  *
  * @see    https://www.netresearch.de
  */

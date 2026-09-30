@@ -75,7 +75,7 @@ use ZipArchive;
  * TranslationController.
  *
  * @author  Thomas Schöne <thomas.schoene@netresearch.de>
- * @license Netresearch https://www.netresearch.de
+ * @license GPL-3.0-or-later
  *
  * @see    https://www.netresearch.de
  */
