@@ -128,8 +128,9 @@ The TextDB backend module requires appropriate permissions:
 
 **Record Permissions:**
 
-The module checks the group's record permissions on every action, the way the
-TYPO3 list module and DataHandler do. Admins pass the table and page checks.
+The module stores records through Extbase, not DataHandler, so it checks the
+group's record permissions itself on every action. Admins pass the table, page
+and field checks.
 
 .. list-table::
    :header-rows: 1
@@ -157,8 +158,14 @@ Saving and importing also need:
 
 * the language: a translation in a language the group's language list does not
   allow is not saved, and an import file for such a language is not imported;
-* the live workspace: the TextDB tables are not workspace-aware, so the module
-  makes no changes while the user works in a draft workspace.
+* the excluded fields (**Allowed excludefields**): saving needs the
+  translation's ``value`` field; adding a translation in a language that has
+  none yet also needs ``sys_language_uid``, ``environment``, ``component``,
+  ``type`` and ``placeholder``; an import needs all of these plus the ``name``
+  field of components, types and environments;
+* the live workspace: the TextDB tables are not workspace-aware, so in a draft
+  workspace the module makes no changes unless the workspace allows live
+  editing.
 
 The four tables are:
 

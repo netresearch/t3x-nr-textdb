@@ -104,6 +104,16 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         = 'tx_nrtextdb_domain_model_translation,tx_nrtextdb_domain_model_component,'
         . 'tx_nrtextdb_domain_model_type,tx_nrtextdb_domain_model_environment';
 
+    /**
+     * Every excluded field the module writes.
+     */
+    private const TEXTDB_FIELDS
+        = 'tx_nrtextdb_domain_model_translation:sys_language_uid,tx_nrtextdb_domain_model_translation:environment,'
+        . 'tx_nrtextdb_domain_model_translation:component,tx_nrtextdb_domain_model_translation:type,'
+        . 'tx_nrtextdb_domain_model_translation:placeholder,tx_nrtextdb_domain_model_translation:value,'
+        . 'tx_nrtextdb_domain_model_component:name,tx_nrtextdb_domain_model_type:name,'
+        . 'tx_nrtextdb_domain_model_environment:name';
+
     private TranslationController $controller;
 
     #[Override]
@@ -1078,6 +1088,50 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
     }
 
     #[Test]
+    public function translateRecordSavesForAnEditorInAWorkspaceThatAllowsLiveEditing(): void
+    {
+        // A draft workspace with live editing switched on lets DataHandler
+        // write tables that are not workspace-aware, the TextDB tables among them.
+        $this->loginEditor();
+        $GLOBALS['BE_USER']->workspace    = 1;
+        $GLOBALS['BE_USER']->workspaceRec = ['uid' => 1, 'live_edit' => 1];
+
+        $response = $this->dispatchTranslateRecord(['parent' => '1', 'update' => [5 => 'Absenden!']]);
+
+        self::assertSame(303, $response->getStatusCode());
+        self::assertSame('Absenden!', $this->fetchValue(5));
+    }
+
+    #[Test]
+    public function translateRecordRefusesAnEditorWhoMayNotEditTheValueField(): void
+    {
+        $this->loginEditor(nonExcludeFields: 'tx_nrtextdb_domain_model_translation:sys_language_uid');
+
+        $response = $this->dispatchTranslateRecord(['parent' => '1', 'update' => [5 => 'Absenden!']]);
+
+        self::assertSame(403, $response->getStatusCode());
+        self::assertSame('Absenden', $this->fetchValue(5));
+    }
+
+    #[Test]
+    public function translateRecordUpdatesButDoesNotCreateForAnEditorWhoMayEditOnlyTheValueField(): void
+    {
+        // A new record also sets language, environment, component, type and
+        // placeholder; DataHandler drops excluded fields the user may not edit.
+        $this->loginEditor(nonExcludeFields: 'tx_nrtextdb_domain_model_translation:value');
+
+        $this->dispatchTranslateRecord([
+            'parent' => '1',
+            'new'    => [2 => 'Envoyer'],
+            'update' => [5 => 'Absenden!'],
+        ]);
+
+        self::assertSame('Absenden!', $this->fetchValue(5));
+        self::assertSame(0, $this->countRows(placeholder: 'submit', languageUid: 2));
+        self::assertNotSame([], $this->flashMessagesOfSeverity(ContextualFeedbackSeverity::WARNING));
+    }
+
+    #[Test]
     public function translateRecordSavesOnlyTheLanguagesTheEditorMayEdit(): void
     {
         // Language 0 is allowed, German (1) and French (2) are not.
@@ -1273,6 +1327,24 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
     }
 
     #[Test]
+    public function importRefusesAnEditorWhoMayNotEditTheNameFields(): void
+    {
+        // An import writes the names of the components, types and
+        // environments it creates.
+        $fields = str_replace(
+            ',tx_nrtextdb_domain_model_component:name,tx_nrtextdb_domain_model_type:name,tx_nrtextdb_domain_model_environment:name',
+            '',
+            self::TEXTDB_FIELDS,
+        );
+        $this->loginEditor(tablesModify: self::TEXTDB_TABLES, nonExcludeFields: $fields);
+
+        $response = $this->dispatchImport('brand_new|label|greeting', 'Hello');
+
+        self::assertSame(403, $response->getStatusCode());
+        self::assertSame(0, $this->countImportedRows('greeting'));
+    }
+
+    #[Test]
     public function importSkipsALanguageTheEditorMayNotEdit(): void
     {
         // The file is for the default language (0); the editor may edit German only.
@@ -1345,6 +1417,7 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         string $tablesModify = 'tx_nrtextdb_domain_model_translation',
         string $allowedLanguages = '',
         int $pagePermissions = Permission::ALL,
+        string $nonExcludeFields = self::TEXTDB_FIELDS,
     ): void {
         $this->importFixture('EditorBackendUser.csv');
 
@@ -1352,9 +1425,10 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         $connectionPool->getConnectionForTable('be_groups')->update(
             'be_groups',
             [
-                'tables_select'     => $tablesSelect,
-                'tables_modify'     => $tablesModify,
-                'allowed_languages' => $allowedLanguages,
+                'tables_select'      => $tablesSelect,
+                'tables_modify'      => $tablesModify,
+                'allowed_languages'  => $allowedLanguages,
+                'non_exclude_fields' => $nonExcludeFields,
             ],
             ['uid' => 1],
         );

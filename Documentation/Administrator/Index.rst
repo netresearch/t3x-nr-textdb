@@ -124,11 +124,12 @@ TextDB Administrators
    Page Access:
    ✓ TextDB Translations Folder (full access)
 
-Editors with this setup can list, export and edit translations. Importing XLIFF
-files needs modify access to all four tables, which the administrator group
-has. The module also applies the group's language list and refuses changes in
-a draft workspace; see :ref:`backend-module-configuration` for what each
-action checks.
+Editors with this setup can list and export translations; editing them also
+needs the excluded fields of the translation table under **Allowed
+excludefields**. Importing XLIFF files needs modify access to all four tables,
+which the administrator group has. The module also applies the group's language
+list and refuses changes in a draft workspace that does not allow live editing;
+see :ref:`backend-module-configuration` for what each action checks.
 
 Setting Up Permissions
 ----------------------

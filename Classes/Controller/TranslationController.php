@@ -97,6 +97,34 @@ final class TranslationController extends ActionController
         'tx_nrtextdb_domain_model_environment',
     ];
 
+    /**
+     * Saving a translation writes its value, an excluded field.
+     */
+    private const TRANSLATION_VALUE_FIELD = 'tx_nrtextdb_domain_model_translation:value';
+
+    /**
+     * Creating a translation writes these excluded fields.
+     */
+    private const TRANSLATION_CREATE_FIELDS = [
+        'tx_nrtextdb_domain_model_translation:sys_language_uid',
+        'tx_nrtextdb_domain_model_translation:environment',
+        'tx_nrtextdb_domain_model_translation:component',
+        'tx_nrtextdb_domain_model_translation:type',
+        'tx_nrtextdb_domain_model_translation:placeholder',
+        self::TRANSLATION_VALUE_FIELD,
+    ];
+
+    /**
+     * An import creates translations and also components, types and
+     * environments, writing their names.
+     */
+    private const IMPORT_FIELDS = [
+        ...self::TRANSLATION_CREATE_FIELDS,
+        'tx_nrtextdb_domain_model_component:name',
+        'tx_nrtextdb_domain_model_type:name',
+        'tx_nrtextdb_domain_model_environment:name',
+    ];
+
     private readonly ModuleTemplateFactory $moduleTemplateFactory;
 
     private ModuleTemplate $moduleTemplate;
@@ -390,11 +418,13 @@ final class TranslationController extends ActionController
         if (
             !$this->mayReadTextDb(self::TEXTDB_TABLES)
             || !$this->mayWriteTextDb([self::TRANSLATION_TABLE])
+            || !$this->mayEditFields([self::TRANSLATION_VALUE_FIELD])
         ) {
             return $this->accessDeniedResponse();
         }
 
         $backendUser       = $this->getBackendUser();
+        $mayCreate         = $this->mayEditFields(self::TRANSLATION_CREATE_FIELDS);
         $parentTranslation = $this->translationRepository->findRawByUid($parent);
 
         // A new translation is a localisation of the parent, which DataHandler
@@ -442,7 +472,7 @@ final class TranslationController extends ActionController
                     continue;
                 }
 
-                if ($this->saveNewTranslation($parentTranslation, $language, $trimmedValue)) {
+                if ($this->saveNewTranslation($parentTranslation, $language, $trimmedValue, $mayCreate)) {
                     ++$acceptedCount;
                 } else {
                     ++$rejectedCount;
@@ -573,17 +603,22 @@ final class TranslationController extends ActionController
      * #100. The caller is expected to have already skipped blank values, an
      * untouched textarea is not a rejection and must not reach this method.
      *
+     * Adding a record needs edit rights on every field a new record fills
+     * ($mayCreate); updating an existing one needs only the value field,
+     * which the caller has already checked.
+     *
      * @param int<-1, max>     $language
      * @param non-empty-string $value
      *
      * @return bool TRUE if a record was added or updated, FALSE if the parent
-     *              translation was missing its environment/component/type
-     *              and nothing could be saved
+     *              translation was missing its environment/component/type,
+     *              or a record would have to be added without $mayCreate,
+     *              and nothing was saved
      *
      * @throws IllegalObjectTypeException
      * @throws UnknownObjectException
      */
-    private function saveNewTranslation(Translation $parentTranslation, int $language, string $value): bool
+    private function saveNewTranslation(Translation $parentTranslation, int $language, string $value, bool $mayCreate): bool
     {
         $environment = $parentTranslation->getEnvironment();
         $component   = $parentTranslation->getComponent();
@@ -605,6 +640,10 @@ final class TranslationController extends ActionController
             $this->translationRepository->update($existingTranslation);
 
             return true;
+        }
+
+        if (!$mayCreate) {
+            return false;
         }
 
         $translation = $this->translationService
@@ -813,7 +852,10 @@ final class TranslationController extends ActionController
      */
     public function importAction(bool $update = false): ResponseInterface
     {
-        if (!$this->mayWriteTextDb(self::TEXTDB_TABLES)) {
+        if (
+            !$this->mayWriteTextDb(self::TEXTDB_TABLES)
+            || !$this->mayEditFields(self::IMPORT_FIELDS)
+        ) {
             return $this->accessDeniedResponse();
         }
 
@@ -1297,11 +1339,12 @@ final class TranslationController extends ActionController
 
     /**
      * The module stores records through Extbase persistence, not DataHandler,
-     * so it applies the rules DataHandler applies to a backend user itself:
-     * the table rights (tables_select, or tables_modify for a write) and the
-     * page permission on the storage page including the web mounts, plus,
-     * for a write, the live workspace, because the TextDB tables are not
-     * workspace-aware. Admins pass the table and page checks.
+     * so it checks the backend user's permissions itself: the table rights
+     * (tables_select, or tables_modify for a write) and the page permission on
+     * the storage page including the web mounts, plus, for a write, a
+     * workspace that allows live editing, because the TextDB tables are not
+     * workspace-aware. The callers add the field and language checks. Admins
+     * pass the table and page checks.
      *
      * @param list<string> $tables
      */
@@ -1315,10 +1358,34 @@ final class TranslationController extends ActionController
      */
     private function mayWriteTextDb(array $tables): bool
     {
-        // A save writes the live record, so a user in a draft workspace may
-        // not make it, as DataHandler would not let them either.
-        return ($this->getBackendUser()->workspace === 0)
-            && $this->mayAccessTextDb($tables, 'tables_modify', Permission::CONTENT_EDIT);
+        // A save writes the live record. The TextDB tables are not
+        // workspace-aware, so DataHandler allows that in a draft workspace
+        // only when the workspace permits live editing.
+        foreach ($tables as $table) {
+            if (!$this->getBackendUser()->workspaceAllowsLiveEditingInTable($table)) {
+                return false;
+            }
+        }
+
+        return $this->mayAccessTextDb($tables, 'tables_modify', Permission::CONTENT_EDIT);
+    }
+
+    /**
+     * Whether the user may edit the excluded fields, given as "table:field"
+     * (the group's non_exclude_fields, which DataHandler applies to every
+     * field a write sets).
+     *
+     * @param list<string> $fields
+     */
+    private function mayEditFields(array $fields): bool
+    {
+        foreach ($fields as $field) {
+            if (!$this->getBackendUser()->check('non_exclude_fields', $field)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
