@@ -57,6 +57,7 @@ use TYPO3\CMS\Extbase\Mvc\Request as ExtbaseRequest;
 use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
 use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
 use TYPO3\CMS\Extbase\Security\HashScope;
+use ZipArchive;
 
 /**
  * Regression tests for the backend module's save path.
@@ -1108,6 +1109,46 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
     }
 
     #[Test]
+    public function translateRecordRejectsANewTranslationOfARecordOnAPageTheEditorMayNotSee(): void
+    {
+        // uid 8 lies on page 2; a translation of it would be a localisation
+        // of a record the editor may not see.
+        $this->loginEditor();
+
+        $this->dispatchTranslateRecord(['parent' => '8', 'new' => [2 => 'Envoyer']]);
+
+        self::assertSame(0, $this->countChildrenOf(8));
+        self::assertNotSame([], $this->flashMessagesOfSeverity(ContextualFeedbackSeverity::WARNING));
+    }
+
+    #[Test]
+    public function exportLeavesOutTranslationsOnPagesTheEditorMayNotSee(): void
+    {
+        GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
+            ->insert('tx_nrtextdb_domain_model_translation', [
+                'uid'              => 50,
+                'pid'              => 2,
+                'sys_language_uid' => 1,
+                'l10n_parent'      => 2,
+                'environment'      => 1,
+                'component'        => 1,
+                'type'             => 2,
+                'placeholder'      => 'email',
+                'value'            => 'Only on page two',
+            ]);
+
+        $this->loginEditor(tablesModify: '');
+        $this->storeFilterConfig(['component' => 1, 'type' => 0, 'placeholder' => null, 'value' => null]);
+
+        $response = $this->dispatchModuleAction('export');
+
+        self::assertSame('application/zip; charset=utf-8', $response->getHeaderLine('Content-Type'));
+        self::assertStringNotContainsString('Only on page two', $this->exportedText($response));
+        self::assertStringContainsString('Absenden', $this->exportedText($response));
+    }
+
+    #[Test]
     public function translatedRefusesARecordOnAPageTheEditorMayNotSee(): void
     {
         $this->loginEditor();
@@ -1219,6 +1260,34 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         self::assertSame(200, $response->getStatusCode());
         self::assertSame(0, $this->countImportedRows('greeting'));
         self::assertStringContainsString('so its entries were not imported', (string) $response->getBody());
+    }
+
+    private function countChildrenOf(int $parentUid): int
+    {
+        return (int) GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
+            ->count('uid', 'tx_nrtextdb_domain_model_translation', ['l10n_parent' => $parentUid]);
+    }
+
+    /**
+     * Concatenates every file of an export archive.
+     */
+    private function exportedText(ResponseInterface $response): string
+    {
+        $archive = Environment::getVarPath() . '/textdb-export-test.zip';
+        file_put_contents($archive, (string) $response->getBody());
+
+        $zip = new ZipArchive();
+        self::assertTrue($zip->open($archive));
+
+        $text = '';
+        for ($index = 0; $index < $zip->numFiles; ++$index) {
+            $text .= (string) $zip->getFromIndex($index);
+        }
+
+        $zip->close();
+
+        return $text;
     }
 
     /**
