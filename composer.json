@@ -1,7 +1,7 @@
 {
     "name": "netresearch/nr-textdb",
     "type": "typo3-cms-extension",
-    "description": "Auto-creating TYPO3 translation database - use ViewHelpers, editors translate in backend, instant updates - by Netresearch",
+    "description": "TextDB - Database-backed translations for frontend strings: editors translate in the backend, ViewHelpers create missing entries, XLIFF import and export.",
     "license": "GPL-3.0-or-later",
     "keywords": [
         "typo3",

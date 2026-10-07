@@ -11,8 +11,8 @@
  */
 
 $EM_CONF[$_EXTKEY] = [
-    'title'          => 'Netresearch - TextDB',
-    'description'    => 'Auto-creating TYPO3 translation database - use ViewHelpers, editors translate in backend, instant updates - by Netresearch',
+    'title'          => 'TextDB',
+    'description'    => 'Database-backed translations for frontend strings: editors translate in the backend, ViewHelpers create missing entries, XLIFF import and export.',
     'category'       => 'module',
     'author'         => 'Thomas Schöne, Axel Seemann, Tobias Hein, Rico Sonntag',
     'author_email'   => 'thomas.schoene@netresearch.de, axel.seemann@netresearch.de, tobias.hein@netresearch.de, rico.sonntag@netresearch.de',

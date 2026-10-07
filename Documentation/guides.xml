@@ -9,7 +9,7 @@
     default-code-language="php"
     max-menu-depth="3"
 >
-    <project title="Netresearch TextDB"
+    <project title="TextDB"
              version="4.0"
              release="4.0.2"
              copyright="since 2024 by Netresearch DTT GmbH"/>

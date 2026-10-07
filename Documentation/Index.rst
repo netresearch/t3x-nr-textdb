@@ -5,9 +5,9 @@
 
 .. _start:
 
-==================
-Netresearch TextDB
-==================
+======
+TextDB
+======
 
 .. only:: html
 
