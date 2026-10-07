@@ -17,9 +17,11 @@ Version 4.0.2
 **Fixes:**
 
 * 🐛 Every action of the backend module checks the backend user's table
-  rights, page permissions, excluded fields, allowed languages and workspace
-  before it reads or writes TextDB records; non-admins see and export only the
-  records of the configured storage page. See
+  rights and page permissions before it reads or writes TextDB records, and
+  the write actions also check excluded fields, allowed languages and the
+  live workspace; the list and the export show non-admins only the records of
+  the configured storage page, and a record opened by its uid is checked
+  against the permissions of the page it is stored on. See
   :ref:`backend-module-configuration` for the permissions each action needs
   (`#170 <https://github.com/netresearch/t3x-nr-textdb/pull/170>`__)
 * 🐛 The import view shows its error list again instead of failing (`#170

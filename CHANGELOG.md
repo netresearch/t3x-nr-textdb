@@ -4,7 +4,7 @@
 
 ## BUGFIX
 
-- [BUGFIX] Backend module: every action checks the backend user's table rights, page permissions, excluded fields, allowed languages and workspace before it reads or writes TextDB records; non-admins see and export only the records of the configured storage page (#170)
+- [BUGFIX] Backend module: every action checks the backend user's table rights and page permissions before it reads or writes TextDB records, and the write actions also check excluded fields, allowed languages and the live workspace; the list and the export show non-admins only the records of the configured storage page, and a record opened by its uid is checked against the permissions of the page it is stored on (#170)
 - [BUGFIX] Backend module: the import view shows its error list again instead of failing (#170)
 
 ## TASK
