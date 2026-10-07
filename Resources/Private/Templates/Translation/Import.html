@@ -60,7 +60,7 @@
         </f:if>
 
         <f:if condition="{errors}">
-            <f:be.infobox state="3">
+            <f:be.infobox state="2">
                 <f:translate key="message.errors">The following errors occurs:</f:translate>
                 <br><br>
                 <f:for as="error" each="{errors}">{error -> f:format.htmlspecialchars()}<br></f:for>
