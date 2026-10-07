@@ -1,5 +1,16 @@
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- SPDX-FileCopyrightText: Netresearch DTT GmbH -->
+# 4.0.2
+
+## BUGFIX
+
+- [BUGFIX] Backend module: every action checks the backend user's table rights and page permissions before it reads or writes TextDB records, and the write actions also check excluded fields, allowed languages and the live workspace; the list and the export show non-admins only the records of the configured storage page, and a record opened by its uid is checked against the permissions of the page it is stored on (#170)
+- [BUGFIX] Backend module: the import view shows its error list again instead of failing (#170)
+
+## TASK
+
+- [TASK] Release archives leave out development files; source files carry SPDX licence notices (#167)
+
 # 4.0.1
 
 ## BUGFIX
