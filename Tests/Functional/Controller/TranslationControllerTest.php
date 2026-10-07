@@ -1181,6 +1181,29 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
     }
 
     #[Test]
+    public function listOffersAnEditorOnlyTheComponentsAndTypesOfTheStoragePage(): void
+    {
+        $this->insertComponentAndTypeOnPageTwo();
+        $this->loginEditor();
+
+        $html = (string) $this->dispatchModuleAction('list')->getBody();
+
+        self::assertStringNotContainsString('component-on-page-two', $html);
+        self::assertStringNotContainsString('type-on-page-two', $html);
+    }
+
+    #[Test]
+    public function listOffersAnAdminTheComponentsAndTypesOfEveryPage(): void
+    {
+        $this->insertComponentAndTypeOnPageTwo();
+
+        $html = (string) $this->dispatchModuleAction('list')->getBody();
+
+        self::assertStringContainsString('component-on-page-two', $html);
+        self::assertStringContainsString('type-on-page-two', $html);
+    }
+
+    #[Test]
     public function listShowsAnAdminTheRecordsOfEveryPage(): void
     {
         $html = (string) $this->dispatchModuleAction('list', ['placeholder' => 'submit'])->getBody();
@@ -1260,6 +1283,15 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         self::assertSame(200, $response->getStatusCode());
         self::assertSame(0, $this->countImportedRows('greeting'));
         self::assertStringContainsString('so its entries were not imported', (string) $response->getBody());
+    }
+
+    private function insertComponentAndTypeOnPageTwo(): void
+    {
+        $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
+        $connectionPool->getConnectionForTable('tx_nrtextdb_domain_model_component')
+            ->insert('tx_nrtextdb_domain_model_component', ['uid' => 90, 'pid' => 2, 'name' => 'component-on-page-two']);
+        $connectionPool->getConnectionForTable('tx_nrtextdb_domain_model_type')
+            ->insert('tx_nrtextdb_domain_model_type', ['uid' => 90, 'pid' => 2, 'name' => 'type-on-page-two']);
     }
 
     private function countChildrenOf(int $parentUid): int

@@ -59,6 +59,7 @@ use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Type\Bitmask\Permission;
 use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
+use TYPO3\CMS\Extbase\DomainObject\DomainObjectInterface;
 use TYPO3\CMS\Extbase\Http\ForwardResponse;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use TYPO3\CMS\Extbase\Pagination\QueryResultPaginator;
@@ -237,8 +238,13 @@ final class TranslationController extends ActionController
             $value = $this->normalizeTextFilter($this->request->getArgument('value'));
         }
 
-        $defaultComponent   = $this->componentRepository->findByUid($componentId);
-        $defaultType        = $this->typeRepository->findByUid($typeId);
+        // A non-admin sees only the components and types stored on the
+        // storage page, like the translations themselves.
+        $components = $this->componentRepository->findAllOnPage($this->getVisiblePageId());
+        $types      = $this->typeRepository->findAllOnPage($this->getVisiblePageId());
+
+        $defaultComponent   = $this->findByUidIn($components, $componentId);
+        $defaultType        = $this->findByUidIn($types, $typeId);
         $defaultPlaceholder = $placeholder;
         $defaultValue       = $value;
 
@@ -266,8 +272,8 @@ final class TranslationController extends ActionController
             'defaultType'        => $defaultType,
             'defaultPlaceholder' => $defaultPlaceholder,
             'defaultValue'       => $defaultValue,
-            'components'         => $this->componentRepository->findAll()->toArray(),
-            'types'              => $this->typeRepository->findAll()->toArray(),
+            'components'         => $components,
+            'types'              => $types,
             'translations'       => $translations,
             'textDbPid'          => $this->pid,
             'action'             => 'list',
@@ -1347,6 +1353,24 @@ final class TranslationController extends ActionController
             $pageId,
             $this->getBackendUser()->getPagePermsClause($pagePermission),
         ) !== false;
+    }
+
+    /**
+     * @template T of DomainObjectInterface
+     *
+     * @param list<T> $records
+     *
+     * @return T|null
+     */
+    private function findByUidIn(array $records, int $uid): ?DomainObjectInterface
+    {
+        foreach ($records as $record) {
+            if ($record->getUid() === $uid) {
+                return $record;
+            }
+        }
+
+        return null;
     }
 
     /**

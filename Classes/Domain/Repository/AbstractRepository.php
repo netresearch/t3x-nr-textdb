@@ -103,4 +103,25 @@ abstract class AbstractRepository extends Repository
 
         return $this->cachedCreateIfMissing;
     }
+
+    /**
+     * Returns every record, or only the records on one page.
+     *
+     * @param int|null $pageId Only records on this page; null for records on any page
+     *
+     * @return list<T>
+     */
+    public function findAllOnPage(?int $pageId): array
+    {
+        $query = $this->createQuery();
+
+        if ($pageId !== null) {
+            $query
+                ->getQuerySettings()
+                ->setRespectStoragePage(true)
+                ->setStoragePageIds([$pageId]);
+        }
+
+        return $query->execute()->toArray();
+    }
 }
