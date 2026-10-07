@@ -43,6 +43,7 @@ use TYPO3\CMS\Backend\Template\Components\ButtonBar;
 use TYPO3\CMS\Backend\Template\Components\ComponentFactory;
 use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
+use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Configuration\Exception\ExtensionConfigurationExtensionNotConfiguredException;
 use TYPO3\CMS\Core\Configuration\Exception\ExtensionConfigurationPathDoesNotExistException;
@@ -55,6 +56,7 @@ use TYPO3\CMS\Core\Messaging\FlashMessage;
 use TYPO3\CMS\Core\Messaging\FlashMessageService;
 use TYPO3\CMS\Core\Pagination\SimplePagination;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
+use TYPO3\CMS\Core\Type\Bitmask\Permission;
 use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Extbase\Http\ForwardResponse;
@@ -81,6 +83,19 @@ use ZipArchive;
  */
 final class TranslationController extends ActionController
 {
+    private const TRANSLATION_TABLE = 'tx_nrtextdb_domain_model_translation';
+
+    /**
+     * Every table the module reads, and every table an import may write, because it
+     * creates missing components, types and environments.
+     */
+    private const TEXTDB_TABLES = [
+        self::TRANSLATION_TABLE,
+        'tx_nrtextdb_domain_model_component',
+        'tx_nrtextdb_domain_model_type',
+        'tx_nrtextdb_domain_model_environment',
+    ];
+
     private readonly ModuleTemplateFactory $moduleTemplateFactory;
 
     private ModuleTemplate $moduleTemplate;
@@ -185,6 +200,10 @@ final class TranslationController extends ActionController
      */
     public function listAction(): ResponseInterface
     {
+        if (!$this->mayReadTextDb(self::TEXTDB_TABLES)) {
+            return $this->accessDeniedResponse();
+        }
+
         if ($this->pid === 0) {
             $this->moduleTemplate->addFlashMessage(
                 $this->translate('error.storage.pid') ?? 'Please configure a valid storage page ID in the extension configuration.',
@@ -229,6 +248,8 @@ final class TranslationController extends ActionController
                 $typeId,
                 $placeholder,
                 $value,
+                0,
+                $this->getVisiblePageId(),
             );
 
         $this->persistConfigInBeUserData(
@@ -261,7 +282,19 @@ final class TranslationController extends ActionController
 
     public function translatedAction(int $uid): ResponseInterface
     {
+        if (!$this->mayReadTextDb(self::TEXTDB_TABLES)) {
+            return $this->accessDeniedResponse();
+        }
+
         $original = $this->translationRepository->findRawByUid($uid);
+
+        if (
+            ($original instanceof Translation)
+            && !$this->hasPageAccess((int) $original->getPid(), Permission::PAGE_SHOW)
+        ) {
+            return $this->accessDeniedResponse();
+        }
+
         $children = $this->translationRepository->findByPidAndLanguage($uid);
 
         $translated = $original instanceof Translation
@@ -348,6 +381,14 @@ final class TranslationController extends ActionController
      */
     public function translateRecordAction(int $parent, array $new = [], array $update = []): ResponseInterface
     {
+        if (
+            !$this->mayReadTextDb(self::TEXTDB_TABLES)
+            || !$this->mayWriteTextDb([self::TRANSLATION_TABLE])
+        ) {
+            return $this->accessDeniedResponse();
+        }
+
+        $backendUser       = $this->getBackendUser();
         $parentTranslation = $this->translationRepository->findRawByUid($parent);
         $acceptedCount     = 0;
         $rejectedCount     = 0;
@@ -367,6 +408,7 @@ final class TranslationController extends ActionController
                     || ($language < -1)
                     || !is_string($value)
                     || !array_key_exists($language, $allowedLanguages)
+                    || !$backendUser->checkLanguageAccess($language)
                 ) {
                     ++$rejectedCount;
 
@@ -424,14 +466,19 @@ final class TranslationController extends ActionController
 
             $translation = $this->translationRepository->findRawByUid($translationUid);
 
-            if ($translation instanceof Translation) {
+            if (
+                ($translation instanceof Translation)
+                && $backendUser->checkLanguageAccess($translation->getSysLanguageUid())
+                && $this->hasPageAccess((int) $translation->getPid(), Permission::CONTENT_EDIT)
+            ) {
                 $translation->setValue(trim($value));
 
                 $this->translationRepository->update($translation);
                 ++$acceptedCount;
             } else {
                 // A well-formed but non-existent uid (deleted between page
-                // load and submit, or a tampered value) must count as
+                // load and submit, or a tampered value), or a record in a
+                // language or on a page the user may not edit, must count as
                 // rejected too, or it is dropped without any signal.
                 ++$rejectedCount;
             }
@@ -567,6 +614,10 @@ final class TranslationController extends ActionController
      */
     public function exportAction(): ResponseInterface
     {
+        if (!$this->mayReadTextDb(self::TEXTDB_TABLES)) {
+            return $this->accessDeniedResponse();
+        }
+
         $exportKey   = bin2hex(random_bytes(16)) . '-textdb-export';
         $exportDir   = sys_get_temp_dir() . '/' . $exportKey;
         $archivePath = $exportDir . '/export.zip';
@@ -618,6 +669,8 @@ final class TranslationController extends ActionController
                         $type,
                         $placeholder,
                         $value,
+                        0,
+                        $this->getVisiblePageId(),
                     );
 
                 $originals = $this->writeTranslationExportFile(
@@ -742,6 +795,10 @@ final class TranslationController extends ActionController
      */
     public function importAction(bool $update = false): ResponseInterface
     {
+        if (!$this->mayWriteTextDb(self::TEXTDB_TABLES)) {
+            return $this->accessDeniedResponse();
+        }
+
         $this->moduleTemplate->assign('action', 'import');
 
         /** @var UploadedFile|null $translationFile */
@@ -790,7 +847,17 @@ final class TranslationController extends ActionController
 
             $languageUid   = max(-1, $language->getLanguageId());
             $languageTitle = $language->getTitle();
-            $languages[]   = $languageTitle;
+
+            if (!$this->getBackendUser()->checkLanguageAccess($languageUid)) {
+                $errors[] = sprintf(
+                    $this->translate('error.import.language.denied') ?? 'You may not edit the language "%s", so its entries were not imported.',
+                    $languageTitle,
+                );
+
+                continue;
+            }
+
+            $languages[] = $languageTitle;
 
             $uploadedFileContent = file_get_contents($uploadedFile);
 
@@ -1208,6 +1275,85 @@ final class TranslationController extends ActionController
         }
 
         (new Filesystem())->remove($directory);
+    }
+
+    /**
+     * The module stores records through Extbase persistence, not DataHandler,
+     * so it applies the rules DataHandler applies to a backend user itself:
+     * the table rights (tables_select, or tables_modify for a write) and the
+     * page permission on the storage page including the web mounts, plus,
+     * for a write, the live workspace, because the TextDB tables are not
+     * workspace-aware. Admins pass the table and page checks.
+     *
+     * @param list<string> $tables
+     */
+    private function mayReadTextDb(array $tables): bool
+    {
+        return $this->mayAccessTextDb($tables, 'tables_select', Permission::PAGE_SHOW);
+    }
+
+    /**
+     * @param list<string> $tables
+     */
+    private function mayWriteTextDb(array $tables): bool
+    {
+        // A save writes the live record, so a user in a draft workspace may
+        // not make it, as DataHandler would not let them either.
+        return ($this->getBackendUser()->workspace === 0)
+            && $this->mayAccessTextDb($tables, 'tables_modify', Permission::CONTENT_EDIT);
+    }
+
+    /**
+     * @param list<string>                    $tables
+     * @param 'tables_select'|'tables_modify' $tableRight
+     */
+    private function mayAccessTextDb(array $tables, string $tableRight, int $pagePermission): bool
+    {
+        $backendUser = $this->getBackendUser();
+
+        foreach ($tables as $table) {
+            if (!$backendUser->check($tableRight, $table)) {
+                return false;
+            }
+        }
+
+        return $this->hasPageAccess($this->pid, $pagePermission);
+    }
+
+    /**
+     * Whether the backend user holds the permission on the page, including its
+     * web mounts. The module looks records up by uid without restricting them
+     * to the storage page, so a record's own page is checked as well.
+     */
+    private function hasPageAccess(int $pageId, int $pagePermission): bool
+    {
+        if ($this->getBackendUser()->isAdmin()) {
+            return true;
+        }
+
+        return BackendUtility::readPageAccess(
+            $pageId,
+            $this->getBackendUser()->getPagePermsClause($pagePermission),
+        ) !== false;
+    }
+
+    /**
+     * The page whose records the list and the export show: the storage page,
+     * the only page whose permission the read actions check. Admins also see
+     * records left on other pages (null).
+     */
+    private function getVisiblePageId(): ?int
+    {
+        return $this->getBackendUser()->isAdmin() ? null : $this->pid;
+    }
+
+    private function accessDeniedResponse(): ResponseInterface
+    {
+        $message = $this->translate('error.access.denied')
+            ?? 'You lack the permissions this action needs: access to the TextDB tables, to the TextDB storage page and, to make changes, the live workspace.';
+
+        return $this->htmlResponse(htmlspecialchars($message))
+            ->withStatus(403);
     }
 
     private function getBackendUser(): BackendUserAuthentication
