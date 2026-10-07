@@ -1,0 +1,9 @@
+"be_groups"
+,"uid","pid","title","tables_select","tables_modify","allowed_languages","db_mountpoints","workspace_perms"
+,1,0,"TextDB editors","","","","1",1
+"be_users"
+,"uid","pid","username","password","admin","disable","deleted","usergroup","workspace_perms"
+,2,0,"editor","$argon2i$v=19$m=65536,t=16,p=2$test$test",0,0,0,"1",1
+"pages"
+,"uid","pid","title","deleted","hidden","perms_everybody"
+,2,0,"Other TextDB storage",0,0,0

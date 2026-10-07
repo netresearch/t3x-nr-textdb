@@ -128,7 +128,46 @@ The TextDB backend module requires appropriate permissions:
 
 **Record Permissions:**
 
-Grant access to TextDB tables:
+The module stores records through Extbase, not DataHandler, so it checks the
+group's record permissions itself on every action. Admins pass the table, page
+and field checks.
+
+.. list-table::
+   :header-rows: 1
+
+   *  -  Action
+      -  Table permissions
+      -  Page permission
+   *  -  List, view translations, export
+      -  Read (``tables_select``) on all four TextDB tables
+      -  "Show page" on the storage page (``textDbPid``) and, for a single
+         record, on the record's page; the pages must be in the user's mounts.
+         The list and the export show a non-admin only the records stored on
+         the storage page
+   *  -  Save translations
+      -  Read on all four tables and modify (``tables_modify``) on
+         ``tx_nrtextdb_domain_model_translation``
+      -  "Edit content" on the storage page and on the page of every changed
+         record
+   *  -  Import
+      -  Modify on all four tables, because an import creates missing
+         components, types and environments
+      -  "Edit content" on the storage page
+
+Saving and importing also need:
+
+* the language: a translation in a language the group's language list does not
+  allow is not saved, and an import file for such a language is not imported;
+* the excluded fields (**Allowed excludefields**): saving needs the
+  translation's ``value`` field; adding a translation in a language that has
+  none yet also needs ``sys_language_uid``, ``environment``, ``component``,
+  ``type`` and ``placeholder``; an import needs all of these plus the ``name``
+  field of components, types and environments;
+* the live workspace: the TextDB tables are not workspace-aware, so in a draft
+  workspace the module makes no changes unless the workspace allows live
+  editing.
+
+The four tables are:
 
 * `tx_nrtextdb_domain_model_translation`
 * `tx_nrtextdb_domain_model_component`

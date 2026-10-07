@@ -44,9 +44,11 @@ use TYPO3\CMS\Core\Crypto\HashService;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Http\ServerRequest;
+use TYPO3\CMS\Core\Http\UploadedFile;
 use TYPO3\CMS\Core\Imaging\IconFactory;
 use TYPO3\CMS\Core\Localization\LanguageServiceFactory;
 use TYPO3\CMS\Core\Messaging\FlashMessageService;
+use TYPO3\CMS\Core\Type\Bitmask\Permission;
 use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Core\Bootstrap;
@@ -55,6 +57,7 @@ use TYPO3\CMS\Extbase\Mvc\Request as ExtbaseRequest;
 use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
 use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
 use TYPO3\CMS\Extbase\Security\HashScope;
+use ZipArchive;
 
 /**
  * Regression tests for the backend module's save path.
@@ -96,6 +99,20 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
 {
     private const FILTER_REQUIRED_MESSAGE
         = 'Please select at least one type or component to create an export.';
+
+    private const TEXTDB_TABLES
+        = 'tx_nrtextdb_domain_model_translation,tx_nrtextdb_domain_model_component,'
+        . 'tx_nrtextdb_domain_model_type,tx_nrtextdb_domain_model_environment';
+
+    /**
+     * Every excluded field the module writes.
+     */
+    private const TEXTDB_FIELDS
+        = 'tx_nrtextdb_domain_model_translation:sys_language_uid,tx_nrtextdb_domain_model_translation:environment,'
+        . 'tx_nrtextdb_domain_model_translation:component,tx_nrtextdb_domain_model_translation:type,'
+        . 'tx_nrtextdb_domain_model_translation:placeholder,tx_nrtextdb_domain_model_translation:value,'
+        . 'tx_nrtextdb_domain_model_component:name,tx_nrtextdb_domain_model_type:name,'
+        . 'tx_nrtextdb_domain_model_environment:name';
 
     private TranslationController $controller;
 
@@ -1022,6 +1039,433 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         ];
     }
 
+    #[Test]
+    public function translateRecordSavesForAnEditorWhoMayModifyTheTranslationTable(): void
+    {
+        $this->loginEditor();
+
+        $response = $this->dispatchTranslateRecord(['parent' => '1', 'update' => [5 => 'Absenden!']]);
+
+        self::assertSame(303, $response->getStatusCode());
+        self::assertSame('Absenden!', $this->fetchValue(5));
+    }
+
+    #[Test]
+    public function translateRecordRefusesAnEditorWhoMayOnlyReadTheTranslationTable(): void
+    {
+        $this->loginEditor(tablesModify: '');
+
+        $response = $this->dispatchTranslateRecord(['parent' => '1', 'update' => [5 => 'Absenden!'], 'new' => [2 => 'Envoyer']]);
+
+        self::assertSame(403, $response->getStatusCode());
+        self::assertSame('Absenden', $this->fetchValue(5));
+        self::assertSame(0, $this->countRows(placeholder: 'submit', languageUid: 2));
+    }
+
+    #[Test]
+    public function translateRecordRefusesAnEditorWithoutEditAccessToTheStoragePage(): void
+    {
+        $this->loginEditor(pagePermissions: Permission::PAGE_SHOW);
+
+        $response = $this->dispatchTranslateRecord(['parent' => '1', 'update' => [5 => 'Absenden!']]);
+
+        self::assertSame(403, $response->getStatusCode());
+        self::assertSame('Absenden', $this->fetchValue(5));
+    }
+
+    #[Test]
+    public function translateRecordRefusesAnEditorWorkingInADraftWorkspace(): void
+    {
+        // The TextDB tables are not workspace-aware, so a save writes the live
+        // record. DataHandler refuses that from a draft workspace.
+        $this->loginEditor();
+        $GLOBALS['BE_USER']->workspace = 1;
+
+        $response = $this->dispatchTranslateRecord(['parent' => '1', 'update' => [5 => 'Absenden!']]);
+
+        self::assertSame(403, $response->getStatusCode());
+        self::assertSame('Absenden', $this->fetchValue(5));
+    }
+
+    #[Test]
+    public function translateRecordSavesForAnEditorInAWorkspaceThatAllowsLiveEditing(): void
+    {
+        // A draft workspace with live editing switched on lets DataHandler
+        // write tables that are not workspace-aware, the TextDB tables among them.
+        $this->loginEditor();
+        $GLOBALS['BE_USER']->workspace    = 1;
+        $GLOBALS['BE_USER']->workspaceRec = ['uid' => 1, 'live_edit' => 1];
+
+        $response = $this->dispatchTranslateRecord(['parent' => '1', 'update' => [5 => 'Absenden!']]);
+
+        self::assertSame(303, $response->getStatusCode());
+        self::assertSame('Absenden!', $this->fetchValue(5));
+    }
+
+    #[Test]
+    public function translateRecordRefusesAnEditorWhoMayNotEditTheValueField(): void
+    {
+        $this->loginEditor(nonExcludeFields: 'tx_nrtextdb_domain_model_translation:sys_language_uid');
+
+        $response = $this->dispatchTranslateRecord(['parent' => '1', 'update' => [5 => 'Absenden!']]);
+
+        self::assertSame(403, $response->getStatusCode());
+        self::assertSame('Absenden', $this->fetchValue(5));
+    }
+
+    #[Test]
+    public function translateRecordUpdatesButDoesNotCreateForAnEditorWhoMayEditOnlyTheValueField(): void
+    {
+        // A new record also sets language, environment, component, type and
+        // placeholder; DataHandler drops excluded fields the user may not edit.
+        $this->loginEditor(nonExcludeFields: 'tx_nrtextdb_domain_model_translation:value');
+
+        $this->dispatchTranslateRecord([
+            'parent' => '1',
+            'new'    => [2 => 'Envoyer'],
+            'update' => [5 => 'Absenden!'],
+        ]);
+
+        self::assertSame('Absenden!', $this->fetchValue(5));
+        self::assertSame(0, $this->countRows(placeholder: 'submit', languageUid: 2));
+        self::assertNotSame([], $this->flashMessagesOfSeverity(ContextualFeedbackSeverity::WARNING));
+    }
+
+    #[Test]
+    public function translateRecordSavesOnlyTheLanguagesTheEditorMayEdit(): void
+    {
+        // Language 0 is allowed, German (1) and French (2) are not.
+        $this->loginEditor(allowedLanguages: '0');
+
+        $this->dispatchTranslateRecord([
+            'parent' => '1',
+            'new'    => [0 => 'Send it', 2 => 'Envoyer'],
+            'update' => [5 => 'Absenden!'],
+        ]);
+
+        self::assertSame('Send it', $this->fetchValue(1));
+        self::assertSame('Absenden', $this->fetchValue(5));
+        self::assertSame(0, $this->countRows(placeholder: 'submit', languageUid: 2));
+        self::assertNotSame([], $this->flashMessagesOfSeverity(ContextualFeedbackSeverity::WARNING));
+    }
+
+    #[Test]
+    public function translateRecordRejectsARecordOnAPageTheEditorMayNotEdit(): void
+    {
+        // uid 8 lies on page 2, outside the editor's mount and permissions.
+        $this->loginEditor();
+
+        $this->dispatchTranslateRecord(['parent' => '1', 'update' => [5 => 'Absenden!', 8 => 'Changed']]);
+
+        self::assertSame('Absenden!', $this->fetchValue(5));
+        self::assertSame('Submit PID2', $this->fetchValue(8));
+        self::assertNotSame([], $this->flashMessagesOfSeverity(ContextualFeedbackSeverity::WARNING));
+    }
+
+    #[Test]
+    public function translateRecordRejectsANewTranslationOfARecordOnAPageTheEditorMayNotSee(): void
+    {
+        // uid 8 lies on page 2; a translation of it would be a localisation
+        // of a record the editor may not see.
+        $this->loginEditor();
+
+        $this->dispatchTranslateRecord(['parent' => '8', 'new' => [2 => 'Envoyer']]);
+
+        self::assertSame(0, $this->countChildrenOf(8));
+        self::assertNotSame([], $this->flashMessagesOfSeverity(ContextualFeedbackSeverity::WARNING));
+    }
+
+    #[Test]
+    public function exportLeavesOutTranslationsOnPagesTheEditorMayNotSee(): void
+    {
+        GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
+            ->insert('tx_nrtextdb_domain_model_translation', [
+                'uid'              => 50,
+                'pid'              => 2,
+                'sys_language_uid' => 1,
+                'l10n_parent'      => 2,
+                'environment'      => 1,
+                'component'        => 1,
+                'type'             => 2,
+                'placeholder'      => 'email',
+                'value'            => 'Only on page two',
+            ]);
+
+        $this->loginEditor(tablesModify: '');
+        $this->storeFilterConfig(['component' => 1, 'type' => 0, 'placeholder' => null, 'value' => null]);
+
+        $response = $this->dispatchModuleAction('export');
+
+        self::assertSame('application/zip; charset=utf-8', $response->getHeaderLine('Content-Type'));
+        self::assertStringNotContainsString('Only on page two', $this->exportedText($response));
+        self::assertStringContainsString('Absenden', $this->exportedText($response));
+    }
+
+    #[Test]
+    public function translatedRefusesARecordOnAPageTheEditorMayNotSee(): void
+    {
+        $this->loginEditor();
+
+        self::assertSame(403, $this->dispatchModuleAction('translated', ['uid' => '8'])->getStatusCode());
+        self::assertSame(200, $this->dispatchModuleAction('translated', ['uid' => '1'])->getStatusCode());
+    }
+
+    #[Test]
+    public function listShowsTheTranslationsToAnEditorWhoMayReadTheTables(): void
+    {
+        $this->loginEditor(tablesModify: '');
+
+        $response = $this->dispatchModuleAction('list', ['placeholder' => 'submit']);
+
+        self::assertSame(200, $response->getStatusCode());
+        self::assertStringContainsString('Staging Submit', (string) $response->getBody());
+    }
+
+    #[Test]
+    public function listShowsAnEditorOnlyTheRecordsOfTheStoragePage(): void
+    {
+        // uid 8 ("Submit PID2") lies on page 2, which the editor may not see.
+        $this->loginEditor();
+
+        $html = (string) $this->dispatchModuleAction('list', ['placeholder' => 'submit'])->getBody();
+
+        self::assertStringContainsString('Staging Submit', $html);
+        self::assertStringNotContainsString('Submit PID2', $html);
+    }
+
+    #[Test]
+    public function listOffersAnEditorOnlyTheComponentsAndTypesOfTheStoragePage(): void
+    {
+        $this->insertComponentAndTypeOnPageTwo();
+        $this->loginEditor();
+
+        $html = (string) $this->dispatchModuleAction('list')->getBody();
+
+        self::assertStringNotContainsString('component-on-page-two', $html);
+        self::assertStringNotContainsString('type-on-page-two', $html);
+    }
+
+    #[Test]
+    public function listOffersAnAdminTheComponentsAndTypesOfEveryPage(): void
+    {
+        $this->insertComponentAndTypeOnPageTwo();
+
+        $html = (string) $this->dispatchModuleAction('list')->getBody();
+
+        self::assertStringContainsString('component-on-page-two', $html);
+        self::assertStringContainsString('type-on-page-two', $html);
+    }
+
+    #[Test]
+    public function listShowsAnAdminTheRecordsOfEveryPage(): void
+    {
+        $html = (string) $this->dispatchModuleAction('list', ['placeholder' => 'submit'])->getBody();
+
+        self::assertStringContainsString('Submit PID2', $html);
+    }
+
+    #[Test]
+    public function listRefusesAnEditorWhoMayNotReadTheTranslationTable(): void
+    {
+        $this->loginEditor(
+            tablesSelect: 'tx_nrtextdb_domain_model_component,tx_nrtextdb_domain_model_type,tx_nrtextdb_domain_model_environment',
+            tablesModify: '',
+        );
+
+        $response = $this->dispatchModuleAction('list');
+
+        self::assertSame(403, $response->getStatusCode());
+        self::assertStringNotContainsString('Absenden', (string) $response->getBody());
+    }
+
+    #[Test]
+    public function translatedRefusesAnEditorWithoutAccessToTheStoragePage(): void
+    {
+        $this->loginEditor(pagePermissions: 0);
+
+        $response = $this->dispatchModuleAction('translated', ['uid' => '1']);
+
+        self::assertSame(403, $response->getStatusCode());
+        self::assertStringNotContainsString('Absenden', (string) $response->getBody());
+    }
+
+    #[Test]
+    public function exportRefusesAnEditorWhoMayNotReadTheTranslationTable(): void
+    {
+        $this->loginEditor(tablesSelect: '', tablesModify: '');
+        $this->storeFilterConfig(['component' => 1, 'type' => 0, 'placeholder' => null, 'value' => null]);
+
+        $response = $this->dispatchModuleAction('export');
+
+        self::assertSame(403, $response->getStatusCode());
+        self::assertStringNotContainsString('application/zip', $response->getHeaderLine('Content-Type'));
+    }
+
+    #[Test]
+    public function importCreatesEntriesForAnEditorWhoMayModifyAllTextDbTables(): void
+    {
+        $this->loginEditor(tablesModify: self::TEXTDB_TABLES);
+
+        $response = $this->dispatchImport('brand_new|label|greeting', 'Hello');
+
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame(1, $this->countImportedRows('greeting'));
+    }
+
+    #[Test]
+    public function importRefusesAnEditorWhoMayNotCreateComponents(): void
+    {
+        // An import creates missing components, types and environments, so it
+        // needs modify access to those tables, not only to the translations.
+        $this->loginEditor();
+
+        $response = $this->dispatchImport('brand_new|label|greeting', 'Hello');
+
+        self::assertSame(403, $response->getStatusCode());
+        self::assertSame(0, $this->countImportedRows('greeting'));
+    }
+
+    #[Test]
+    public function importRefusesAnEditorWhoMayNotEditTheNameFields(): void
+    {
+        // An import writes the names of the components, types and
+        // environments it creates.
+        $fields = str_replace(
+            ',tx_nrtextdb_domain_model_component:name,tx_nrtextdb_domain_model_type:name,tx_nrtextdb_domain_model_environment:name',
+            '',
+            self::TEXTDB_FIELDS,
+        );
+        $this->loginEditor(tablesModify: self::TEXTDB_TABLES, nonExcludeFields: $fields);
+
+        $response = $this->dispatchImport('brand_new|label|greeting', 'Hello');
+
+        self::assertSame(403, $response->getStatusCode());
+        self::assertSame(0, $this->countImportedRows('greeting'));
+    }
+
+    #[Test]
+    public function importSkipsALanguageTheEditorMayNotEdit(): void
+    {
+        // The file is for the default language (0); the editor may edit German only.
+        $this->loginEditor(tablesModify: self::TEXTDB_TABLES, allowedLanguages: '1');
+
+        $response = $this->dispatchImport('brand_new|label|greeting', 'Hello');
+
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame(0, $this->countImportedRows('greeting'));
+        self::assertStringContainsString('so its entries were not imported', (string) $response->getBody());
+    }
+
+    private function insertComponentAndTypeOnPageTwo(): void
+    {
+        $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
+        $connectionPool->getConnectionForTable('tx_nrtextdb_domain_model_component')
+            ->insert('tx_nrtextdb_domain_model_component', ['uid' => 90, 'pid' => 2, 'name' => 'component-on-page-two']);
+        $connectionPool->getConnectionForTable('tx_nrtextdb_domain_model_type')
+            ->insert('tx_nrtextdb_domain_model_type', ['uid' => 90, 'pid' => 2, 'name' => 'type-on-page-two']);
+    }
+
+    private function countChildrenOf(int $parentUid): int
+    {
+        return (int) GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
+            ->count('uid', 'tx_nrtextdb_domain_model_translation', ['l10n_parent' => $parentUid]);
+    }
+
+    /**
+     * Concatenates every file of an export archive.
+     */
+    private function exportedText(ResponseInterface $response): string
+    {
+        $archive = Environment::getVarPath() . '/textdb-export-test.zip';
+        file_put_contents($archive, (string) $response->getBody());
+
+        $zip = new ZipArchive();
+        self::assertTrue($zip->open($archive));
+
+        $text = '';
+        for ($index = 0; $index < $zip->numFiles; ++$index) {
+            $text .= (string) $zip->getFromIndex($index);
+        }
+
+        $zip->close();
+
+        return $text;
+    }
+
+    /**
+     * Counts translation rows with the placeholder in any component, type or
+     * environment, which an import creates as it goes.
+     */
+    private function countImportedRows(string $placeholder): int
+    {
+        return (int) GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
+            ->count('uid', 'tx_nrtextdb_domain_model_translation', ['placeholder' => $placeholder]);
+    }
+
+    /**
+     * Logs in backend user 2, a non-admin member of group 1, after giving the
+     * group the passed rights and everybody the passed permissions on the
+     * storage page (uid 1). Defaults: read access to all four TextDB tables,
+     * modify access to the translation table, every language, every page
+     * permission.
+     */
+    private function loginEditor(
+        string $tablesSelect = self::TEXTDB_TABLES,
+        string $tablesModify = 'tx_nrtextdb_domain_model_translation',
+        string $allowedLanguages = '',
+        int $pagePermissions = Permission::ALL,
+        string $nonExcludeFields = self::TEXTDB_FIELDS,
+    ): void {
+        $this->importFixture('EditorBackendUser.csv');
+
+        $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
+        $connectionPool->getConnectionForTable('be_groups')->update(
+            'be_groups',
+            [
+                'tables_select'      => $tablesSelect,
+                'tables_modify'      => $tablesModify,
+                'allowed_languages'  => $allowedLanguages,
+                'non_exclude_fields' => $nonExcludeFields,
+            ],
+            ['uid' => 1],
+        );
+        $connectionPool->getConnectionForTable('pages')->update(
+            'pages',
+            ['perms_everybody' => $pagePermissions],
+            ['uid' => 1],
+        );
+
+        $this->setUpBackendUser(2);
+
+        $GLOBALS['LANG'] = $this->get(LanguageServiceFactory::class)
+            ->createFromUserPreferences($GLOBALS['BE_USER']);
+    }
+
+    /**
+     * Runs importAction() with an uploaded default-language XLIFF file holding
+     * one entry.
+     */
+    private function dispatchImport(string $key, string $source): ResponseInterface
+    {
+        $file = Environment::getVarPath() . '/textdb_import.xlf';
+        file_put_contents(
+            $file,
+            '<?xml version="1.0" encoding="UTF-8"?>' . "\n"
+            . '<xliff version="1.2"><file source-language="en" datatype="plaintext" original="textdb"><body>'
+            . '<trans-unit id="' . htmlspecialchars($key) . '"><source>' . htmlspecialchars($source) . '</source></trans-unit>'
+            . '</body></file></xliff>',
+        );
+
+        return $this->dispatchModuleAction(
+            'import',
+            [],
+            ['translationFile' => new UploadedFile($file, (int) filesize($file), UPLOAD_ERR_OK, 'textdb_import.xlf')],
+        );
+    }
+
     /**
      * Runs one action of the backend module through the Extbase bootstrap.
      *
@@ -1033,12 +1477,13 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
      * what the page renderer of the module template resolves asset paths with.
      *
      * @param array<string, string|array<array-key, string|string[]>> $queryParams
-     *                                                                             Backend module
-     *                                                                             arguments arrive
-     *                                                                             without a plugin
-     *                                                                             namespace
+     *                                                                               Backend module
+     *                                                                               arguments arrive
+     *                                                                               without a plugin
+     *                                                                               namespace
+     * @param array<string, UploadedFile>                             $uploadedFiles
      */
-    private function dispatchModuleAction(string $action, array $queryParams = []): ResponseInterface
+    private function dispatchModuleAction(string $action, array $queryParams = [], array $uploadedFiles = []): ResponseInterface
     {
         $route = $this->get(Router::class)
             ->getRoute('netresearch_textdb.Translation_' . $action);
@@ -1047,7 +1492,8 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
             ->withAttribute('applicationType', SystemEnvironmentBuilder::REQUESTTYPE_BE)
             ->withAttribute('route', $route)
             ->withAttribute('module', $route->getOption('module'))
-            ->withQueryParams($queryParams);
+            ->withQueryParams($queryParams)
+            ->withUploadedFiles($uploadedFiles);
 
         $request = $request->withAttribute(
             'normalizedParams',

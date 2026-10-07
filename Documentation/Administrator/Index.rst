@@ -103,6 +103,11 @@ TextDB Editors
    ✓ tx_nrtextdb_domain_model_type
    ✓ tx_nrtextdb_domain_model_environment
 
+   Allowed Excludefields (Translation):
+   ✓ Value
+   ✓ Language, Environment, Component, Type, Placeholder
+     (only to add translations in languages that have none yet)
+
    Page Access:
    ✓ TextDB Translations Folder (pid: 123)
 
@@ -121,8 +126,19 @@ TextDB Administrators
    ✓ tx_nrtextdb_domain_model_type
    ✓ tx_nrtextdb_domain_model_environment
 
+   Allowed Excludefields:
+   ✓ Translation: Value, Language, Environment, Component, Type, Placeholder
+   ✓ Component, Type, Environment: Name
+
    Page Access:
    ✓ TextDB Translations Folder (full access)
+
+Editors with this setup can list, export and edit translations. Importing XLIFF
+files needs modify access to all four tables and the excluded fields listed for
+the administrator group, which that group has. The module also applies the
+group's language list and refuses changes in a draft workspace that does not
+allow live editing; see :ref:`backend-module-configuration` for what each
+action checks.
 
 Setting Up Permissions
 ----------------------
@@ -133,6 +149,7 @@ Setting Up Permissions
    
    * Select modules
    * Select table permissions
+   * Select the excluded fields under **Allowed excludefields**
 
 4. **Mounts and Workspaces** tab:
    
