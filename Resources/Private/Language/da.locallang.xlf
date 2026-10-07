@@ -149,6 +149,14 @@
         <source>Please configure a valid storage page ID in the extension configuration.</source>
         <target state="final">Konfigurer et gyldigt lagringssside-ID i udvidelseskonfigurationen.</target>
       </trans-unit>
+      <trans-unit id="error.access.denied">
+        <source>You lack the permissions this action needs: access to the TextDB tables, to the TextDB storage page and, to make changes, the live workspace.</source>
+        <target state="needs-translation">You lack the permissions this action needs: access to the TextDB tables, to the TextDB storage page and, to make changes, the live workspace.</target>
+      </trans-unit>
+      <trans-unit id="error.import.language.denied">
+        <source>You may not edit the language "%s", so its entries were not imported.</source>
+        <target state="needs-translation">You may not edit the language "%s", so its entries were not imported.</target>
+      </trans-unit>
       <trans-unit id="error.storage.pid.title" translate="no" approved="yes">
         <source>TextDb</source>
         <target state="final">TextDb</target>
