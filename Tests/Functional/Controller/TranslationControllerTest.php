@@ -236,6 +236,67 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         self::assertSame(1, $this->countRows(placeholder: 'submit', languageUid: 2));
     }
 
+    /**
+     * The module used to switch the shared repositories to "create if missing"
+     * in its constructor, whatever the extension setting said. A lookup made
+     * through them afterwards (a ViewHelper rendered in the same request, a
+     * service) then wrote records although the setting is off.
+     */
+    #[Test]
+    public function constructingTheModuleLeavesLookupsFreeOfSideEffectsWhenCreateIfMissingIsOff(): void
+    {
+        self::assertInstanceOf(TranslationController::class, $this->controller);
+
+        foreach (
+            [
+                EnvironmentRepository::class,
+                ComponentRepository::class,
+                TypeRepository::class,
+                TranslationRepository::class,
+            ] as $repositoryClass
+        ) {
+            self::assertFalse(
+                $this->get($repositoryClass)->getCreateIfMissing(),
+                $repositoryClass . ' must follow the extension setting, which is off.',
+            );
+        }
+    }
+
+    #[Test]
+    public function aLookupAfterConstructingTheModuleCreatesNothingWhenCreateIfMissingIsOff(): void
+    {
+        self::assertInstanceOf(TranslationController::class, $this->controller);
+
+        self::assertNull($this->get(ComponentRepository::class)->findByName('brand-new-component'));
+        self::assertNull($this->get(TypeRepository::class)->findByName('brand-new-type'));
+        self::assertNull($this->get(EnvironmentRepository::class)->findByName('brand-new-environment'));
+        self::assertSame(0, $this->countNamedRows('tx_nrtextdb_domain_model_component', 'brand-new-component'));
+        self::assertSame(0, $this->countNamedRows('tx_nrtextdb_domain_model_type', 'brand-new-type'));
+        self::assertSame(0, $this->countNamedRows('tx_nrtextdb_domain_model_environment', 'brand-new-environment'));
+
+        self::assertSame(
+            'unknown_placeholder',
+            $this->get(TranslationService::class)->translate('unknown_placeholder', 'button', 'checkout', 'default'),
+        );
+        self::assertSame(0, $this->countPlaceholderRows('unknown_placeholder'));
+    }
+
+    #[Test]
+    public function constructingTheModuleKeepsCreatingOnLookupWhenCreateIfMissingIsOn(): void
+    {
+        // Nothing has read the setting yet: the repositories cache it on the
+        // first read, and the controller was only constructed in setUp().
+        $this->setExtensionConfiguration(textDbPid: '1', createIfMissing: '1');
+
+        self::assertSame(
+            'unknown_placeholder',
+            $this->get(TranslationService::class)->translate('unknown_placeholder', 'button', 'checkout', 'default'),
+        );
+        self::assertSame(1, $this->countPlaceholderRows('unknown_placeholder'));
+        self::assertNotNull($this->get(ComponentRepository::class)->findByName('brand-new-component'));
+        self::assertSame(1, $this->countNamedRows('tx_nrtextdb_domain_model_component', 'brand-new-component'));
+    }
+
     #[Test]
     public function translateRecordUpdatesLocalizedRecordAddressedByUid(): void
     {
@@ -259,7 +320,6 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
             $this->get(ModuleTemplateFactory::class),
             $this->get(ExtensionConfiguration::class),
             $this->get(IconFactory::class),
-            $this->get(EnvironmentRepository::class),
             $this->get(TranslationRepository::class),
             $this->get(TranslationService::class),
             $persistenceManager,
@@ -1634,6 +1694,32 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
                 'deleted'          => 0,
             ],
         );
+    }
+
+    /**
+     * Counts the non-deleted rows of a component, type or environment table
+     * that carry a name.
+     */
+    private function countNamedRows(string $table, string $name): int
+    {
+        return (int) GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getConnectionForTable($table)
+            ->count('uid', $table, ['name' => $name, 'deleted' => 0]);
+    }
+
+    /**
+     * Counts the non-deleted translation rows of a placeholder, whatever
+     * their language.
+     */
+    private function countPlaceholderRows(string $placeholder): int
+    {
+        return (int) GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
+            ->count(
+                'uid',
+                'tx_nrtextdb_domain_model_translation',
+                ['placeholder' => $placeholder, 'deleted' => 0],
+            );
     }
 
     private function fetchValue(int $uid): string

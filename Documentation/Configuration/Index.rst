@@ -53,6 +53,14 @@ Available Settings
    When enabled, missing translations will be auto-created with placeholder text.
    When disabled, only existing translations will be displayed.
 
+   The setting governs lookups only. Opening the backend module does not
+   switch it on: with the setting disabled, a lookup made during a backend
+   request creates no component, type, environment or translation record.
+   The backend module's own writes are unaffected, because they do not depend
+   on the setting. Saving a translation for a language that has none yet and
+   importing an XLIFF file create their records with the setting disabled
+   as well.
+
    .. tip::
       Enable this during development to quickly identify missing translations.
       Disable in production if you want strict translation management.
