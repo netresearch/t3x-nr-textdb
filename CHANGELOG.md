@@ -1,5 +1,11 @@
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- SPDX-FileCopyrightText: Netresearch DTT GmbH -->
+# Unreleased
+
+## BUGFIX
+
+- [BUGFIX] Backend module: constructing the module no longer switches the environment, type, component and translation repositories to "create if missing"; a lookup made in the same request now follows the `createIfMissing` extension setting. Saving a translation for a new language and importing XLIFF files create records as before, whatever the setting says
+
 # 4.0.2
 
 ## BUGFIX
