@@ -149,13 +149,13 @@
         <source>Please configure a valid storage page ID in the extension configuration.</source>
         <target state="final">Konfigurer et gyldigt lagringssside-ID i udvidelseskonfigurationen.</target>
       </trans-unit>
-      <trans-unit id="error.access.denied">
+      <trans-unit id="error.access.denied" approved="yes">
         <source>You lack the permissions this action needs: access to the TextDB tables, to the TextDB storage page and, to make changes, the live workspace.</source>
-        <target state="needs-translation">You lack the permissions this action needs: access to the TextDB tables, to the TextDB storage page and, to make changes, the live workspace.</target>
+        <target state="final">Du mangler de tilladelser, som denne handling kræver: Adgang til TextDB-tabellerne, til TextDB-lagringssiden og til at foretage ændringer i live arbejdsrummet.</target>
       </trans-unit>
-      <trans-unit id="error.import.language.denied">
+      <trans-unit id="error.import.language.denied" approved="yes">
         <source>You may not edit the language "%s", so its entries were not imported.</source>
-        <target state="needs-translation">You may not edit the language "%s", so its entries were not imported.</target>
+        <target state="final">Du kan ikke redigere sproget "%s", så dets poster blev ikke importeret.</target>
       </trans-unit>
       <trans-unit id="error.storage.pid.title" translate="no" approved="yes">
         <source>TextDb</source>
@@ -205,13 +205,13 @@
         <source>The submitted request could not be processed.</source>
         <target state="final">Den indsendte anmodning kunne ikke behandles.</target>
       </trans-unit>
-      <trans-unit id="heading.import">
+      <trans-unit id="heading.import" approved="yes">
         <source>Import translations</source>
-        <target state="needs-translation">Import translations</target>
+        <target state="final">Importer oversættelser</target>
       </trans-unit>
-      <trans-unit id="heading.translated">
+      <trans-unit id="heading.translated" approved="yes">
         <source>Translations</source>
-        <target state="needs-translation">Translations</target>
+        <target state="final">Oversættelser</target>
       </trans-unit>
     </body>
   </file>
