@@ -60,7 +60,7 @@
         "symfony/translation": "^7.0 || ^8.0"
     },
     "require-dev": {
-        "netresearch/typo3-ci-workflows": "^1.1"
+        "netresearch/typo3-ci-workflows": "^2.0.3"
     },
     "suggest": {
         "netresearch/nr-sync": "Enables synchronization of TextDB translations between TYPO3 instances"
