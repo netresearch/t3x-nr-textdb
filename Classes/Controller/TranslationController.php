@@ -21,6 +21,7 @@ use function is_string;
 use function max;
 use function mb_check_encoding;
 
+use LogicException;
 use Netresearch\NrTextdb\Domain\Model\Component;
 use Netresearch\NrTextdb\Domain\Model\Environment;
 use Netresearch\NrTextdb\Domain\Model\Translation;
@@ -126,7 +127,10 @@ final class TranslationController extends ActionController
 
     private readonly ModuleTemplateFactory $moduleTemplateFactory;
 
-    private ModuleTemplate $moduleTemplate;
+    /**
+     * Created in initializeAction(), which Extbase calls before every action.
+     */
+    private ?ModuleTemplate $moduleTemplate = null;
 
     private readonly ExtensionConfiguration $extensionConfiguration;
 
@@ -213,6 +217,22 @@ final class TranslationController extends ActionController
     }
 
     /**
+     * Returns the module template that initializeAction() created.
+     *
+     * @throws LogicException when called before initializeAction()
+     */
+    private function moduleTemplate(): ModuleTemplate
+    {
+        if (!$this->moduleTemplate instanceof ModuleTemplate) {
+            throw new LogicException(
+                'The module template is created in initializeAction() and is not available before it.',
+            );
+        }
+
+        return $this->moduleTemplate;
+    }
+
+    /**
      * Shows the textDB entries.
      *
      * @throws InvalidQueryException
@@ -224,7 +244,7 @@ final class TranslationController extends ActionController
         }
 
         if ($this->pid === 0) {
-            $this->moduleTemplate->addFlashMessage(
+            $this->moduleTemplate()->addFlashMessage(
                 $this->translate('error.storage.pid') ?? 'Please configure a valid storage page ID in the extension configuration.',
                 $this->translate('error.storage.pid.title') ?? 'TextDb',
                 ContextualFeedbackSeverity::ERROR,
@@ -285,7 +305,7 @@ final class TranslationController extends ActionController
             ],
         );
 
-        $this->moduleTemplate->assignMultiple([
+        $this->moduleTemplate()->assignMultiple([
             'defaultComponent'   => $defaultComponent,
             'defaultType'        => $defaultType,
             'defaultPlaceholder' => $defaultPlaceholder,
@@ -301,7 +321,7 @@ final class TranslationController extends ActionController
             ),
         ]);
 
-        return $this->moduleTemplate->renderResponse('Translation/List');
+        return $this->moduleTemplate()->renderResponse('Translation/List');
     }
 
     public function translatedAction(int $uid): ResponseInterface
@@ -334,12 +354,12 @@ final class TranslationController extends ActionController
             }
         }
 
-        $this->moduleTemplate->assign('originalUid', $uid);
-        $this->moduleTemplate->assign('translated', $translated);
-        $this->moduleTemplate->assign('untranslated', $untranslated);
-        $this->moduleTemplate->assign('languages', $languages);
+        $this->moduleTemplate()->assign('originalUid', $uid);
+        $this->moduleTemplate()->assign('translated', $translated);
+        $this->moduleTemplate()->assign('untranslated', $untranslated);
+        $this->moduleTemplate()->assign('languages', $languages);
 
-        return $this->moduleTemplate->renderResponse('Translation/Translated');
+        return $this->moduleTemplate()->renderResponse('Translation/Translated');
     }
 
     /**
@@ -849,7 +869,7 @@ final class TranslationController extends ActionController
             return $this->accessDeniedResponse();
         }
 
-        $this->moduleTemplate->assign('action', 'import');
+        $this->moduleTemplate()->assign('action', 'import');
 
         /** @var UploadedFile|null $translationFile */
         $translationFile = $this->request->getUploadedFiles()['translationFile'] ?? null;
@@ -860,7 +880,7 @@ final class TranslationController extends ActionController
             || ($translationFile->getClientFilename() === null)
             || ($translationFile->getClientFilename() === '')
         ) {
-            return $this->moduleTemplate->renderResponse('Translation/Import');
+            return $this->moduleTemplate()->renderResponse('Translation/Import');
         }
 
         $filename     = $translationFile->getClientFilename() ?? '';
@@ -942,9 +962,9 @@ final class TranslationController extends ActionController
                     $errors[] = trim($error->message);
                 }
 
-                $this->moduleTemplate->assign('errors', $errors);
+                $this->moduleTemplate()->assign('errors', $errors);
 
-                return $this->moduleTemplate->renderResponse('Translation/Import');
+                return $this->moduleTemplate()->renderResponse('Translation/Import');
             }
 
             foreach ($data->file->body->children() as $translation) {
@@ -997,7 +1017,7 @@ final class TranslationController extends ActionController
             }
         }
 
-        $this->moduleTemplate->assignMultiple([
+        $this->moduleTemplate()->assignMultiple([
             'updated'  => $result->getUpdated(),
             'imported' => $result->getImported(),
             'errors'   => array_merge($errors, $result->getErrors()),
@@ -1007,7 +1027,7 @@ final class TranslationController extends ActionController
             ),
         ]);
 
-        return $this->moduleTemplate->renderResponse('Translation/Import');
+        return $this->moduleTemplate()->renderResponse('Translation/Import');
     }
 
     /**
@@ -1246,7 +1266,7 @@ final class TranslationController extends ActionController
     private function registerDocHeaderButtons(): void
     {
         // Instantiate required classes
-        $buttonBar = $this->moduleTemplate
+        $buttonBar = $this->moduleTemplate()
             ->getDocHeaderComponent()
             ->getButtonBar();
 

@@ -1,12 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: '#^Instanceof between Netresearch\\NrTextdb\\Domain\\Model\\Translation and Netresearch\\NrTextdb\\Domain\\Model\\Translation will always evaluate to true\.$#'
-			identifier: instanceof.alwaysTrue
-			count: 1
-			path: ../Classes/Controller/TranslationController.php
-
-		-
 			message: '#^Cannot cast mixed to int\.$#'
 			identifier: cast.int
 			count: 1
