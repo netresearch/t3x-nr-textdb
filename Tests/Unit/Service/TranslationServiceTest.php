@@ -229,6 +229,7 @@ final class TranslationServiceTest extends UnitTestCase
     {
         $environment = new Environment();
         $environment->setPid(1);
+
         $component = new Component();
         $type      = new Type();
 
@@ -252,8 +253,10 @@ final class TranslationServiceTest extends UnitTestCase
     {
         $environment = new Environment();
         $environment->setName('default');
+
         $component = new Component();
         $component->setName('website');
+
         $type = new Type();
         $type->setName('label');
 

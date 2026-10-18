@@ -163,10 +163,6 @@ abstract class AbstractFunctionalTestCase extends FunctionalTestCase
 
         // Accept an existing LocalConfiguration as fallback (e.g. ddev environments).
         $localConfigPath = dirname(__DIR__, 2) . '/typo3conf/LocalConfiguration.php';
-        if (file_exists($localConfigPath)) {
-            return true;
-        }
-
-        return false;
+        return file_exists($localConfigPath);
     }
 }

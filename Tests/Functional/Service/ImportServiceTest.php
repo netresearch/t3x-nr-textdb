@@ -14,6 +14,7 @@ declare(strict_types=1);
 
 namespace Netresearch\NrTextdb\Tests\Functional\Service;
 
+use TYPO3\CMS\Core\Http\Uri;
 use Netresearch\NrTextdb\Domain\Model\Translation;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
 use Netresearch\NrTextdb\Service\ImportResult;
@@ -404,7 +405,7 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
         return new SiteLanguage(
             $languageId,
             $bcp47Locale,
-            new \TYPO3\CMS\Core\Http\Uri('https://example.com/'),
+            new Uri('https://example.com/'),
             [
                 'title'         => $languageCode,
                 'flag'          => $languageCode,

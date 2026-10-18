@@ -84,7 +84,7 @@ final class TextdbViewHelperTest extends AbstractFunctionalTestCase
     public function rendersTranslationValueWhenRecordExists(): void
     {
         $output = $this->renderFluidTemplate(
-            '{nrtextdb:textdb(placeholder: \'welcome-message\', component: \'test-component\', environment: \'default\')}',
+            "{nrtextdb:textdb(placeholder: 'welcome-message', component: 'test-component', environment: 'default')}",
         );
 
         self::assertSame('Welcome to our shop', trim($output));
@@ -94,7 +94,7 @@ final class TextdbViewHelperTest extends AbstractFunctionalTestCase
     public function rendersTranslationForCustomTypeWhenRecordExists(): void
     {
         $output = $this->renderFluidTemplate(
-            '{nrtextdb:textdb(placeholder: \'checkout-title\', type: \'label\', component: \'checkout\', environment: \'default\')}',
+            "{nrtextdb:textdb(placeholder: 'checkout-title', type: 'label', component: 'checkout', environment: 'default')}",
         );
 
         self::assertSame('Checkout', trim($output));
@@ -106,7 +106,7 @@ final class TextdbViewHelperTest extends AbstractFunctionalTestCase
         // Records with type "P" (uid=1 in Types.csv) should be found even
         // without an explicit type argument.
         $output = $this->renderFluidTemplate(
-            '{nrtextdb:textdb(placeholder: \'welcome-message\', component: \'test-component\', environment: \'default\')}',
+            "{nrtextdb:textdb(placeholder: 'welcome-message', component: 'test-component', environment: 'default')}",
         );
 
         self::assertSame('Welcome to our shop', trim($output));
@@ -116,7 +116,7 @@ final class TextdbViewHelperTest extends AbstractFunctionalTestCase
     public function rendersSubmitButtonTranslation(): void
     {
         $output = $this->renderFluidTemplate(
-            '{nrtextdb:textdb(placeholder: \'submit-button\', component: \'test-component\', environment: \'default\')}',
+            "{nrtextdb:textdb(placeholder: 'submit-button', component: 'test-component', environment: 'default')}",
         );
 
         self::assertSame('Submit Order', trim($output));
@@ -144,7 +144,7 @@ final class TextdbViewHelperTest extends AbstractFunctionalTestCase
             );
 
         $output = $this->renderFluidTemplate(
-            '{nrtextdb:textdb(placeholder: \'markup-value\', component: \'test-component\', environment: \'default\')}',
+            "{nrtextdb:textdb(placeholder: 'markup-value', component: 'test-component', environment: 'default')}",
         );
 
         self::assertSame(
@@ -161,7 +161,7 @@ final class TextdbViewHelperTest extends AbstractFunctionalTestCase
     public function returnsPlaceholderWhenNoRecordExistsAndCreateIfMissingFalse(): void
     {
         $output = $this->renderFluidTemplate(
-            '{nrtextdb:textdb(placeholder: \'unknown-key\', component: \'test-component\', environment: \'default\')}',
+            "{nrtextdb:textdb(placeholder: 'unknown-key', component: 'test-component', environment: 'default')}",
         );
 
         self::assertSame('unknown-key', trim($output));
@@ -171,7 +171,7 @@ final class TextdbViewHelperTest extends AbstractFunctionalTestCase
     public function returnsPlaceholderWhenComponentNotFoundAndCreateIfMissingFalse(): void
     {
         $output = $this->renderFluidTemplate(
-            '{nrtextdb:textdb(placeholder: \'welcome-message\', component: \'nonexistent-component\', environment: \'default\')}',
+            "{nrtextdb:textdb(placeholder: 'welcome-message', component: 'nonexistent-component', environment: 'default')}",
         );
 
         self::assertSame('welcome-message', trim($output));
@@ -181,7 +181,7 @@ final class TextdbViewHelperTest extends AbstractFunctionalTestCase
     public function returnsPlaceholderWhenEnvironmentNotFoundAndCreateIfMissingFalse(): void
     {
         $output = $this->renderFluidTemplate(
-            '{nrtextdb:textdb(placeholder: \'welcome-message\', component: \'test-component\', environment: \'nonexistent-env\')}',
+            "{nrtextdb:textdb(placeholder: 'welcome-message', component: 'test-component', environment: 'nonexistent-env')}",
         );
 
         self::assertSame('welcome-message', trim($output));
@@ -200,7 +200,7 @@ final class TextdbViewHelperTest extends AbstractFunctionalTestCase
         $placeholder = 'newly-created-key';
 
         $output = $this->renderFluidTemplate(
-            '{nrtextdb:textdb(placeholder: \'newly-created-key\', component: \'test-component\', environment: \'default\')}',
+            "{nrtextdb:textdb(placeholder: 'newly-created-key', component: 'test-component', environment: 'default')}",
         );
 
         // The auto-created translation stores AUTO_CREATE_IDENTIFIER as its value,
@@ -218,7 +218,7 @@ final class TextdbViewHelperTest extends AbstractFunctionalTestCase
         $this->get(TranslationRepository::class)->setCreateIfMissing(true);
 
         $output = $this->renderFluidTemplate(
-            '{nrtextdb:textdb(placeholder: \'brand-new-key\', component: \'brand-new-component\', environment: \'brand-new-env\')}',
+            "{nrtextdb:textdb(placeholder: 'brand-new-key', component: 'brand-new-component', environment: 'brand-new-env')}",
         );
 
         // When everything is auto-created the placeholder is the rendered result.
@@ -234,7 +234,7 @@ final class TextdbViewHelperTest extends AbstractFunctionalTestCase
     {
         // Fixture uid=4 uses environment=staging (uid=2), same placeholder.
         $output = $this->renderFluidTemplate(
-            '{nrtextdb:textdb(placeholder: \'welcome-message\', component: \'test-component\', environment: \'staging\')}',
+            "{nrtextdb:textdb(placeholder: 'welcome-message', component: 'test-component', environment: 'staging')}",
         );
 
         self::assertSame('Welcome to staging', trim($output));
@@ -244,10 +244,10 @@ final class TextdbViewHelperTest extends AbstractFunctionalTestCase
     public function rendersDifferentValuesForDifferentEnvironments(): void
     {
         $defaultOutput = $this->renderFluidTemplate(
-            '{nrtextdb:textdb(placeholder: \'welcome-message\', component: \'test-component\', environment: \'default\')}',
+            "{nrtextdb:textdb(placeholder: 'welcome-message', component: 'test-component', environment: 'default')}",
         );
         $stagingOutput = $this->renderFluidTemplate(
-            '{nrtextdb:textdb(placeholder: \'welcome-message\', component: \'test-component\', environment: \'staging\')}',
+            "{nrtextdb:textdb(placeholder: 'welcome-message', component: 'test-component', environment: 'staging')}",
         );
 
         self::assertNotSame(trim($defaultOutput), trim($stagingOutput));
@@ -259,7 +259,7 @@ final class TextdbViewHelperTest extends AbstractFunctionalTestCase
     public function rendersProductionEnvironmentTranslation(): void
     {
         $output = $this->renderFluidTemplate(
-            '{nrtextdb:textdb(placeholder: \'production-text\', component: \'test-component\', environment: \'production\')}',
+            "{nrtextdb:textdb(placeholder: 'production-text', component: 'test-component', environment: 'production')}",
         );
 
         self::assertSame('Production value', trim($output));
@@ -276,7 +276,7 @@ final class TextdbViewHelperTest extends AbstractFunctionalTestCase
 
         // welcome-message uid=1 has sys_language_uid=0.
         $output = $this->renderFluidTemplate(
-            '{nrtextdb:textdb(placeholder: \'welcome-message\', component: \'test-component\', environment: \'default\')}',
+            "{nrtextdb:textdb(placeholder: 'welcome-message', component: 'test-component', environment: 'default')}",
         );
 
         self::assertSame('Welcome to our shop', trim($output));
@@ -289,7 +289,7 @@ final class TextdbViewHelperTest extends AbstractFunctionalTestCase
         $this->setLanguageAspect(2);
 
         $output = $this->renderFluidTemplate(
-            '{nrtextdb:textdb(placeholder: \'welcome-message\', component: \'test-component\', environment: \'default\')}',
+            "{nrtextdb:textdb(placeholder: 'welcome-message', component: 'test-component', environment: 'default')}",
         );
 
         self::assertSame('Willkommen in unserem Shop', trim($output));
@@ -302,7 +302,7 @@ final class TextdbViewHelperTest extends AbstractFunctionalTestCase
         $this->setLanguageAspect(99);
 
         $output = $this->renderFluidTemplate(
-            '{nrtextdb:textdb(placeholder: \'welcome-message\', component: \'test-component\', environment: \'default\')}',
+            "{nrtextdb:textdb(placeholder: 'welcome-message', component: 'test-component', environment: 'default')}",
         );
 
         self::assertSame('welcome-message', trim($output));
@@ -315,7 +315,7 @@ final class TextdbViewHelperTest extends AbstractFunctionalTestCase
         // Translation::getValue() detects this sentinel and returns
         // getPlaceholder() instead of the raw value.
         $output = $this->renderFluidTemplate(
-            '{nrtextdb:textdb(placeholder: \'auto-created-entry\', component: \'test-component\', environment: \'default\')}',
+            "{nrtextdb:textdb(placeholder: 'auto-created-entry', component: 'test-component', environment: 'default')}",
         );
 
         self::assertSame('auto-created-entry', trim($output));

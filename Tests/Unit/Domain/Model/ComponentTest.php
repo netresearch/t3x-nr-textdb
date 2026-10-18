@@ -27,7 +27,7 @@ use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 #[CoversClass(Component::class)]
 final class ComponentTest extends UnitTestCase
 {
-    protected Component $subject;
+    private Component $subject;
 
     protected function setUp(): void
     {

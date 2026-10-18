@@ -96,7 +96,7 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
 
         // Use the built-in nr_textdb locallang to get a real LLL string back.
         $output = $this->renderFluidTemplate(
-            '{nrtextdb:translate(key: \'LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:tx_nrtextdb_domain_model_environment\', environment: \'default\')}',
+            "{nrtextdb:translate(key: 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:tx_nrtextdb_domain_model_environment', environment: 'default')}",
         );
 
         // LocalizationUtility resolves the key to "Environment" in English.
@@ -115,7 +115,7 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
         // Key does not exist in any LLL file; LocalizationUtility returns null.
         // The ViewHelper must fall back to the bare placeholder.
         $output = $this->renderFluidTemplate(
-            '{nrtextdb:translate(key: \'some-plain-placeholder\', environment: \'default\')}',
+            "{nrtextdb:translate(key: 'some-plain-placeholder', environment: 'default')}",
         );
 
         self::assertSame('some-plain-placeholder', trim($output));
@@ -130,7 +130,7 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
         // extracts the fourth segment as the bare placeholder.
         // Format: LLL:EXT:extension/path/file.xlf:key-name
         $output = $this->renderFluidTemplate(
-            '{nrtextdb:translate(key: \'LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:tx_nrtextdb_domain_model_component\', environment: \'default\')}',
+            "{nrtextdb:translate(key: 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:tx_nrtextdb_domain_model_component', environment: 'default')}",
         );
 
         // The resolved LLL value is "Component".
@@ -146,7 +146,7 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
     {
         TranslateViewHelper::$component = 'lll-migration-component';
 
-        $template = '{nrtextdb:translate(key: \'LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:tx_nrtextdb_domain_model_type\', environment: \'default\')}';
+        $template = "{nrtextdb:translate(key: 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:tx_nrtextdb_domain_model_type', environment: 'default')}";
 
         // First render: imports into TextDB.
         $firstOutput = $this->renderFluidTemplate($template);
@@ -165,7 +165,7 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
     {
         TranslateViewHelper::$component = 'lll-migration-component';
 
-        $template    = '{nrtextdb:translate(key: \'LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:tx_nrtextdb_domain_model_translation\', environment: \'default\')}';
+        $template    = "{nrtextdb:translate(key: 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:tx_nrtextdb_domain_model_translation', environment: 'default')}";
         $placeholder = 'tx_nrtextdb_domain_model_translation';
 
         // Render twice; the second call must not duplicate the DB record.
@@ -187,7 +187,7 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
         $placeholder = 'tx_nrtextdb_domain_model_environment.name';
 
         $this->renderFluidTemplate(
-            '{nrtextdb:translate(key: \'LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:tx_nrtextdb_domain_model_environment.name\', environment: \'default\')}',
+            "{nrtextdb:translate(key: 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:tx_nrtextdb_domain_model_environment.name', environment: 'default')}",
         );
 
         // TranslationService::translate() auto-creates a record when
@@ -208,7 +208,7 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
         $this->expectExceptionMessage('Please set a component in your controller');
 
         $this->renderFluidTemplate(
-            '{nrtextdb:translate(key: \'some-key\', environment: \'default\')}',
+            "{nrtextdb:translate(key: 'some-key', environment: 'default')}",
         );
     }
 
@@ -219,7 +219,7 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
 
         // Should not throw; component is properly configured.
         $output = $this->renderFluidTemplate(
-            '{nrtextdb:translate(key: \'some-plain-placeholder\', environment: \'default\')}',
+            "{nrtextdb:translate(key: 'some-plain-placeholder', environment: 'default')}",
         );
 
         self::assertIsString($output);
@@ -238,7 +238,7 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
         // LocalizationUtility returns null, so the ViewHelper falls back to
         // returning the raw placeholder ($translationRequested ?? $placeholder).
         $output = $this->renderFluidTemplate(
-            '{nrtextdb:translate(key: \'some-unknown-lll-key\', environment: \'default\')}',
+            "{nrtextdb:translate(key: 'some-unknown-lll-key', environment: 'default')}",
         );
 
         self::assertSame('some-unknown-lll-key', trim($output));
@@ -249,7 +249,7 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
     {
         TranslateViewHelper::$component = 'lll-migration-component';
 
-        $template = '{nrtextdb:translate(key: \'another-unknown-key\', environment: \'default\')}';
+        $template = "{nrtextdb:translate(key: 'another-unknown-key', environment: 'default')}";
 
         // First render creates an auto-created record (value = AUTO_CREATE_IDENTIFIER).
         // Second render finds the TextDB entry and returns $translationRequested ?? $placeholder.
@@ -273,7 +273,7 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
         // Translation domain syntax: "<extension>.messages" maps to the
         // extension's locallang.xlf, no extension name needed.
         $output = $this->renderFluidTemplate(
-            '{nrtextdb:translate(key: \'nr_textdb.messages:tx_nrtextdb_domain_model_component\', environment: \'default\')}',
+            "{nrtextdb:translate(key: 'nr_textdb.messages:tx_nrtextdb_domain_model_component', environment: 'default')}",
         );
 
         self::assertSame('Component', trim($output));
@@ -286,7 +286,7 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
 
         // LocalizationUtility strips an "LLL:" prefix from a domain key.
         $output = $this->renderFluidTemplate(
-            '{nrtextdb:translate(key: \'LLL:nr_textdb.messages:tx_nrtextdb_domain_model_component\', environment: \'default\')}',
+            "{nrtextdb:translate(key: 'LLL:nr_textdb.messages:tx_nrtextdb_domain_model_component', environment: 'default')}",
         );
 
         self::assertSame('Component', trim($output));
@@ -300,7 +300,7 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
         // LocalizationUtility cannot resolve a bare key without an extension
         // name; the ViewHelper must render the placeholder instead of aborting.
         $output = $this->renderFluidTemplate(
-            '{nrtextdb:translate(key: \'tx_nrtextdb_domain_model_component\', environment: \'default\')}',
+            "{nrtextdb:translate(key: 'tx_nrtextdb_domain_model_component', environment: 'default')}",
         );
 
         self::assertSame('tx_nrtextdb_domain_model_component', trim($output));
@@ -315,7 +315,7 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
         // so LocalizationUtility throws 1498144052; the ViewHelper must catch it
         // and render the placeholder.
         $output = $this->renderFluidTemplate(
-            '{nrtextdb:translate(key: \'foo:bar\', environment: \'default\')}',
+            "{nrtextdb:translate(key: 'foo:bar', environment: 'default')}",
         );
 
         self::assertSame('foo:bar', trim($output));
@@ -344,7 +344,7 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
         $this->expectExceptionCode(1700000001);
 
         $this->renderFluidTemplate(
-            '{nrtextdb:translate(key: \'nr_textdb.messages:tx_nrtextdb_domain_model_component\', environment: \'default\')}',
+            "{nrtextdb:translate(key: 'nr_textdb.messages:tx_nrtextdb_domain_model_component', environment: 'default')}",
         );
     }
 
@@ -371,7 +371,7 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
         // name is given, so the ViewHelper must not ask it at all: throwing and
         // catching that exception for every such key made rendering slow.
         $this->renderFluidTemplate(
-            '{nrtextdb:translate(key: \'tx_nrtextdb_domain_model_component\', environment: \'default\')}',
+            "{nrtextdb:translate(key: 'tx_nrtextdb_domain_model_component', environment: 'default')}",
         );
 
         self::assertSame([], $labelTranslator->requestedKeys);
@@ -379,7 +379,7 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
         // Control: a key LocalizationUtility can resolve does reach it, so the
         // empty list above is not an unwired double.
         $this->renderFluidTemplate(
-            '{nrtextdb:translate(key: \'nr_textdb.messages:tx_nrtextdb_domain_model_type\', environment: \'default\')}',
+            "{nrtextdb:translate(key: 'nr_textdb.messages:tx_nrtextdb_domain_model_type', environment: 'default')}",
         );
 
         self::assertSame(['nr_textdb.messages:tx_nrtextdb_domain_model_type'], $labelTranslator->requestedKeys);
@@ -391,7 +391,7 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
         TranslateViewHelper::$component = 'lll-migration-component';
 
         $output = $this->renderFluidTemplate(
-            '{nrtextdb:translate(key: \'tx_nrtextdb_domain_model_environment\', extensionName: \'nr_textdb\', environment: \'default\')}',
+            "{nrtextdb:translate(key: 'tx_nrtextdb_domain_model_environment', extensionName: 'nr_textdb', environment: 'default')}",
         );
 
         self::assertSame('Environment', trim($output));
