@@ -14,8 +14,6 @@ declare(strict_types=1);
 
 namespace Netresearch\NrTextdb\Service;
 
-use function count;
-
 use Exception;
 use Netresearch\NrTextdb\Domain\Model\Component;
 use Netresearch\NrTextdb\Domain\Model\Environment;
@@ -32,6 +30,8 @@ use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
+
+use function count;
 
 /**
  * The import service.

@@ -14,13 +14,6 @@ declare(strict_types=1);
 
 namespace Netresearch\NrTextdb\Controller;
 
-use function array_key_exists;
-use function is_int;
-use function is_numeric;
-use function is_string;
-use function max;
-use function mb_check_encoding;
-
 use LogicException;
 use Netresearch\NrTextdb\Domain\Model\Component;
 use Netresearch\NrTextdb\Domain\Model\Environment;
@@ -34,9 +27,6 @@ use Netresearch\NrTextdb\Service\ImportService;
 use Netresearch\NrTextdb\Service\TranslationService;
 use Psr\Http\Message\ResponseInterface;
 use RuntimeException;
-
-use function sprintf;
-
 use Symfony\Component\Filesystem\Filesystem;
 use Throwable;
 use TYPO3\CMS\Backend\Template\Components\ButtonBar;
@@ -69,10 +59,17 @@ use TYPO3\CMS\Extbase\Persistence\Exception\UnknownObjectException;
 use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
 use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
+use ZipArchive;
+
+use function array_key_exists;
+use function is_int;
+use function is_numeric;
+use function is_string;
+use function max;
+use function mb_check_encoding;
+use function sprintf;
 
 use const UPLOAD_ERR_OK;
-
-use ZipArchive;
 
 /**
  * TranslationController.
@@ -690,7 +687,7 @@ final class TranslationController extends ActionController
 
         if (
             !is_dir($exportDir)
-            && !mkdir($exportDir, 0700, true)
+            && !mkdir($exportDir, 0o700, true)
             && !is_dir($exportDir)
         ) {
             throw new RuntimeException(
@@ -1223,12 +1220,12 @@ final class TranslationController extends ActionController
 
             $entries .= sprintf(
                 <<<XML
-            <trans-unit id="%s|%s|%s">
-                <%s>
-                    <![CDATA[%s]]>
-                </%s>
-            </trans-unit>
-    XML . PHP_EOL,
+                            <trans-unit id="%s|%s|%s">
+                                <%s>
+                                    <![CDATA[%s]]>
+                                </%s>
+                            </trans-unit>
+                    XML . PHP_EOL,
                 $componentName,
                 $typeName,
                 $placeholder,

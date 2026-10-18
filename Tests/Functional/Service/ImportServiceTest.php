@@ -14,7 +14,6 @@ declare(strict_types=1);
 
 namespace Netresearch\NrTextdb\Tests\Functional\Service;
 
-use TYPO3\CMS\Core\Http\Uri;
 use Netresearch\NrTextdb\Domain\Model\Translation;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
 use Netresearch\NrTextdb\Service\ImportResult;
@@ -22,6 +21,7 @@ use Netresearch\NrTextdb\Service\ImportService;
 use Netresearch\NrTextdb\Tests\Functional\AbstractFunctionalTestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
+use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
