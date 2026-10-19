@@ -21,6 +21,7 @@ use Netresearch\NrTextdb\Service\ImportService;
 use Netresearch\NrTextdb\Tests\Functional\AbstractFunctionalTestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
+use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
@@ -404,7 +405,7 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
         return new SiteLanguage(
             $languageId,
             $bcp47Locale,
-            new \TYPO3\CMS\Core\Http\Uri('https://example.com/'),
+            new Uri('https://example.com/'),
             [
                 'title'         => $languageCode,
                 'flag'          => $languageCode,

@@ -1,13 +1,15 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: Netresearch DTT GmbH
 
+# The shared config sets level 10, treatPhpDocTypesAsCertain, the
+# strictness flags and the .Build/ and ext_emconf.php excludes;
+# phpstan/extension-installer registers phpstan-typo3, phpat, the strict,
+# deprecation and PHPUnit rules, and ergebnis/phpstan-rules.
 includes:
+    - %currentWorkingDirectory%/.Build/vendor/netresearch/typo3-ci-workflows/config/phpstan/phpstan.neon
     - %currentWorkingDirectory%/Build/phpstan-baseline.neon
 
 parameters:
-    # You can currently choose from 11 levels (0 is the loosest and 10 is the strictest).
-    level: 10
-
     paths:
         - %currentWorkingDirectory%/Classes/
         - %currentWorkingDirectory%/Configuration/
@@ -16,8 +18,6 @@ parameters:
         - %currentWorkingDirectory%/ext_localconf.php
 
     excludePaths:
-        - %currentWorkingDirectory%/.Build/*
-        - %currentWorkingDirectory%/ext_emconf.php
         - %currentWorkingDirectory%/Configuration/Backend/Modules.php
         - %currentWorkingDirectory%/Tests/Functional/*
 
@@ -33,6 +33,10 @@ parameters:
     # All other ergebnis rules remain active and are enforced in code (final
     # classes, no isset(), no by-reference parameters, no nullable returns).
     ergebnis:
+        # The shared config sets allRules: false and opts in to six rules.
+        # This extension has run every ergebnis rule except the four
+        # disabled below, so it keeps the stricter setting.
+        allRules: true
         noExtends:
             classesAllowedToBeExtended:
                 # Symfony Console command base class (Symfony >=5.3 is non-abstract by design).

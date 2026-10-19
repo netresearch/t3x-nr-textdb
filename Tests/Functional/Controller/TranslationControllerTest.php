@@ -1602,7 +1602,7 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
     {
         $siteDirectory = Environment::getConfigPath() . '/sites/textdb';
 
-        if (!is_dir($siteDirectory) && !mkdir($siteDirectory, 0777, true) && !is_dir($siteDirectory)) {
+        if (!is_dir($siteDirectory) && !mkdir($siteDirectory, 0o777, true) && !is_dir($siteDirectory)) {
             self::fail('Could not create site directory ' . $siteDirectory);
         }
 

@@ -14,13 +14,8 @@ declare(strict_types=1);
 
 namespace Netresearch\NrTextdb\Command;
 
-use function count;
-
 use Netresearch\NrTextdb\Service\ImportResult;
 use Netresearch\NrTextdb\Service\ImportService;
-
-use function sprintf;
-
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -32,6 +27,9 @@ use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Extensionmanager\Utility\ListUtility;
+
+use function count;
+use function sprintf;
 
 /**
  * Class ImportCommand.

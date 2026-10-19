@@ -14,14 +14,14 @@ declare(strict_types=1);
 
 namespace Netresearch\NrTextdb\ViewHelpers;
 
-use function count;
-
 use InvalidArgumentException;
 use Netresearch\NrTextdb\Service\LabelTranslatorInterface;
 use Netresearch\NrTextdb\Service\TranslationService;
 use RuntimeException;
 use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
+
+use function count;
 
 /**
  * Fluid <a:translate/> implementation

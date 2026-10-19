@@ -16,10 +16,9 @@ namespace Netresearch\NrTextdb\Tests\Unit\Controller;
 
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\Test;
+use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 use function simplexml_load_string;
-
-use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 /**
  * Test case for XXE (XML External Entity) protection in XLF import functionality.
@@ -43,20 +42,20 @@ final class TranslationControllerXXETest extends UnitTestCase
     {
         // Create XXE payload attempting to read /etc/passwd
         $xxePayload = <<<'XML'
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE xliff [
-  <!ENTITY xxe SYSTEM "file:///etc/passwd">
-]>
-<xliff version="1.0">
-  <file source-language="en" datatype="plaintext" original="messages">
-    <body>
-      <trans-unit id="component|type|placeholder">
-        <source>&xxe;</source>
-      </trans-unit>
-    </body>
-  </file>
-</xliff>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <!DOCTYPE xliff [
+              <!ENTITY xxe SYSTEM "file:///etc/passwd">
+            ]>
+            <xliff version="1.0">
+              <file source-language="en" datatype="plaintext" original="messages">
+                <body>
+                  <trans-unit id="component|type|placeholder">
+                    <source>&xxe;</source>
+                  </trans-unit>
+                </body>
+              </file>
+            </xliff>
+            XML;
 
         // Enable XXE protection (same as in TranslationController)
         // In PHP 8.0+, external entity loading is disabled by default
@@ -110,20 +109,20 @@ XML;
     {
         // Create XXE payload attempting HTTP request
         $xxePayload = <<<'XML'
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE xliff [
-  <!ENTITY xxe SYSTEM "http://example.com/xxe-test">
-]>
-<xliff version="1.0">
-  <file source-language="en" datatype="plaintext" original="messages">
-    <body>
-      <trans-unit id="component|type|placeholder">
-        <source>&xxe;</source>
-      </trans-unit>
-    </body>
-  </file>
-</xliff>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <!DOCTYPE xliff [
+              <!ENTITY xxe SYSTEM "http://example.com/xxe-test">
+            ]>
+            <xliff version="1.0">
+              <file source-language="en" datatype="plaintext" original="messages">
+                <body>
+                  <trans-unit id="component|type|placeholder">
+                    <source>&xxe;</source>
+                  </trans-unit>
+                </body>
+              </file>
+            </xliff>
+            XML;
 
         // Enable XXE protection
         // In PHP 8.0+, external entity loading is disabled by default
@@ -168,20 +167,20 @@ XML;
     {
         // Create legitimate XLF without external entities
         $validXlf = <<<'XML'
-<?xml version="1.0" encoding="UTF-8"?>
-<xliff version="1.0">
-  <file source-language="en" datatype="plaintext" original="messages">
-    <body>
-      <trans-unit id="checkout|button|submit">
-        <source>Proceed to Checkout</source>
-      </trans-unit>
-      <trans-unit id="checkout|label|email">
-        <source>Email Address</source>
-      </trans-unit>
-    </body>
-  </file>
-</xliff>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <xliff version="1.0">
+              <file source-language="en" datatype="plaintext" original="messages">
+                <body>
+                  <trans-unit id="checkout|button|submit">
+                    <source>Proceed to Checkout</source>
+                  </trans-unit>
+                  <trans-unit id="checkout|label|email">
+                    <source>Email Address</source>
+                  </trans-unit>
+                </body>
+              </file>
+            </xliff>
+            XML;
 
         // Enable XXE protection
         // In PHP 8.0+, external entity loading is disabled by default
@@ -226,22 +225,22 @@ XML;
     {
         // Simplified billion laughs payload (not full scale to avoid test timeout)
         $billionLaughsPayload = <<<'XML'
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE xliff [
-  <!ENTITY lol "lol">
-  <!ENTITY lol1 "&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;">
-  <!ENTITY lol2 "&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;">
-]>
-<xliff version="1.0">
-  <file source-language="en" datatype="plaintext" original="messages">
-    <body>
-      <trans-unit id="test|label|bomb">
-        <source>&lol2;</source>
-      </trans-unit>
-    </body>
-  </file>
-</xliff>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <!DOCTYPE xliff [
+              <!ENTITY lol "lol">
+              <!ENTITY lol1 "&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;">
+              <!ENTITY lol2 "&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;">
+            ]>
+            <xliff version="1.0">
+              <file source-language="en" datatype="plaintext" original="messages">
+                <body>
+                  <trans-unit id="test|label|bomb">
+                    <source>&lol2;</source>
+                  </trans-unit>
+                </body>
+              </file>
+            </xliff>
+            XML;
 
         // Enable XXE protection
         // In PHP 8.0+, external entity loading is disabled by default
@@ -290,20 +289,20 @@ XML;
 
         // Create XXE payload with PHP wrapper
         $xxePayload = <<<'XML'
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE xliff [
-  <!ENTITY xxe SYSTEM "php://filter/convert.base64-encode/resource=/etc/passwd">
-]>
-<xliff version="1.0">
-  <file source-language="en" datatype="plaintext" original="messages">
-    <body>
-      <trans-unit id="component|type|placeholder">
-        <source>&xxe;</source>
-      </trans-unit>
-    </body>
-  </file>
-</xliff>
-XML;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <!DOCTYPE xliff [
+              <!ENTITY xxe SYSTEM "php://filter/convert.base64-encode/resource=/etc/passwd">
+            ]>
+            <xliff version="1.0">
+              <file source-language="en" datatype="plaintext" original="messages">
+                <body>
+                  <trans-unit id="component|type|placeholder">
+                    <source>&xxe;</source>
+                  </trans-unit>
+                </body>
+              </file>
+            </xliff>
+            XML;
 
         // Enable XXE protection
         // In PHP 8.0+, external entity loading is disabled by default

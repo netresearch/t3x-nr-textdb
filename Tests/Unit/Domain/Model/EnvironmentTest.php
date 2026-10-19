@@ -27,7 +27,7 @@ use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 #[CoversClass(Environment::class)]
 final class EnvironmentTest extends UnitTestCase
 {
-    protected Environment $subject;
+    private Environment $subject;
 
     protected function setUp(): void
     {
