@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: Netresearch DTT GmbH -->
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" datatype="plaintext" original="messages" date="2024-01-01T00:00:00Z" product-name="nr_textdb" target-language="t3">
+    <header/>
+    <body>
+      <trans-unit id="mod_textdb">
+        <source>Text database</source>
+        <target>crwdns378954:0crwdne378954:0</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
