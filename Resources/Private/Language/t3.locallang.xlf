@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: Netresearch DTT GmbH -->
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" datatype="plaintext" original="messages" date="2019-09-11T10:31:41Z" product-name="nr_textdb" target-language="t3">
+    <header/>
+    <body>
+      <trans-unit id="tx_nrtextdb_domain_model_environment">
+        <source>Environment</source>
+        <target>crwdns378838:0crwdne378838:0</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_environment.name">
+        <source>Name</source>
+        <target>crwdns378840:0crwdne378840:0</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_component">
+        <source>Component</source>
+        <target>crwdns378842:0crwdne378842:0</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_component.name">
+        <source>Name</source>
+        <target>crwdns378844:0crwdne378844:0</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_type">
+        <source>Type</source>
+        <target>crwdns378846:0crwdne378846:0</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_type.name">
+        <source>Name</source>
+        <target>crwdns378848:0crwdne378848:0</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation">
+        <source>Translation</source>
+        <target>crwdns378850:0crwdne378850:0</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.value">
+        <source>Value</source>
+        <target>crwdns378852:0crwdne378852:0</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.environment">
+        <source>Environment</source>
+        <target>crwdns378854:0crwdne378854:0</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.component">
+        <source>Component</source>
+        <target>crwdns378856:0crwdne378856:0</target>
+      </trans-unit>
+      <trans-unit id="tx_nrtextdb_domain_model_translation.type">
+        <source>Type</source>
+        <target>crwdns378858:0crwdne378858:0</target>
+      </trans-unit>
+      <trans-unit id="no-entries">
+        <source>No entries found</source>
+        <target>crwdns378860:0crwdne378860:0</target>
+      </trans-unit>
+      <trans-unit id="no-translation">
+        <source>No translations available</source>
+        <target>crwdns378862:0crwdne378862:0</target>
+      </trans-unit>
+      <trans-unit id="translation">
+        <source>Translation</source>
+        <target>crwdns378864:0crwdne378864:0</target>
+      </trans-unit>
+      <trans-unit id="save">
+        <source>Save</source>
+        <target>crwdns378866:0crwdne378866:0</target>
+      </trans-unit>
+      <trans-unit id="component">
+        <source>Component</source>
+        <target>crwdns378868:0crwdne378868:0</target>
+      </trans-unit>
+      <trans-unit id="type">
+        <source>Type</source>
+        <target>crwdns378870:0crwdne378870:0</target>
+      </trans-unit>
+      <trans-unit id="environment">
+        <source>Environment</source>
+        <target>crwdns378872:0crwdne378872:0</target>
+      </trans-unit>
+      <trans-unit id="filter.reset.label">
+        <source>Reset</source>
+        <target>crwdns378874:0crwdne378874:0</target>
+      </trans-unit>
+      <trans-unit id="placeholder">
+        <source>Placeholder</source>
+        <target>crwdns378876:0crwdne378876:0</target>
+      </trans-unit>
+      <trans-unit id="value">
+        <source>Value</source>
+        <target>crwdns378878:0crwdne378878:0</target>
+      </trans-unit>
+      <trans-unit id="search">
+        <source>Search</source>
+        <target>crwdns378880:0crwdne378880:0</target>
+      </trans-unit>
+      <trans-unit id="import">
+        <source>Import</source>
+        <target>crwdns378882:0crwdne378882:0</target>
+      </trans-unit>
+      <trans-unit id="button.label.list">
+        <source>List</source>
+        <target>crwdns378884:0crwdne378884:0</target>
+      </trans-unit>
+      <trans-unit id="info.import.headline">
+        <source>Select file for import</source>
+        <target>crwdns378886:0crwdne378886:0</target>
+      </trans-unit>
+      <trans-unit id="info.import.message">
+        <source>Make sure that you always import the primary language (sys_language_uid = 0) first before adding any translations, as this is the only way to ensure that the links between the records are correct.</source>
+        <target>crwdns378888:0crwdne378888:0</target>
+      </trans-unit>
+      <trans-unit id="override.existing">
+        <source>Override existing</source>
+        <target>crwdns378890:0crwdne378890:0</target>
+      </trans-unit>
+      <trans-unit id="message.import">
+        <source>Import done for Language:</source>
+        <target>crwdns378892:0crwdne378892:0</target>
+      </trans-unit>
+      <trans-unit id="message.updated">
+        <source>Translations updated:</source>
+        <target>crwdns378894:0crwdne378894:0</target>
+      </trans-unit>
+      <trans-unit id="message.imported">
+        <source>Translations imported:</source>
+        <target>crwdns378896:0crwdne378896:0</target>
+      </trans-unit>
+      <trans-unit id="message.errors">
+        <source>The following errors occurs:</source>
+        <target>crwdns378898:0crwdne378898:0</target>
+      </trans-unit>
+      <trans-unit id="button.label.export">
+        <source>Export with current filter</source>
+        <target>crwdns378900:0crwdne378900:0</target>
+      </trans-unit>
+      <trans-unit id="message.error.filter">
+        <source>Please select at least one type or component to create an export.</source>
+        <target>crwdns378902:0crwdne378902:0</target>
+      </trans-unit>
+      <trans-unit id="message.error.archive">
+        <source>Archive cloud not be created.</source>
+        <target>crwdns378904:0crwdne378904:0</target>
+      </trans-unit>
+      <trans-unit id="message.error.import">
+        <source>File name does not match the expected pattern.</source>
+        <target>crwdns378906:0crwdne378906:0</target>
+      </trans-unit>
+      <trans-unit id="error.storage.pid">
+        <source>Please configure a valid storage page ID in the extension configuration.</source>
+        <target>crwdns378908:0crwdne378908:0</target>
+      </trans-unit>
+      <trans-unit id="error.access.denied">
+        <source>You lack the permissions this action needs: access to the TextDB tables, to the TextDB storage page and, to make changes, the live workspace.</source>
+        <target>crwdns415205:0crwdne415205:0</target>
+      </trans-unit>
+      <trans-unit id="error.import.language.denied">
+        <source>You may not edit the language "%s", so its entries were not imported.</source>
+        <target>crwdns415207:0%scrwdne415207:0</target>
+      </trans-unit>
+      <trans-unit id="error.storage.pid.title" translate="no">
+        <source>TextDb</source>
+        <target>crwdns378910:0crwdne378910:0</target>
+      </trans-unit>
+      <trans-unit id="error.directory.creation">
+        <source>Directory "%s" was not created</source>
+        <target>crwdns378912:0%scrwdne378912:0</target>
+      </trans-unit>
+      <trans-unit id="error.missing.component">
+        <source>Missing component name in key: %s</source>
+        <target>crwdns378914:0%scrwdne378914:0</target>
+      </trans-unit>
+      <trans-unit id="error.missing.type">
+        <source>Missing type name in key: %s</source>
+        <target>crwdns378916:0%scrwdne378916:0</target>
+      </trans-unit>
+      <trans-unit id="error.missing.placeholder">
+        <source>Missing placeholder in key: %s</source>
+        <target>crwdns378918:0%scrwdne378918:0</target>
+      </trans-unit>
+      <trans-unit id="language">
+        <source>Language</source>
+        <target>crwdns378920:0crwdne378920:0</target>
+      </trans-unit>
+      <trans-unit id="error.missing.value">
+        <source>Missing value in key: %s</source>
+        <target>crwdns378922:0%scrwdne378922:0</target>
+      </trans-unit>
+      <trans-unit id="message.translation.saved">
+        <source>The translation was saved.</source>
+        <target>crwdns412941:0crwdne412941:0</target>
+      </trans-unit>
+      <trans-unit id="message.translation.rejected">
+        <source>One or more of the submitted translations could not be saved. The record, the target language, or the submitted value was not valid.</source>
+        <target>crwdns413059:0crwdne413059:0</target>
+      </trans-unit>
+      <trans-unit id="message.translation.save.title" translate="no">
+        <source>TextDb</source>
+        <target>crwdns412943:0crwdne412943:0</target>
+      </trans-unit>
+      <trans-unit id="message.error.translation.save">
+        <source>The translation could not be saved: %s</source>
+        <target>crwdns412945:0%scrwdne412945:0</target>
+      </trans-unit>
+      <trans-unit id="message.error.translation.request">
+        <source>The submitted request could not be processed.</source>
+        <target>crwdns413061:0crwdne413061:0</target>
+      </trans-unit>
+      <trans-unit id="heading.import">
+        <source>Import translations</source>
+        <target>crwdns414713:0crwdne414713:0</target>
+      </trans-unit>
+      <trans-unit id="heading.translated">
+        <source>Translations</source>
+        <target>crwdns414715:0crwdne414715:0</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
