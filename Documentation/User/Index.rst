@@ -276,6 +276,9 @@ Import Failed
 * **File Naming**: Check file name follows convention
 * **Permissions**: Contact administrator if upload fails
 * **File Size**: Large files may timeout - split into smaller files
+* **Database Error**: The file was not imported at all, not even in part.
+  The message names the cause, a component name longer than 255 characters
+  for example. Correct the file and import it again
 
 Cannot Edit Translation
 -----------------------

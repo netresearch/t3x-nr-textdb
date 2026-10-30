@@ -13,6 +13,7 @@ namespace Netresearch\NrTextdb\Service;
 
 use function count;
 
+use Doctrine\DBAL\Exception as DBALException;
 use Exception;
 use Netresearch\NrTextdb\Domain\Model\Component;
 use Netresearch\NrTextdb\Domain\Model\Environment;
@@ -23,6 +24,8 @@ use Netresearch\NrTextdb\Domain\Repository\EnvironmentRepository;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
 use Netresearch\NrTextdb\Domain\Repository\TypeRepository;
 use RuntimeException;
+use Throwable;
+use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Localization\Parser\XliffParser;
 use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
@@ -37,6 +40,13 @@ use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
  */
 final readonly class ImportService
 {
+    /**
+     * Entries written before the persistence session is cleared. Without
+     * clearing, every record of a file stays in memory until the end of the
+     * import.
+     */
+    private const PERSIST_BATCH_SIZE = 1000;
+
     private PersistenceManagerInterface $persistenceManager;
 
     private XliffParser $xliffParser;
@@ -51,6 +61,8 @@ final readonly class ImportService
 
     private EnvironmentRepository $environmentRepository;
 
+    private ConnectionPool $connectionPool;
+
     /**
      * Constructor.
      */
@@ -62,6 +74,7 @@ final readonly class ImportService
         ComponentRepository $componentRepository,
         TypeRepository $typeRepository,
         EnvironmentRepository $environmentRepository,
+        ConnectionPool $connectionPool,
     ) {
         $this->persistenceManager    = $persistenceManager;
         $this->xliffParser           = $xliffParser;
@@ -70,6 +83,7 @@ final readonly class ImportService
         $this->componentRepository   = $componentRepository;
         $this->typeRepository        = $typeRepository;
         $this->environmentRepository = $environmentRepository;
+        $this->connectionPool        = $connectionPool;
     }
 
     /**
@@ -91,13 +105,58 @@ final readonly class ImportService
         $languageKey = $this->getLanguageKeyFromFile($file);
         $languageUid = $this->getLanguageId($languageKey);
         $fileContent = $this->xliffParser->getParsedData($file, $languageKey);
-        $entries     = $fileContent[$languageKey] ?? [];
+        $units       = $fileContent[$languageKey] ?? [];
 
-        if (!is_array($entries)) {
+        if (!is_array($units)) {
             return;
         }
 
-        foreach ($entries as $key => $data) {
+        $entries = [];
+
+        foreach ($units as $key => $data) {
+            $entries[$key] = is_array($data) && array_key_exists(0, $data) && is_array($data[0])
+                ? ($data[0]['target'] ?? null)
+                : null;
+        }
+
+        $this->importEntries($entries, $languageUid, $forceUpdate, $result);
+    }
+
+    /**
+     * Imports the units of a file, keyed "component|type|placeholder".
+     *
+     * Every key is checked before the first entry is written, so a file with
+     * an unusable key imports nothing instead of a part of it.
+     *
+     * The entries are written in one database transaction. Extbase writes
+     * each new record with an INSERT, an UPDATE for its relations and two
+     * reference index updates, and committing every statement on its own
+     * made a large file slow (issue #30). When a write fails, the transaction
+     * rolls back, the exception propagates and the file imports nothing, on
+     * every database: importEntry() passes a database error, and any
+     * exception raised while it writes the persistence session, on instead
+     * of recording it, because the rest of the file would otherwise be
+     * committed.
+     * The persistence session and the name caches of the repositories are
+     * cleared then, because they hold records whose rows were rolled back.
+     * The counts of the file reach $result only once the transaction has
+     * committed, so a rolled-back file adds nothing to them. The error
+     * messages importEntry() recorded before do reach $result, each once.
+     *
+     * @param array<array-key, mixed> $entries
+     * @param int<-1, max>            $languageUid
+     *
+     * @throws RuntimeException when a key lacks a component, type or placeholder, or a value is no string
+     */
+    public function importEntries(
+        array $entries,
+        int $languageUid,
+        bool $forceUpdate,
+        ImportResult $result,
+    ): void {
+        $parsedEntries = [];
+
+        foreach ($entries as $key => $value) {
             $key           = (string) $key;
             $componentName = $this->getComponentFromKey($key);
             if ($componentName === null) {
@@ -129,10 +188,6 @@ final readonly class ImportService
                 );
             }
 
-            $value = is_array($data) && array_key_exists(0, $data) && is_array($data[0])
-                ? ($data[0]['target'] ?? null)
-                : null;
-
             if (!is_string($value)) {
                 throw new RuntimeException(
                     sprintf(
@@ -142,28 +197,63 @@ final readonly class ImportService
                 );
             }
 
-            $this->importEntry(
-                $languageUid,
-                $componentName,
-                $typeName,
-                $placeholder,
-                $value,
-                $forceUpdate,
-                $result,
-            );
+            $parsedEntries[] = [$componentName, $typeName, $placeholder, $value];
         }
 
-        // Batch persist all entries at once instead of per-entry for performance
-        $this->persistenceManager->persistAll();
+        $fileResult = new ImportResult();
+
+        try {
+            $this->connectionPool
+                ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
+                ->transactional(function () use ($parsedEntries, $languageUid, $forceUpdate, $fileResult): void {
+                    foreach ($parsedEntries as $index => [$componentName, $typeName, $placeholder, $value]) {
+                        $this->importEntry(
+                            $languageUid,
+                            $componentName,
+                            $typeName,
+                            $placeholder,
+                            $value,
+                            $forceUpdate,
+                            $fileResult,
+                        );
+
+                        if ((($index + 1) % self::PERSIST_BATCH_SIZE) === 0) {
+                            $this->persistenceManager->persistAll();
+                            $this->persistenceManager->clearState();
+                        }
+                    }
+
+                    $this->persistenceManager->persistAll();
+                });
+        } catch (Throwable $throwable) {
+            foreach (array_unique($fileResult->getErrors()) as $error) {
+                $result->recordError($error);
+            }
+
+            $this->persistenceManager->clearState();
+            $this->environmentRepository->clearCache();
+            $this->componentRepository->clearCache();
+            $this->typeRepository->clearCache();
+
+            throw $throwable;
+        }
+
+        $result->add($fileResult);
     }
 
     /**
      * Imports a single entry into the database.
      *
-     * Imported / updated counts and any thrown error message accumulate on
-     * the provided {@see ImportResult}.
+     * Imported / updated counts accumulate on the provided {@see ImportResult},
+     * as does the message of an exception the entry fails with. An exception
+     * from the database, or one raised while the persistence session is
+     * written, is thrown on instead: a statement or a write that failed
+     * inside the transaction of importEntries() has to roll back the whole
+     * file.
      *
      * @param int<-1, max> $languageUid
+     *
+     * @throws Exception when a statement fails (a DBAL exception, or one that wraps it) or a write of the persistence session fails
      */
     public function importEntry(
         int $languageUid,
@@ -269,6 +359,10 @@ final readonly class ImportService
                 $result->recordImported();
             }
         } catch (Exception $exception) {
+            if ($this->isDatabaseError($exception) || $this->isWriteError($exception)) {
+                throw $exception;
+            }
+
             $result->recordError($exception->getMessage());
         } finally {
             // Reset createIfMissing to prevent leaking state on shared singleton repositories
@@ -276,6 +370,49 @@ final readonly class ImportService
             $this->componentRepository->setCreateIfMissing(false);
             $this->typeRepository->setCreateIfMissing(false);
         }
+    }
+
+    /**
+     * Whether an exception, or one it wraps, comes from the database. Extbase
+     * wraps a failed write of its own in a SqlErrorException around the DBAL
+     * exception; a statement run by anything else, an event listener for
+     * example, throws the DBAL exception itself.
+     */
+    private function isDatabaseError(Throwable $throwable): bool
+    {
+        for ($current = $throwable; $current instanceof Throwable; $current = $current->getPrevious()) {
+            if ($current instanceof DBALException) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Whether an exception was raised while the persistence session was
+     * written. The lookup of a component, type or environment that does not
+     * exist yet creates it and writes the session, and with it the records
+     * of earlier entries that are still pending. A failed write of any of
+     * them has to roll back the whole file, whatever the class of the
+     * exception, an exception of an event listener for example.
+     *
+     * The exception's trace names the calls it was raised in, so a call of
+     * persistAll() in it marks a write.
+     */
+    private function isWriteError(Throwable $throwable): bool
+    {
+        foreach ($throwable->getTrace() as $frame) {
+            if (
+                ($frame['function'] === 'persistAll')
+                && array_key_exists('class', $frame)
+                && is_a($frame['class'], PersistenceManagerInterface::class, true)
+            ) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

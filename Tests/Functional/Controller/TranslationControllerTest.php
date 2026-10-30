@@ -14,7 +14,9 @@ namespace Netresearch\NrTextdb\Tests\Functional\Controller;
 use DOMDocument;
 use DOMElement;
 use DOMXPath;
+use Exception;
 use Netresearch\NrTextdb\Controller\TranslationController;
+use Netresearch\NrTextdb\Domain\Model\Translation;
 use Netresearch\NrTextdb\Domain\Repository\ComponentRepository;
 use Netresearch\NrTextdb\Domain\Repository\EnvironmentRepository;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
@@ -40,6 +42,7 @@ use TYPO3\CMS\Core\Core\SystemEnvironmentBuilder;
 use TYPO3\CMS\Core\Crypto\HashService;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\EventDispatcher\ListenerProvider;
 use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Http\UploadedFile;
@@ -50,6 +53,7 @@ use TYPO3\CMS\Core\Type\Bitmask\Permission;
 use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Core\Bootstrap;
+use TYPO3\CMS\Extbase\Event\Persistence\EntityAddedToPersistenceEvent;
 use TYPO3\CMS\Extbase\Mvc\ExtbaseRequestParameters;
 use TYPO3\CMS\Extbase\Mvc\Request as ExtbaseRequest;
 use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
@@ -1851,6 +1855,40 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         self::assertSame(200, $response->getStatusCode());
         self::assertSame(0, $this->countImportedRows('greeting'));
         self::assertStringContainsString('so its entries were not imported', (string) $response->getBody());
+    }
+
+    #[Test]
+    public function importOfAFileWhoseWriteFailsShowsAnErrorAndImportsNothing(): void
+    {
+        // A database error is an Exception, not a RuntimeException, and used
+        // to reach the editor as the backend error page.
+        $this->getContainer()->set('nr_textdb.test.failing_write', new class {
+            public function __invoke(EntityAddedToPersistenceEvent $event): void
+            {
+                if ($event->getObject() instanceof Translation) {
+                    throw new Exception('Simulated write failure', 1793253601);
+                }
+            }
+        });
+        $this->get(ListenerProvider::class)
+            ->addListener(EntityAddedToPersistenceEvent::class, 'nr_textdb.test.failing_write');
+
+        $response = $this->dispatchImport('checkout|label|written_never', 'Hello');
+
+        self::assertSame(200, $response->getStatusCode());
+        self::assertStringContainsString('Simulated write failure', (string) $response->getBody());
+        self::assertSame(0, $this->countImportedRows('written_never'));
+    }
+
+    #[Test]
+    public function importOfAKeyWithoutATypeShowsAnErrorInsteadOfFailing(): void
+    {
+        // A key without type used to throw a RuntimeException out of the
+        // action, an HTTP 500 for the editor.
+        $response = $this->dispatchImport('checkout', 'Hello');
+
+        self::assertSame(200, $response->getStatusCode());
+        self::assertStringContainsString('Missing type name in key: checkout', (string) $response->getBody());
     }
 
     private function insertComponentAndTypeOnPageTwo(): void
