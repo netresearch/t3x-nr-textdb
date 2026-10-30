@@ -476,7 +476,7 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
         // "Login" is a real German entry whose value equals its key, and the
         // key is in no language file; the English entry must not replace it.
         $this->insertDefaultLanguageTranslation('Login', 'Sign in');
-        $this->insertTranslation(1, 'Login', 'Login');
+        $this->insertTranslation(1, 1, 1, 'Login', 'Login');
         $this->switchToGermanPage();
 
         $output = $this->renderFluidTemplate(
@@ -530,6 +530,68 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
     }
 
     // =========================================================================
+    // Scenario 7 – Hidden entries render like missing ones
+    // =========================================================================
+
+    #[Test]
+    public function hiddenGermanEntryRendersTheGermanLabelOfTheLanguageFile(): void
+    {
+        TranslateViewHelper::$component = 'lll-migration-component';
+
+        $this->insertTranslation(1, 1, 1, 'tx_nrtextdb_domain_model_environment', 'Hidden DE', hidden: true);
+        $this->switchToGermanPage();
+
+        $output = $this->renderFluidTemplate(self::ENVIRONMENT_LABEL_TEMPLATE);
+
+        self::assertSame('Umgebung', trim($output));
+
+        // createIfMissing is enabled in setUp(); the hidden entry is found, so
+        // no second German entry is created for the key.
+        self::assertSame(1, $this->countTranslationRowsInLanguage('tx_nrtextdb_domain_model_environment', 1));
+    }
+
+    #[Test]
+    public function hiddenGermanEntryOfAKeyInNoLanguageFileRendersTheEnglishEntry(): void
+    {
+        TranslateViewHelper::$component = 'lll-migration-component';
+
+        $this->insertDefaultLanguageTranslation('some-plain-placeholder', 'Plain English value');
+        $this->insertTranslation(1, 1, 1, 'some-plain-placeholder', 'Hidden DE', hidden: true);
+        $this->switchToGermanPage();
+
+        $output = $this->renderFluidTemplate(self::PLAIN_PLACEHOLDER_TEMPLATE);
+
+        self::assertSame('Plain English value', trim($output));
+    }
+
+    #[Test]
+    public function hiddenEntriesInTheCurrentAndTheFallbackLanguageRenderTheKey(): void
+    {
+        TranslateViewHelper::$component = 'lll-migration-component';
+
+        $this->insertTranslation(0, 1, 1, 'some-plain-placeholder', 'Hidden EN', hidden: true);
+        $this->insertTranslation(1, 1, 1, 'some-plain-placeholder', 'Hidden DE', hidden: true);
+        $this->switchToGermanPage();
+
+        $output = $this->renderFluidTemplate(self::PLAIN_PLACEHOLDER_TEMPLATE);
+
+        self::assertSame('some-plain-placeholder', trim($output));
+    }
+
+    #[Test]
+    public function hiddenDefaultLanguageEntryOnADefaultLanguagePageRendersTheLabelOfTheLanguageFile(): void
+    {
+        TranslateViewHelper::$component = 'lll-migration-component';
+
+        $this->insertTranslation(0, 1, 1, 'tx_nrtextdb_domain_model_environment', 'Hidden EN', hidden: true);
+
+        $output = $this->renderFluidTemplate(self::ENVIRONMENT_LABEL_TEMPLATE);
+
+        self::assertSame('Environment', trim($output));
+        self::assertSame(1, $this->countTranslationRowsInLanguage('tx_nrtextdb_domain_model_environment', 0));
+    }
+
+    // =========================================================================
     // Helpers
     // =========================================================================
 
@@ -566,29 +628,7 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
      */
     private function insertDefaultLanguageTranslation(string $placeholder, string $value): void
     {
-        $this->insertTranslation(0, $placeholder, $value);
-    }
-
-    /**
-     * Inserts a translation record in environment "default", component
-     * "lll-migration-component" and type "label".
-     */
-    private function insertTranslation(int $languageUid, string $placeholder, string $value): void
-    {
-        GeneralUtility::makeInstance(ConnectionPool::class)
-            ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
-            ->insert(
-                'tx_nrtextdb_domain_model_translation',
-                [
-                    'pid'              => 1,
-                    'sys_language_uid' => $languageUid,
-                    'environment'      => 1,
-                    'component'        => 1,
-                    'type'             => 1,
-                    'placeholder'      => $placeholder,
-                    'value'            => $value,
-                ],
-            );
+        $this->insertTranslation(0, 1, 1, $placeholder, $value);
     }
 
     /**
