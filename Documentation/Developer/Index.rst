@@ -580,7 +580,8 @@ importEntries()
 Imports loaded messages for one language in one database transaction. Every
 key is checked before the first write. A value that is empty or only
 whitespace is skipped. A key in ``$partiallyApprovedKeys`` is recorded only
-when its entry is imported; an entry without text is recorded as such. The
+when its entry is written, that is imported or updated; an entry without text
+is recorded as such, and an existing entry that is kept is not recorded. The
 counts and the skipped keys reach ``$result`` once
 the transaction has committed; after a rollback only the error messages do,
 and the exception is thrown on.
@@ -598,10 +599,11 @@ importEntry()
        string $value,
        bool $forceUpdate,
        ImportResult $result,
-   ): void
+   ): bool
 
-Imports a single translation entry. It records an error on ``$result``
-instead of throwing.
+Imports a single translation entry and returns whether it imported or updated
+it. It records an error on ``$result`` instead of throwing, and returns
+``false`` then.
 
 ImportResult
 ~~~~~~~~~~~~

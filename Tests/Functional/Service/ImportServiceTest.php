@@ -425,6 +425,44 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
         }
     }
 
+    /**
+     * @return array<string, array{bool, int, list<string>}>
+     */
+    public static function existingPartlyApprovedEntryProvider(): array
+    {
+        return [
+            'kept without forceUpdate' => [false, 0, []],
+            'updated with forceUpdate' => [true, 1, ['mycomponent|button|existing_key']],
+        ];
+    }
+
+    /**
+     * @param list<string> $expectedPartiallyApproved
+     */
+    #[Test]
+    #[DataProvider('existingPartlyApprovedEntryProvider')]
+    public function importEntriesReportsAPartlyApprovedEntryOnlyWhenItIsWritten(
+        bool $forceUpdate,
+        int $expectedUpdated,
+        array $expectedPartiallyApproved,
+    ): void {
+        // existing_key exists in the fixtures with "Existing Value".
+        $result = new ImportResult();
+
+        $this->importService->importEntries(
+            ['mycomponent|button|existing_key' => 'eins'],
+            0,
+            $forceUpdate,
+            $result,
+            [],
+            ['mycomponent|button|existing_key'],
+        );
+
+        self::assertSame([], $result->getErrors());
+        self::assertSame($expectedUpdated, $result->getUpdated());
+        self::assertSame($expectedPartiallyApproved, $result->getPartiallyApproved());
+    }
+
     // -------------------------------------------------------------------------
     // importEntry
     // -------------------------------------------------------------------------

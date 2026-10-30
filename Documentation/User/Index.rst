@@ -170,7 +170,8 @@ file TYPO3 reads, not only to the TextDB import.
 plural unit (a ``restype="x-gettext-plurals"`` group in XLIFF 1.2, a unit
 with several segments in XLIFF 2.0). When only some of its first two forms
 are approved, the unit is imported with the approved forms only, and the
-warning names it. When no form is approved, the unit counts as not approved.
+warning names it. When its record already exists and **Overwrite Existing** is
+not checked, the record is kept and the unit is not named. When no form is approved, the unit counts as not approved.
 When the approved forms have no text, the unit is reported as having no text.
 
 **No text.** A unit whose text is empty or only whitespace, for example an

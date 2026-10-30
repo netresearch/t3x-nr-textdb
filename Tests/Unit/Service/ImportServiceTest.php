@@ -378,6 +378,10 @@ final class ImportServiceTest extends UnitTestCase
         $connectionPool = self::createStub(ConnectionPool::class);
         $connectionPool->method('getConnectionForTable')->willReturn($connection);
 
+        // The plural entry is written as a new record.
+        $this->stubReferenceRecords(new Environment(), new Component(), new Type());
+        $this->translationService->method('createTranslation')->willReturn(new Translation());
+
         $result = new ImportResult();
 
         $this->createSubject($this->translationRepository, $connectionPool)
@@ -390,9 +394,35 @@ final class ImportServiceTest extends UnitTestCase
                 ['comp|type|plural'],
             );
 
+        self::assertSame(1, $result->getImported());
         self::assertSame(['comp|type|draft'], $result->getSkippedUnapproved());
         self::assertSame(['comp|type|plural'], $result->getPartiallyApproved());
         self::assertSame(['comp|type|empty', 'comp|type|blank'], $result->getSkippedEmpty());
+    }
+
+    #[Test]
+    public function importEntriesDoesNotReportAPartlyApprovedEntryWhoseWriteFails(): void
+    {
+        $connection = self::createStub(Connection::class);
+        $connection->method('transactional')
+            ->willReturnCallback(static fn (Closure $work): mixed => $work());
+
+        $connectionPool = self::createStub(ConnectionPool::class);
+        $connectionPool->method('getConnectionForTable')->willReturn($connection);
+
+        // importEntry() catches the error and records it; nothing is written.
+        $this->environmentRepository->method('setCreateIfMissing')->willReturnSelf();
+        $this->environmentRepository->method('findByName')
+            ->willThrowException(new RuntimeException('Environment lookup failed'));
+
+        $result = new ImportResult();
+
+        $this->createSubject($this->translationRepository, $connectionPool)
+            ->importEntries(['comp|type|plural' => 'eins'], 0, false, $result, [], ['comp|type|plural']);
+
+        self::assertSame(['Environment lookup failed'], $result->getErrors());
+        self::assertSame(0, $result->getImported());
+        self::assertSame([], $result->getPartiallyApproved());
     }
 
     #[Test]
@@ -408,6 +438,10 @@ final class ImportServiceTest extends UnitTestCase
 
         $connectionPool = self::createStub(ConnectionPool::class);
         $connectionPool->method('getConnectionForTable')->willReturn($connection);
+
+        // The plural entry is written before the commit fails.
+        $this->stubReferenceRecords(new Environment(), new Component(), new Type());
+        $this->translationService->method('createTranslation')->willReturn(new Translation());
 
         $result = new ImportResult();
 

@@ -243,8 +243,8 @@ final readonly class ImportService
             $fileResult->recordSkippedUnapproved($this->withoutUnusedSuffix($unapprovedKey));
         }
 
-        // Reported only for an entry that is imported; one without text is
-        // reported as such.
+        // Reported only for an entry that is written; one without text is
+        // reported as such, one that already exists and is kept is not.
         $partiallyApproved = array_fill_keys(
             array_map($this->withoutUnusedSuffix(...), $partiallyApprovedKeys),
             true,
@@ -300,19 +300,15 @@ final readonly class ImportService
                 continue;
             }
 
-            if (array_key_exists($key, $partiallyApproved)) {
-                $fileResult->recordPartiallyApproved($key);
-            }
-
-            $parsedEntries[] = [$componentName, $typeName, $placeholder, $value];
+            $parsedEntries[] = [$key, $componentName, $typeName, $placeholder, $value];
         }
 
         try {
             $this->connectionPool
                 ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
-                ->transactional(function () use ($parsedEntries, $languageUid, $forceUpdate, $fileResult): void {
-                    foreach ($parsedEntries as $index => [$componentName, $typeName, $placeholder, $value]) {
-                        $this->importEntry(
+                ->transactional(function () use ($parsedEntries, $languageUid, $forceUpdate, $fileResult, $partiallyApproved): void {
+                    foreach ($parsedEntries as $index => [$key, $componentName, $typeName, $placeholder, $value]) {
+                        $written = $this->importEntry(
                             $languageUid,
                             $componentName,
                             $typeName,
@@ -321,6 +317,10 @@ final readonly class ImportService
                             $forceUpdate,
                             $fileResult,
                         );
+
+                        if ($written && array_key_exists($key, $partiallyApproved)) {
+                            $fileResult->recordPartiallyApproved($key);
+                        }
 
                         if ((($index + 1) % self::PERSIST_BATCH_SIZE) === 0) {
                             $this->persistenceManager->persistAll();
@@ -353,6 +353,8 @@ final readonly class ImportService
      * the provided {@see ImportResult}.
      *
      * @param int<-1, max> $languageUid
+     *
+     * @return bool TRUE when the entry was imported or updated, FALSE when it was skipped or failed
      */
     public function importEntry(
         int $languageUid,
@@ -362,10 +364,10 @@ final readonly class ImportService
         string $value,
         bool $forceUpdate,
         ImportResult $result,
-    ): void {
+    ): bool {
         try {
             if ($componentName === null || $typeName === null) {
-                return;
+                return false;
             }
 
             $environment = $this->environmentRepository
@@ -385,7 +387,7 @@ final readonly class ImportService
                 || (!$component instanceof Component)
                 || (!$type instanceof Type)
             ) {
-                return;
+                return false;
             }
 
             // Find existing translation record
@@ -410,7 +412,7 @@ final readonly class ImportService
                 ($translation instanceof Translation)
                 && ($forceUpdate === false)
             ) {
-                return;
+                return false;
             }
 
             // TODO Add option to overwrite auto created records
@@ -457,8 +459,12 @@ final readonly class ImportService
 
                 $result->recordImported();
             }
+
+            return true;
         } catch (Exception $exception) {
             $result->recordError($exception->getMessage());
+
+            return false;
         } finally {
             // Reset createIfMissing to prevent leaking state on shared singleton repositories
             $this->environmentRepository->setCreateIfMissing(false);
