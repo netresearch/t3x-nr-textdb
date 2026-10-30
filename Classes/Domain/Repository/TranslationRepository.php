@@ -48,13 +48,14 @@ class TranslationRepository extends AbstractRepository
     }
 
     /**
-     * @param int[] $originals
+     * @param int[]    $originals
+     * @param int|null $pageId    Only records on this page; null for records on any page
      *
      * @return QueryResultInterface<int, Translation>
      *
      * @throws InvalidQueryException
      */
-    public function findByTranslationsAndLanguage(array $originals, int $languageUid): QueryResultInterface
+    public function findByTranslationsAndLanguage(array $originals, int $languageUid, ?int $pageId = null): QueryResultInterface
     {
         $query = $this->createQuery();
         $query
@@ -63,12 +64,16 @@ class TranslationRepository extends AbstractRepository
             ->setRespectStoragePage(false)
             ->setRespectSysLanguage(false);
 
-        $query->matching(
-            $query->logicalAnd(
-                $query->equals('sys_language_uid', $languageUid),
-                $query->in('l10nParent', $originals),
-            ),
-        );
+        $constraints = [
+            $query->equals('sys_language_uid', $languageUid),
+            $query->in('l10nParent', $originals),
+        ];
+
+        if ($pageId !== null) {
+            $constraints[] = $query->equals('pid', $pageId);
+        }
+
+        $query->matching($query->logicalAnd(...$constraints));
 
         return $query->execute();
     }
@@ -131,6 +136,7 @@ class TranslationRepository extends AbstractRepository
      * @param string|null $placeholder Placeholder to search for
      * @param string|null $value       Value to search for
      * @param int         $languageId  Language ID
+     * @param int|null    $pageId      Only records on this page; null for records on any page
      *
      * @return QueryResultInterface<int, Translation>
      *
@@ -142,6 +148,7 @@ class TranslationRepository extends AbstractRepository
         ?string $placeholder = null,
         ?string $value = null,
         int $languageId = 0,
+        ?int $pageId = null,
     ): QueryResultInterface {
         $query = $this->createQuery();
         $query
@@ -176,6 +183,10 @@ class TranslationRepository extends AbstractRepository
             $query->getQuerySettings()->setRespectSysLanguage(false);
 
             $constraints[] = $query->equals('sys_language_uid', $languageId);
+        }
+
+        if ($pageId !== null) {
+            $constraints[] = $query->equals('pid', $pageId);
         }
 
         if ($constraints !== []) {
