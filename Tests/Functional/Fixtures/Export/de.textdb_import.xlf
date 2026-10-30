@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0">
+    <file source-language="en" target-language="de" datatype="plaintext" original="messages" product-name="nr_textdb_export">
+        <header>
+            <authorName>Netresearch</authorName>
+            <authorEmail>info@netresearch.de</authorEmail>
+        </header>
+        <body>
+        <trans-unit id="export|button|alpha" xml:space="preserve">
+            <target><![CDATA[Alpha DE]]></target>
+        </trans-unit>
+        <trans-unit id="export|label|beta" xml:space="preserve">
+            <target><![CDATA[Endet mit ]]]]><![CDATA[> Marke]]></target>
+        </trans-unit>
+        <trans-unit id="export|button|epsilon" xml:space="preserve">
+            <target><![CDATA[Zeile eins
+Zeile  zwei]]></target>
+        </trans-unit>
+        <trans-unit id="export|label|iota" xml:space="preserve">
+            <target><![CDATA[Iota DE]]></target>
+        </trans-unit>
+
+        </body>
+    </file>
+</xliff>

@@ -195,25 +195,25 @@ Problem: Import Fails Silently
 
       xmllint --noout yourfile.xlf
 
-Problem: Memory Exhaustion on Export
--------------------------------------
+Problem: Export Exceeds the Time Limit
+--------------------------------------
 
 **Symptoms:**
-  * Export fails with memory limit error
-  * Large datasets cause timeout
+  * The export of a large data set ends with a timeout
+
+**Cause:**
+  The export reads the entries in batches of 1,000. Measured on SQLite
+  with 10,000 entries in the default language and one translation of
+  each: 6 seconds, 12 MB of memory beyond the request.
+
+  Version 3.0.5 and earlier read all entries at once, so their memory use
+  grows with the data set.
 
 **Solution:**
-
-1. Increase PHP memory limit temporarily:
-
-   .. code-block:: ini
-
-      ; php.ini
-      memory_limit = 512M
-
-2. Export smaller subsets using filters
-
-3. Use filters to reduce the export dataset to manageable sizes
+  * Raise ``max_execution_time`` for backend requests. TYPO3 recommends
+    240 seconds.
+  * Narrow the export with the filters of the module, for example to one
+    component and type.
 
 .. _reporting-bugs:
 
