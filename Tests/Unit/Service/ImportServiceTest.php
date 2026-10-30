@@ -382,7 +382,7 @@ final class ImportServiceTest extends UnitTestCase
 
         $this->createSubject($this->translationRepository, $connectionPool)
             ->importEntries(
-                ['comp|type|empty' => '', 'comp|type|blank' => "  \n "],
+                ['comp|type|empty' => '', 'comp|type|blank' => "  \n ", 'comp|type|plural' => 'eins'],
                 0,
                 false,
                 $result,
@@ -413,7 +413,14 @@ final class ImportServiceTest extends UnitTestCase
 
         try {
             $this->createSubject($this->translationRepository, $connectionPool)
-                ->importEntries(['comp|type|empty' => ''], 0, false, $result, ['comp|type|draft'], ['comp|type|plural']);
+                ->importEntries(
+                    ['comp|type|empty' => '', 'comp|type|plural' => 'eins'],
+                    0,
+                    false,
+                    $result,
+                    ['comp|type|draft'],
+                    ['comp|type|plural'],
+                );
             self::fail('The failed commit did not reach the caller.');
         } catch (RuntimeException $exception) {
             self::assertSame(1793253603, $exception->getCode());
@@ -469,6 +476,49 @@ final class ImportServiceTest extends UnitTestCase
         self::assertSame(['c|t|old'], $result->getSkippedUnapproved());
         self::assertSame(['c|t|p'], $result->getPartiallyApproved());
         self::assertSame(['c|t|empty'], $result->getSkippedEmpty());
+    }
+
+    #[Test]
+    public function aPluralUnitWithoutTextIsReportedOnlyAsWithoutText(): void
+    {
+        $GLOBALS['TYPO3_CONF_VARS']['LANG']['requireApprovedLocalizations'] = true;
+
+        $connection = self::createStub(Connection::class);
+        $connection->method('transactional')
+            ->willReturnCallback(static fn (Closure $work): mixed => $work());
+
+        $connectionPool = self::createStub(ConnectionPool::class);
+        $connectionPool->method('getConnectionForTable')->willReturn($connection);
+
+        $subject = $this->createSubject($this->translationRepository, $connectionPool);
+
+        // The approved form has an empty <target>, the other is not
+        // approved: the loader keeps the empty form only.
+        $loadedFile = $subject->loadFile(
+            '<?xml version="1.0" encoding="UTF-8"?>'
+            . '<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">'
+            . '<file source-language="en" target-language="de" datatype="plaintext" original="messages"><body>'
+            . '<group id="c|t|p" restype="x-gettext-plurals">'
+            . '<trans-unit id="c|t|p[0]"><source>one</source><target></target></trans-unit>'
+            . '<trans-unit id="c|t|p[1]" approved="no"><source>many</source><target>viele</target></trans-unit>'
+            . '</group>'
+            . '</body></file></xliff>',
+            'de',
+        );
+
+        $result = new ImportResult();
+        $subject->importEntries(
+            $loadedFile->entries,
+            0,
+            false,
+            $result,
+            $loadedFile->unapprovedKeys,
+            $loadedFile->partiallyApprovedKeys,
+        );
+
+        self::assertSame(['c|t|p'], $loadedFile->partiallyApprovedKeys);
+        self::assertSame(['c|t|p'], $result->getSkippedEmpty());
+        self::assertSame([], $result->getPartiallyApproved());
     }
 
     /**
@@ -532,6 +582,20 @@ final class ImportServiceTest extends UnitTestCase
                 ['c|t|p'],
                 [],
                 ['c|t|p'],
+            ],
+            // The loader keeps the first two forms of a plural unit only, in
+            // both reads, so an unapproved third form is not reported.
+            'XLIFF 1.2, only the third form not approved' => [
+                $xliff12(
+                    '<group id="c|t|p" restype="x-gettext-plurals">'
+                    . '<trans-unit id="c|t|p[0]"><source>one</source><target>eins</target></trans-unit>'
+                    . '<trans-unit id="c|t|p[1]"><source>few</source><target>einige</target></trans-unit>'
+                    . '<trans-unit id="c|t|p[2]" approved="no"><source>many</source><target>viele</target></trans-unit>'
+                    . '</group>',
+                ),
+                ['c|t|p'],
+                [],
+                [],
             ],
             // The loader drops a segment without <target> in both reads, so
             // the two values agree and the missing form is not reported.

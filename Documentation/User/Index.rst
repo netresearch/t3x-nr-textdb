@@ -168,21 +168,27 @@ file TYPO3 reads, not only to the TextDB import.
 
 **Plural forms not approved.** The same setting applies to each form of a
 plural unit (a ``restype="x-gettext-plurals"`` group in XLIFF 1.2, a unit
-with several segments in XLIFF 2.0). When only some forms are approved, the
-unit is imported with the approved forms only, and the warning names it.
-When no form is approved, the unit counts as not approved.
+with several segments in XLIFF 2.0). When only some of its first two forms
+are approved, the unit is imported with the approved forms only, and the
+warning names it. When no form is approved, the unit counts as not approved.
+When the approved forms have no text, the unit is reported as having no text.
 
 **No text.** A unit whose text is empty or only whitespace, for example an
 untranslated unit without ``<target>`` in an XLIFF 1.2 translation file.
 Importing it would overwrite the stored value with nothing.
 
-Two cases are not reported, because TYPO3 drops the text while reading the
-file and the import never sees it:
+Three cases are not reported, because TYPO3 drops the text while reading
+the file and the import never sees it:
 
 * A unit of an XLIFF 2.0 translation file without ``<target>``. It is not
   imported.
 * A segment without ``<target>`` in a plural unit of an XLIFF 2.0
   translation file. The unit is imported without that form.
+* The third and every later form of a plural unit, as languages such as
+  Russian or Polish have. TYPO3 keeps the first two forms only, whether the
+  later ones are approved or not, so these forms are never imported, and a
+  plural unit whose only unapproved form is the third or a later one is not
+  reported.
 
 A unit of a default-language file (no ``target-language`` or ``trgLang``) is
 never skipped for approval.

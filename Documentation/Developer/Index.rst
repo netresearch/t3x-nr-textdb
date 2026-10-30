@@ -554,7 +554,8 @@ Reads an XLIFF file with TYPO3's ``XliffLoader`` and returns a
 * ``entries``: the messages, keyed ``component|type|placeholder``
 * ``unapprovedKeys``: keys of the units left out because they are not approved
 * ``partiallyApprovedKeys``: keys of the plural units kept without their forms
-  that are not approved
+  that are not approved. TYPO3 keeps the first two forms of a plural unit
+  only, so an unapproved third or later form does not show here.
 
 While ``$GLOBALS['TYPO3_CONF_VARS']['LANG']['requireApprovedLocalizations']``
 is enabled, the file is read a second time with the setting disabled to find
@@ -578,7 +579,9 @@ importEntries()
 
 Imports loaded messages for one language in one database transaction. Every
 key is checked before the first write. A value that is empty or only
-whitespace is skipped. The counts and the skipped keys reach ``$result`` once
+whitespace is skipped. A key in ``$partiallyApprovedKeys`` is recorded only
+when its entry is imported; an entry without text is recorded as such. The
+counts and the skipped keys reach ``$result`` once
 the transaction has committed; after a rollback only the error messages do,
 and the exception is thrown on.
 

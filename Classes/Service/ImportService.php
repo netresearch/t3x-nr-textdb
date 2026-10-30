@@ -243,9 +243,12 @@ final readonly class ImportService
             $fileResult->recordSkippedUnapproved($this->withoutUnusedSuffix($unapprovedKey));
         }
 
-        foreach ($partiallyApprovedKeys as $partiallyApprovedKey) {
-            $fileResult->recordPartiallyApproved($this->withoutUnusedSuffix($partiallyApprovedKey));
-        }
+        // Reported only for an entry that is imported; one without text is
+        // reported as such.
+        $partiallyApproved = array_fill_keys(
+            array_map($this->withoutUnusedSuffix(...), $partiallyApprovedKeys),
+            true,
+        );
 
         foreach ($entries as $key => $value) {
             $key = $this->withoutUnusedSuffix((string) $key);
@@ -295,6 +298,10 @@ final readonly class ImportService
                 $fileResult->recordSkippedEmpty($key);
 
                 continue;
+            }
+
+            if (array_key_exists($key, $partiallyApproved)) {
+                $fileResult->recordPartiallyApproved($key);
             }
 
             $parsedEntries[] = [$componentName, $typeName, $placeholder, $value];
