@@ -18,6 +18,7 @@ use Netresearch\NrTextdb\Service\ImportService;
 use Netresearch\NrTextdb\Tests\Functional\AbstractFunctionalTestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
+use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
 
 /**
  * Functional tests for ImportService.
@@ -274,6 +275,37 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
         self::assertSame([], $result->getErrors());
         self::assertSame(0, $result->getImported());
         self::assertSame(1, $result->getUpdated());
+    }
+
+    /**
+     * The lookup used to load a translation with language overlays. A hidden
+     * translation came back as its default-language parent, and the import
+     * wrote the translated text and an l10n_parent into the parent.
+     */
+    #[Test]
+    public function importEntryUpdatesAHiddenTranslationAndLeavesItsParent(): void
+    {
+        $translation = $this->insertTranslation(1, 1, 1, 'existing_key', 'Bestehender Wert', hidden: true, l10nParent: 1);
+
+        $result = new ImportResult();
+
+        $this->importService->importEntry(
+            1,
+            'mycomponent',
+            'button',
+            'existing_key',
+            'Neuer Wert',
+            true,
+            $result,
+        );
+
+        $this->get(PersistenceManagerInterface::class)->persistAll();
+
+        self::assertSame([], $result->getErrors());
+        self::assertSame('Existing Value', $this->fetchTranslationColumn(1));
+        self::assertSame('0', $this->fetchTranslationColumn(1, 'l10n_parent'));
+        self::assertSame('Neuer Wert', $this->fetchTranslationColumn($translation));
+        self::assertSame(1, $this->countTranslationRowsInLanguage('existing_key', 1));
     }
 
     #[Test]

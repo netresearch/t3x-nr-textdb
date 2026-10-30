@@ -16,6 +16,7 @@ use Netresearch\NrTextdb\Tests\Functional\AbstractFunctionalTestCase;
 use Netresearch\NrTextdb\ViewHelpers\TextdbViewHelper;
 use Override;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\LanguageAspect;
@@ -286,6 +287,80 @@ final class TextdbViewHelperTest extends AbstractFunctionalTestCase
         );
 
         self::assertSame('auto-created-entry', trim($output));
+    }
+
+    // =========================================================================
+    // Scenario 6 – Hidden entries render like missing ones
+    // =========================================================================
+
+    /**
+     * A hidden entry with a parent is the usual case: the module creates
+     * translations with l10n_parent set. Loaded with language overlays, it
+     * came back as its visible parent and rendered the parent's text.
+     */
+    #[Test]
+    #[DataProvider('hiddenEntryParentProvider')]
+    public function hiddenEntryInTheCurrentLanguageRendersTheKey(int $l10nParent): void
+    {
+        $this->insertTranslation(1, 1, 1, 'submit-button', 'Hidden DE', hidden: true, l10nParent: $l10nParent);
+
+        $this->setLanguageAspect(1);
+
+        $output = $this->renderFluidTemplate(
+            '{nrtextdb:textdb(placeholder: \'submit-button\', component: \'test-component\', environment: \'default\')}',
+        );
+
+        self::assertSame('submit-button', trim($output));
+    }
+
+    #[Test]
+    public function hiddenDefaultLanguageEntryOnADefaultLanguagePageRendersTheKeyWithoutADuplicate(): void
+    {
+        $this->get(TranslationRepository::class)->setCreateIfMissing(true);
+        $this->insertTranslation(0, 1, 1, 'hidden-key', 'Hidden EN', hidden: true);
+
+        $this->setLanguageAspect(0);
+
+        $template = "{nrtextdb:textdb(placeholder: 'hidden-key', component: 'test-component', environment: 'default')}";
+
+        // The second render in the same request is answered from the cache
+        // of the service, which must not hold the hidden value either.
+        self::assertSame('hidden-key', trim($this->renderFluidTemplate($template)));
+        self::assertSame('hidden-key', trim($this->renderFluidTemplate($template)));
+
+        // The lookup still finds the hidden entry, so createIfMissing does not
+        // add a second one for the same key.
+        self::assertSame(1, $this->countTranslationRowsInLanguage('hidden-key', 0));
+    }
+
+    #[Test]
+    #[DataProvider('hiddenEntryParentProvider')]
+    public function hiddenCurrentLanguageEntryIsNotDuplicatedByCreateIfMissing(int $l10nParent): void
+    {
+        $this->get(TranslationRepository::class)->setCreateIfMissing(true);
+        $this->insertTranslation(1, 1, 1, 'submit-button', 'Hidden DE', hidden: true, l10nParent: $l10nParent);
+
+        $this->setLanguageAspect(1);
+
+        $output = $this->renderFluidTemplate(
+            '{nrtextdb:textdb(placeholder: \'submit-button\', component: \'test-component\', environment: \'default\')}',
+        );
+
+        self::assertSame('submit-button', trim($output));
+        self::assertSame(1, $this->countTranslationRowsInLanguage('submit-button', 1));
+    }
+
+    /**
+     * Fixture uid 2 is the default-language "submit-button" entry.
+     *
+     * @return array<string, array{int}>
+     */
+    public static function hiddenEntryParentProvider(): array
+    {
+        return [
+            'without a parent'           => [0],
+            'with the default as parent' => [2],
+        ];
     }
 
     // =========================================================================

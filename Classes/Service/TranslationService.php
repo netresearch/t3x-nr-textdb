@@ -179,7 +179,10 @@ class TranslationService
             $this->persistenceManager->persistAll();
         }
 
-        if (!$translation instanceof Translation) {
+        // A hidden entry renders like a missing one. The lookup above still
+        // finds it, so createIfMissing does not create a second entry for the
+        // same key; it is only not rendered.
+        if (!($translation instanceof Translation) || $translation->isHidden()) {
             $this->translationCache[$cacheKey] = $placeholder;
 
             return $placeholder;

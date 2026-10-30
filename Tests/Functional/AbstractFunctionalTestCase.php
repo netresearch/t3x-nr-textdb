@@ -12,6 +12,9 @@ declare(strict_types=1);
 namespace Netresearch\NrTextdb\Tests\Functional;
 
 use Override;
+use TYPO3\CMS\Core\Database\Connection;
+use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 
 /**
@@ -103,6 +106,90 @@ abstract class AbstractFunctionalTestCase extends FunctionalTestCase
             'textDbPid'       => $textDbPid,
             'createIfMissing' => $createIfMissing,
         ];
+    }
+
+    /**
+     * Inserts a translation record on the storage page 1 in environment
+     * "default" (uid 1) and returns its uid.
+     *
+     * @param int<-1, max> $languageUid
+     */
+    protected function insertTranslation(
+        int $languageUid,
+        int $component,
+        int $type,
+        string $placeholder,
+        string $value,
+        bool $hidden = false,
+        int $l10nParent = 0,
+    ): int {
+        $connection = $this->get(ConnectionPool::class)
+            ->getConnectionForTable('tx_nrtextdb_domain_model_translation');
+
+        $connection->insert(
+            'tx_nrtextdb_domain_model_translation',
+            [
+                'pid'              => 1,
+                'sys_language_uid' => $languageUid,
+                'l10n_parent'      => $l10nParent,
+                'environment'      => 1,
+                'component'        => $component,
+                'type'             => $type,
+                'placeholder'      => $placeholder,
+                'value'            => $value,
+                'hidden'           => (int) $hidden,
+            ],
+        );
+
+        return (int) $connection->lastInsertId();
+    }
+
+    /**
+     * Counts the translation rows of one language for the given placeholder,
+     * hidden rows included; deleted rows are not counted.
+     */
+    protected function countTranslationRowsInLanguage(string $placeholder, int $languageUid): int
+    {
+        $queryBuilder = $this->get(ConnectionPool::class)
+            ->getQueryBuilderForTable('tx_nrtextdb_domain_model_translation');
+        $queryBuilder
+            ->getRestrictions()
+            ->removeAll()
+            ->add(new DeletedRestriction());
+
+        return (int) $queryBuilder
+            ->count('uid')
+            ->from('tx_nrtextdb_domain_model_translation')
+            ->where(
+                $queryBuilder->expr()->eq('placeholder', $queryBuilder->createNamedParameter($placeholder)),
+                $queryBuilder->expr()->eq('sys_language_uid', $queryBuilder->createNamedParameter($languageUid, Connection::PARAM_INT)),
+            )
+            ->executeQuery()
+            ->fetchOne();
+    }
+
+    /**
+     * Returns a column of a translation row, hidden rows included.
+     */
+    protected function fetchTranslationColumn(int $uid, string $column = 'value'): string
+    {
+        $queryBuilder = $this->get(ConnectionPool::class)
+            ->getQueryBuilderForTable('tx_nrtextdb_domain_model_translation');
+        $queryBuilder
+            ->getRestrictions()
+            ->removeAll()
+            ->add(new DeletedRestriction());
+
+        $value = $queryBuilder
+            ->select($column)
+            ->from('tx_nrtextdb_domain_model_translation')
+            ->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($uid, Connection::PARAM_INT)))
+            ->executeQuery()
+            ->fetchOne();
+
+        self::assertNotFalse($value, 'Translation record ' . $uid . ' is gone.');
+
+        return (string) $value;
     }
 
     /**

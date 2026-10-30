@@ -239,6 +239,14 @@ class TranslationRepository extends AbstractRepository
 
     /**
      * Finds a translation record by given environment, component, type, placeholder and language UID.
+     *
+     * Hidden translations are returned too; callers that render a value check
+     * Translation::isHidden() themselves.
+     *
+     * The record is loaded without language overlays. With overlays, Extbase
+     * on TYPO3 13.4 replaces a localized row by its default-language parent
+     * and looks the translation up again; that lookup skips hidden rows, so a
+     * hidden translation came back as its visible parent.
      */
     public function findByEnvironmentComponentTypePlaceholderAndLanguage(
         Environment $environment,
@@ -253,7 +261,8 @@ class TranslationRepository extends AbstractRepository
             ->setIgnoreEnableFields(true)
             ->setRespectStoragePage(true)
             ->setStoragePageIds([$this->getConfiguredPageId()])
-            ->setRespectSysLanguage(false);
+            ->setRespectSysLanguage(false)
+            ->setLanguageAspect(new LanguageAspect($languageUid, $languageUid, LanguageAspect::OVERLAYS_OFF));
 
         return $query
             ->matching(
