@@ -1069,8 +1069,9 @@ final class TranslationControllerTest extends FunctionalTestCase
      * Called from setUp() for every test: translateRecordAction() now checks
      * new[] language ids against the site's configured languages (issue
      * #129), and the export actions iterate the languages of the storage
-     * page's site (root page 1) and produce no file at all without one. typo3/testing-framework 9 has
-     * no helper for this any more, and a SiteFinder mock via
+     * page's site (root page 1) and produce no file at all without one.
+     * typo3/testing-framework 9 has no helper for this any more, and a
+     * SiteFinder mock via
      * GeneralUtility::addInstance() does not work here either, because the
      * controller is built by the container. The configuration is therefore
      * written to the test instance, where tearDown() removes it again
