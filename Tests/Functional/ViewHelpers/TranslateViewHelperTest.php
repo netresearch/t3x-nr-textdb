@@ -23,7 +23,15 @@ use Override;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use RuntimeException;
+use TYPO3\CMS\Core\Context\Context;
+use TYPO3\CMS\Core\Context\LanguageAspect;
+use TYPO3\CMS\Core\Core\SystemEnvironmentBuilder;
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Http\ServerRequest;
+use TYPO3\CMS\Core\Http\Uri;
+use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
+use TYPO3\CMS\Core\TypoScript\AST\Node\RootNode;
+use TYPO3\CMS\Core\TypoScript\FrontendTypoScript;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
@@ -81,6 +89,7 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
         // Guarantee cleanup of the static component property even if an
         // assertion fails inside a test.
         TranslateViewHelper::$component = '';
+        unset($GLOBALS['TYPO3_REQUEST']);
 
         parent::tearDown();
     }
@@ -398,8 +407,114 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
     }
 
     // =========================================================================
+    // Scenario 6 – Language fallback
+    // =========================================================================
+
+    #[Test]
+    public function germanLabelFromTheLanguageFileWinsOverTheEnglishTextDbEntry(): void
+    {
+        TranslateViewHelper::$component = 'lll-migration-component';
+
+        // English (default language) TextDB entry; no German entry. The
+        // German language file of nr_textdb translates the key as "Umgebung".
+        $this->insertDefaultLanguageTranslation('tx_nrtextdb_domain_model_environment', 'Environment from TextDB');
+        $this->switchToGermanPage();
+
+        $output = $this->renderFluidTemplate(
+            "{nrtextdb:translate(key: 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:tx_nrtextdb_domain_model_environment', environment: 'default')}",
+        );
+
+        self::assertSame('Umgebung', trim($output));
+    }
+
+    #[Test]
+    public function englishTextDbEntryIsRenderedWhenNeitherGermanEntryNorLabelExists(): void
+    {
+        TranslateViewHelper::$component = 'lll-migration-component';
+
+        // The key is in no language file, and only the default language has
+        // a TextDB entry.
+        $this->insertDefaultLanguageTranslation('some-plain-placeholder', 'Plain English value');
+        $this->switchToGermanPage();
+
+        $output = $this->renderFluidTemplate(
+            "{nrtextdb:translate(key: 'some-plain-placeholder', environment: 'default')}",
+        );
+
+        self::assertSame('Plain English value', trim($output));
+    }
+
+    #[Test]
+    public function bothViewHelpersKeepTheirOwnResultForTheSameKeyInOneRequest(): void
+    {
+        TranslateViewHelper::$component = 'lll-migration-component';
+
+        $this->insertDefaultLanguageTranslation('tx_nrtextdb_domain_model_environment', 'Environment from TextDB');
+        $this->switchToGermanPage();
+
+        $textdbTemplate    = "{nrtextdb:textdb(placeholder: 'tx_nrtextdb_domain_model_environment', type: 'label', component: 'lll-migration-component', environment: 'default')}";
+        $translateTemplate = "{nrtextdb:translate(key: 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:tx_nrtextdb_domain_model_environment', environment: 'default')}";
+
+        // textdb:textdb has no language-file step and falls back to the
+        // English entry; textdb:translate shows the German label. The service
+        // is a singleton, so both share its cache within the request.
+        self::assertSame('Environment from TextDB', trim($this->renderFluidTemplate($textdbTemplate)));
+        self::assertSame('Umgebung', trim($this->renderFluidTemplate($translateTemplate)));
+        self::assertSame('Environment from TextDB', trim($this->renderFluidTemplate($textdbTemplate)));
+    }
+
+    // =========================================================================
     // Helpers
     // =========================================================================
+
+    /**
+     * Makes the rendering run for a German frontend page (language 1, falling
+     * back to 0): the language aspect drives the TextDB lookup, the request
+     * the language LocalizationUtility reads its labels in.
+     */
+    private function switchToGermanPage(): void
+    {
+        GeneralUtility::makeInstance(Context::class)
+            ->setAspect(
+                'language',
+                new LanguageAspect(1, 1, LanguageAspect::OVERLAYS_ON_WITH_FLOATING, [0]),
+            );
+
+        // Extbase reads the frontend TypoScript of a frontend request; an
+        // empty setup is enough for the repositories.
+        $frontendTypoScript = new FrontendTypoScript(new RootNode(), [], [], []);
+        $frontendTypoScript->setSetupArray([]);
+
+        $GLOBALS['TYPO3_REQUEST'] = (new ServerRequest('https://example.com/de/'))
+            ->withAttribute('applicationType', SystemEnvironmentBuilder::REQUESTTYPE_FE)
+            ->withAttribute('frontend.typoscript', $frontendTypoScript)
+            ->withAttribute(
+                'language',
+                new SiteLanguage(1, 'de_DE.UTF-8', new Uri('https://example.com/de/'), ['typo3Language' => 'de']),
+            );
+    }
+
+    /**
+     * Inserts a default-language translation record in environment "default",
+     * component "lll-migration-component" and type "label".
+     */
+    private function insertDefaultLanguageTranslation(string $placeholder, string $value): void
+    {
+        GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
+            ->insert(
+                'tx_nrtextdb_domain_model_translation',
+                [
+                    'pid'              => 1,
+                    'sys_language_uid' => 0,
+                    'environment'      => 1,
+                    'component'        => 1,
+                    'type'             => 1,
+                    'placeholder'      => $placeholder,
+                    'value'            => $value,
+                ],
+            );
+    }
 
     /**
      * Counts translation rows matching the given placeholder to verify

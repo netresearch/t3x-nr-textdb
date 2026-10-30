@@ -65,6 +65,16 @@ class TranslationService
     private array $translationCache = [];
 
     /**
+     * In-memory cache of the fallback lookups, kept apart from the cache of
+     * translate(): one request can ask for the same key with and without the
+     * fallback (textdb:textdb and textdb:translate), and each must get its own
+     * answer. Keyed by language, so the entry does not depend on the chain.
+     *
+     * @var array<string, string|null>
+     */
+    private array $fallbackCache = [];
+
+    /**
      * Translation constructor.
      */
     public function __construct(
@@ -194,6 +204,135 @@ class TranslationService
         $this->translationCache[$cacheKey] = $result;
 
         return $result;
+    }
+
+    /**
+     * Returns the value of the first usable entry along the language fallback
+     * chain of the current language, or null when there is none.
+     *
+     * The chain is the one of the current language aspect: its integer entries
+     * in order, then the default language 0. The current language itself is
+     * skipped, because translate() has already looked there. An entry is
+     * usable when its value is not empty and it was not auto-created.
+     *
+     * The lookup is read-only: unlike translate(), it never creates a record.
+     * Callers use it only where translate() returned the bare placeholder.
+     */
+    public function translateFromFallbackLanguages(
+        string $placeholder,
+        string $typeName,
+        string $componentName,
+        string $environmentName,
+    ): ?string {
+        if ($placeholder === '') {
+            return null;
+        }
+
+        foreach ($this->getFallbackLanguages() as $languageUid) {
+            $cacheKey = sprintf('%s|%s|%s|%s|%d', $environmentName, $componentName, $typeName, $placeholder, $languageUid);
+
+            if (!array_key_exists($cacheKey, $this->fallbackCache)) {
+                $this->fallbackCache[$cacheKey] = $this->findUsableValue(
+                    $placeholder,
+                    $typeName,
+                    $componentName,
+                    $environmentName,
+                    $languageUid,
+                );
+            }
+
+            if ($this->fallbackCache[$cacheKey] !== null) {
+                return $this->fallbackCache[$cacheKey];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns the value of the entry in the given language, or null when the
+     * entry does not exist, is empty or was auto-created.
+     *
+     * @param int<-1, max> $languageUid
+     */
+    private function findUsableValue(
+        string $placeholder,
+        string $typeName,
+        string $componentName,
+        string $environmentName,
+        int $languageUid,
+    ): ?string {
+        $environment = $this->environmentRepository->findByName($environmentName);
+        $component   = $this->componentRepository->findByName($componentName);
+        $type        = $this->typeRepository->findByName($typeName);
+
+        if (
+            !($environment instanceof Environment)
+            || !($component instanceof Component)
+            || !($type instanceof Type)
+        ) {
+            return null;
+        }
+
+        $translation = $this->translationRepository
+            ->findByEnvironmentComponentTypePlaceholderAndLanguage(
+                $environment,
+                $component,
+                $type,
+                $placeholder,
+                $languageUid,
+            );
+
+        if (
+            !($translation instanceof Translation)
+            || $translation->isAutoCreated()
+            || $translation->getValue() === ''
+        ) {
+            return null;
+        }
+
+        return $translation->getValue();
+    }
+
+    /**
+     * Returns the languages to try after the current one: the integer entries
+     * of the fallback chain in their order, then the default language 0. The
+     * chain can also hold strings such as "pageNotFound" or "off"; they name
+     * no language and are skipped.
+     *
+     * @return list<int<0, max>>
+     */
+    private function getFallbackLanguages(): array
+    {
+        try {
+            /** @var LanguageAspect $languageAspect */
+            $languageAspect = $this->context->getAspect('language');
+        } catch (AspectNotFoundException) {
+            return [];
+        }
+
+        $currentLanguage = $languageAspect->getId();
+
+        if ($currentLanguage === 0) {
+            return [];
+        }
+
+        $languages = [];
+
+        foreach ([...$languageAspect->getFallbackChain(), 0] as $languageUid) {
+            if (
+                !is_int($languageUid)
+                || $languageUid < 0
+                || $languageUid === $currentLanguage
+                || in_array($languageUid, $languages, true)
+            ) {
+                continue;
+            }
+
+            $languages[] = $languageUid;
+        }
+
+        return $languages;
     }
 
     /**

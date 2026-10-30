@@ -93,6 +93,10 @@ final class TranslateViewHelper extends AbstractViewHelper
      * enabled, the LLL value is used as the initial value for the auto-created
      * TextDB record.
      *
+     * Lookup order: the TextDB entry in the current language, the label from
+     * the language file in the current language, the TextDB entries along the
+     * language fallback chain and the default language, then the key.
+     *
      * @return string The translated key or tag body if key doesn't exist
      *
      * @throws IllegalObjectTypeException
@@ -130,17 +134,25 @@ final class TranslateViewHelper extends AbstractViewHelper
             $environmentName,
         );
 
-        // If the result is the placeholder itself (auto-created or missing),
-        // try to return the LLL translation instead.
-        if ($result === $textdbKey) {
-            $lllTranslation = $this->translateLabel($placeholder, $extension);
-
-            if ($lllTranslation !== null && $lllTranslation !== '') {
-                return $lllTranslation;
-            }
+        if ($result !== $textdbKey) {
+            return $result;
         }
 
-        return $result;
+        // The result is the placeholder itself (auto-created or missing): the
+        // label from the language file in the current language comes next,
+        // then the TextDB entries along the language fallback chain.
+        $lllTranslation = $this->translateLabel($placeholder, $extension);
+
+        if ($lllTranslation !== null && $lllTranslation !== '') {
+            return $lllTranslation;
+        }
+
+        return $this->translationService->translateFromFallbackLanguages(
+            $textdbKey,
+            'label',
+            self::$component,
+            $environmentName,
+        ) ?? $result;
     }
 
     /**

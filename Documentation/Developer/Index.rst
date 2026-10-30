@@ -233,7 +233,9 @@ TextDB ViewHelper
 
    **Output:**
 
-Returns the translated text for the current page language.
+Returns the translated text for the current page language. When that
+language has no usable entry, the ViewHelper falls back as described in
+:ref:`dev-viewhelpers-fallback`.
 
 **Example:**
 
@@ -291,6 +293,37 @@ When enabled (`createIfMissing = 1`), this ViewHelper will:
 1. Load translation from XLIFF file on first request
 2. Create TextDB record automatically
 3. Use TextDB record on subsequent requests
+
+.. _dev-viewhelpers-fallback:
+
+Lookup Order and Language Fallback
+----------------------------------
+
+Both ViewHelpers look for a value in this order and render the first one
+they find:
+
+1. The TextDB entry in the current language. An entry with an empty value,
+   or one that was auto-created and never edited, does not count.
+2. ``textdb:translate`` only: the label from the language file (XLIFF) in
+   the current language.
+3. The TextDB entries in the languages of the site language's fallback
+   chain (``fallbackLanguageIds`` in the site configuration), in their
+   order, then the entry in the default language (``0``). The same rules as
+   in step 1 apply to each entry.
+4. The key itself.
+
+TYPO3 passes the ``fallbackLanguageIds`` on for every ``fallbackType``,
+so step 3 follows them for ``strict``, ``fallback`` and ``free`` alike. A
+site language without fallback languages still falls back to the default
+language in step 3.
+
+When ``createIfMissing`` is enabled, step 1 creates the missing entry in
+the current language, as before. Steps 3 and 4 never create records.
+
+For example, a German page (language ``1``) whose site language falls back
+to ``0`` renders the English TextDB entry when no German entry exists. With
+``textdb:translate``, a German label in the language file wins over that
+English entry.
 
 .. _dev-services:
 
@@ -352,6 +385,47 @@ TranslationService
           componentName: 'website',
           environmentName: 'default',
       );
+
+   ``translate()`` looks up the current language only. The ViewHelpers add
+   the language fallback with ``translateFromFallbackLanguages()``.
+
+   translateFromFallbackLanguages()
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   .. code-block:: php
+
+      public function translateFromFallbackLanguages(
+          string $placeholder,
+          string $typeName,
+          string $componentName,
+          string $environmentName,
+      ): ?string
+
+   Returns the value of the first usable entry along the fallback chain of
+   the current language, then in the default language, as in step 3 of
+   :ref:`dev-viewhelpers-fallback`. The current language itself is not
+   searched. The method never creates records.
+
+   :param string $placeholder: Translation key
+   :param string $typeName: Type name (e.g., "label", "button")
+   :param string $componentName: Component name (e.g., "website", "checkout")
+   :param string $environmentName: Environment name (e.g., "default")
+   :returns: The value, or ``null`` if no fallback language has one
+
+   **Example:**
+
+   .. code-block:: php
+
+      $value = $this->translationService->translate('welcome.message', 'label', 'website', 'default');
+
+      if ($value === 'welcome.message') {
+          $value = $this->translationService->translateFromFallbackLanguages(
+              'welcome.message',
+              'label',
+              'website',
+              'default',
+          ) ?? $value;
+      }
 
    createTranslation()
    ~~~~~~~~~~~~~~~~~~~~

@@ -14,6 +14,7 @@ declare(strict_types=1);
 
 namespace Netresearch\NrTextdb\Tests\Functional\ViewHelpers;
 
+use Netresearch\NrTextdb\Domain\Model\Translation;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
 use Netresearch\NrTextdb\Tests\Functional\AbstractFunctionalTestCase;
 use Netresearch\NrTextdb\ViewHelpers\TextdbViewHelper;
@@ -36,6 +37,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  *   3. Auto-creates a record and returns placeholder when createIfMissing=true.
  *   4. Handles different environment names independently.
  *   5. Handles multi-language (sys_language_uid) lookups.
+ *   6. Falls back along the language fallback chain, then to language 0.
  *
  * All tests run against a real (SQLite) database set up by the TYPO3
  * testing-framework. Run:
@@ -296,16 +298,97 @@ final class TextdbViewHelperTest extends AbstractFunctionalTestCase
     }
 
     #[Test]
-    public function returnsPlaceholderForLanguageWithNoTranslation(): void
+    public function emptyFallbackChainEndsAtTheDefaultLanguageThenTheKey(): void
     {
-        // Language UID 99 has no records in the fixtures.
+        // Language UID 99 has no records in the fixtures, and its language
+        // aspect has no fallback chain, as with a "strict" site language.
         $this->setLanguageAspect(99);
 
         $output = $this->renderFluidTemplate(
             "{nrtextdb:textdb(placeholder: 'welcome-message', component: 'test-component', environment: 'default')}",
         );
 
-        self::assertSame('welcome-message', trim($output));
+        self::assertSame('Welcome to our shop', trim($output));
+
+        // A key without an entry in any language still renders as the key.
+        $output = $this->renderFluidTemplate(
+            "{nrtextdb:textdb(placeholder: 'unknown-key', component: 'test-component', environment: 'default')}",
+        );
+
+        self::assertSame('unknown-key', trim($output));
+    }
+
+    // =========================================================================
+    // Scenario 6 – Language fallback
+    // =========================================================================
+
+    #[Test]
+    public function rendersTheDefaultLanguageValueWhenTheCurrentLanguageHasNoEntry(): void
+    {
+        // German page (language 1); "submit-button" exists only in the
+        // default language, which holds the English text.
+        $this->setLanguageAspect(1, [0]);
+
+        $output = $this->renderFluidTemplate(
+            "{nrtextdb:textdb(placeholder: 'submit-button', component: 'test-component', environment: 'default')}",
+        );
+
+        self::assertSame('Submit Order', trim($output));
+    }
+
+    #[Test]
+    public function fallbackChainIsFollowedInItsOrder(): void
+    {
+        // Language 3 falls back to 2, then 0. "welcome-message" exists in both
+        // 2 and 0, so 2 wins. The string entries TYPO3 adds to a chain
+        // ("pageNotFound") name no language and are skipped.
+        $this->setLanguageAspect(3, [2, 0, 'pageNotFound']);
+
+        $output = $this->renderFluidTemplate(
+            "{nrtextdb:textdb(placeholder: 'welcome-message', component: 'test-component', environment: 'default')}",
+        );
+
+        self::assertSame('Willkommen in unserem Shop', trim($output));
+    }
+
+    #[Test]
+    public function emptyAndAutoCreatedValuesInTheCurrentLanguageFallThrough(): void
+    {
+        $this->insertTranslation(1, 1, 1, 'submit-button', '');
+        $this->insertTranslation(1, 2, 2, 'checkout-title', Translation::AUTO_CREATE_IDENTIFIER);
+
+        $this->setLanguageAspect(1, [0]);
+
+        $emptyOutput = $this->renderFluidTemplate(
+            "{nrtextdb:textdb(placeholder: 'submit-button', component: 'test-component', environment: 'default')}",
+        );
+        $autoCreatedOutput = $this->renderFluidTemplate(
+            "{nrtextdb:textdb(placeholder: 'checkout-title', type: 'label', component: 'checkout', environment: 'default')}",
+        );
+
+        self::assertSame('Submit Order', trim($emptyOutput));
+        self::assertSame('Checkout', trim($autoCreatedOutput));
+    }
+
+    #[Test]
+    public function emptyAndAutoCreatedValuesInAFallbackLanguageAreSkipped(): void
+    {
+        // Language 3 falls back to 4, then 0. The entries in language 4 hold no
+        // usable value, so the default language answers.
+        $this->insertTranslation(4, 1, 1, 'submit-button', '');
+        $this->insertTranslation(4, 2, 2, 'checkout-title', Translation::AUTO_CREATE_IDENTIFIER);
+
+        $this->setLanguageAspect(3, [4, 0]);
+
+        $emptyOutput = $this->renderFluidTemplate(
+            "{nrtextdb:textdb(placeholder: 'submit-button', component: 'test-component', environment: 'default')}",
+        );
+        $autoCreatedOutput = $this->renderFluidTemplate(
+            "{nrtextdb:textdb(placeholder: 'checkout-title', type: 'label', component: 'checkout', environment: 'default')}",
+        );
+
+        self::assertSame('Submit Order', trim($emptyOutput));
+        self::assertSame('Checkout', trim($autoCreatedOutput));
     }
 
     #[Test]
@@ -328,11 +411,38 @@ final class TextdbViewHelperTest extends AbstractFunctionalTestCase
     /**
      * Overrides the language aspect on the shared Context singleton so that
      * TranslationService picks up the expected sys_language_uid.
+     *
+     * @param array<int|string> $fallbackChain
      */
-    private function setLanguageAspect(int $languageUid): void
+    private function setLanguageAspect(int $languageUid, array $fallbackChain = []): void
     {
         GeneralUtility::makeInstance(Context::class)
-            ->setAspect('language', new LanguageAspect($languageUid));
+            ->setAspect(
+                'language',
+                new LanguageAspect($languageUid, $languageUid, LanguageAspect::OVERLAYS_ON_WITH_FLOATING, $fallbackChain),
+            );
+    }
+
+    /**
+     * Inserts a translation record on the storage page in environment
+     * "default" (uid 1).
+     */
+    private function insertTranslation(int $languageUid, int $component, int $type, string $placeholder, string $value): void
+    {
+        GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
+            ->insert(
+                'tx_nrtextdb_domain_model_translation',
+                [
+                    'pid'              => 1,
+                    'sys_language_uid' => $languageUid,
+                    'environment'      => 1,
+                    'component'        => $component,
+                    'type'             => $type,
+                    'placeholder'      => $placeholder,
+                    'value'            => $value,
+                ],
+            );
     }
 
     /**
