@@ -436,8 +436,7 @@ Use TextDB translations in your Fluid templates:
 
 The XLF import functionality implements protection against XML External Entity (XXE) attacks:
 
-- **XXE Protection**: Network access during XML parsing is blocked using the `LIBXML_NONET` flag, preventing external entity resolution and SSRF attacks
-- **PHP 8.0+ Compatible**: External entity loading is disabled by default in PHP 8.0+, with `LIBXML_NONET` providing defense-in-depth security
+- **XXE Protection**: The backend import and the CLI import read files with TYPO3's own XLIFF loader, which does not resolve external entities, so a file cannot pull in local files or remote URLs
 - **Permission Requirements**: Importing XLF files needs access to the TextDB module, modify access to all four TextDB tables, "edit content" on the storage page, the file's language in the group's language list, the excluded fields an import writes, and the live workspace or one that allows live editing (see the Configuration chapter for what each module action checks)
 - **Best Practices**:
   - Review XLF files from untrusted sources before importing

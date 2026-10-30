@@ -104,6 +104,28 @@ final readonly class ImportService
             ->load($file, $languageKey)
             ->all('messages');
 
+        $this->importEntries($entries, $languageUid, $forceUpdate, $result);
+    }
+
+    /**
+     * Imports the messages of a loaded XLIFF file, keyed "component|type|placeholder".
+     *
+     * Every key is checked before the first entry is written, so a file with
+     * an unusable key imports nothing instead of a part of it.
+     *
+     * @param array<array-key, mixed> $entries
+     * @param int<-1, max>            $languageUid
+     *
+     * @throws RuntimeException when a key lacks a component, type or placeholder, or a value is no string
+     */
+    public function importEntries(
+        array $entries,
+        int $languageUid,
+        bool $forceUpdate,
+        ImportResult $result,
+    ): void {
+        $parsedEntries = [];
+
         foreach ($entries as $key => $value) {
             $key           = (string) $key;
             $componentName = $this->getComponentFromKey($key);
@@ -145,6 +167,16 @@ final readonly class ImportService
                 );
             }
 
+            // A unit without text, an untranslated unit of a translation file
+            // for example, would overwrite a stored value with nothing.
+            if (trim($value) === '') {
+                continue;
+            }
+
+            $parsedEntries[] = [$componentName, $typeName, $placeholder, $value];
+        }
+
+        foreach ($parsedEntries as [$componentName, $typeName, $placeholder, $value]) {
             $this->importEntry(
                 $languageUid,
                 $componentName,

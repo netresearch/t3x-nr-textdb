@@ -28,6 +28,7 @@ use Netresearch\NrTextdb\Service\TranslationService;
 use Psr\Http\Message\ResponseInterface;
 use RuntimeException;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Translation\Exception\InvalidResourceException;
 use Throwable;
 use TYPO3\CMS\Backend\Template\Components\ButtonBar;
 use TYPO3\CMS\Backend\Template\Components\ComponentFactory;
@@ -41,7 +42,9 @@ use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Http\UploadedFile;
 use TYPO3\CMS\Core\Imaging\IconFactory;
 use TYPO3\CMS\Core\Imaging\IconSize;
+use TYPO3\CMS\Core\Localization\Exception\InvalidXmlFileException;
 use TYPO3\CMS\Core\Localization\LanguageService;
+use TYPO3\CMS\Core\Localization\Loader\XliffLoader;
 use TYPO3\CMS\Core\Messaging\FlashMessage;
 use TYPO3\CMS\Core\Messaging\FlashMessageService;
 use TYPO3\CMS\Core\Pagination\SimplePagination;
@@ -145,6 +148,8 @@ final class TranslationController extends ActionController
 
     private readonly ImportService $importService;
 
+    private readonly XliffLoader $xliffLoader;
+
     private readonly FlashMessageService $flashMessageService;
 
     private readonly ComponentFactory $componentFactory;
@@ -166,6 +171,7 @@ final class TranslationController extends ActionController
         ImportService $importService,
         FlashMessageService $flashMessageService,
         ComponentFactory $componentFactory,
+        XliffLoader $xliffLoader,
     ) {
         $this->extensionConfiguration = $extensionConfiguration;
         $this->translationRepository  = $translationRepository;
@@ -179,6 +185,7 @@ final class TranslationController extends ActionController
         $this->componentFactory       = $componentFactory;
 
         $this->importService = $importService;
+        $this->xliffLoader   = $xliffLoader;
     }
 
     /**
@@ -919,6 +926,21 @@ final class TranslationController extends ActionController
         $filename     = $translationFile->getClientFilename() ?? '';
         $uploadedFile = $translationFile->getTemporaryFileName();
 
+        if ($uploadedFile === null) {
+            // A PSR-7 upload built from a stream has no temporary file the
+            // loader could read.
+            $this->addFlashMessageToQueue(
+                'Import',
+                $this->getLanguageService()->sL(
+                    'nr_textdb.messages:message.error.import.upload',
+                ),
+            );
+
+            return $this->redirectToUri(
+                $this->uriBuilder->reset()->uriFor('import'),
+            );
+        }
+
         $matches     = [];
         $matchResult = preg_match('/^([a-z]{2}\.)?(textdb_(.*)\.xlf)$/', $filename, $matches);
 
@@ -937,6 +959,22 @@ final class TranslationController extends ActionController
 
         $languageCode = trim($matches[1], '.');
         $languageCode = $languageCode === '' ? 'en' : $languageCode;
+
+        // XliffLoader reads the uploaded temporary file as it is; it needs no
+        // file name pattern. It is the loader the CLI import uses as well.
+        try {
+            $entries = $this->xliffLoader
+                ->load($uploadedFile, $languageCode)
+                ->all('messages');
+        } catch (InvalidXmlFileException|InvalidResourceException $exception) {
+            // The message names the temporary file, show the uploaded name.
+            $this->moduleTemplate()->assign(
+                'errors',
+                [str_replace($uploadedFile, $filename, $exception->getMessage())],
+            );
+
+            return $this->moduleTemplate()->renderResponse('Translation/Import');
+        }
 
         $result      = new ImportResult();
         $languages   = [];
@@ -962,91 +1000,12 @@ final class TranslationController extends ActionController
 
             $languages[] = $languageTitle;
 
-            $uploadedFileContent = file_get_contents($uploadedFile);
-
-            if ($uploadedFileContent === false) {
-                continue;
-            }
-
-            libxml_use_internal_errors(true);
-
-            // XXE Protection: Parse with LIBXML_NONET flag to prevent XML External Entity attacks
-            // In PHP 8.0+, external entity loading is disabled by default, but we explicitly use
-            // LIBXML_NONET to prevent network access and do NOT use LIBXML_NOENT (which would enable
-            // entity expansion). See: https://owasp.org/www-community/vulnerabilities/XML_External_Entity_(XXE)_Processing
-            // Related issue: #50 (long-term refactoring to use XliffParser exclusively)
-
-            // We can't use the XliffParser here, due it's limitations regarding filenames
-            // Parse with LIBXML_NONET flag to disable network access during parsing
-            $data = simplexml_load_string(
-                $uploadedFileContent,
-                'SimpleXMLElement',
-                LIBXML_NONET,
-            );
-            $xmlErrors = libxml_get_errors();
-            libxml_clear_errors();
-
-            if ($data === false) {
-                continue;
-            }
-
-            if ($xmlErrors !== []) {
-                foreach ($xmlErrors as $error) {
-                    $errors[] = trim($error->message);
-                }
-
-                $this->moduleTemplate()->assign('errors', $errors);
-
-                return $this->moduleTemplate()->renderResponse('Translation/Import');
-            }
-
-            foreach ($data->file->body->children() as $translation) {
-                $key = (string) $translation->attributes()['id'];
-
-                $componentName = $this->getComponentFromKey($key);
-                if ($componentName === null) {
-                    throw new RuntimeException(
-                        sprintf(
-                            $this->translate('error.missing.component') ?? 'Missing component name in key: %s',
-                            $key,
-                        ),
-                    );
-                }
-
-                $typeName = $this->getTypeFromKey($key);
-                if ($typeName === null) {
-                    throw new RuntimeException(
-                        sprintf(
-                            $this->translate('error.missing.type') ?? 'Missing type name in key: %s',
-                            $key,
-                        ),
-                    );
-                }
-
-                $placeholder = $this->getPlaceholderFromKey($key);
-                if ($placeholder === null) {
-                    throw new RuntimeException(
-                        sprintf(
-                            $this->translate('error.missing.placeholder') ?? 'Missing placeholder in key: %s',
-                            $key,
-                        ),
-                    );
-                }
-
-                $value = $translation->target->getName() === ''
-                    ? (string) $translation->source
-                    : (string) $translation->target;
-
-                $this->importService
-                    ->importEntry(
-                        $languageUid,
-                        $componentName,
-                        $typeName,
-                        $placeholder,
-                        trim($value),
-                        $forceUpdate,
-                        $result,
-                    );
+            try {
+                $this->importService->importEntries($entries, $languageUid, $forceUpdate, $result);
+            } catch (RuntimeException $exception) {
+                // An unusable key; importEntries() checks every key before it
+                // writes, so nothing of this file was imported.
+                $errors[] = $exception->getMessage();
             }
         }
 
@@ -1061,36 +1020,6 @@ final class TranslationController extends ActionController
         ]);
 
         return $this->moduleTemplate()->renderResponse('Translation/Import');
-    }
-
-    /**
-     * Get the component from a key.
-     */
-    private function getComponentFromKey(string $key): ?string
-    {
-        $parts = explode('|', $key);
-
-        return ($parts[0] !== '') ? $parts[0] : null;
-    }
-
-    /**
-     * Get the type from a key.
-     */
-    private function getTypeFromKey(string $key): ?string
-    {
-        $parts = explode('|', $key);
-
-        return array_key_exists(1, $parts) && ($parts[1] !== '') ? $parts[1] : null;
-    }
-
-    /**
-     * Get the placeholder from key.
-     */
-    private function getPlaceholderFromKey(string $key): ?string
-    {
-        $parts = explode('|', $key);
-
-        return array_key_exists(2, $parts) && ($parts[2] !== '') ? $parts[2] : null;
     }
 
     /**
@@ -1257,12 +1186,14 @@ final class TranslationController extends ActionController
             // Escape CDATA end sequence to prevent premature closing
             $value = str_replace(']]>', ']]]]><![CDATA[>', $translation->getValue());
 
+            // xml:space="preserve" keeps line breaks and repeated spaces: without
+            // it an XLIFF reader, TYPO3's XliffLoader among them, collapses all
+            // whitespace inside the value. With "preserve" the indentation
+            // would count too, so the CDATA section sits directly in the tag.
             $entries .= sprintf(
                 <<<XML
-                            <trans-unit id="%s|%s|%s">
-                                <%s>
-                                    <![CDATA[%s]]>
-                                </%s>
+                            <trans-unit id="%s|%s|%s" xml:space="preserve">
+                                <%s><![CDATA[%s]]></%s>
                             </trans-unit>
                     XML . PHP_EOL,
                 $componentName,
