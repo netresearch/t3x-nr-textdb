@@ -15,6 +15,7 @@ declare(strict_types=1);
 namespace Netresearch\NrTextdb\Tests\Functional\Service;
 
 use Doctrine\DBAL\Exception as DBALException;
+use Exception;
 use Netresearch\NrTextdb\Domain\Model\Component;
 use Netresearch\NrTextdb\Domain\Model\Translation;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
@@ -579,6 +580,54 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
         self::assertSame($expectedPartiallyApproved, $result->getPartiallyApproved());
     }
 
+    #[Test]
+    public function importEntriesImportsNothingWhenAWriteInsideALaterEntryFailsAndCanBeRepeated(): void
+    {
+        // The new component "rvcompc" of the last entry is written by its
+        // lookup, inside importEntry(); that write also writes the pending
+        // translation "boom", whose write fails with an exception that does
+        // not come from the database.
+        $entries = [
+            'rvcompa|label|aaa'   => 'A',
+            'checkout|label|bbb'  => 'B',
+            'checkout|label|boom' => 'X',
+            'rvcompc|label|ccc'   => 'C',
+        ];
+
+        $listener = new class {
+            public bool $enabled = true;
+
+            public function __invoke(EntityAddedToPersistenceEvent $event): void
+            {
+                $object = $event->getObject();
+
+                if ($this->enabled && $object instanceof Translation && $object->getPlaceholder() === 'boom') {
+                    throw new Exception('Simulated write failure', 1793253603);
+                }
+            }
+        };
+        $this->getContainer()->set('nr_textdb.test.failing_later_write', $listener);
+        $this->get(ListenerProvider::class)
+            ->addListener(EntityAddedToPersistenceEvent::class, 'nr_textdb.test.failing_later_write');
+
+        $translationsBefore = $this->countRows('tx_nrtextdb_domain_model_translation');
+        $failedResult       = new ImportResult();
+        $thrown             = $this->importEntriesCatching($entries, $failedResult);
+
+        self::assertInstanceOf(Exception::class, $thrown, 'The failed write did not reach the caller.');
+        self::assertSame(1793253603, $thrown->getCode());
+        $this->assertNothingOfTheFileStored($failedResult, $translationsBefore, ['rvcompa', 'rvcompc']);
+
+        // The cause is gone, the same process imports the file again.
+        $listener->enabled = false;
+        $result            = new ImportResult();
+
+        self::assertNull($this->importEntriesCatching($entries, $result));
+        self::assertSame($translationsBefore + 4, $this->countRows('tx_nrtextdb_domain_model_translation'));
+        self::assertSame(4, $result->getImported());
+        self::assertSame([], $result->getErrors());
+    }
+
     // -------------------------------------------------------------------------
     // importEntry
     // -------------------------------------------------------------------------
@@ -768,6 +817,39 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
             ->fetchFirstColumn();
 
         return array_map(strval(...), $placeholders);
+    }
+
+    /**
+     * Imports the entries and returns what the import threw, or null.
+     *
+     * @param array<string, string> $entries
+     */
+    private function importEntriesCatching(array $entries, ImportResult $result): ?Throwable
+    {
+        try {
+            $this->importService->importEntries($entries, 0, false, $result);
+        } catch (Throwable $throwable) {
+            return $throwable;
+        }
+
+        return null;
+    }
+
+    /**
+     * Asserts that a failed import left no translation and none of the
+     * given components behind, and reported neither an error nor a count.
+     *
+     * @param list<string> $components
+     */
+    private function assertNothingOfTheFileStored(ImportResult $failedResult, int $translationsBefore, array $components): void
+    {
+        self::assertSame([], $failedResult->getErrors(), 'The failure reaches the caller as the exception only.');
+        self::assertSame(0, $failedResult->getImported(), 'A rolled-back file counts no entry.');
+        self::assertSame($translationsBefore, $this->countRows('tx_nrtextdb_domain_model_translation'));
+
+        foreach ($components as $component) {
+            self::assertSame(0, $this->countRows('tx_nrtextdb_domain_model_component', $component), $component . ' was kept.');
+        }
     }
 
     /**

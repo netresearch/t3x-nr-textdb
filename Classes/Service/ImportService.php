@@ -214,9 +214,10 @@ final readonly class ImportService
      * reference index updates, and committing every statement on its own
      * made a large file slow (issue #30). When a write fails, the transaction
      * rolls back, the exception propagates and the file imports nothing, on
-     * every database: importEntry() passes a database error on instead of
-     * recording it, because MariaDB, MySQL and SQLite would otherwise go on
-     * and commit the rest of the file.
+     * every database: importEntry() passes a database error, and any
+     * exception raised while it writes the persistence session, on instead
+     * of recording it, because the rest of the file would otherwise be
+     * committed.
      * The persistence session and the name caches of the repositories are
      * cleared then, because they hold records whose rows were rolled back.
      * The counts of the file reach $result only once the transaction has
@@ -353,14 +354,16 @@ final readonly class ImportService
      *
      * Imported / updated counts accumulate on the provided {@see ImportResult},
      * as does the message of an exception the entry fails with. An exception
-     * from the database is thrown on instead: a statement that failed inside
-     * the transaction of importEntries() has to roll back the whole file.
+     * from the database, or one raised while the persistence session is
+     * written, is thrown on instead: a statement or a write that failed
+     * inside the transaction of importEntries() has to roll back the whole
+     * file.
      *
      * @param int<-1, max> $languageUid
      *
      * @return bool TRUE when the entry was imported or updated, FALSE when it was skipped or failed
      *
-     * @throws Exception when a statement fails: a DBAL exception, or one that wraps it
+     * @throws Exception when a statement fails (a DBAL exception, or one that wraps it) or a write of the persistence session fails
      */
     public function importEntry(
         int $languageUid,
@@ -468,7 +471,7 @@ final readonly class ImportService
 
             return true;
         } catch (Exception $exception) {
-            if ($this->isDatabaseError($exception)) {
+            if ($this->isDatabaseError($exception) || $this->isWriteError($exception)) {
                 throw $exception;
             }
 
@@ -493,6 +496,32 @@ final readonly class ImportService
     {
         for ($current = $throwable; $current instanceof Throwable; $current = $current->getPrevious()) {
             if ($current instanceof DBALException) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Whether an exception was raised while the persistence session was
+     * written. The lookup of a component, type or environment that does not
+     * exist yet creates it and writes the session, and with it the records
+     * of earlier entries that are still pending. A failed write of any of
+     * them has to roll back the whole file, whatever the class of the
+     * exception, an exception of an event listener for example.
+     *
+     * The exception's trace names the calls it was raised in, so a call of
+     * persistAll() in it marks a write.
+     */
+    private function isWriteError(Throwable $throwable): bool
+    {
+        foreach ($throwable->getTrace() as $frame) {
+            if (
+                ($frame['function'] === 'persistAll')
+                && array_key_exists('class', $frame)
+                && is_a($frame['class'], PersistenceManagerInterface::class, true)
+            ) {
                 return true;
             }
         }

@@ -264,6 +264,39 @@ final class ImportServiceTest extends UnitTestCase
     }
 
     #[Test]
+    public function importEntryThrowsAnExceptionOfAWriteItsLookupReaches(): void
+    {
+        // A lookup that creates a missing record writes the persistence
+        // session, and with it the pending records of earlier entries.
+        $persistenceManager = self::createStub(PersistenceManagerInterface::class);
+        $persistenceManager->method('persistAll')
+            ->willReturnCallback(static function (): never {
+                throw new RuntimeException('Write failed', 1793253604);
+            });
+
+        $this->environmentRepository->method('setCreateIfMissing')->willReturnSelf();
+        $this->environmentRepository->method('findByName')
+            ->willReturnCallback(static function () use ($persistenceManager): Environment {
+                $persistenceManager->persistAll();
+
+                return new Environment();
+            });
+
+        $result = new ImportResult();
+        $thrown = null;
+
+        try {
+            $this->subject->importEntry(0, 'comp', 'type', 'key', 'value', false, $result);
+        } catch (RuntimeException $exception) {
+            $thrown = $exception;
+        }
+
+        self::assertInstanceOf(RuntimeException::class, $thrown, 'The failed write was recorded instead of thrown.');
+        self::assertSame(1793253604, $thrown->getCode());
+        self::assertSame([], $result->getErrors());
+    }
+
+    #[Test]
     public function importEntriesWritesTheEntriesInOneTransaction(): void
     {
         /** @var ArrayObject<int, string> $calls */
