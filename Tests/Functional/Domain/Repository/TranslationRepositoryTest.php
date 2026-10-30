@@ -25,6 +25,8 @@ use Netresearch\NrTextdb\Domain\Repository\TypeRepository;
 use Netresearch\NrTextdb\Tests\Functional\AbstractFunctionalTestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
+use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * Functional tests for TranslationRepository.
@@ -83,18 +85,47 @@ final class TranslationRepositoryTest extends AbstractFunctionalTestCase
     // -------------------------------------------------------------------------
 
     #[Test]
-    public function findAllByComponentTypePlaceholderValueAndLanguageWithNoFiltersReturnsAllRecords(): void
+    public function findAllByComponentTypePlaceholderValueAndLanguageWithNoFiltersReturnsEveryDefaultLanguageRecord(): void
     {
         $result = $this->translationRepository
             ->findAllByComponentTypePlaceholderValueAndLanguage();
 
-        // Fixture contains 12 rows. Uid 9 is deleted (still returned because
-        // ignoreEnableFields=true is set inside the method), uid 10 is hidden
-        // (same reason). The method does NOT add any where-clause when all
-        // parameters keep their defaults, so all non-deleted-via-TCA rows come back.
-        // Extbase default query respects the "deleted" flag even with ignoreEnableFields=true
-        // (deleted is a hard exclusion). So uid 9 (deleted=1) is excluded → 11 rows.
-        self::assertGreaterThanOrEqual(1, $result->count());
+        // Fixture contains 12 rows. Uid 9 is deleted, which Extbase excludes
+        // even with ignoreEnableFields=true; uid 10 is hidden and comes back.
+        // The defaults add the language constraint only, and uid 5, 6 and 7
+        // are German, so 8 rows come back.
+        self::assertSame(8, $result->count());
+    }
+
+    #[Test]
+    public function findAllByComponentTypePlaceholderValueAndLanguageForTheDefaultLanguageLeavesOutTranslations(): void
+    {
+        // The fixture holds German translations (uid 5, 6, 7). The list and the
+        // export ask for language 0 and must get the default language only,
+        // which includes a record for all languages (-1).
+        GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
+            ->insert('tx_nrtextdb_domain_model_translation', [
+                'uid'              => 60,
+                'pid'              => 1,
+                'sys_language_uid' => -1,
+                'environment'      => 1,
+                'component'        => 1,
+                'type'             => 1,
+                'placeholder'      => 'all_languages',
+                'value'            => 'For every language',
+            ]);
+
+        $languages = [];
+
+        foreach ($this->translationRepository->findAllByComponentTypePlaceholderValueAndLanguage() as $translation) {
+            $languages[] = $translation->getSysLanguageUid();
+        }
+
+        $languages = array_values(array_unique($languages));
+        sort($languages);
+
+        self::assertSame([-1, 0], $languages);
     }
 
     #[Test]

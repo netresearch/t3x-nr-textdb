@@ -182,19 +182,20 @@ class TranslationRepository extends AbstractRepository
             $constraints[] = $query->like('value', '%' . $value . '%');
         }
 
-        if ($languageId !== 0) {
-            $constraints[] = $query->equals('sysLanguageUid', $languageId);
-        }
+        // setRespectSysLanguage(false) drops TYPO3's own language restriction,
+        // so the language is constrained here for every language: 0 asks
+        // for the default language, which includes "all languages" (-1).
+        $constraints[] = ($languageId === 0)
+            ? $query->in('sysLanguageUid', [0, -1])
+            : $query->equals('sysLanguageUid', $languageId);
 
         if ($pageId !== null) {
             $constraints[] = $query->equals('pid', $pageId);
         }
 
-        if ($constraints !== []) {
-            $query->matching(
-                $query->logicalAnd(...$constraints),
-            );
-        }
+        $query->matching(
+            $query->logicalAnd(...$constraints),
+        );
 
         return $query->execute();
     }
