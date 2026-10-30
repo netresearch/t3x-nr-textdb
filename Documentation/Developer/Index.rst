@@ -502,41 +502,88 @@ Service for importing XLIFF files.
 
 **Methods:**
 
+The counts, the error messages and the keys of skipped units collect on an
+``ImportResult`` that the caller creates and passes in. One result can go
+through several calls; read the totals at the end.
+
 importFile()
-~~~~~~~~~~~~~
+~~~~~~~~~~~~
 
 .. code-block:: php
 
    public function importFile(
        string $file,
        bool $forceUpdate,
-       int &$imported,
-       int &$updated,
-       array &$errors,
+       ImportResult $result,
    ): void
 
-Imports translations from a XLIFF file. Counters and errors are passed by reference.
+Imports an XLIFF file. The language comes from the file name: ``de.textdb_x.xlf``
+is German, a name without a language prefix is the default language.
+``$forceUpdate`` overwrites existing records. The method reads the file with
+``loadFile()`` and writes it with ``importEntries()``.
+
+It throws when the file cannot be read, when a key lacks a component, type or
+placeholder, and when a write fails. A file that fails imports nothing.
 
 **Example:**
 
 .. code-block:: php
 
-   $imported = 0;
-   $updated  = 0;
-   $errors   = [];
+   use Netresearch\NrTextdb\Service\ImportResult;
 
-   $this->importService->importFile(
-       file: '/path/to/translations.xlf',
-       forceUpdate: true,
-       imported: $imported,
-       updated: $updated,
-       errors: $errors,
-   );
+   $result = new ImportResult();
 
-   echo "Imported: {$imported}, Updated: {$updated}";
+   $this->importService->importFile('/path/to/de.textdb_website.xlf', true, $result);
+
+   echo sprintf('Imported: %d, Updated: %d', $result->getImported(), $result->getUpdated());
+
+   foreach ($result->getErrors() as $error) {
+       echo $error, PHP_EOL;
+   }
+
+loadFile()
+~~~~~~~~~~
+
+.. code-block:: php
+
+   public function loadFile(string $file, string $locale): LoadedXliffFile
+
+Reads an XLIFF file with TYPO3's ``XliffLoader`` and returns a
+``LoadedXliffFile`` with three public properties:
+
+* ``entries``: the messages, keyed ``component|type|placeholder``
+* ``unapprovedKeys``: keys of the units left out because they are not approved
+* ``partiallyApprovedKeys``: keys of the plural units kept without their forms
+  that are not approved
+
+While ``$GLOBALS['TYPO3_CONF_VARS']['LANG']['requireApprovedLocalizations']``
+is enabled, the file is read a second time with the setting disabled to find
+these keys; the setting is restored afterwards. While it is disabled, both
+lists are empty. Throws ``InvalidXmlFileException`` or
+``InvalidResourceException`` when the file cannot be read.
+
+importEntries()
+~~~~~~~~~~~~~~~
+
+.. code-block:: php
+
+   public function importEntries(
+       array $entries,
+       int $languageUid,
+       bool $forceUpdate,
+       ImportResult $result,
+       array $unapprovedKeys = [],
+       array $partiallyApprovedKeys = [],
+   ): void
+
+Imports loaded messages for one language in one database transaction. Every
+key is checked before the first write. A value that is empty or only
+whitespace is skipped. The counts and the skipped keys reach ``$result`` once
+the transaction has committed; after a rollback only the error messages do,
+and the exception is thrown on.
 
 importEntry()
-~~~~~~~~~~~~~~
+~~~~~~~~~~~~~
 
 .. code-block:: php
 
@@ -547,12 +594,19 @@ importEntry()
        string $placeholder,
        string $value,
        bool $forceUpdate,
-       int &$imported,
-       int &$updated,
-       array &$errors,
+       ImportResult $result,
    ): void
 
-Imports a single translation entry into the database.
+Imports a single translation entry. It records an error on ``$result``
+instead of throwing.
+
+ImportResult
+~~~~~~~~~~~~
+
+Read the totals with ``getImported()``, ``getUpdated()`` and ``getErrors()``,
+and the skipped units with ``getSkippedUnapproved()``, ``getSkippedEmpty()``
+and ``getPartiallyApproved()``. Each returns the keys once. ``add()`` adds
+another result to this one.
 
 .. _dev-repositories:
 
@@ -736,6 +790,7 @@ CLI command for importing translations.
 
    namespace MyVendor\MyExt\Command;
 
+   use Netresearch\NrTextdb\Service\ImportResult;
    use Netresearch\NrTextdb\Service\ImportService;
    use Symfony\Component\Console\Command\Command;
    use Symfony\Component\Console\Input\InputInterface;
@@ -756,11 +811,20 @@ CLI command for importing translations.
            $files = glob('/path/to/translations/*.xlf');
 
            foreach ($files as $file) {
-               $imported = 0;
-               $updated = 0;
-               $errors = [];
-               $this->importService->importFile($file, false, $imported, $updated, $errors);
-               $output->writeln("Imported: {$imported}, Updated: {$updated} from {$file}");
+               $result = new ImportResult();
+
+               try {
+                   $this->importService->importFile($file, false, $result);
+               } catch (\Throwable $exception) {
+                   $output->writeln('<error>' . $exception->getMessage() . '</error>');
+               }
+
+               $output->writeln(sprintf(
+                   'Imported: %d, Updated: %d from %s',
+                   $result->getImported(),
+                   $result->getUpdated(),
+                   $file,
+               ));
            }
 
            return Command::SUCCESS;
