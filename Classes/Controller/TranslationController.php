@@ -1044,54 +1044,17 @@ final class TranslationController extends ActionController
                 return $this->moduleTemplate->renderResponse('Translation/Import');
             }
 
+            $entries = [];
+
             foreach ($data->file->body->children() as $translation) {
-                $key = (string) $translation->attributes()['id'];
-
-                $componentName = $this->getComponentFromKey($key);
-                if ($componentName === null) {
-                    throw new RuntimeException(
-                        sprintf(
-                            $this->translate('error.missing.component') ?? 'Missing component name in key: %s',
-                            $key,
-                        ),
-                    );
-                }
-
-                $typeName = $this->getTypeFromKey($key);
-                if ($typeName === null) {
-                    throw new RuntimeException(
-                        sprintf(
-                            $this->translate('error.missing.type') ?? 'Missing type name in key: %s',
-                            $key,
-                        ),
-                    );
-                }
-
-                $placeholder = $this->getPlaceholderFromKey($key);
-                if ($placeholder === null) {
-                    throw new RuntimeException(
-                        sprintf(
-                            $this->translate('error.missing.placeholder') ?? 'Missing placeholder in key: %s',
-                            $key,
-                        ),
-                    );
-                }
-
                 $value = $translation->target->getName() === ''
                     ? (string) $translation->source
                     : (string) $translation->target;
 
-                $this->importService
-                    ->importEntry(
-                        $languageUid,
-                        $componentName,
-                        $typeName,
-                        $placeholder,
-                        trim($value),
-                        $forceUpdate,
-                        $result,
-                    );
+                $entries[(string) $translation->attributes()['id']] = trim($value);
             }
+
+            $this->importService->importEntries($entries, $languageUid, $forceUpdate, $result);
         }
 
         $this->moduleTemplate->assignMultiple([
@@ -1105,36 +1068,6 @@ final class TranslationController extends ActionController
         ]);
 
         return $this->moduleTemplate->renderResponse('Translation/Import');
-    }
-
-    /**
-     * Get the component from a key.
-     */
-    private function getComponentFromKey(string $key): ?string
-    {
-        $parts = explode('|', $key);
-
-        return ($parts[0] !== '') ? $parts[0] : null;
-    }
-
-    /**
-     * Get the type from a key.
-     */
-    private function getTypeFromKey(string $key): ?string
-    {
-        $parts = explode('|', $key);
-
-        return array_key_exists(1, $parts) && ($parts[1] !== '') ? $parts[1] : null;
-    }
-
-    /**
-     * Get the placeholder from key.
-     */
-    private function getPlaceholderFromKey(string $key): ?string
-    {
-        $parts = explode('|', $key);
-
-        return array_key_exists(2, $parts) && ($parts[2] !== '') ? $parts[2] : null;
     }
 
     /**

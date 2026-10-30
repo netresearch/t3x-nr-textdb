@@ -91,13 +91,43 @@ final readonly class ImportService
         $languageKey = $this->getLanguageKeyFromFile($file);
         $languageUid = $this->getLanguageId($languageKey);
         $fileContent = $this->xliffParser->getParsedData($file, $languageKey);
-        $entries     = $fileContent[$languageKey] ?? [];
+        $units       = $fileContent[$languageKey] ?? [];
 
-        if (!is_array($entries)) {
+        if (!is_array($units)) {
             return;
         }
 
-        foreach ($entries as $key => $data) {
+        $entries = [];
+
+        foreach ($units as $key => $data) {
+            $entries[$key] = is_array($data) && array_key_exists(0, $data) && is_array($data[0])
+                ? ($data[0]['target'] ?? null)
+                : null;
+        }
+
+        $this->importEntries($entries, $languageUid, $forceUpdate, $result);
+    }
+
+    /**
+     * Imports the units of a file, keyed "component|type|placeholder".
+     *
+     * Every key is checked before the first entry is written, so a file with
+     * an unusable key imports nothing instead of a part of it.
+     *
+     * @param array<array-key, mixed> $entries
+     * @param int<-1, max>            $languageUid
+     *
+     * @throws RuntimeException when a key lacks a component, type or placeholder, or a value is no string
+     */
+    public function importEntries(
+        array $entries,
+        int $languageUid,
+        bool $forceUpdate,
+        ImportResult $result,
+    ): void {
+        $parsedEntries = [];
+
+        foreach ($entries as $key => $value) {
             $key           = (string) $key;
             $componentName = $this->getComponentFromKey($key);
             if ($componentName === null) {
@@ -129,10 +159,6 @@ final readonly class ImportService
                 );
             }
 
-            $value = is_array($data) && array_key_exists(0, $data) && is_array($data[0])
-                ? ($data[0]['target'] ?? null)
-                : null;
-
             if (!is_string($value)) {
                 throw new RuntimeException(
                     sprintf(
@@ -142,6 +168,10 @@ final readonly class ImportService
                 );
             }
 
+            $parsedEntries[] = [$componentName, $typeName, $placeholder, $value];
+        }
+
+        foreach ($parsedEntries as [$componentName, $typeName, $placeholder, $value]) {
             $this->importEntry(
                 $languageUid,
                 $componentName,
