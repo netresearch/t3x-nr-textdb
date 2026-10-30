@@ -612,30 +612,20 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
 
         $translationsBefore = $this->countRows('tx_nrtextdb_domain_model_translation');
         $failedResult       = new ImportResult();
-        $thrown             = null;
-
-        try {
-            $this->importService->importEntries($entries, 0, false, $failedResult);
-        } catch (Throwable $throwable) {
-            $thrown = $throwable;
-        }
+        $thrown             = $this->importEntriesCatching($entries, $failedResult);
 
         self::assertInstanceOf(Exception::class, $thrown, 'The failed write did not reach the caller.');
         self::assertSame(1793253603, $thrown->getCode());
-        self::assertSame([], $failedResult->getErrors(), 'The failed write reaches the caller as the exception only.');
-        self::assertSame(0, $failedResult->getImported(), 'A rolled-back file counts no entry.');
-        self::assertSame($translationsBefore, $this->countRows('tx_nrtextdb_domain_model_translation'));
-        self::assertSame(0, $this->countRows('tx_nrtextdb_domain_model_component', 'rvcompa'));
-        self::assertSame(0, $this->countRows('tx_nrtextdb_domain_model_component', 'rvcompc'));
+        $this->assertNothingOfTheFileStored($failedResult, $translationsBefore, ['rvcompa', 'rvcompc']);
 
         // The cause is gone, the same process imports the file again.
         $listener->enabled = false;
         $result            = new ImportResult();
-        $this->importService->importEntries($entries, 0, false, $result);
 
-        self::assertSame([], $result->getErrors());
-        self::assertSame(4, $result->getImported());
+        self::assertNull($this->importEntriesCatching($entries, $result));
         self::assertSame($translationsBefore + 4, $this->countRows('tx_nrtextdb_domain_model_translation'));
+        self::assertSame(4, $result->getImported());
+        self::assertSame([], $result->getErrors());
     }
 
     // -------------------------------------------------------------------------
@@ -827,6 +817,39 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
             ->fetchFirstColumn();
 
         return array_map(strval(...), $placeholders);
+    }
+
+    /**
+     * Imports the entries and returns what the import threw, or null.
+     *
+     * @param array<string, string> $entries
+     */
+    private function importEntriesCatching(array $entries, ImportResult $result): ?Throwable
+    {
+        try {
+            $this->importService->importEntries($entries, 0, false, $result);
+        } catch (Throwable $throwable) {
+            return $throwable;
+        }
+
+        return null;
+    }
+
+    /**
+     * Asserts that a failed import left no translation and none of the
+     * given components behind, and reported neither an error nor a count.
+     *
+     * @param list<string> $components
+     */
+    private function assertNothingOfTheFileStored(ImportResult $failedResult, int $translationsBefore, array $components): void
+    {
+        self::assertSame([], $failedResult->getErrors(), 'The failure reaches the caller as the exception only.');
+        self::assertSame(0, $failedResult->getImported(), 'A rolled-back file counts no entry.');
+        self::assertSame($translationsBefore, $this->countRows('tx_nrtextdb_domain_model_translation'));
+
+        foreach ($components as $component) {
+            self::assertSame(0, $this->countRows('tx_nrtextdb_domain_model_component', $component), $component . ' was kept.');
+        }
     }
 
     /**
