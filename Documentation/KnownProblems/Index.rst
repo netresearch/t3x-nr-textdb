@@ -54,9 +54,12 @@ service needed more than 176 MB of memory.
 
 The same file uploaded in the backend module took 44 seconds on MariaDB, of
 which 25 seconds were CPU time, and finished with PHP's default
-``max_execution_time`` of 30 seconds, using at most 188 MB of memory; a
-second upload with :guilabel:`Override existing` took 1 second. On Linux, PHP counts only the CPU time
-of the script against that limit, not the time it waits for the database.
+``max_execution_time`` of 30 seconds on the measured host, about 5 seconds
+short of the limit, using at most 188 MB of memory; a second upload with
+:guilabel:`Override existing` took 1 second. On Linux, PHP counts only the
+time the script itself runs against that limit, not the time it waits for
+the database, see the note in the PHP manual on
+`set_time_limit() <https://www.php.net/manual/en/function.set-time-limit.php>`__.
 A web server or proxy timeout counts the whole 44 seconds.
 
 If an import fails, the file imports nothing, on every supported database,
@@ -72,8 +75,9 @@ and the backend module and the CLI command show the error.
     it above the wall time above, for example to the 240 seconds TYPO3
     recommends for ``max_execution_time``.
 
-**Status:** Improved. The 10 MB file imports in a backend request within
-PHP's default time limit; the time limits of the web server remain.
+**Status:** Improved. On the measured host, the 10 MB file imports in a
+backend request within PHP's default time limit, with about 5 seconds to
+spare; the time limits of the web server remain.
 
 **GitHub Issue:** `#30 <https://github.com/netresearch/t3x-nr-textdb/issues/30>`_
 
