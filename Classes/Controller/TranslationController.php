@@ -385,8 +385,19 @@ final class TranslationController extends ActionController
 
         $backendUser       = $this->getBackendUser();
         $parentTranslation = $this->translationRepository->findRawByUid($parent);
-        $acceptedCount     = 0;
-        $rejectedCount     = 0;
+
+        // A new translation is a localisation of the parent, which DataHandler
+        // allows only to a user who may see the parent's page. A parent the
+        // user may not see is treated like one that does not exist.
+        if (
+            ($parentTranslation instanceof Translation)
+            && !$this->hasPageAccess((int) $parentTranslation->getPid(), Permission::PAGE_SHOW)
+        ) {
+            $parentTranslation = null;
+        }
+
+        $acceptedCount = 0;
+        $rejectedCount = 0;
 
         if ($parentTranslation instanceof Translation) {
             // getAllLanguages() returns the languages of the storage page's
@@ -688,6 +699,7 @@ final class TranslationController extends ActionController
                     ->findByTranslationsAndLanguage(
                         $originals,
                         $language->getLanguageId(),
+                        $this->getVisiblePageId(),
                     );
 
                 $this->writeTranslationExportFile(
