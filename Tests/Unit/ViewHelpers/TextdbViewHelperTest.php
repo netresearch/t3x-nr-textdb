@@ -17,8 +17,8 @@ namespace Netresearch\NrTextdb\Tests\Unit\ViewHelpers;
 use Netresearch\NrTextdb\Service\TranslationService;
 use Netresearch\NrTextdb\ViewHelpers\TextdbViewHelper;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\MockObject\MockObject;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
 
@@ -27,15 +27,19 @@ final class TextdbViewHelperTest extends UnitTestCase
 {
     private TextdbViewHelper $subject;
 
-    private TranslationService&MockObject $translationService;
-
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->translationService = $this->createMock(TranslationService::class);
-        $this->subject            = new TextdbViewHelper($this->translationService);
-        $this->subject->setRenderingContext($this->createMock(RenderingContextInterface::class));
+        $this->subject = $this->createSubject(self::createStub(TranslationService::class));
+    }
+
+    private function createSubject(TranslationService $translationService): TextdbViewHelper
+    {
+        $subject = new TextdbViewHelper($translationService);
+        $subject->setRenderingContext(self::createStub(RenderingContextInterface::class));
+
+        return $subject;
     }
 
     #[Test]
@@ -71,47 +75,42 @@ final class TextdbViewHelperTest extends UnitTestCase
         self::assertFalse($arguments['environment']->isRequired());
     }
 
+    /**
+     * @param array<string, string> $arguments
+     * @param list<string>          $expectedCall
+     */
     #[Test]
-    public function renderCallsTranslationService(): void
+    #[DataProvider('renderArgumentsProvider')]
+    public function renderPassesTheArgumentsToTheTranslationService(array $arguments, array $expectedCall): void
     {
-        $this->subject->initializeArguments();
-        $this->subject->setArguments([
-            'placeholder' => 'test.key',
-            'type'        => 'label',
-            'component'   => 'website',
-            'environment' => 'default',
-        ]);
-
-        $this->translationService
+        $translationService = $this->createMock(TranslationService::class);
+        $translationService
             ->expects(self::once())
             ->method('translate')
-            ->with('test.key', 'label', 'website', 'default')
+            ->with(...$expectedCall)
             ->willReturn('Translated');
 
-        $result = $this->subject->render();
+        $this->subject = $this->createSubject($translationService);
+        $this->subject->initializeArguments();
+        $this->subject->setArguments($arguments);
 
-        self::assertSame('Translated', $result);
+        self::assertSame('Translated', $this->subject->render());
     }
 
-    #[Test]
-    public function renderUsesDefaultEnvironment(): void
+    /**
+     * @return array<string, array{array<string, string>, list<string>}>
+     */
+    public static function renderArgumentsProvider(): array
     {
-        $this->subject->initializeArguments();
-        $this->subject->setArguments([
-            'placeholder' => 'key',
-            'type'        => 'P',
-            'component'   => 'comp',
-            'environment' => 'default',
-        ]);
-
-        $this->translationService
-            ->expects(self::once())
-            ->method('translate')
-            ->with('key', 'P', 'comp', 'default')
-            ->willReturn('Result');
-
-        $result = $this->subject->render();
-
-        self::assertSame('Result', $result);
+        return [
+            'all arguments given' => [
+                ['placeholder' => 'test.key', 'type' => 'label', 'component' => 'website', 'environment' => 'default'],
+                ['test.key', 'label', 'website', 'default'],
+            ],
+            'type P, environment default' => [
+                ['placeholder' => 'key', 'type' => 'P', 'component' => 'comp', 'environment' => 'default'],
+                ['key', 'P', 'comp', 'default'],
+            ],
+        ];
     }
 }

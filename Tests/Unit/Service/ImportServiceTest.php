@@ -28,7 +28,7 @@ use Netresearch\NrTextdb\Service\TranslationService;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\UsesClass;
-use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use RuntimeException;
 use TYPO3\CMS\Core\Localization\Loader\XliffLoader;
 use TYPO3\CMS\Core\Site\SiteFinder;
@@ -44,43 +44,67 @@ final class ImportServiceTest extends UnitTestCase
 {
     private ImportService $subject;
 
-    private PersistenceManagerInterface&MockObject $persistenceManager;
+    private PersistenceManagerInterface&Stub $persistenceManager;
 
-    private TranslationRepository&MockObject $translationRepository;
+    private TranslationRepository&Stub $translationRepository;
 
-    private ComponentRepository&MockObject $componentRepository;
+    private ComponentRepository&Stub $componentRepository;
 
-    private TypeRepository&MockObject $typeRepository;
+    private TypeRepository&Stub $typeRepository;
 
-    private EnvironmentRepository&MockObject $environmentRepository;
+    private EnvironmentRepository&Stub $environmentRepository;
 
-    private TranslationService&MockObject $translationService;
+    private TranslationService&Stub $translationService;
+
+    private SiteFinder&Stub $siteFinder;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->persistenceManager = $this->createMock(PersistenceManagerInterface::class);
-        // XliffLoader is final in TYPO3 v14 and cannot be doubled. The methods
-        // exercised here never touch it, so the real loader is handed in.
-        $xliffLoader                 = new XliffLoader();
-        $this->translationService    = $this->createMock(TranslationService::class);
-        $this->translationRepository = $this->createMock(TranslationRepository::class);
-        $this->componentRepository   = $this->createMock(ComponentRepository::class);
-        $this->typeRepository        = $this->createMock(TypeRepository::class);
-        $this->environmentRepository = $this->createMock(EnvironmentRepository::class);
-        $siteFinder                  = $this->createMock(SiteFinder::class);
+        $this->persistenceManager    = self::createStub(PersistenceManagerInterface::class);
+        $this->translationService    = self::createStub(TranslationService::class);
+        $this->translationRepository = self::createStub(TranslationRepository::class);
+        $this->componentRepository   = self::createStub(ComponentRepository::class);
+        $this->typeRepository        = self::createStub(TypeRepository::class);
+        $this->environmentRepository = self::createStub(EnvironmentRepository::class);
+        $this->siteFinder            = self::createStub(SiteFinder::class);
 
-        $this->subject = new ImportService(
+        $this->subject = $this->createSubject($this->translationRepository);
+    }
+
+    /**
+     * The doubles set up above are stubs. A test that verifies an invocation
+     * passes its own translation repository mock.
+     */
+    private function createSubject(TranslationRepository $translationRepository): ImportService
+    {
+        return new ImportService(
             $this->persistenceManager,
-            $xliffLoader,
+            // XliffLoader is final in TYPO3 v14 and cannot be doubled. The
+            // methods exercised here never touch it, so the real loader is
+            // handed in.
+            new XliffLoader(),
             $this->translationService,
-            $this->translationRepository,
+            $translationRepository,
             $this->componentRepository,
             $this->typeRepository,
             $this->environmentRepository,
-            $siteFinder,
+            $this->siteFinder,
         );
+    }
+
+    /**
+     * Makes the three reference repositories return the given records.
+     */
+    private function stubReferenceRecords(?Environment $environment, Component $component, Type $type): void
+    {
+        $this->environmentRepository->method('setCreateIfMissing')->willReturnSelf();
+        $this->environmentRepository->method('findByName')->willReturn($environment);
+        $this->componentRepository->method('setCreateIfMissing')->willReturnSelf();
+        $this->componentRepository->method('findByName')->willReturn($component);
+        $this->typeRepository->method('setCreateIfMissing')->willReturnSelf();
+        $this->typeRepository->method('findByName')->willReturn($type);
     }
 
     #[Test]
@@ -110,12 +134,7 @@ final class ImportServiceTest extends UnitTestCase
     {
         $result = new ImportResult();
 
-        $this->environmentRepository->method('setCreateIfMissing')->willReturnSelf();
-        $this->environmentRepository->method('findByName')->willReturn(null);
-        $this->componentRepository->method('setCreateIfMissing')->willReturnSelf();
-        $this->componentRepository->method('findByName')->willReturn(new Component());
-        $this->typeRepository->method('setCreateIfMissing')->willReturnSelf();
-        $this->typeRepository->method('findByName')->willReturn(new Type());
+        $this->stubReferenceRecords(null, new Component(), new Type());
 
         $this->subject->importEntry(0, 'comp', 'type', 'key', 'value', false, $result);
 
@@ -128,24 +147,18 @@ final class ImportServiceTest extends UnitTestCase
     {
         $result = new ImportResult();
 
-        $environment = new Environment();
-        $component   = new Component();
-        $type        = new Type();
         $translation = new Translation();
         $translation->setValue('New Value');
 
-        $this->environmentRepository->method('setCreateIfMissing')->willReturnSelf();
-        $this->environmentRepository->method('findByName')->willReturn($environment);
-        $this->componentRepository->method('setCreateIfMissing')->willReturnSelf();
-        $this->componentRepository->method('findByName')->willReturn($component);
-        $this->typeRepository->method('setCreateIfMissing')->willReturnSelf();
-        $this->typeRepository->method('findByName')->willReturn($type);
-        $this->translationRepository->method('findByEnvironmentComponentTypePlaceholderAndLanguage')
-            ->willReturn(null);
+        $this->stubReferenceRecords(new Environment(), new Component(), new Type());
         $this->translationService->method('createTranslation')->willReturn($translation);
-        $this->translationRepository->expects(self::once())->method('add');
 
-        $this->subject->importEntry(0, 'comp', 'type', 'key', 'New Value', false, $result);
+        $translationRepository = $this->createMock(TranslationRepository::class);
+        $translationRepository->method('findByEnvironmentComponentTypePlaceholderAndLanguage')
+            ->willReturn(null);
+        $translationRepository->expects(self::once())->method('add');
+
+        $this->createSubject($translationRepository)->importEntry(0, 'comp', 'type', 'key', 'New Value', false, $result);
 
         self::assertSame(1, $result->getImported());
         self::assertSame(0, $result->getUpdated());
@@ -157,23 +170,17 @@ final class ImportServiceTest extends UnitTestCase
     {
         $result = new ImportResult();
 
-        $environment = new Environment();
-        $component   = new Component();
-        $type        = new Type();
-        $existing    = new Translation();
+        $existing = new Translation();
         $existing->setValue('Old Value');
 
-        $this->environmentRepository->method('setCreateIfMissing')->willReturnSelf();
-        $this->environmentRepository->method('findByName')->willReturn($environment);
-        $this->componentRepository->method('setCreateIfMissing')->willReturnSelf();
-        $this->componentRepository->method('findByName')->willReturn($component);
-        $this->typeRepository->method('setCreateIfMissing')->willReturnSelf();
-        $this->typeRepository->method('findByName')->willReturn($type);
-        $this->translationRepository->method('findByEnvironmentComponentTypePlaceholderAndLanguage')
-            ->willReturn($existing);
-        $this->translationRepository->expects(self::once())->method('update');
+        $this->stubReferenceRecords(new Environment(), new Component(), new Type());
 
-        $this->subject->importEntry(0, 'comp', 'type', 'key', 'Updated', true, $result);
+        $translationRepository = $this->createMock(TranslationRepository::class);
+        $translationRepository->method('findByEnvironmentComponentTypePlaceholderAndLanguage')
+            ->willReturn($existing);
+        $translationRepository->expects(self::once())->method('update');
+
+        $this->createSubject($translationRepository)->importEntry(0, 'comp', 'type', 'key', 'Updated', true, $result);
 
         self::assertSame(0, $result->getImported());
         self::assertSame(1, $result->getUpdated());
@@ -185,18 +192,10 @@ final class ImportServiceTest extends UnitTestCase
     {
         $result = new ImportResult();
 
-        $environment = new Environment();
-        $component   = new Component();
-        $type        = new Type();
-        $existing    = new Translation();
+        $existing = new Translation();
         $existing->setValue('Existing');
 
-        $this->environmentRepository->method('setCreateIfMissing')->willReturnSelf();
-        $this->environmentRepository->method('findByName')->willReturn($environment);
-        $this->componentRepository->method('setCreateIfMissing')->willReturnSelf();
-        $this->componentRepository->method('findByName')->willReturn($component);
-        $this->typeRepository->method('setCreateIfMissing')->willReturnSelf();
-        $this->typeRepository->method('findByName')->willReturn($type);
+        $this->stubReferenceRecords(new Environment(), new Component(), new Type());
         $this->translationRepository->method('findByEnvironmentComponentTypePlaceholderAndLanguage')
             ->willReturn($existing);
 
@@ -211,24 +210,18 @@ final class ImportServiceTest extends UnitTestCase
     {
         $result = new ImportResult();
 
-        $environment = new Environment();
-        $component   = new Component();
-        $type        = new Type();
-        $existing    = new Translation();
+        $existing = new Translation();
         $existing->setValue(Translation::AUTO_CREATE_IDENTIFIER);
 
-        $this->environmentRepository->method('setCreateIfMissing')->willReturnSelf();
-        $this->environmentRepository->method('findByName')->willReturn($environment);
-        $this->componentRepository->method('setCreateIfMissing')->willReturnSelf();
-        $this->componentRepository->method('findByName')->willReturn($component);
-        $this->typeRepository->method('setCreateIfMissing')->willReturnSelf();
-        $this->typeRepository->method('findByName')->willReturn($type);
-        $this->translationRepository->method('findByEnvironmentComponentTypePlaceholderAndLanguage')
+        $this->stubReferenceRecords(new Environment(), new Component(), new Type());
+
+        $translationRepository = $this->createMock(TranslationRepository::class);
+        $translationRepository->method('findByEnvironmentComponentTypePlaceholderAndLanguage')
             ->willReturn($existing);
-        $this->translationRepository->expects(self::once())->method('update');
+        $translationRepository->expects(self::once())->method('update');
 
         // Even without forceUpdate=true, auto-created entries should be updated
-        $this->subject->importEntry(0, 'comp', 'type', 'key', 'Real value', false, $result);
+        $this->createSubject($translationRepository)->importEntry(0, 'comp', 'type', 'key', 'Real value', false, $result);
 
         self::assertSame(0, $result->getImported());
         self::assertSame(1, $result->getUpdated());
