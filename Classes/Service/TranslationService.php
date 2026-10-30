@@ -22,6 +22,7 @@ use Netresearch\NrTextdb\Domain\Repository\TypeRepository;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\Exception\AspectNotFoundException;
 use TYPO3\CMS\Core\Context\LanguageAspect;
+use TYPO3\CMS\Core\Exception\SiteNotFoundException;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
@@ -193,12 +194,27 @@ class TranslationService
     }
 
     /**
-     * Get All languages, configured.
+     * Returns the languages of the site that holds the configured storage
+     * page, the site the module writes the translations to.
+     *
+     * When no storage page is configured, or it lies outside every site (a
+     * folder at root level, for example), the languages of the first site
+     * are returned, as before #137; there is no site to take them from.
      *
      * @return SiteLanguage[]
      */
     public function getAllLanguages(): array
     {
+        $storagePageId = $this->environmentRepository->getConfiguredPageId();
+
+        if ($storagePageId > 0) {
+            try {
+                return $this->siteFinder->getSiteByPageId($storagePageId)->getAllLanguages();
+            } catch (SiteNotFoundException) {
+                // Falls back to the first site below.
+            }
+        }
+
         $sites     = $this->siteFinder->getAllSites();
         $firstSite = reset($sites);
 

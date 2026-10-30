@@ -28,7 +28,6 @@ use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\MockObject\MockObject;
 use RuntimeException;
 use TYPO3\CMS\Core\Localization\Parser\XliffParser;
-use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
@@ -64,7 +63,6 @@ final class ImportServiceTest extends UnitTestCase
         $this->componentRepository   = $this->createMock(ComponentRepository::class);
         $this->typeRepository        = $this->createMock(TypeRepository::class);
         $this->environmentRepository = $this->createMock(EnvironmentRepository::class);
-        $siteFinder                  = $this->createMock(SiteFinder::class);
 
         $this->subject = new ImportService(
             $this->persistenceManager,
@@ -74,7 +72,6 @@ final class ImportServiceTest extends UnitTestCase
             $this->componentRepository,
             $this->typeRepository,
             $this->environmentRepository,
-            $siteFinder,
         );
     }
 

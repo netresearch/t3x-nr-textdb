@@ -18,16 +18,12 @@ use Netresearch\NrTextdb\Service\ImportService;
 use Netresearch\NrTextdb\Tests\Functional\AbstractFunctionalTestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
-use TYPO3\CMS\Core\Site\Entity\Site;
-use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
-use TYPO3\CMS\Core\Site\SiteFinder;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * Functional tests for ImportService.
  *
- * The SiteFinder is mocked to expose a single site whose language list
- * contains English (uid=0, locale en_US) so that XLIFF files named without a
+ * The storage page lies in no site, so ImportService gets the languages of
+ * the first site. The test instance has none, so XLIFF files named without a
  * language prefix ("default.*") map to language uid 0.
  *
  * Fixtures use pid=1 as storage page. The extension configuration is set to
@@ -49,16 +45,6 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
         parent::setUp();
 
         $this->setExtensionConfiguration(textDbPid: '1', createIfMissing: '1');
-
-        // Build a minimal SiteLanguage for English (language id 0)
-        $siteLanguage = $this->buildSiteLanguage(0, 'en');
-        $siteMock     = $this->createMock(Site::class);
-        $siteMock->method('getAllLanguages')->willReturn([$siteLanguage]);
-
-        $siteFinderMock = $this->createMock(SiteFinder::class);
-        $siteFinderMock->method('getAllSites')->willReturn([$siteMock]);
-
-        GeneralUtility::addInstance(SiteFinder::class, $siteFinderMock);
 
         $this->importService         = $this->get(ImportService::class);
         $this->translationRepository = $this->get(TranslationRepository::class);
@@ -343,40 +329,6 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
         self::assertFalse(
             $translation->isAutoCreated(),
             'After import the record must no longer be flagged as auto-created.',
-        );
-    }
-
-    // -------------------------------------------------------------------------
-    // Helpers
-    // -------------------------------------------------------------------------
-
-    /**
-     * Builds a minimal SiteLanguage double that provides a locale with the
-     * given ISO language code.
-     *
-     * The locale string must use BCP-47 hyphen notation (e.g. "en-US") so that
-     * TYPO3's Locale class parses it correctly and getLanguageCode() returns
-     * the expected two-letter code ("en").
-     *
-     * @param int    $languageId   TYPO3 sys_language uid
-     * @param string $languageCode ISO 639-1 language code (e.g. "en", "de")
-     */
-    private function buildSiteLanguage(int $languageId, string $languageCode): SiteLanguage
-    {
-        // BCP-47 locale string: e.g. "en-EN" so Locale::getLanguageCode() returns "en"
-        $bcp47Locale = $languageCode . '-' . strtoupper($languageCode);
-
-        return new SiteLanguage(
-            $languageId,
-            $bcp47Locale,
-            new \TYPO3\CMS\Core\Http\Uri('https://example.com/'),
-            [
-                'title'         => $languageCode,
-                'flag'          => $languageCode,
-                'hreflang'      => $languageCode,
-                'direction'     => 'ltr',
-                'typo3Language' => $languageCode,
-            ],
         );
     }
 }
