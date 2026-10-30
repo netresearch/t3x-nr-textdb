@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace Netresearch\NrTextdb\Tests\Unit\Service;
 
+use ArrayObject;
+use Closure;
 use Netresearch\NrTextdb\Domain\Model\Component;
 use Netresearch\NrTextdb\Domain\Model\Environment;
 use Netresearch\NrTextdb\Domain\Model\Translation;
@@ -27,6 +29,8 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\MockObject\MockObject;
 use RuntimeException;
+use TYPO3\CMS\Core\Database\Connection;
+use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Localization\Parser\XliffParser;
 use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
@@ -52,26 +56,38 @@ final class ImportServiceTest extends UnitTestCase
 
     private TranslationService&MockObject $translationService;
 
+    private XliffParser&MockObject $xliffParser;
+
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->persistenceManager    = $this->createMock(PersistenceManagerInterface::class);
-        $xliffParser                 = $this->createMock(XliffParser::class);
+        $this->xliffParser           = $this->createMock(XliffParser::class);
         $this->translationService    = $this->createMock(TranslationService::class);
         $this->translationRepository = $this->createMock(TranslationRepository::class);
         $this->componentRepository   = $this->createMock(ComponentRepository::class);
         $this->typeRepository        = $this->createMock(TypeRepository::class);
         $this->environmentRepository = $this->createMock(EnvironmentRepository::class);
 
-        $this->subject = new ImportService(
+        $this->subject = $this->createSubject(self::createStub(ConnectionPool::class));
+    }
+
+    /**
+     * A test that verifies the transaction passes its own connection pool,
+     * and replaces the persistence manager before it calls this.
+     */
+    private function createSubject(ConnectionPool $connectionPool): ImportService
+    {
+        return new ImportService(
             $this->persistenceManager,
-            $xliffParser,
+            $this->xliffParser,
             $this->translationService,
             $this->translationRepository,
             $this->componentRepository,
             $this->typeRepository,
             $this->environmentRepository,
+            $connectionPool,
         );
     }
 
@@ -241,5 +257,110 @@ final class ImportServiceTest extends UnitTestCase
         self::assertSame(0, $result->getImported());
         self::assertSame(0, $result->getUpdated());
         self::assertSame(['DB error'], $result->getErrors());
+    }
+
+    #[Test]
+    public function importEntriesWritesTheEntriesInOneTransaction(): void
+    {
+        /** @var ArrayObject<int, string> $calls */
+        $calls = new ArrayObject();
+
+        $connection = $this->createMock(Connection::class);
+        $connection->expects(self::once())
+            ->method('transactional')
+            ->willReturnCallback(static function (Closure $work) use ($calls): mixed {
+                $calls[] = 'begin';
+                $value   = $work();
+                $calls[] = 'commit';
+
+                return $value;
+            });
+
+        $connectionPool = self::createStub(ConnectionPool::class);
+        $connectionPool->method('getConnectionForTable')->willReturn($connection);
+
+        $persistenceManager = $this->createMock(PersistenceManagerInterface::class);
+        $persistenceManager->expects(self::once())
+            ->method('persistAll')
+            ->willReturnCallback(static function () use ($calls): void {
+                $calls[] = 'persistAll';
+            });
+        $this->persistenceManager = $persistenceManager;
+
+        $this->createSubject($connectionPool)
+            ->importEntries(['comp|type|key' => 'value'], 0, false, new ImportResult());
+
+        self::assertSame(['begin', 'persistAll', 'commit'], $calls->getArrayCopy());
+    }
+
+    #[Test]
+    public function importEntriesReportsTheEntryErrorsOfARolledBackFileButNoCounts(): void
+    {
+        // The work runs, then the commit fails: the file is rolled back.
+        $connection = self::createStub(Connection::class);
+        $connection->method('transactional')
+            ->willReturnCallback(static function (Closure $work): never {
+                $work();
+
+                throw new RuntimeException('Commit failed', 1793253602);
+            });
+
+        $connectionPool = self::createStub(ConnectionPool::class);
+        $connectionPool->method('getConnectionForTable')->willReturn($connection);
+
+        // The first entry is imported and counted. The other two fail on
+        // their own with the same error.
+        $calls = 0;
+        $this->componentRepository->method('setCreateIfMissing')->willReturnSelf();
+        $this->componentRepository->method('findByName')->willReturn(new Component());
+        $this->typeRepository->method('setCreateIfMissing')->willReturnSelf();
+        $this->typeRepository->method('findByName')->willReturn(new Type());
+        $this->environmentRepository->method('setCreateIfMissing')->willReturnSelf();
+        $this->environmentRepository->method('findByName')
+            ->willReturnCallback(static function () use (&$calls): Environment {
+                if (++$calls > 1) {
+                    throw new RuntimeException('Environment write failed');
+                }
+
+                return new Environment();
+            });
+        $this->translationService->method('createTranslation')->willReturn(new Translation());
+
+        $result = new ImportResult();
+
+        try {
+            $this->createSubject($connectionPool)
+                ->importEntries(['comp|type|one' => 'One', 'comp|type|two' => 'Two', 'comp|type|three' => 'Three'], 0, false, $result);
+            self::fail('The failed commit did not reach the caller.');
+        } catch (RuntimeException $exception) {
+            self::assertSame(1793253602, $exception->getCode());
+        }
+
+        self::assertSame(['Environment write failed'], $result->getErrors());
+        self::assertSame(0, $result->getImported());
+    }
+
+    #[Test]
+    public function importEntriesClearsThePersistenceSessionAfterEachThousandEntries(): void
+    {
+        $connection = self::createStub(Connection::class);
+        $connection->method('transactional')
+            ->willReturnCallback(static fn (Closure $work): mixed => $work());
+
+        $connectionPool = self::createStub(ConnectionPool::class);
+        $connectionPool->method('getConnectionForTable')->willReturn($connection);
+
+        $persistenceManager = $this->createMock(PersistenceManagerInterface::class);
+        $persistenceManager->expects(self::exactly(2))->method('persistAll');
+        $persistenceManager->expects(self::once())->method('clearState');
+        $this->persistenceManager = $persistenceManager;
+
+        $entries = [];
+        for ($i = 0; $i < 1000; ++$i) {
+            $entries['comp|type|key' . $i] = 'value';
+        }
+
+        $this->createSubject($connectionPool)
+            ->importEntries($entries, 0, false, new ImportResult());
     }
 }

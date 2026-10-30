@@ -109,4 +109,13 @@ class ComponentRepository extends AbstractRepository
     {
         return $this->localCache[$key] ?? null;
     }
+
+    /**
+     * Forgets the records looked up by name, after a rolled-back import for
+     * example, whose created records no longer exist.
+     */
+    public function clearCache(): void
+    {
+        $this->localCache = [];
+    }
 }

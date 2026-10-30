@@ -13,6 +13,7 @@ namespace Netresearch\NrTextdb\Controller;
 
 use function array_key_exists;
 
+use Exception;
 use Generator;
 
 use function is_int;
@@ -1054,7 +1055,15 @@ final class TranslationController extends ActionController
                 $entries[(string) $translation->attributes()['id']] = trim($value);
             }
 
-            $this->importService->importEntries($entries, $languageUid, $forceUpdate, $result);
+            try {
+                $this->importService->importEntries($entries, $languageUid, $forceUpdate, $result);
+            } catch (Exception $exception) {
+                // An unusable key, which importEntries() reports before it
+                // writes, or a failed write, after which it rolls back. In
+                // both cases nothing of this file was imported for this
+                // language.
+                $errors[] = $exception->getMessage();
+            }
         }
 
         $this->moduleTemplate->assignMultiple([
