@@ -303,9 +303,13 @@ Both ViewHelpers look for a value in this order and render the first one
 they find:
 
 1. The TextDB entry in the current language. An entry with an empty value,
-   or one that was auto-created and never edited, does not count.
-2. ``textdb:translate`` only: the label from the language file (XLIFF) in
-   the current language.
+   or one that was auto-created and never edited, does not count. A value
+   that equals its key (``Login`` → ``Login``) does count.
+2. ``textdb:translate`` only: the label from the language file (XLIFF).
+   This is the label in the current language or, when the file has no
+   translation for the key, the file's source label. Step 3 therefore runs
+   for ``textdb:translate`` only when the key is in no language file, or
+   its label is empty.
 3. The TextDB entries in the languages of the site language's fallback
    chain (``fallbackLanguageIds`` in the site configuration), in their
    order, then the entry in the default language (``0``). The same rules as
@@ -323,8 +327,8 @@ records.
 
 For example, a German page (language ``1``) whose site language falls back
 to ``0`` renders the English TextDB entry when no German entry exists. With
-``textdb:translate``, a German label in the language file wins over that
-English entry.
+``textdb:translate``, a label in the language file wins over that English
+entry, whether it is the German label or the file's source label.
 
 .. _dev-services:
 
@@ -387,8 +391,28 @@ TranslationService
           environmentName: 'default',
       );
 
-   ``translate()`` looks up the current language only. The ViewHelpers add
-   the language fallback with ``translateFromFallbackLanguages()``.
+   ``translate()`` looks up the current language only. It returns the key
+   both when there is no usable entry and when the value equals the key; use
+   ``findTranslation()`` to tell the two apart.
+
+   findTranslation()
+   ~~~~~~~~~~~~~~~~~
+
+   .. code-block:: php
+
+      public function findTranslation(
+          string $placeholder,
+          string $typeName,
+          string $componentName,
+          string $environmentName,
+      ): ?string
+
+   Same lookup as ``translate()``, including the auto-creation with
+   ``createIfMissing``, but returns ``null`` when the current language has
+   no usable entry: none, an empty value, or an auto-created one. The
+   ViewHelpers use it for step 1 of :ref:`dev-viewhelpers-fallback`.
+
+   :returns: The value, or ``null`` if the current language has no usable entry
 
    translateFromFallbackLanguages()
    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -417,16 +441,9 @@ TranslationService
 
    .. code-block:: php
 
-      $value = $this->translationService->translate('welcome.message', 'label', 'website', 'default');
-
-      if ($value === 'welcome.message') {
-          $value = $this->translationService->translateFromFallbackLanguages(
-              'welcome.message',
-              'label',
-              'website',
-              'default',
-          ) ?? $value;
-      }
+      $value = $this->translationService->findTranslation('welcome.message', 'label', 'website', 'default')
+          ?? $this->translationService->translateFromFallbackLanguages('welcome.message', 'label', 'website', 'default')
+          ?? 'welcome.message';
 
    createTranslation()
    ~~~~~~~~~~~~~~~~~~~~

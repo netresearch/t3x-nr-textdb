@@ -451,6 +451,66 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
     }
 
     #[Test]
+    public function sourceLabelOfTheLanguageFileWinsOverTheEnglishTextDbEntry(): void
+    {
+        TranslateViewHelper::$component = 'lll-migration-component';
+
+        // de.locallang.xlf has no translation for this key, so LocalizationUtility
+        // returns the source label of locallang.xlf; the fallback chain is not
+        // reached.
+        $this->insertDefaultLanguageTranslation('message.error.export.empty', 'Edited TextDB value');
+        $this->switchToGermanPage();
+
+        $output = $this->renderFluidTemplate(
+            "{nrtextdb:translate(key: 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.error.export.empty', environment: 'default')}",
+        );
+
+        self::assertSame('No translation matches the current filter, so there is nothing to export.', trim($output));
+    }
+
+    #[Test]
+    public function valueEqualToItsKeyInTheCurrentLanguageIsNotReplacedByTheFallback(): void
+    {
+        TranslateViewHelper::$component = 'lll-migration-component';
+
+        // "Login" is a real German entry whose value equals its key, and the
+        // key is in no language file; the English entry must not replace it.
+        $this->insertDefaultLanguageTranslation('Login', 'Sign in');
+        $this->insertTranslation(1, 'Login', 'Login');
+        $this->switchToGermanPage();
+
+        $output = $this->renderFluidTemplate(
+            "{nrtextdb:translate(key: 'Login', environment: 'default')}",
+        );
+
+        self::assertSame('Login', trim($output));
+    }
+
+    #[Test]
+    public function autoCreationStillWritesTheCurrentLanguageEntryWhenTheFallbackFindsAValue(): void
+    {
+        TranslateViewHelper::$component = 'lll-migration-component';
+
+        // createIfMissing is enabled in setUp().
+        $this->insertDefaultLanguageTranslation('some-plain-placeholder', 'Plain English value');
+        $this->switchToGermanPage();
+
+        $output = $this->renderFluidTemplate(self::PLAIN_PLACEHOLDER_TEMPLATE);
+
+        self::assertSame('Plain English value', trim($output));
+        self::assertSame(
+            1,
+            (int) GeneralUtility::makeInstance(ConnectionPool::class)
+                ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
+                ->count(
+                    'uid',
+                    'tx_nrtextdb_domain_model_translation',
+                    ['placeholder' => 'some-plain-placeholder', 'sys_language_uid' => 1],
+                ),
+        );
+    }
+
+    #[Test]
     public function bothViewHelpersKeepTheirOwnResultForTheSameKeyInOneRequest(): void
     {
         TranslateViewHelper::$component = 'lll-migration-component';
@@ -506,13 +566,22 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
      */
     private function insertDefaultLanguageTranslation(string $placeholder, string $value): void
     {
+        $this->insertTranslation(0, $placeholder, $value);
+    }
+
+    /**
+     * Inserts a translation record in environment "default", component
+     * "lll-migration-component" and type "label".
+     */
+    private function insertTranslation(int $languageUid, string $placeholder, string $value): void
+    {
         GeneralUtility::makeInstance(ConnectionPool::class)
             ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
             ->insert(
                 'tx_nrtextdb_domain_model_translation',
                 [
                     'pid'              => 1,
-                    'sys_language_uid' => 0,
+                    'sys_language_uid' => $languageUid,
                     'environment'      => 1,
                     'component'        => 1,
                     'type'             => 1,

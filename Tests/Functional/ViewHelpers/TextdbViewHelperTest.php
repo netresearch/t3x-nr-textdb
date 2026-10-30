@@ -377,6 +377,37 @@ final class TextdbViewHelperTest extends AbstractFunctionalTestCase
     }
 
     #[Test]
+    public function valueEqualToItsKeyInTheCurrentLanguageIsNotReplacedByTheFallback(): void
+    {
+        // "Login" is a real German entry whose value equals its key; the
+        // English entry must not replace it.
+        $this->insertTranslation(0, 1, 1, 'Login', 'Sign in');
+        $this->insertTranslation(1, 1, 1, 'Login', 'Login');
+
+        $this->setLanguageAspect(1, [0]);
+
+        $output = $this->renderFluidTemplate(
+            "{nrtextdb:textdb(placeholder: 'Login', component: 'test-component', environment: 'default')}",
+        );
+
+        self::assertSame('Login', trim($output));
+    }
+
+    #[Test]
+    public function autoCreationStillWritesTheCurrentLanguageEntryWhenTheFallbackFindsAValue(): void
+    {
+        $this->get(TranslationRepository::class)->setCreateIfMissing(true);
+
+        // German page; "submit-button" exists only in the default language.
+        $this->setLanguageAspect(1, [0]);
+
+        $output = $this->renderFluidTemplate(self::SUBMIT_BUTTON_TEMPLATE);
+
+        self::assertSame(self::SUBMIT_BUTTON_VALUE, trim($output));
+        self::assertSame(1, $this->countTranslationRowsInLanguage('submit-button', 1));
+    }
+
+    #[Test]
     public function emptyAndAutoCreatedValuesInAFallbackLanguageAreSkipped(): void
     {
         // Language 3 falls back to 4, then 0. The entries in language 4 hold no
@@ -448,6 +479,20 @@ final class TextdbViewHelperTest extends AbstractFunctionalTestCase
                     'placeholder'      => $placeholder,
                     'value'            => $value,
                 ],
+            );
+    }
+
+    /**
+     * Counts the translation rows of one language for the given placeholder.
+     */
+    private function countTranslationRowsInLanguage(string $placeholder, int $languageUid): int
+    {
+        return (int) GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
+            ->count(
+                'uid',
+                'tx_nrtextdb_domain_model_translation',
+                ['placeholder' => $placeholder, 'sys_language_uid' => $languageUid],
             );
     }
 

@@ -86,7 +86,7 @@ final class TextdbViewHelperTest extends UnitTestCase
         $translationService = $this->createMock(TranslationService::class);
         $translationService
             ->expects(self::once())
-            ->method('translate')
+            ->method('findTranslation')
             ->with(...$expectedCall)
             ->willReturn('Translated');
 
