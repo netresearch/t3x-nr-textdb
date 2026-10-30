@@ -983,6 +983,50 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
     }
 
     #[Test]
+    public function theResetLinkOfTheListClearsTheStoredFilter(): void
+    {
+        // The reset control used to be an HTML reset button. That restores the
+        // inputs to the values they were rendered with, which are the active
+        // filter, and it never reaches the stored config (#93). The link is
+        // followed exactly as rendered.
+        $this->storeFilterConfig(['component' => 1, 'type' => 2, 'placeholder' => 'submit', 'value' => 'Submit']);
+
+        $html = (string) $this->dispatchModuleAction('list')->getBody();
+
+        self::assertSame(
+            1,
+            preg_match('/<a\b[^>]*\bclass="[^"]*textdb-filter-reset[^"]*"[^>]*>/', $html, $anchor),
+            'The list has to render the reset link.',
+        );
+        self::assertSame(1, preg_match('/\bhref="([^"]+)"/', $anchor[0], $href));
+
+        parse_str(
+            (string) parse_url(html_entity_decode($href[1]), PHP_URL_QUERY),
+            $queryParams,
+        );
+
+        $body = (string) $this->dispatchModuleAction('list', $queryParams)->getBody();
+
+        self::assertSame(
+            ['component' => 0, 'type' => 0, 'placeholder' => null, 'value' => null],
+            $this->readStoredFilterConfig(),
+        );
+        self::assertStringContainsString('id="entry-1"', $body, 'Record 1 is outside the old filter.');
+        self::assertStringContainsString('id="entry-2"', $body);
+    }
+
+    #[Test]
+    public function listingTheModuleStoresAnEmptyTextFilterAsUnset(): void
+    {
+        $this->dispatchModuleAction('list', ['placeholder' => '', 'value' => '  ']);
+
+        self::assertSame(
+            ['component' => 0, 'type' => 0, 'placeholder' => null, 'value' => null],
+            $this->readStoredFilterConfig(),
+        );
+    }
+
+    #[Test]
     public function listingTheModuleDiscardsASubmittedFilterOfTheWrongType(): void
     {
         // Backend module arguments arrive as the raw query parameters, so a filter

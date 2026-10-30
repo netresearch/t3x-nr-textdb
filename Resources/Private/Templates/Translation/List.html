@@ -57,9 +57,12 @@
                         <core:icon identifier="actions-search" size="small" />
                         <f:translate key="LLL:EXT:core/Resources/Private/Language/locallang_common.xlf:search" />
                     </f:form.button>
-                    <f:form.button type="reset" name="operation" class="btn btn-link">
+                    <f:comment><!-- A link, not a reset button: the module stores the filter, and a reset button only restores the inputs to the stored values they were rendered with. --></f:comment>
+                    <f:link.action action="list"
+                                   arguments="{component: 0, type: 0, placeholder: '', value: ''}"
+                                   class="btn btn-link textdb-filter-reset">
                         <f:translate key="filter.reset.label"/>
-                    </f:form.button>
+                    </f:link.action>
                 </div>
             </div>
         </f:form>
