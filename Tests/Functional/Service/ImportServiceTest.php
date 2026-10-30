@@ -20,6 +20,7 @@ use Netresearch\NrTextdb\Service\ImportResult;
 use Netresearch\NrTextdb\Service\ImportService;
 use Netresearch\NrTextdb\Tests\Functional\AbstractFunctionalTestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use RuntimeException;
 use TYPO3\CMS\Core\Database\ConnectionPool;
@@ -218,6 +219,43 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
 
         self::assertInstanceOf(Translation::class, $translation);
         self::assertSame('Source Only Label', $translation->getValue());
+    }
+
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function unusedUnitFileProvider(): array
+    {
+        return [
+            'XLIFF 1.2, x-unused-since'      => ['import_unused.xlf'],
+            'XLIFF 2.0, subState=deprecated' => ['import_unused_xliff2.xlf'],
+        ];
+    }
+
+    #[Test]
+    #[DataProvider('unusedUnitFileProvider')]
+    public function importFileImportsAnUnusedUnitUnderItsOwnPlaceholder(string $fixture): void
+    {
+        // XliffLoader appends ".x-unused" to the id of a unit marked unused.
+        // The placeholder is the part of the id after the second "|", so the
+        // suffix would end up in it.
+        $result = new ImportResult();
+
+        $this->importService->importFile(
+            __DIR__ . '/../Fixtures/ImportService/' . $fixture,
+            false,
+            $result,
+        );
+
+        self::assertSame([], $result->getErrors());
+        self::assertSame(1, $result->getImported());
+
+        $placeholders = $this->get(ConnectionPool::class)
+            ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
+            ->select(['placeholder'], 'tx_nrtextdb_domain_model_translation', ['value' => 'Unused Label'])
+            ->fetchFirstColumn();
+
+        self::assertSame(['unused_key'], $placeholders);
     }
 
     // -------------------------------------------------------------------------
