@@ -198,6 +198,30 @@ Problem: Import Fails Silently
 
       xmllint --noout yourfile.xlf
 
+5. Check the units the import skips without a message:
+
+   * A unit without text, for example an untranslated unit without
+     ``<target>`` in a translation file. Importing it would overwrite the
+     stored value with nothing.
+   * A unit marked ``approved="no"`` while
+     ``$GLOBALS['TYPO3_CONF_VARS']['LANG']['requireApprovedLocalizations']``
+     is enabled (the TYPO3 default).
+
+Problem: Line Breaks Lost After Re-Import
+----------------------------------------
+
+**Symptoms:**
+  * After importing an exported file, values that had line breaks or
+    repeated spaces show them as single spaces
+
+**Cause:**
+  The import reads files with TYPO3's XLIFF loader, which collapses
+  whitespace in a unit unless the unit declares ``xml:space="preserve"``.
+  Files exported by version 4.0.2 and earlier do not declare it.
+
+**Solution:**
+  Export the translations again and import the new file.
+
 Problem: Memory Exhaustion on Export
 -------------------------------------
 

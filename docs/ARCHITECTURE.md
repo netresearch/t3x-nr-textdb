@@ -27,7 +27,7 @@ TYPO3 extension (`nr_textdb`) providing an auto-creating translation database: F
 ## Data Flow
 
 - **Frontend lookup**: Fluid template → `TranslateViewHelper`/`TextdbViewHelper` → `TranslationService::translate()` → repositories (environment/component/type/translation) → value returned; if no record exists and auto-create is enabled, the service persists a new `Translation` (and a default-language parent for localized requests) before returning the placeholder.
-- **Import**: Backend module upload (`TranslationController::importAction()`) or CLI (`ImportCommand`) → `ImportService::importFile()` → `importEntry()` per XLIFF unit → repositories → `ImportResult` summary.
+- **Import**: Backend module upload (`TranslationController::importAction()`, which loads the file with TYPO3's `XliffLoader`) → `ImportService::importEntries()`; CLI (`ImportCommand`) → `ImportService::importFile()` → `importEntries()`. `importEntries()` checks every key, skips units without text, then calls `importEntry()` per XLIFF unit → repositories → `ImportResult` summary.
 - **Export**: `TranslationController::exportAction()` collects translations and streams an XLIFF archive (uses `ext-zip`).
 
 ## Key Decisions

@@ -47,6 +47,7 @@ use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Http\UploadedFile;
 use TYPO3\CMS\Core\Imaging\IconFactory;
 use TYPO3\CMS\Core\Localization\LanguageServiceFactory;
+use TYPO3\CMS\Core\Localization\Loader\XliffLoader;
 use TYPO3\CMS\Core\Messaging\FlashMessageService;
 use TYPO3\CMS\Core\Type\Bitmask\Permission;
 use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
@@ -97,6 +98,8 @@ use ZipArchive;
 #[CoversClass(TranslationController::class)]
 final class TranslationControllerTest extends AbstractFunctionalTestCase
 {
+    private const XML_DECLARATION = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+
     private const FILTER_REQUIRED_MESSAGE
         = 'Please select at least one type or component to create an export.';
 
@@ -369,6 +372,7 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
             $this->get(ImportService::class),
             $this->get(FlashMessageService::class),
             $this->get(ComponentFactory::class),
+            $this->get(XliffLoader::class),
         );
 
         // translateRecordAction() always redirects now, which needs $request/
@@ -1627,6 +1631,113 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         self::assertStringContainsString('so its entries were not imported', (string) $response->getBody());
     }
 
+    #[Test]
+    public function importOfAGermanFileUpdatesTheGermanRecord(): void
+    {
+        $response = $this->dispatchImportFile(
+            'de.textdb_import.xlf',
+            self::XML_DECLARATION
+            . '<xliff version="1.2"><file source-language="en" target-language="de" datatype="plaintext" original="textdb"><body>'
+            . '<trans-unit id="checkout|button|submit"><source>Submit</source><target>Jetzt absenden</target></trans-unit>'
+            . '</body></file></xliff>',
+            ['update' => '1'],
+        );
+
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame('Jetzt absenden', $this->fetchValue(5));
+        self::assertSame('Submit', $this->fetchValue(1));
+    }
+
+    #[Test]
+    #[DataProvider('exportedLanguageFileProvider')]
+    public function anExportedValueSurvivesTheImportOfItsFileUnchanged(int $uid, int $component, string $fileName): void
+    {
+        // Line breaks, repeated spaces and markup in a value. An XLIFF reader
+        // collapses whitespace unless the unit says xml:space="preserve".
+        $value = "<p>Line one</p>\n<p>Line  two</p>\nplain";
+        $this->updateValue($uid, $value);
+        $this->storeFilterConfig(['component' => $component]);
+
+        $exported = $this->exportedFile($this->dispatchModuleAction('export'), $fileName);
+
+        // A backend request starts with an empty persistence session; this
+        // test runs both requests in one process.
+        $this->get(PersistenceManagerInterface::class)->clearState();
+
+        $this->updateValue($uid, 'changed in the meantime');
+
+        $response = $this->dispatchImportFile($fileName, $exported, ['update' => '1']);
+
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame($value, $this->fetchValue($uid));
+    }
+
+    /**
+     * Records whose key occurs once in the exported file.
+     *
+     * @return array<string, array{int, int, string}>
+     */
+    public static function exportedLanguageFileProvider(): array
+    {
+        return [
+            'default language' => [4, 3, 'textdb_import.xlf'],
+            'German'           => [6, 1, 'de.textdb_import.xlf'],
+        ];
+    }
+
+    #[Test]
+    public function importOfAnUntranslatedUnitKeepsTheStoredTranslation(): void
+    {
+        // A translation file lists untranslated units without <target>.
+        $response = $this->dispatchImportFile(
+            'de.textdb_import.xlf',
+            self::XML_DECLARATION
+            . '<xliff version="1.2"><file source-language="en" target-language="de" datatype="plaintext" original="textdb"><body>'
+            . '<trans-unit id="checkout|button|submit"><source>Submit</source></trans-unit>'
+            . '</body></file></xliff>',
+            ['update' => '1'],
+        );
+
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame('Absenden', $this->fetchValue(5));
+    }
+
+    #[Test]
+    public function importOfAFileThatIsNoXmlShowsAnErrorAndImportsNothing(): void
+    {
+        $response = $this->dispatchImportFile('textdb_import.xlf', 'not <xml');
+
+        self::assertSame(200, $response->getStatusCode());
+        self::assertStringContainsString('The following errors occurs:', (string) $response->getBody());
+    }
+
+    #[Test]
+    public function importOfAKeyWithoutATypeShowsAnErrorInsteadOfFailing(): void
+    {
+        // A key without type used to throw a RuntimeException out of the
+        // action, an HTTP 500 for the editor.
+        $response = $this->dispatchImport('checkout', 'Hello');
+
+        self::assertSame(200, $response->getStatusCode());
+        self::assertStringContainsString('Missing type name in key: checkout', (string) $response->getBody());
+    }
+
+    #[Test]
+    public function importOfAFileWithAnUnusableKeyImportsNothingFromIt(): void
+    {
+        $response = $this->dispatchImportFile(
+            'textdb_import.xlf',
+            self::XML_DECLARATION
+            . '<xliff version="1.2"><file source-language="en" datatype="plaintext" original="textdb"><body>'
+            . '<trans-unit id="checkout|label|fresh_key"><source>Fresh</source></trans-unit>'
+            . '<trans-unit id="checkout"><source>Broken</source></trans-unit>'
+            . '</body></file></xliff>',
+        );
+
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame(0, $this->countImportedRows('fresh_key'));
+    }
+
     private function insertComponentAndTypeOnPageTwo(): void
     {
         $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
@@ -1641,6 +1752,32 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         return (int) GeneralUtility::makeInstance(ConnectionPool::class)
             ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
             ->count('uid', 'tx_nrtextdb_domain_model_translation', ['l10n_parent' => $parentUid]);
+    }
+
+    /**
+     * Returns one file of an export archive.
+     */
+    private function exportedFile(ResponseInterface $response, string $fileName): string
+    {
+        $archive = Environment::getVarPath() . '/textdb-export-test.zip';
+        file_put_contents($archive, (string) $response->getBody());
+
+        $zip = new ZipArchive();
+        self::assertTrue($zip->open($archive));
+
+        $content = $zip->getFromName($fileName);
+        $zip->close();
+
+        self::assertIsString($content, 'The export has to contain ' . $fileName . '.');
+
+        return $content;
+    }
+
+    private function updateValue(int $uid, string $value): void
+    {
+        GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
+            ->update('tx_nrtextdb_domain_model_translation', ['value' => $value], ['uid' => $uid]);
     }
 
     /**
@@ -1720,19 +1857,30 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
      */
     private function dispatchImport(string $key, string $source): ResponseInterface
     {
-        $file = Environment::getVarPath() . '/textdb_import.xlf';
-        file_put_contents(
-            $file,
-            '<?xml version="1.0" encoding="UTF-8"?>' . "\n"
+        return $this->dispatchImportFile(
+            'textdb_import.xlf',
+            self::XML_DECLARATION
             . '<xliff version="1.2"><file source-language="en" datatype="plaintext" original="textdb"><body>'
             . '<trans-unit id="' . htmlspecialchars($key) . '"><source>' . htmlspecialchars($source) . '</source></trans-unit>'
             . '</body></file></xliff>',
         );
+    }
+
+    /**
+     * Uploads $content under $clientFilename to the import action. The
+     * temporary file has no extension, like the one PHP creates for an upload.
+     *
+     * @param array<string, string> $queryParams
+     */
+    private function dispatchImportFile(string $clientFilename, string $content, array $queryParams = []): ResponseInterface
+    {
+        $file = Environment::getVarPath() . '/textdb-upload-' . bin2hex(random_bytes(4));
+        file_put_contents($file, $content);
 
         return $this->dispatchModuleAction(
             'import',
-            [],
-            ['translationFile' => new UploadedFile($file, (int) filesize($file), UPLOAD_ERR_OK, 'textdb_import.xlf')],
+            $queryParams,
+            ['translationFile' => new UploadedFile($file, (int) filesize($file), UPLOAD_ERR_OK, $clientFilename)],
         );
     }
 
