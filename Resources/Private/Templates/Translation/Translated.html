@@ -6,6 +6,11 @@
     <f:layout name="Module"/>
 
     <f:section name="Content">
+        <f:comment><!-- The list view injects only the children of .return, so this heading shows on the standalone view alone. --></f:comment>
+        <h1>
+            <f:translate key="heading.translated">Translations</f:translate><f:if condition="{translated.0.placeholder}">: {translated.0.placeholder -> f:format.htmlspecialchars()}</f:if>
+        </h1>
+
         <div class="return">
             <f:if condition="{translated}">
                 <f:else>
@@ -23,38 +28,52 @@
             >
                 <div class="table-fit">
                     <table class="table" aria-label="{f:translate(key: 'translations', default: 'Translations')}">
+                        <thead>
+                            <tr>
+                                <th scope="col">
+                                    <f:translate key="language">Language</f:translate>
+                                </th>
+                                <th scope="col">
+                                    <f:translate key="translation">Translation</f:translate>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
                         <f:for each="{translated}" as="translation">
                             <tr class="translated">
-                                <td>
+                                <th scope="row" id="textdb-language-{originalUid}-{translation.sysLanguageUid}">
                                     <f:for each="{languages}" as="language">
                                         <f:if condition="{language.languageId} == {translation.sysLanguageUid}">
                                             <core:icon identifier="{language.flagIdentifier}"/>
                                             {language.title -> f:format.htmlspecialchars()}
                                         </f:if>
                                     </f:for>
-                                </td>
+                                </th>
                                 <td>
                                     <f:form.textarea name="update[{translation.localizedUid}]"
                                                      value="{translation.value}"
                                                      class="form-control"
+                                                     aria-labelledby="textdb-language-{originalUid}-{translation.sysLanguageUid}"
                                                      placeholder="{f:translate(key: 'translation', default: 'Translation')}"/>
                                 </td>
                             </tr>
                         </f:for>
                         <f:for each="{untranslated}" as="language">
                             <tr class="untranslated">
-                                <td>
+                                <th scope="row" id="textdb-language-{originalUid}-{language.languageId}">
                                     <core:icon identifier="{language.flagIdentifier}"/>
                                     {language.title -> f:format.htmlspecialchars()}
-                                </td>
+                                </th>
                                 <td>
                                     <f:form.textarea name="new[{language.languageId}]"
                                                      value=""
                                                      class="form-control"
+                                                     aria-labelledby="textdb-language-{originalUid}-{language.languageId}"
                                                      placeholder="{f:translate(key: 'translation', default: 'Translation')}"/>
                                 </td>
                             </tr>
                         </f:for>
+                        </tbody>
                     </table>
                 </div>
                 <br>

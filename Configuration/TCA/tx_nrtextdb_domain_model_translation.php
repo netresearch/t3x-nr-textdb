@@ -24,9 +24,11 @@ return [
         'enablecolumns'            => [
             'disabled' => 'hidden',
         ],
-        'searchFields' => 'value,placeholder',
-        'iconfile'     => 'EXT:nr_textdb/Resources/Public/Icons/tx_nrtextdb_domain_model_translation.svg',
-        'security'     => [
+        'searchFields'     => 'value,placeholder',
+        'typeicon_classes' => [
+            'default' => 'nr-textdb-record-translation',
+        ],
+        'security' => [
             'ignorePageTypeRestriction' => true,
         ],
     ],

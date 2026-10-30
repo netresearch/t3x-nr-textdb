@@ -21,9 +21,11 @@ return [
             'starttime' => 'starttime',
             'endtime'   => 'endtime',
         ],
-        'searchFields' => 'name',
-        'iconfile'     => 'EXT:nr_textdb/Resources/Public/Icons/tx_nrtextdb_domain_model_environment.svg',
-        'security'     => [
+        'searchFields'     => 'name',
+        'typeicon_classes' => [
+            'default' => 'nr-textdb-record-environment',
+        ],
+        'security' => [
             'ignorePageTypeRestriction' => true,
         ],
     ],

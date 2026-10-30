@@ -11,6 +11,9 @@ declare(strict_types=1);
 
 namespace Netresearch\NrTextdb\Tests\Functional\Controller;
 
+use DOMDocument;
+use DOMElement;
+use DOMXPath;
 use Netresearch\NrTextdb\Controller\TranslationController;
 use Netresearch\NrTextdb\Domain\Repository\ComponentRepository;
 use Netresearch\NrTextdb\Domain\Repository\EnvironmentRepository;
@@ -18,6 +21,7 @@ use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
 use Netresearch\NrTextdb\Domain\Repository\TypeRepository;
 use Netresearch\NrTextdb\Service\ImportService;
 use Netresearch\NrTextdb\Service\TranslationService;
+use Netresearch\NrTextdb\Tests\Functional\AbstractFunctionalTestCase;
 use Override;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -46,7 +50,6 @@ use TYPO3\CMS\Extbase\Mvc\Request as ExtbaseRequest;
 use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
 use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
 use TYPO3\CMS\Extbase\Security\HashScope;
-use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 
 /**
  * Regression tests for the backend module's save path.
@@ -62,12 +65,6 @@ use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
  *   2. Empty textareas were submitted as empty values and stored as records.
  *   3. persistAll() ran unguarded, so any persistence error reached the editor
  *      as an exception page instead of a flash message.
- *
- * The class extends the testing framework directly instead of
- * AbstractFunctionalTestCase: that base class catches every setup failure and
- * turns it into a skipped test, which would silently disarm this regression
- * test. It also needs `extensionmanager` loaded so the container can autowire
- * ImportCommand, a constructor dependency of the controller's service graph.
  *
  * Fixtures (Fixtures/TranslationRepository/*.csv), all on pid 1:
  *   uid 1  language 0  environment 1 / component 1 / type 1 / "submit"    = "Submit"
@@ -93,28 +90,8 @@ use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
  * @see https://github.com/netresearch/t3x-nr-textdb/issues/129
  */
 #[CoversClass(TranslationController::class)]
-final class TranslationControllerTest extends FunctionalTestCase
+final class TranslationControllerTest extends AbstractFunctionalTestCase
 {
-    /**
-     * @var non-empty-string[]
-     */
-    protected array $testExtensionsToLoad = [
-        'netresearch/nr-textdb',
-    ];
-
-    /**
-     * @var non-empty-string[]
-     */
-    protected array $coreExtensionsToLoad = [
-        'extbase',
-        'fluid',
-        // Required so the container can autowire ImportCommand, which depends on
-        // TYPO3\CMS\Extensionmanager\Utility\ListUtility.
-        'extensionmanager',
-    ];
-
-    protected bool $initializeDatabase = true;
-
     private const FILTER_REQUIRED_MESSAGE
         = 'Please select at least one type or component to create an export.';
 
@@ -125,20 +102,13 @@ final class TranslationControllerTest extends FunctionalTestCase
     {
         parent::setUp();
 
-        // The production code reads the storage page through
-        // ExtensionConfiguration::get('nr_textdb', …). Writing the real global
-        // covers an arbitrary number of consumers, unlike a mock registered via
-        // GeneralUtility::addInstance(), which is consumed by the first call only.
-        $GLOBALS['TYPO3_CONF_VARS']['EXTENSIONS']['nr_textdb'] = [
-            'textDbPid'       => '1',
-            'createIfMissing' => '0',
-        ];
+        $this->setExtensionConfiguration(textDbPid: '1', createIfMissing: '0');
 
         $GLOBALS['TYPO3_REQUEST'] = (new ServerRequest('https://example.com/typo3/module/netresearch/textdb', 'POST'))
             ->withAttribute('applicationType', SystemEnvironmentBuilder::REQUESTTYPE_BE);
 
-        $this->importCSVDataSet(__DIR__ . '/../Fixtures/Pages.csv');
-        $this->importCSVDataSet(__DIR__ . '/../Fixtures/BackendUser.csv');
+        $this->importFixture('Pages.csv');
+        $this->importFixture('BackendUser.csv');
         $this->importCSVDataSet(__DIR__ . '/../Fixtures/TranslationRepository/Environments.csv');
         $this->importCSVDataSet(__DIR__ . '/../Fixtures/TranslationRepository/Components.csv');
         $this->importCSVDataSet(__DIR__ . '/../Fixtures/TranslationRepository/Types.csv');
@@ -616,6 +586,65 @@ final class TranslationControllerTest extends FunctionalTestCase
     }
 
     #[Test]
+    public function translatedViewLabelsEachTextareaByTheRowHeaderOfItsOwnLanguage(): void
+    {
+        // uid 1 has a record in languages 0 and 1; with Italian added the site
+        // also has languages 2 and 3, so both row types occur twice: two
+        // "translated" and two "untranslated" rows. Each textarea is named by
+        // the row header of its own row, so the row-header ids must be unique
+        // across all rows of the rendered view.
+        $this->writeSiteConfiguration(withItalian: true);
+
+        $html = (string) $this->dispatchModuleAction('translated', ['uid' => '1'])->getBody();
+
+        $document = new DOMDocument();
+        $previous = libxml_use_internal_errors(true);
+        $document->loadHTML($html);
+        libxml_clear_errors();
+        libxml_use_internal_errors($previous);
+
+        $xpath = new DOMXPath($document);
+
+        $rowHeaders = $xpath->query('//table//tbody/tr/th[@scope="row"]');
+        self::assertNotFalse($rowHeaders);
+        self::assertSame(4, $rowHeaders->length);
+
+        $ids = [];
+
+        foreach ($rowHeaders as $rowHeader) {
+            self::assertInstanceOf(DOMElement::class, $rowHeader);
+            $ids[] = $rowHeader->getAttribute('id');
+        }
+
+        self::assertSame(array_values(array_unique($ids)), $ids, 'row header ids must be unique: ' . implode(', ', $ids));
+
+        $textareas = $xpath->query('//table//tbody/tr/td/textarea');
+        self::assertNotFalse($textareas);
+        self::assertSame(4, $textareas->length);
+
+        $untranslated = $xpath->query('//table//tbody/tr[contains(concat(" ", normalize-space(@class), " "), " untranslated ")]');
+        self::assertNotFalse($untranslated);
+        self::assertSame(2, $untranslated->length);
+
+        foreach ($textareas as $textarea) {
+            self::assertInstanceOf(DOMElement::class, $textarea);
+
+            $labelledBy = $textarea->getAttribute('aria-labelledby');
+            $ownHeader  = $xpath->query('ancestor::tr[1]/th[@scope="row"]', $textarea);
+            self::assertNotFalse($ownHeader);
+
+            $header = $ownHeader->item(0);
+            self::assertInstanceOf(DOMElement::class, $header);
+            self::assertSame(
+                $header->getAttribute('id'),
+                $labelledBy,
+                'textarea "' . $textarea->getAttribute('name') . '" must be labelled by its own row header',
+            );
+            self::assertSame($header, $document->getElementById($labelledBy));
+        }
+    }
+
+    #[Test]
     public function translateRecordThroughTheRouteAcceptsAMalformedArrayValue(): void
     {
         // The action itself rejects update[1][]=x before touching the record
@@ -1064,7 +1093,8 @@ final class TranslationControllerTest extends FunctionalTestCase
     }
 
     /**
-     * Publishes a site with three languages (English, German, French).
+     * Publishes a site with three languages (English, German, French), or
+     * with Italian as a fourth one.
      *
      * Called from setUp() for every test: translateRecordAction() now checks
      * new[] language ids against the site's configured languages (issue
@@ -1076,7 +1106,7 @@ final class TranslationControllerTest extends FunctionalTestCase
      * written to the test instance, where tearDown() removes it again
      * together with its cache.
      */
-    private function writeSiteConfiguration(): void
+    private function writeSiteConfiguration(bool $withItalian = false): void
     {
         $siteDirectory = Environment::getConfigPath() . '/sites/textdb';
 
@@ -1102,7 +1132,15 @@ final class TranslationControllerTest extends FunctionalTestCase
                     title: French
                     locale: fr_FR.UTF-8
                     base: /fr/
-                YAML,
+
+                YAML
+            . ($withItalian ? <<<'YAML'
+                  - languageId: 3
+                    title: Italian
+                    locale: it_IT.UTF-8
+                    base: /it/
+
+                YAML : ''),
         );
 
         self::assertNotFalse($written, 'Could not write the site configuration.');
