@@ -15,6 +15,7 @@ declare(strict_types=1);
 namespace Netresearch\NrTextdb\Tests\Functional\Service;
 
 use Doctrine\DBAL\Exception as DBALException;
+use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Exception;
 use Netresearch\NrTextdb\Domain\Model\Component;
 use Netresearch\NrTextdb\Domain\Model\Translation;
@@ -679,6 +680,45 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
         self::assertSame(1, $result->getUpdated());
         self::assertSame($translationsBefore, $this->countRows('tx_nrtextdb_domain_model_translation'));
         self::assertSame('Other', $this->translationColumns('existing_key', 0)['value']);
+    }
+
+    #[Test]
+    public function importEntriesFindsARecordUnderEverySpellingTheDatabaseConsidersEqual(): void
+    {
+        $platform = $this->get(ConnectionPool::class)
+            ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
+            ->getDatabasePlatform();
+
+        if (!$platform instanceof AbstractMySQLPlatform) {
+            self::markTestSkipped('Only MariaDB and MySQL compare the placeholder case-insensitively and without trailing spaces.');
+        }
+
+        // existing_key is stored with "Existing Value". MariaDB and MySQL
+        // consider all three keys equal to it, as the lookup through Extbase
+        // did, so the file holds one record three times.
+        $entries = [
+            'mycomponent|button|existing_key'  => 'Exact',
+            'mycomponent|button|EXISTING_KEY'  => 'Upper',
+            'mycomponent|button|existing_key ' => 'Trailing',
+        ];
+
+        $translationsBefore = $this->countRows('tx_nrtextdb_domain_model_translation');
+
+        $result = new ImportResult();
+        $this->importService->importEntries($entries, 0, false, $result);
+
+        self::assertSame(0, $result->getImported());
+        self::assertSame(0, $result->getUpdated());
+        self::assertSame($translationsBefore, $this->countRows('tx_nrtextdb_domain_model_translation'));
+        self::assertSame('Existing Value', $this->translationColumns('existing_key', 0)['value']);
+
+        $result = new ImportResult();
+        $this->importService->importEntries($entries, 0, true, $result);
+
+        self::assertSame(0, $result->getImported());
+        self::assertSame(3, $result->getUpdated());
+        self::assertSame($translationsBefore, $this->countRows('tx_nrtextdb_domain_model_translation'));
+        self::assertSame('Trailing', $this->translationColumns('existing_key', 0)['value']);
     }
 
     #[Test]

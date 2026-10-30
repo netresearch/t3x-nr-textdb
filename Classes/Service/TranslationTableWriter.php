@@ -74,10 +74,12 @@ readonly class TranslationTableWriter
      * Finds what TranslationRepository::findByEnvironmentComponentTypePlaceholderAndLanguage()
      * finds: a record on the page, in the language, not deleted, hidden or
      * not. The placeholder is compared by the database: MariaDB and MySQL
-     * compare case-insensitively and ignore trailing spaces, so "Key" finds
-     * the record "key" there, as it did through Extbase. A key whose record
-     * the chunk query returned under such a different spelling is looked up
-     * on its own.
+     * compare case-insensitively and ignore trailing spaces, so "Key" and
+     * "key " find the record "key" there, as they did through Extbase, also
+     * when the same file holds "key" as well. The placeholders without an
+     * exact match are queried once more, and a key is looked up on its own
+     * only when that query returned a record of its environment, component
+     * and type, so that a key that is new costs no query of its own.
      *
      * @param array<int, TranslationKey> $keys Environment, component, type and placeholder of each key
      *
@@ -112,27 +114,42 @@ readonly class TranslationTableWriter
                 $rowsByKey[$this->rowKey($row)] = $row;
             }
 
-            $claimed   = [];
             $unmatched = [];
             foreach ($chunk as $index => $key) {
                 $keyString = implode('|', $key);
 
                 if (array_key_exists($keyString, $rowsByKey)) {
-                    $found[$index]       = $this->storedTranslation($rowsByKey[$keyString]);
-                    $claimed[$keyString] = true;
+                    $found[$index] = $this->storedTranslation($rowsByKey[$keyString]);
                 } else {
                     $unmatched[$index] = $key;
                 }
             }
 
-            // A row no key matched exactly was returned for a placeholder
-            // the database considers equal. Only the keys of its environment,
-            // component and type can be the one it belongs to.
+            if ($unmatched === []) {
+                continue;
+            }
+
+            // A key without an exact match may still find a record whose
+            // placeholder the database considers equal, also one another key
+            // of the chunk matched exactly. Such a record is among those this
+            // query returns for the placeholders without an exact match.
+            $queryBuilder = $this->createLookupQuery($pageId, $languageUid);
+            $looseRows    = $queryBuilder
+                ->andWhere(
+                    $queryBuilder->expr()->in(
+                        'placeholder',
+                        $queryBuilder->createNamedParameter(
+                            array_values(array_unique(array_map(static fn (array $key): string => $key[3], $unmatched))),
+                            Connection::PARAM_STR_ARRAY,
+                        ),
+                    ),
+                )
+                ->executeQuery()
+                ->fetchAllAssociative();
+
             $looseMatches = [];
-            foreach ($rowsByKey as $keyString => $row) {
-                if (!array_key_exists($keyString, $claimed)) {
-                    $looseMatches[$this->referenceKey($row)] = true;
-                }
+            foreach ($looseRows as $row) {
+                $looseMatches[$this->referenceKey($row)] = true;
             }
 
             foreach ($unmatched as $index => [$environment, $component, $type, $placeholder]) {
@@ -237,11 +254,12 @@ readonly class TranslationTableWriter
     }
 
     /**
-     * Updates the reference index of records from their full rows, as
-     * Extbase does after it wrote a record, without reading each row again.
+     * Updates the reference index of records, as Extbase does after it wrote
+     * a record. Extbase passes the uid only, and the method reads the row
+     * again; passing the full row skips that read.
      *
-     * ReferenceIndex::updateRefIndexTable() is marked internal; Extbase
-     * calls it the same way.
+     * ReferenceIndex::updateRefIndexTable() is marked internal; Extbase calls
+     * it as well.
      *
      * @param list<array<string, mixed>> $rows
      */
