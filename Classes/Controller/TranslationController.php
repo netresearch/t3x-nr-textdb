@@ -681,6 +681,17 @@ final class TranslationController extends ActionController
             return $this->accessDeniedResponse();
         }
 
+        [
+            'component'   => $component,
+            'type'        => $type,
+            'placeholder' => $placeholder,
+            'value'       => $value,
+        ] = $this->getConfigFromBeUserData();
+
+        if (($component === 0) && ($type === 0)) {
+            return $this->refuseExport('message.error.filter');
+        }
+
         $exportKey   = bin2hex(random_bytes(16)) . '-textdb-export';
         $exportDir   = sys_get_temp_dir() . '/' . $exportKey;
         $archivePath = $exportDir . '/export.zip';
@@ -698,118 +709,103 @@ final class TranslationController extends ActionController
             );
         }
 
-        [
-            'component'   => $component,
-            'type'        => $type,
-            'placeholder' => $placeholder,
-            'value'       => $value,
-        ] = $this->getConfigFromBeUserData();
+        // Every way out of the block below, a refusal, a returned archive or
+        // an exception, removes the working directory. The archive stream is
+        // opened before that, and an unlinked file stays readable through a
+        // stream that is already open.
+        try {
+            $languages = $this->translationService->getAllLanguages();
+            $originals = [];
 
-        if (($component === 0) && ($type === 0)) {
-            $this->addFlashMessageToQueue(
-                'Export',
-                $this->getLanguageService()->sL(
-                    'nr_textdb.messages:message.error.filter',
-                ),
-            );
+            foreach ($languages as $language) {
+                $targetFileName     = $this->getExportFileNameForLanguage($language);
+                $enableTargetMarker = $language->getLocale()->getLanguageCode() !== 'en';
 
-            return $this->redirectToUri(
-                $this->uriBuilder->reset()->uriFor('list'),
-            );
-        }
+                if ($language->getLanguageId() === 0) {
+                    $translations = $this->translationRepository
+                        ->findAllByComponentTypePlaceholderValueAndLanguage(
+                            $component,
+                            $type,
+                            $placeholder,
+                            $value,
+                            0,
+                            $this->getVisiblePageId(),
+                        );
 
-        $languages = $this->translationService->getAllLanguages();
-        $originals = [];
-
-        foreach ($languages as $language) {
-            $targetFileName     = $this->getExportFileNameForLanguage($language);
-            $enableTargetMarker = $language->getLocale()->getLanguageCode() !== 'en';
-
-            if ($language->getLanguageId() === 0) {
-                $translations = $this->translationRepository
-                    ->findAllByComponentTypePlaceholderValueAndLanguage(
-                        $component,
-                        $type,
-                        $placeholder,
-                        $value,
-                        0,
-                        $this->getVisiblePageId(),
+                    $originals = $this->writeTranslationExportFile(
+                        $language,
+                        $translations,
+                        $exportDir,
+                        $targetFileName,
+                        $enableTargetMarker,
                     );
+                } elseif ($originals !== []) {
+                    // An empty list would reach Extbase as "uid IN ()", which
+                    // it refuses with a BadConstraintException. No original
+                    // means no translation of one either.
+                    $translations = $this->translationRepository
+                        ->findByTranslationsAndLanguage(
+                            $originals,
+                            $language->getLanguageId(),
+                            $this->getVisiblePageId(),
+                        );
 
-                $originals = $this->writeTranslationExportFile(
-                    $language,
-                    $translations,
-                    $exportDir,
-                    $targetFileName,
-                    $enableTargetMarker,
-                );
-            } else {
-                $translations = $this->translationRepository
-                    ->findByTranslationsAndLanguage(
-                        $originals,
-                        $language->getLanguageId(),
-                        $this->getVisiblePageId(),
+                    $this->writeTranslationExportFile(
+                        $language,
+                        $translations,
+                        $exportDir,
+                        $targetFileName,
+                        $enableTargetMarker,
                     );
-
-                $this->writeTranslationExportFile(
-                    $language,
-                    $translations,
-                    $exportDir,
-                    $targetFileName,
-                    $enableTargetMarker,
-                );
-            }
-        }
-
-        $archive = new ZipArchive();
-
-        if ($archive->open($archivePath, ZipArchive::CREATE) !== true) {
-            // Cleanup safety: $archivePath is built by this controller from a
-            // server-side random_bytes() prefix under sys_get_temp_dir(). We
-            // still assert the path location explicitly so a future change
-            // cannot turn this into an arbitrary delete, and we delegate the
-            // actual removal to Symfony Filesystem instead of bare unlink().
-            if (str_starts_with($archivePath, sys_get_temp_dir() . '/')) {
-                (new Filesystem())->remove($archivePath);
-            }
-
-            $this->removeDirectory($exportDir);
-
-            $this->addFlashMessageToQueue(
-                'Export',
-                $this->getLanguageService()->sL(
-                    'nr_textdb.messages:message.error.archive',
-                ),
-            );
-
-            return $this->redirectToUri(
-                $this->uriBuilder->reset()->uriFor('list'),
-            );
-        }
-
-        $translationFiles = glob($exportDir . '/*');
-
-        if ($translationFiles !== false) {
-            foreach ($translationFiles as $translationFile) {
-                // Skip the archive file itself
-                if ($translationFile === $archivePath) {
-                    continue;
                 }
+            }
 
+            $translationFiles = glob($exportDir . '/*.xlf');
+
+            // A filter that matches no record writes no file, and
+            // ZipArchive::close() writes no archive without entries.
+            if (($translationFiles === false) || ($translationFiles === [])) {
+                return $this->refuseExport('message.error.export.empty');
+            }
+
+            $archive = new ZipArchive();
+
+            if ($archive->open($archivePath, ZipArchive::CREATE) !== true) {
+                return $this->refuseExport('message.error.archive');
+            }
+
+            foreach ($translationFiles as $translationFile) {
                 $archive->addFile(
                     $translationFile,
                     basename($translationFile),
                 );
             }
+
+            if (!$archive->close() || !is_file($archivePath)) {
+                return $this->refuseExport('message.error.archive');
+            }
+
+            return $this->createStreamResponseFromFile($archivePath);
+        } finally {
+            $this->removeDirectory($exportDir);
         }
+    }
 
-        $archive->close();
+    /**
+     * Queues an export error message and redirects back to the list.
+     */
+    private function refuseExport(string $messageKey): ResponseInterface
+    {
+        $this->addFlashMessageToQueue(
+            'Export',
+            $this->getLanguageService()->sL(
+                'nr_textdb.messages:' . $messageKey,
+            ),
+        );
 
-        $response = $this->createStreamResponseFromFile($archivePath);
-
-        $this->removeDirectory($exportDir);
-
-        return $response;
+        return $this->redirectToUri(
+            $this->uriBuilder->reset()->uriFor('list'),
+        );
     }
 
     /**

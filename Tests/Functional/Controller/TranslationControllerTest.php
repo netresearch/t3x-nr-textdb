@@ -100,6 +100,9 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
     private const FILTER_REQUIRED_MESSAGE
         = 'Please select at least one type or component to create an export.';
 
+    private const EXPORT_EMPTY_MESSAGE
+        = 'No translation matches the current filter, so there is nothing to export.';
+
     private const TEXTDB_TABLES
         = 'tx_nrtextdb_domain_model_translation,tx_nrtextdb_domain_model_component,'
         . 'tx_nrtextdb_domain_model_type,tx_nrtextdb_domain_model_environment';
@@ -904,6 +907,49 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
     }
 
     #[Test]
+    public function exportWithAFilterThatMatchesNothingIsRefused(): void
+    {
+        // A component with records plus a placeholder no record carries: no
+        // language yields a file, and ZipArchive::close() writes no archive
+        // without entries, so streaming the archive used to throw (#127).
+        $this->storeFilterConfig(['component' => 1, 'placeholder' => 'matches-no-record']);
+
+        $response = $this->dispatchModuleAction('export');
+
+        self::assertSame(303, $response->getStatusCode());
+        self::assertStringContainsString('Translation/list', $response->getHeaderLine('Location'));
+        self::assertSame([self::EXPORT_EMPTY_MESSAGE], $this->errorFlashMessages());
+    }
+
+    /**
+     * @param array<string, int|string> $filter
+     */
+    #[Test]
+    #[DataProvider('exportOutcomeProvider')]
+    public function exportLeavesNoTemporaryDirectoryBehind(array $filter): void
+    {
+        $this->storeFilterConfig($filter);
+
+        $before = $this->exportDirectories();
+
+        $this->dispatchModuleAction('export');
+
+        self::assertSame($before, $this->exportDirectories());
+    }
+
+    /**
+     * @return array<string, array{array<string, int|string>}>
+     */
+    public static function exportOutcomeProvider(): array
+    {
+        return [
+            'no filter selected'     => [[]],
+            'filter matches nothing' => [['component' => 1, 'placeholder' => 'matches-no-record']],
+            'archive is streamed'    => [['component' => 1]],
+        ];
+    }
+
+    #[Test]
     public function exportWithAStoredTypeOnlyFilterIsCarriedOut(): void
     {
         // The export filters by component and type, and either one on its own is
@@ -1639,6 +1685,19 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
 
         // The site configuration is read through a cache that was already built.
         $this->get(SiteConfiguration::class)->getAllExistingSites(false);
+    }
+
+    /**
+     * Lists the export working directories exportAction() creates under the
+     * system temp directory.
+     *
+     * @return string[]
+     */
+    private function exportDirectories(): array
+    {
+        $directories = glob(sys_get_temp_dir() . '/*-textdb-export', GLOB_ONLYDIR);
+
+        return $directories === false ? [] : $directories;
     }
 
     /**
