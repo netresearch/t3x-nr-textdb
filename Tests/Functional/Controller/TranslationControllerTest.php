@@ -37,6 +37,7 @@ use TYPO3\CMS\Core\Configuration\SiteConfiguration;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Core\SystemEnvironmentBuilder;
 use TYPO3\CMS\Core\Crypto\HashService;
+use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Http\ServerRequest;
@@ -782,6 +783,87 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
             );
             self::assertSame($header, $document->getElementById($labelledBy));
         }
+    }
+
+    /**
+     * On TYPO3 13.4 Extbase overlays a localized row through its parent unless
+     * the query turns overlays off. The overlay lookup skips hidden rows and
+     * rows on another page than the parent, so the dialog received the parent
+     * in place of such a translation: a second "update[<parent uid>]"
+     * textarea holding the parent's value, and the language listed as
+     * untranslated. Editing that row and saving wrote into the parent.
+     *
+     * @param array<string, int> $translationChanges
+     */
+    #[Test]
+    #[DataProvider('translationTheOverlayDoesNotFindProvider')]
+    public function savingTheDialogUpdatesATranslationTheOverlayDoesNotFindAndLeavesItsParent(
+        int $parent,
+        array $translationChanges,
+        string $parentValue,
+    ): void {
+        $this->updateTranslation(5, $translationChanges);
+
+        $fields = $this->renderedDialogFields($parent);
+
+        // The editor changes the second row of the dialog, the first
+        // translation after the parent itself.
+        self::assertTrue($fields[1]['translated'] ?? false, 'The dialog has to list a translation after the parent.');
+        $fields[1]['value'] = 'Absenden geändert';
+
+        // A request starts with an empty persistence session.
+        $this->get(PersistenceManagerInterface::class)->clearState();
+
+        $this->dispatchTranslateRecord($this->formSubmission($parent, $fields));
+
+        self::assertSame($parentValue, $this->fetchRawValue($parent), 'The parent must keep its value.');
+        self::assertSame('Absenden geändert', $this->fetchRawValue(5), 'The German translation must take the edit.');
+
+        self::assertSame(
+            [
+                'update[' . $parent . ']=' . $parentValue,
+                'update[5]=Absenden',
+                'new[2]=',
+            ],
+            array_map(
+                static fn (array $field): string => $field['name'] . '=' . $field['originalValue'],
+                $fields,
+            ),
+            'The dialog has to render the German translation under its own uid, not the language as untranslated.',
+        );
+    }
+
+    /**
+     * @return array<string, array{int, array<string, int>, string}>
+     */
+    public static function translationTheOverlayDoesNotFindProvider(): array
+    {
+        return [
+            'a hidden translation'                          => [1, ['hidden' => 1], 'Submit'],
+            'a translation on another page than its parent' => [8, ['l10n_parent' => 8], 'Submit PID2'],
+        ];
+    }
+
+    /**
+     * Same overlay as above, in the export: the German file carried the
+     * parent's text in place of such a translation.
+     *
+     * @param array<string, int> $translationChanges
+     */
+    #[Test]
+    #[DataProvider('translationTheOverlayDoesNotFindProvider')]
+    public function exportWritesTheValueOfATranslationTheOverlayDoesNotFind(
+        int $parent,
+        array $translationChanges,
+        string $parentValue,
+    ): void {
+        $this->updateTranslation(5, $translationChanges);
+        $this->storeFilterConfig(['component' => 1, 'type' => 1]);
+
+        $germanFile = $this->exportedFile($this->dispatchModuleAction('export'), 'de.textdb_import.xlf');
+
+        self::assertStringContainsString('<target><![CDATA[Absenden]]></target>', $germanFile);
+        self::assertStringNotContainsString('<target><![CDATA[' . $parentValue . ']]></target>', $germanFile);
     }
 
     #[Test]
@@ -1538,10 +1620,7 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
 
         self::assertSame('application/zip; charset=utf-8', $response->getHeaderLine('Content-Type'));
         self::assertStringNotContainsString('Only on page two', $this->exportedText($response));
-        // On TYPO3 13.4 Extbase overlays a translated row through its parent,
-        // which replaces record 50 with uid 6 from page 1, so the assertion
-        // above holds even without the page filter. Record 8 is a default-
-        // language row on page 2 and has no such overlay.
+        // Record 8 is the default-language counterpart on page 2.
         self::assertStringNotContainsString('Submit PID2', $this->exportedText($response));
         self::assertStringContainsString('Absenden', $this->exportedText($response));
     }
@@ -2073,6 +2152,99 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
                 'tx_nrtextdb_domain_model_translation',
                 ['placeholder' => $placeholder, 'deleted' => 0],
             );
+    }
+
+    /**
+     * Changes columns of a translation row directly in the database.
+     *
+     * @param array<string, int> $changes
+     */
+    private function updateTranslation(int $uid, array $changes): void
+    {
+        GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
+            ->update('tx_nrtextdb_domain_model_translation', $changes, ['uid' => $uid]);
+    }
+
+    /**
+     * Renders the "translated" dialog of a record and returns its textareas in
+     * document order, the way a browser submits them.
+     *
+     * @return list<array{name: string, value: string, originalValue: string, translated: bool}>
+     */
+    private function renderedDialogFields(int $uid): array
+    {
+        $html = (string) $this->dispatchModuleAction('translated', ['uid' => (string) $uid])->getBody();
+
+        $document = new DOMDocument();
+        $previous = libxml_use_internal_errors(true);
+        $document->loadHTML('<?xml encoding="UTF-8">' . $html);
+        libxml_clear_errors();
+        libxml_use_internal_errors($previous);
+
+        $textareas = (new DOMXPath($document))->query('//form[contains(@class, "translation-form")]//textarea');
+        self::assertNotFalse($textareas);
+
+        $fields = [];
+
+        foreach ($textareas as $textarea) {
+            self::assertInstanceOf(DOMElement::class, $textarea);
+
+            $row = $textarea->parentNode?->parentNode;
+            self::assertInstanceOf(DOMElement::class, $row);
+
+            $fields[] = [
+                'name'          => $textarea->getAttribute('name'),
+                'value'         => $textarea->textContent,
+                'originalValue' => $textarea->textContent,
+                'translated'    => $row->getAttribute('class') === 'translated',
+            ];
+        }
+
+        return $fields;
+    }
+
+    /**
+     * Builds the arguments a browser submits for the dialog's textareas. Of
+     * several fields with the same name, PHP keeps the last one.
+     *
+     * @param list<array{name: string, value: string, originalValue: string, translated: bool}> $fields
+     *
+     * @return array<string, string|array<int, string>>
+     */
+    private function formSubmission(int $parent, array $fields): array
+    {
+        $submission = ['parent' => (string) $parent, 'update' => [], 'new' => []];
+
+        foreach ($fields as $field) {
+            self::assertSame(1, preg_match('/^(update|new)\[(-?\d+)\]$/', $field['name'], $match));
+
+            $submission[$match[1]][(int) $match[2]] = $field['value'];
+        }
+
+        return $submission;
+    }
+
+    /**
+     * Reads a value regardless of the hidden flag, which the default
+     * restrictions of Connection::select() would apply.
+     */
+    private function fetchRawValue(int $uid): string
+    {
+        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getQueryBuilderForTable('tx_nrtextdb_domain_model_translation');
+        $queryBuilder->getRestrictions()->removeAll();
+
+        $value = $queryBuilder
+            ->select('value')
+            ->from('tx_nrtextdb_domain_model_translation')
+            ->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($uid, Connection::PARAM_INT)))
+            ->executeQuery()
+            ->fetchOne();
+
+        self::assertIsString($value, 'Translation record ' . $uid . ' is gone.');
+
+        return $value;
     }
 
     private function fetchValue(int $uid): string
