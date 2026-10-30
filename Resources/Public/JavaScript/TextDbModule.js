@@ -8,17 +8,30 @@
  * into the given element, replacing what it held.
  *
  * The backend layout renders the flash messages a request flushed from the
- * queue in ".typo3-messages-container", outside ".return", so they are moved
- * along or they are lost (#142). The container keeps its role="alert", so a
- * screen reader announces the inserted messages. Nodes are moved out of the
- * inert DOMParser document, never inserted as an HTML string.
+ * queue outside ".return", so they are moved along or they are lost (#142).
+ * TYPO3 14.3.10 and later put them in ".typo3-messages-container", which
+ * carries role="alert". Earlier 14.3 releases render ".typo3-messages"
+ * without a live region, so it is wrapped in an element with role="alert".
+ * Either way a screen reader announces the inserted messages. Nodes are moved
+ * out of the inert DOMParser document, never inserted as an HTML string.
  *
  * Returns false and leaves the element unchanged when the response carries
  * neither, for example an error page.
  */
 function moveResponseInto(content, element)
 {
-    const messages = content.querySelector(".typo3-messages-container");
+    let messages = content.querySelector(".typo3-messages-container");
+
+    if (messages === null) {
+        const bareMessages = content.querySelector(".typo3-messages");
+
+        if (bareMessages !== null) {
+            messages = element.ownerDocument.createElement("div");
+            messages.setAttribute("role", "alert");
+            messages.appendChild(bareMessages);
+        }
+    }
+
     const hasMessages = messages !== null && messages.querySelector(".alert") !== null;
     const contentReturn = content.querySelector(".return");
 
