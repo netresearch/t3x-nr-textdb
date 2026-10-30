@@ -237,25 +237,25 @@ Problem: Line Breaks Lost After Re-Import
   the original XLIFF file or a database backup, or edit it in the backend
   module.
 
-Problem: Memory Exhaustion on Export
--------------------------------------
+Problem: Export Exceeds the Time Limit
+--------------------------------------
 
 **Symptoms:**
-  * Export fails with memory limit error
-  * Large datasets cause timeout
+  * The export of a large data set ends with a timeout
+
+**Cause:**
+  The export reads the entries in batches of 1,000, so its memory use
+  does not grow with the data set. Its time does: an export of 48,500
+  entries in the default language and one translation of each took
+  44 seconds on SQLite and needed 29 MB of memory beyond the request.
+  Versions up to 4.0.2 read all entries at once and needed 685 MB for the
+  same export, which fails with a memory limit error.
 
 **Solution:**
-
-1. Increase PHP memory limit temporarily:
-
-   .. code-block:: ini
-
-      ; php.ini
-      memory_limit = 512M
-
-2. Export smaller subsets using filters
-
-3. Use filters to reduce the export dataset to manageable sizes
+  * Raise ``max_execution_time`` for backend requests. TYPO3 recommends
+    240 seconds.
+  * Narrow the export with the filters of the module, for example to one
+    component and type.
 
 .. _reporting-bugs:
 
