@@ -295,16 +295,29 @@ final class ImportServiceTest extends UnitTestCase
         $connectionPool = self::createStub(ConnectionPool::class);
         $connectionPool->method('getConnectionForTable')->willReturn($connection);
 
-        // The first entry fails on its own and records its error.
+        // The first entry is imported and counted. The other two fail on
+        // their own with the same error.
+        $calls = 0;
+        $this->componentRepository->method('setCreateIfMissing')->willReturnSelf();
+        $this->componentRepository->method('findByName')->willReturn(new Component());
+        $this->typeRepository->method('setCreateIfMissing')->willReturnSelf();
+        $this->typeRepository->method('findByName')->willReturn(new Type());
         $this->environmentRepository->method('setCreateIfMissing')->willReturnSelf();
         $this->environmentRepository->method('findByName')
-            ->willThrowException(new RuntimeException('Environment write failed'));
+            ->willReturnCallback(static function () use (&$calls): Environment {
+                if (++$calls > 1) {
+                    throw new RuntimeException('Environment write failed');
+                }
+
+                return new Environment();
+            });
+        $this->translationService->method('createTranslation')->willReturn(new Translation());
 
         $result = new ImportResult();
 
         try {
             $this->createSubject($this->translationRepository, $connectionPool)
-                ->importEntries(['comp|type|key' => 'value'], 0, false, $result);
+                ->importEntries(['comp|type|one' => 'One', 'comp|type|two' => 'Two', 'comp|type|three' => 'Three'], 0, false, $result);
             self::fail('The failed commit did not reach the caller.');
         } catch (RuntimeException $exception) {
             self::assertSame(1793253602, $exception->getCode());

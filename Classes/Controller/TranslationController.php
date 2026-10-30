@@ -1006,7 +1006,8 @@ final class TranslationController extends ActionController
             } catch (Exception $exception) {
                 // An unusable key, which importEntries() reports before it
                 // writes, or a failed write, after which it rolls back. In
-                // both cases nothing of this file was imported.
+                // both cases nothing of this file was imported for this
+                // language.
                 $errors[] = $exception->getMessage();
             }
         }

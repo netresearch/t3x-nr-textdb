@@ -135,7 +135,9 @@ final readonly class ImportService
      * cleared then, because they hold records whose rows were rolled back.
      * The counts of the file reach $result only once the transaction has
      * committed, so a rolled-back file adds nothing to them. Its error
-     * messages do reach $result, because one of them can name the cause.
+     * messages do reach $result, each once, because one of them can name the
+     * cause; on PostgreSQL every statement after a failed one repeats the
+     * same error.
      *
      * @param array<array-key, mixed> $entries
      * @param int<-1, max>            $languageUid
@@ -226,7 +228,7 @@ final readonly class ImportService
                     $this->persistenceManager->persistAll();
                 });
         } catch (Throwable $throwable) {
-            foreach ($fileResult->getErrors() as $error) {
+            foreach (array_unique($fileResult->getErrors()) as $error) {
                 $result->recordError($error);
             }
 
