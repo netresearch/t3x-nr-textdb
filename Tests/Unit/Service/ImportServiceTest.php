@@ -14,6 +14,8 @@ declare(strict_types=1);
 
 namespace Netresearch\NrTextdb\Tests\Unit\Service;
 
+use ArrayObject;
+use Closure;
 use Netresearch\NrTextdb\Domain\Model\Component;
 use Netresearch\NrTextdb\Domain\Model\Environment;
 use Netresearch\NrTextdb\Domain\Model\Translation;
@@ -30,6 +32,8 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\MockObject\Stub;
 use RuntimeException;
+use TYPO3\CMS\Core\Database\Connection;
+use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Localization\Loader\XliffLoader;
 use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
@@ -71,10 +75,12 @@ final class ImportServiceTest extends UnitTestCase
 
     /**
      * The doubles set up above are stubs. A test that verifies an invocation
-     * passes its own translation repository mock.
+     * passes its own translation repository mock or connection pool.
      */
-    private function createSubject(TranslationRepository $translationRepository): ImportService
-    {
+    private function createSubject(
+        TranslationRepository $translationRepository,
+        ?ConnectionPool $connectionPool = null,
+    ): ImportService {
         return new ImportService(
             $this->persistenceManager,
             // XliffLoader is final in TYPO3 v14 and cannot be doubled. The
@@ -86,6 +92,7 @@ final class ImportServiceTest extends UnitTestCase
             $this->componentRepository,
             $this->typeRepository,
             $this->environmentRepository,
+            $connectionPool ?? self::createStub(ConnectionPool::class),
         );
     }
 
@@ -237,5 +244,63 @@ final class ImportServiceTest extends UnitTestCase
         self::assertSame(0, $result->getImported());
         self::assertSame(0, $result->getUpdated());
         self::assertSame(['DB error'], $result->getErrors());
+    }
+
+    #[Test]
+    public function importEntriesWritesTheEntriesInOneTransaction(): void
+    {
+        /** @var ArrayObject<int, string> $calls */
+        $calls = new ArrayObject();
+
+        $connection = $this->createMock(Connection::class);
+        $connection->expects(self::once())
+            ->method('transactional')
+            ->willReturnCallback(static function (Closure $work) use ($calls): mixed {
+                $calls[] = 'begin';
+                $value   = $work();
+                $calls[] = 'commit';
+
+                return $value;
+            });
+
+        $connectionPool = self::createStub(ConnectionPool::class);
+        $connectionPool->method('getConnectionForTable')->willReturn($connection);
+
+        $persistenceManager = $this->createMock(PersistenceManagerInterface::class);
+        $persistenceManager->expects(self::once())
+            ->method('persistAll')
+            ->willReturnCallback(static function () use ($calls): void {
+                $calls[] = 'persistAll';
+            });
+        $this->persistenceManager = $persistenceManager;
+
+        $this->createSubject($this->translationRepository, $connectionPool)
+            ->importEntries(['comp|type|key' => 'value'], 0, false, new ImportResult());
+
+        self::assertSame(['begin', 'persistAll', 'commit'], $calls->getArrayCopy());
+    }
+
+    #[Test]
+    public function importEntriesClearsThePersistenceSessionAfterEachThousandEntries(): void
+    {
+        $connection = self::createStub(Connection::class);
+        $connection->method('transactional')
+            ->willReturnCallback(static fn (Closure $work): mixed => $work());
+
+        $connectionPool = self::createStub(ConnectionPool::class);
+        $connectionPool->method('getConnectionForTable')->willReturn($connection);
+
+        $persistenceManager = $this->createMock(PersistenceManagerInterface::class);
+        $persistenceManager->expects(self::exactly(2))->method('persistAll');
+        $persistenceManager->expects(self::once())->method('clearState');
+        $this->persistenceManager = $persistenceManager;
+
+        $entries = [];
+        for ($i = 0; $i < 1000; ++$i) {
+            $entries['comp|type|key' . $i] = 'value';
+        }
+
+        $this->createSubject($this->translationRepository, $connectionPool)
+            ->importEntries($entries, 0, false, new ImportResult());
     }
 }

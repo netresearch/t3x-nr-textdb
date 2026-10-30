@@ -34,19 +34,30 @@ Reported Issues
 Import Performance
 ------------------
 
-**Issue:** Large XLIFF files (>10MB) may timeout during import
+**Issue:** A large XLIFF file can take longer than the PHP time limit of a
+backend request.
+
+An import writes every entry of a file in one database transaction and
+keeps at most 1,000 records in memory. A file of 10 MB with 48,500 units
+imported in these times, measured with a memory limit of 256 MB:
+
+* SQLite, CLI import: 1 minute 43 seconds, at most 160 MB
+* MariaDB 10.11, the same entries: 6 minutes 15 seconds
+
+If an import fails, the file imports nothing.
 
 **Workaround:**
-  * Split large files into smaller chunks
-  * Increase PHP `max_execution_time`:
+  * Import large files with the CLI command ``nr_textdb:import``, which
+    has no time limit
+  * Split large files into smaller files for the backend module
+  * Increase PHP `max_execution_time` for the backend:
 
     .. code-block:: ini
 
-       max_execution_time = 300
+       max_execution_time = 600
 
-  * Use CLI import command instead of backend module
-
-**Status:** Under investigation
+**Status:** Open. Each new entry costs Extbase several SQL statements,
+which limits the speed.
 
 **GitHub Issue:** `#30 <https://github.com/netresearch/t3x-nr-textdb/issues/30>`_
 

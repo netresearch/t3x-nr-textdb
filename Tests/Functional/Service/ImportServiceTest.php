@@ -21,6 +21,10 @@ use Netresearch\NrTextdb\Service\ImportService;
 use Netresearch\NrTextdb\Tests\Functional\AbstractFunctionalTestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
+use RuntimeException;
+use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\EventDispatcher\ListenerProvider;
+use TYPO3\CMS\Extbase\Event\Persistence\EntityAddedToPersistenceEvent;
 
 /**
  * Functional tests for ImportService.
@@ -208,6 +212,70 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
     }
 
     // -------------------------------------------------------------------------
+    // importEntries
+    // -------------------------------------------------------------------------
+
+    #[Test]
+    public function importEntriesImportsNothingWhenAWriteFailsAndCanBeRepeated(): void
+    {
+        $entries = [
+            'rollbackcomponent|label|first'  => 'First',
+            'rollbackcomponent|label|second' => 'Second',
+            'rollbackcomponent|label|third'  => 'Third',
+        ];
+
+        // Fails the write of the second new translation, after the first
+        // translation and the new component have reached the database.
+        $listener = new class {
+            public bool $enabled = true;
+
+            private int $translations = 0;
+
+            public function __invoke(EntityAddedToPersistenceEvent $event): void
+            {
+                if ($this->enabled && $event->getObject() instanceof Translation && ++$this->translations === 2) {
+                    throw new RuntimeException('Simulated write failure', 1793253600);
+                }
+            }
+        };
+        $this->getContainer()->set('nr_textdb.test.failing_write', $listener);
+        $this->get(ListenerProvider::class)
+            ->addListener(EntityAddedToPersistenceEvent::class, 'nr_textdb.test.failing_write');
+
+        $translationsBefore = $this->countRows('tx_nrtextdb_domain_model_translation');
+
+        try {
+            $this->importService->importEntries($entries, 0, false, new ImportResult());
+            self::fail('The simulated write failure did not reach the caller.');
+        } catch (RuntimeException $exception) {
+            self::assertSame(1793253600, $exception->getCode());
+        }
+
+        self::assertSame($translationsBefore, $this->countRows('tx_nrtextdb_domain_model_translation'));
+        self::assertSame(0, $this->countRows('tx_nrtextdb_domain_model_component', 'rollbackcomponent'));
+
+        // The same process imports the file again, as the CLI command does
+        // with its next file. The component it creates must be a row again.
+        $listener->enabled = false;
+        $result            = new ImportResult();
+        $this->importService->importEntries($entries, 0, false, $result);
+
+        self::assertSame(3, $result->getImported());
+        self::assertSame(1, $this->countRows('tx_nrtextdb_domain_model_component', 'rollbackcomponent'));
+
+        $componentUid = $this->get(ConnectionPool::class)
+            ->getConnectionForTable('tx_nrtextdb_domain_model_component')
+            ->select(['uid'], 'tx_nrtextdb_domain_model_component', ['name' => 'rollbackcomponent'])
+            ->fetchOne();
+        $translationComponents = $this->get(ConnectionPool::class)
+            ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
+            ->select(['component'], 'tx_nrtextdb_domain_model_translation', ['placeholder' => 'second'])
+            ->fetchFirstColumn();
+
+        self::assertSame([$componentUid], $translationComponents);
+    }
+
+    // -------------------------------------------------------------------------
     // importEntry
     // -------------------------------------------------------------------------
 
@@ -365,5 +433,19 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
             $translation->isAutoCreated(),
             'After import the record must no longer be flagged as auto-created.',
         );
+    }
+
+    // -------------------------------------------------------------------------
+    // Helpers
+    // -------------------------------------------------------------------------
+
+    /**
+     * Counts the rows of a table, or those with the given name.
+     */
+    private function countRows(string $table, ?string $name = null): int
+    {
+        return $this->get(ConnectionPool::class)
+            ->getConnectionForTable($table)
+            ->count('*', $table, $name === null ? [] : ['name' => $name]);
     }
 }
