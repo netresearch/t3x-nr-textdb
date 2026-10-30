@@ -53,7 +53,6 @@ use TYPO3\CMS\Core\Http\Stream;
 use TYPO3\CMS\Core\Http\UploadedFile;
 use TYPO3\CMS\Core\Imaging\IconFactory;
 use TYPO3\CMS\Core\Localization\LanguageServiceFactory;
-use TYPO3\CMS\Core\Localization\Loader\XliffLoader;
 use TYPO3\CMS\Core\Messaging\FlashMessageService;
 use TYPO3\CMS\Core\Type\Bitmask\Permission;
 use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
@@ -379,7 +378,6 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
             $this->get(ImportService::class),
             $this->get(FlashMessageService::class),
             $this->get(ComponentFactory::class),
-            $this->get(XliffLoader::class),
         );
 
         // translateRecordAction() always redirects now, which needs $request/
@@ -1760,6 +1758,97 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
 
         self::assertSame(200, $response->getStatusCode());
         self::assertSame('Absenden', $this->fetchValue(5));
+    }
+
+    /**
+     * German files with one approved unit, one unit that is not approved, one
+     * without text and a plural unit with one form that is not approved.
+     *
+     * @return array<string, array{string}>
+     */
+    public static function germanFileWithSkippedUnitsProvider(): array
+    {
+        return [
+            'XLIFF 1.2' => [
+                '<xliff version="1.2"><file source-language="en" target-language="de" datatype="plaintext" original="textdb"><body>'
+                . '<trans-unit id="checkout|button|submit"><source>Submit</source><target>Jetzt absenden</target></trans-unit>'
+                . '<trans-unit id="checkout|button|draft" approved="no"><source>Draft</source><target>Entwurf</target></trans-unit>'
+                . '<trans-unit id="checkout|button|untranslated"><source>Untranslated</source></trans-unit>'
+                . '<group id="checkout|label|items" restype="x-gettext-plurals">'
+                . '<trans-unit id="checkout|label|items[0]"><source>One item</source><target>Ein Eintrag</target></trans-unit>'
+                . '<trans-unit id="checkout|label|items[1]" approved="no"><source>%d items</source><target>%d Einträge</target></trans-unit>'
+                . '</group>'
+                . '</body></file></xliff>',
+            ],
+            'XLIFF 2.0' => [
+                '<xliff version="2.0" xmlns="urn:oasis:names:tc:xliff:document:2.0" srcLang="en" trgLang="de"><file id="textdb">'
+                . '<unit id="checkout|button|submit"><segment state="final"><source>Submit</source><target>Jetzt absenden</target></segment></unit>'
+                . '<unit id="checkout|button|draft"><segment state="initial"><source>Draft</source><target>Entwurf</target></segment></unit>'
+                . '<unit id="checkout|button|untranslated"><segment><source>Untranslated</source><target/></segment></unit>'
+                . '<unit id="checkout|label|items">'
+                . '<segment state="final"><source>One item</source><target>Ein Eintrag</target></segment>'
+                . '<segment state="initial"><source>%d items</source><target>%d Einträge</target></segment>'
+                . '</unit>'
+                . '</file></xliff>',
+            ],
+        ];
+    }
+
+    #[Test]
+    #[DataProvider('germanFileWithSkippedUnitsProvider')]
+    public function importOfAGermanFileNamesTheUnitsItSkipped(string $xliff): void
+    {
+        $GLOBALS['TYPO3_CONF_VARS']['LANG']['requireApprovedLocalizations'] = true;
+
+        $response = $this->dispatchImportFile('de.textdb_import.xlf', self::XML_DECLARATION . $xliff, ['update' => '1']);
+        $body     = (string) $response->getBody();
+
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame('Jetzt absenden', $this->fetchValue(5));
+        self::assertSame(0, $this->countImportedRows('draft'));
+        self::assertStringContainsString(
+            htmlspecialchars(
+                "Translations not imported because they are not approved and \$GLOBALS['TYPO3_CONF_VARS']['LANG']['requireApprovedLocalizations'] is enabled (1): checkout|button|draft",
+            ),
+            $body,
+        );
+        self::assertStringContainsString(
+            'Translations not imported because they have no text (1): checkout|button|untranslated',
+            $body,
+        );
+        self::assertStringContainsString(
+            htmlspecialchars(
+                "Plural translations imported without their forms that are not approved, because \$GLOBALS['TYPO3_CONF_VARS']['LANG']['requireApprovedLocalizations'] is enabled (1): checkout|label|items",
+            ),
+            $body,
+        );
+    }
+
+    #[Test]
+    public function importListsTheFirstTenSkippedKeysEscaped(): void
+    {
+        $units = '';
+        for ($index = 1; $index <= 12; ++$index) {
+            $units .= '<trans-unit id="checkout|label|&lt;b&gt;' . $index . '"><source>x</source></trans-unit>';
+        }
+
+        $response = $this->dispatchImportFile(
+            'de.textdb_import.xlf',
+            self::XML_DECLARATION
+            . '<xliff version="1.2"><file source-language="en" target-language="de" datatype="plaintext" original="textdb"><body>'
+            . $units
+            . '</body></file></xliff>',
+        );
+        $body = (string) $response->getBody();
+
+        self::assertSame(200, $response->getStatusCode());
+        self::assertStringContainsString(
+            'Translations not imported because they have no text (12): checkout|label|&lt;b&gt;1, ',
+            $body,
+        );
+        self::assertStringContainsString('checkout|label|&lt;b&gt;10 and 2 more', $body);
+        self::assertStringNotContainsString('&lt;b&gt;11', $body);
+        self::assertStringNotContainsString('<b>', $body);
     }
 
     #[Test]

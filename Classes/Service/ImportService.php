@@ -24,8 +24,10 @@ use Netresearch\NrTextdb\Domain\Repository\EnvironmentRepository;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
 use Netresearch\NrTextdb\Domain\Repository\TypeRepository;
 use RuntimeException;
+use Symfony\Component\Translation\Exception\InvalidResourceException;
 use Throwable;
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Localization\Exception\InvalidXmlFileException;
 use TYPO3\CMS\Core\Localization\Loader\XliffLoader;
 use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
@@ -54,6 +56,12 @@ final readonly class ImportService
      * `x-unused-since`, XLIFF 2.0 segment `subState="deprecated"`.
      */
     private const UNUSED_SUFFIX = '.x-unused';
+
+    /**
+     * The key in $GLOBALS['TYPO3_CONF_VARS']['LANG'] that makes XliffLoader
+     * leave out the units of a translation file that are not approved.
+     */
+    public const APPROVAL_SETTING = 'requireApprovedLocalizations';
 
     private PersistenceManagerInterface $persistenceManager;
 
@@ -112,18 +120,79 @@ final readonly class ImportService
     ): void {
         $languageKey = $this->getLanguageKeyFromFile($file);
         $languageUid = $this->getLanguageId($languageKey);
+        $loadedFile  = $this->loadFile($file, $languageKey);
 
-        // TYPO3 v14 replaced the localization parsers with Symfony Translation
-        // loaders (Deprecation #107436). XliffLoader is the core replacement for
-        // XliffParser: unlike Symfony's own XliffFileLoader it keeps TYPO3's
-        // XLIFF dialect working — `<xliff version="1.0">` documents, the
-        // source-only default-language file, and the `approved` attribute — and
-        // returns a Symfony MessageCatalogue instead of the nested array.
+        $this->importEntries(
+            $loadedFile->entries,
+            $languageUid,
+            $forceUpdate,
+            $result,
+            $loadedFile->unapprovedKeys,
+            $loadedFile->partiallyApprovedKeys,
+        );
+    }
+
+    /**
+     * Reads the messages of an XLIFF file and the keys of the units left out
+     * because they are not approved.
+     *
+     * TYPO3 v14 replaced the localization parsers with Symfony Translation
+     * loaders (Deprecation #107436). XliffLoader is the core replacement for
+     * XliffParser: unlike Symfony's own XliffFileLoader it keeps TYPO3's
+     * XLIFF dialect working — `<xliff version="1.0">` documents, the
+     * source-only default-language file, and the `approved` attribute — and
+     * returns a Symfony MessageCatalogue instead of the nested array.
+     *
+     * In a translation file the loader leaves out every unit that is not
+     * approved while $GLOBALS['TYPO3_CONF_VARS']['LANG']['requireApprovedLocalizations']
+     * is enabled, its default. To name those units, the file is read a second
+     * time with the setting disabled; the keys only that read returns are the
+     * unapproved ones. A key both reads return with different values is a
+     * plural unit of which only some forms are approved: the loader keeps the
+     * approved forms and drops the others. The setting is restored afterwards.
+     *
+     * @param string $file   Path of the file
+     * @param string $locale Language code the loader passes to the catalogue
+     *
+     * @throws InvalidXmlFileException  when the file is missing or no well-formed XML
+     * @throws InvalidResourceException when the path is no file
+     */
+    public function loadFile(string $file, string $locale): LoadedXliffFile
+    {
         $entries = $this->xliffLoader
-            ->load($file, $languageKey)
+            ->load($file, $locale)
             ->all('messages');
 
-        $this->importEntries($entries, $languageUid, $forceUpdate, $result);
+        if (!$this->isApprovalRequired()) {
+            return new LoadedXliffFile($entries, [], []);
+        }
+
+        $languageConfiguration = $this->getLanguageConfiguration();
+
+        try {
+            $this->setLanguageConfiguration(
+                [...$languageConfiguration ?? [], self::APPROVAL_SETTING => false],
+            );
+
+            $allEntries = $this->xliffLoader
+                ->load($file, $locale)
+                ->all('messages');
+        } finally {
+            $this->setLanguageConfiguration($languageConfiguration);
+        }
+
+        $partiallyApprovedKeys = [];
+        foreach ($entries as $key => $value) {
+            if (array_key_exists($key, $allEntries) && ($allEntries[$key] !== $value)) {
+                $partiallyApprovedKeys[] = (string) $key;
+            }
+        }
+
+        return new LoadedXliffFile(
+            $entries,
+            array_map(strval(...), array_keys(array_diff_key($allEntries, $entries))),
+            $partiallyApprovedKeys,
+        );
     }
 
     /**
@@ -131,6 +200,10 @@ final readonly class ImportService
      *
      * A key ending in ".x-unused", the suffix XliffLoader appends to a unit
      * marked unused, imports without that suffix.
+     *
+     * A unit whose value trims to '' is skipped; its key and the keys in
+     * $unapprovedKeys and $partiallyApprovedKeys reach $result with the
+     * counts, once the file has committed.
      *
      * Every key is checked before the first entry is written, so a file with
      * an unusable key imports nothing instead of a part of it.
@@ -150,6 +223,8 @@ final readonly class ImportService
      *
      * @param array<array-key, mixed> $entries
      * @param int<-1, max>            $languageUid
+     * @param list<string>            $unapprovedKeys        Keys of the units the loader left out because they are not approved
+     * @param list<string>            $partiallyApprovedKeys Keys of the plural units the loader kept without their forms that are not approved
      *
      * @throws RuntimeException when a key lacks a component, type or placeholder, or a value is no string
      */
@@ -158,17 +233,25 @@ final readonly class ImportService
         int $languageUid,
         bool $forceUpdate,
         ImportResult $result,
+        array $unapprovedKeys = [],
+        array $partiallyApprovedKeys = [],
     ): void {
         $parsedEntries = [];
+        $fileResult    = new ImportResult();
+
+        foreach ($unapprovedKeys as $unapprovedKey) {
+            $fileResult->recordSkippedUnapproved($this->withoutUnusedSuffix($unapprovedKey));
+        }
+
+        // Reported only for an entry that is written; one without text is
+        // reported as such, one that already exists and is kept is not.
+        $partiallyApproved = array_fill_keys(
+            array_map($this->withoutUnusedSuffix(...), $partiallyApprovedKeys),
+            true,
+        );
 
         foreach ($entries as $key => $value) {
-            $key = (string) $key;
-
-            // A unit marked unused imports under its own placeholder, as it
-            // did before the import read files with XliffLoader.
-            if (str_ends_with($key, self::UNUSED_SUFFIX)) {
-                $key = substr($key, 0, -strlen(self::UNUSED_SUFFIX));
-            }
+            $key = $this->withoutUnusedSuffix((string) $key);
 
             $componentName = $this->getComponentFromKey($key);
             if ($componentName === null) {
@@ -212,20 +295,20 @@ final readonly class ImportService
             // A unit without text, an untranslated unit of a translation file
             // for example, would overwrite a stored value with nothing.
             if (trim($value) === '') {
+                $fileResult->recordSkippedEmpty($key);
+
                 continue;
             }
 
-            $parsedEntries[] = [$componentName, $typeName, $placeholder, $value];
+            $parsedEntries[] = [$key, $componentName, $typeName, $placeholder, $value];
         }
-
-        $fileResult = new ImportResult();
 
         try {
             $this->connectionPool
                 ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
-                ->transactional(function () use ($parsedEntries, $languageUid, $forceUpdate, $fileResult): void {
-                    foreach ($parsedEntries as $index => [$componentName, $typeName, $placeholder, $value]) {
-                        $this->importEntry(
+                ->transactional(function () use ($parsedEntries, $languageUid, $forceUpdate, $fileResult, $partiallyApproved): void {
+                    foreach ($parsedEntries as $index => [$key, $componentName, $typeName, $placeholder, $value]) {
+                        $written = $this->importEntry(
                             $languageUid,
                             $componentName,
                             $typeName,
@@ -234,6 +317,10 @@ final readonly class ImportService
                             $forceUpdate,
                             $fileResult,
                         );
+
+                        if ($written && array_key_exists($key, $partiallyApproved)) {
+                            $fileResult->recordPartiallyApproved($key);
+                        }
 
                         if ((($index + 1) % self::PERSIST_BATCH_SIZE) === 0) {
                             $this->persistenceManager->persistAll();
@@ -266,6 +353,8 @@ final readonly class ImportService
      * the provided {@see ImportResult}.
      *
      * @param int<-1, max> $languageUid
+     *
+     * @return bool TRUE when the entry was imported or updated, FALSE when it was skipped or failed
      */
     public function importEntry(
         int $languageUid,
@@ -275,10 +364,10 @@ final readonly class ImportService
         string $value,
         bool $forceUpdate,
         ImportResult $result,
-    ): void {
+    ): bool {
         try {
             if ($componentName === null || $typeName === null) {
-                return;
+                return false;
             }
 
             $environment = $this->environmentRepository
@@ -298,7 +387,7 @@ final readonly class ImportService
                 || (!$component instanceof Component)
                 || (!$type instanceof Type)
             ) {
-                return;
+                return false;
             }
 
             // Find existing translation record
@@ -323,7 +412,7 @@ final readonly class ImportService
                 ($translation instanceof Translation)
                 && ($forceUpdate === false)
             ) {
-                return;
+                return false;
             }
 
             // TODO Add option to overwrite auto created records
@@ -370,14 +459,71 @@ final readonly class ImportService
 
                 $result->recordImported();
             }
+
+            return true;
         } catch (Exception $exception) {
             $result->recordError($exception->getMessage());
+
+            return false;
         } finally {
             // Reset createIfMissing to prevent leaking state on shared singleton repositories
             $this->environmentRepository->setCreateIfMissing(false);
             $this->componentRepository->setCreateIfMissing(false);
             $this->typeRepository->setCreateIfMissing(false);
         }
+    }
+
+    /**
+     * Returns the key of a unit without the suffix XliffLoader appends when
+     * the unit is marked unused. Such a unit imports, and is reported, under
+     * its own key, as it was before the import read files with XliffLoader.
+     */
+    private function withoutUnusedSuffix(string $key): string
+    {
+        return str_ends_with($key, self::UNUSED_SUFFIX)
+            ? substr($key, 0, -strlen(self::UNUSED_SUFFIX))
+            : $key;
+    }
+
+    /**
+     * Whether XliffLoader leaves out units that are not approved. It reads the
+     * setting the same way, with TRUE when it is not set.
+     */
+    private function isApprovalRequired(): bool
+    {
+        return (bool) ($this->getLanguageConfiguration()[self::APPROVAL_SETTING] ?? true);
+    }
+
+    /**
+     * Returns $GLOBALS['TYPO3_CONF_VARS']['LANG'], or NULL when it is no array.
+     *
+     * @return array<array-key, mixed>|null
+     */
+    private function getLanguageConfiguration(): ?array
+    {
+        $configuration = $GLOBALS['TYPO3_CONF_VARS'] ?? null;
+        $language      = is_array($configuration) ? ($configuration['LANG'] ?? null) : null;
+
+        return is_array($language) ? $language : null;
+    }
+
+    /**
+     * Replaces $GLOBALS['TYPO3_CONF_VARS']['LANG'], or removes it for NULL.
+     *
+     * @param array<array-key, mixed>|null $language
+     */
+    private function setLanguageConfiguration(?array $language): void
+    {
+        $configuration = $GLOBALS['TYPO3_CONF_VARS'] ?? [];
+        $configuration = is_array($configuration) ? $configuration : [];
+
+        if ($language === null) {
+            unset($configuration['LANG']);
+        } else {
+            $configuration['LANG'] = $language;
+        }
+
+        $GLOBALS['TYPO3_CONF_VARS'] = $configuration;
     }
 
     /**

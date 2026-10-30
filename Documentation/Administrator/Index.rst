@@ -227,6 +227,34 @@ for ``textdb_import.xlf`` and ``*.textdb_import.xlf`` files in ``Resources/Priva
 
 * ``--override`` / ``-o``: Override existing translation records.
 
+**Skipped units:**
+
+After each file the command prints one line per kind of unit it left out
+or shortened, with the number of units and the keys of the first ten:
+
+* Units that are not approved (``approved="no"`` in XLIFF 1.2, segment
+  ``state="initial"`` or ``state="translated"`` in XLIFF 2.0) in a
+  translation file, while
+  ``$GLOBALS['TYPO3_CONF_VARS']['LANG']['requireApprovedLocalizations']`` is
+  enabled, the TYPO3 default. The line names the setting.
+* Plural units of which only some of the first two forms are approved,
+  under the same setting. They are imported with the approved forms only.
+* Units without text, for example an untranslated unit without ``<target>``
+  in an XLIFF 1.2 translation file.
+
+.. code-block:: text
+
+   Import translations from file …/de.textdb_import.xlf for language de (1)
+   Translations not imported because they are not approved and $GLOBALS['TYPO3_CONF_VARS']['LANG']['requireApprovedLocalizations'] is enabled (2): checkout|button|draft, checkout|label|note
+   Plural translations imported without their forms that are not approved, because $GLOBALS['TYPO3_CONF_VARS']['LANG']['requireApprovedLocalizations'] is enabled (1): checkout|label|items
+   Translations not imported because they have no text (1): checkout|button|cancel
+   Imported: 5, Updated: 0
+
+A unit of an XLIFF 2.0 translation file without ``<target>``, a segment
+without ``<target>`` in an XLIFF 2.0 plural unit, and the third and later
+forms of any plural unit are not reported, because TYPO3 drops them while
+reading the file. See :ref:`import-skipped-units`.
+
 Automated Imports
 -----------------
 

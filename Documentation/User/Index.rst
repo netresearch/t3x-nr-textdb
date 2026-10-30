@@ -147,6 +147,53 @@ Import from XLIFF File
 4. Click **Import**
 5. Review the import summary
 
+.. _import-skipped-units:
+
+Units the Import Skips
+----------------------
+
+The import names the units it leaves out or shortens after the import, in
+one warning per kind. Each warning gives the number of units and the keys of
+the first ten.
+
+**Not approved.** In a translation file (XLIFF 1.2 with ``target-language``,
+XLIFF 2.0 with ``trgLang``), TYPO3 reads only approved units while
+``$GLOBALS['TYPO3_CONF_VARS']['LANG']['requireApprovedLocalizations']`` is
+enabled, which is the TYPO3 default. A unit is not approved when it is
+marked ``approved="no"`` (XLIFF 1.2) or when its segment has
+``state="initial"`` or ``state="translated"`` (XLIFF 2.0). The warning names
+the setting. To import such units, approve them in the file, or ask the
+administrator to disable the setting. The setting applies to every XLIFF
+file TYPO3 reads, not only to the TextDB import.
+
+**Plural forms not approved.** The same setting applies to each form of a
+plural unit (a ``restype="x-gettext-plurals"`` group in XLIFF 1.2, a unit
+with several segments in XLIFF 2.0). When only some of its first two forms
+are approved, the unit is imported with the approved forms only, and the
+warning names it. When its record already exists and **Overwrite Existing** is
+not checked, the record is kept and the unit is not named. When no form is approved, the unit counts as not approved.
+When the approved forms have no text, the unit is reported as having no text.
+
+**No text.** A unit whose text is empty or only whitespace, for example an
+untranslated unit without ``<target>`` in an XLIFF 1.2 translation file.
+Importing it would overwrite the stored value with nothing.
+
+Three cases are not reported, because TYPO3 drops the text while reading
+the file and the import never sees it:
+
+* A unit of an XLIFF 2.0 translation file without ``<target>``. It is not
+  imported.
+* A segment without ``<target>`` in a plural unit of an XLIFF 2.0
+  translation file. The unit is imported without that form.
+* The third and every later form of a plural unit, as languages such as
+  Russian or Polish have. TYPO3 keeps the first two forms only, whether the
+  later ones are approved or not, so these forms are never imported, and a
+  plural unit whose only unapproved form is the third or a later one is not
+  reported.
+
+A unit of a default-language file (no ``target-language`` or ``trgLang``) is
+never skipped for approval.
+
 Expected File Format
 --------------------
 

@@ -215,14 +215,18 @@ Problem: Import Fails Silently
    them. Entries the extension created automatically are overwritten in
    both cases.
 
-5. Check the units the import skips without a message:
-
-   * A unit without text, for example an untranslated unit without
-     ``<target>`` in a translation file. Importing it would overwrite the
-     stored value with nothing.
-   * A unit marked ``approved="no"`` while
-     ``$GLOBALS['TYPO3_CONF_VARS']['LANG']['requireApprovedLocalizations']``
-     is enabled (the TYPO3 default).
+5. Read the warnings about skipped units. The import names the units it
+   leaves out because they are not approved or have no text, and the plural
+   units it imports without their forms that are not approved, see
+   :ref:`import-skipped-units`. Three cases it does not report, because
+   TYPO3 drops the text while reading the file: a unit of an XLIFF 2.0
+   translation file without ``<target>``, which is not imported; a segment
+   without ``<target>`` in an XLIFF 2.0 plural unit, which is imported
+   without that form; and the third and later forms of any plural unit,
+   which TYPO3 never keeps, so a plural unit whose only unapproved form is
+   the third or a later one is not reported. Check such a file for units
+   and segments without ``<target>`` and for plural units with more than
+   two forms.
 
 Problem: Line Breaks Lost After Re-Import
 ----------------------------------------

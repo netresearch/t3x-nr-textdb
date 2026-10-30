@@ -46,7 +46,6 @@ use TYPO3\CMS\Core\Imaging\IconFactory;
 use TYPO3\CMS\Core\Imaging\IconSize;
 use TYPO3\CMS\Core\Localization\Exception\InvalidXmlFileException;
 use TYPO3\CMS\Core\Localization\LanguageService;
-use TYPO3\CMS\Core\Localization\Loader\XliffLoader;
 use TYPO3\CMS\Core\Messaging\FlashMessage;
 use TYPO3\CMS\Core\Messaging\FlashMessageService;
 use TYPO3\CMS\Core\Pagination\SimplePagination;
@@ -150,8 +149,6 @@ final class TranslationController extends ActionController
 
     private readonly ImportService $importService;
 
-    private readonly XliffLoader $xliffLoader;
-
     private readonly FlashMessageService $flashMessageService;
 
     private readonly ComponentFactory $componentFactory;
@@ -181,7 +178,6 @@ final class TranslationController extends ActionController
         ImportService $importService,
         FlashMessageService $flashMessageService,
         ComponentFactory $componentFactory,
-        XliffLoader $xliffLoader,
     ) {
         $this->extensionConfiguration = $extensionConfiguration;
         $this->translationRepository  = $translationRepository;
@@ -195,7 +191,6 @@ final class TranslationController extends ActionController
         $this->componentFactory       = $componentFactory;
 
         $this->importService = $importService;
-        $this->xliffLoader   = $xliffLoader;
     }
 
     /**
@@ -1020,9 +1015,7 @@ final class TranslationController extends ActionController
         // XliffLoader reads the uploaded temporary file as it is; it needs no
         // file name pattern. It is the loader the CLI import uses as well.
         try {
-            $entries = $this->xliffLoader
-                ->load($uploadedFile, $languageCode)
-                ->all('messages');
+            $loadedFile = $this->importService->loadFile($uploadedFile, $languageCode);
         } catch (InvalidXmlFileException|InvalidResourceException $exception) {
             // The message names the temporary file, show the uploaded name.
             $this->moduleTemplate()->assign(
@@ -1058,7 +1051,14 @@ final class TranslationController extends ActionController
             $languages[] = $languageTitle;
 
             try {
-                $this->importService->importEntries($entries, $languageUid, $forceUpdate, $result);
+                $this->importService->importEntries(
+                    $loadedFile->entries,
+                    $languageUid,
+                    $forceUpdate,
+                    $result,
+                    $loadedFile->unapprovedKeys,
+                    $loadedFile->partiallyApprovedKeys,
+                );
             } catch (Exception $exception) {
                 // An unusable key, which importEntries() reports before it
                 // writes, or a failed write, after which it rolls back. In
@@ -1072,6 +1072,7 @@ final class TranslationController extends ActionController
             'updated'  => $result->getUpdated(),
             'imported' => $result->getImported(),
             'errors'   => array_merge($errors, $result->getErrors()),
+            'skipped'  => $this->describeSkippedUnits($result),
             'language' => implode(
                 ',',
                 $languages,
@@ -1079,6 +1080,62 @@ final class TranslationController extends ActionController
         ]);
 
         return $this->moduleTemplate()->renderResponse('Translation/Import');
+    }
+
+    /**
+     * Returns one message per reason an import skipped units for, with the
+     * number of units and the first of their keys.
+     *
+     * @return list<string>
+     */
+    private function describeSkippedUnits(ImportResult $result): array
+    {
+        $messages = [];
+
+        $unapproved = $result->getSkippedUnapproved();
+        if ($unapproved !== []) {
+            $messages[] = $this->translate('message.import.skipped.unapproved', [
+                count($unapproved),
+                $this->listKeys($unapproved),
+                "\$GLOBALS['TYPO3_CONF_VARS']['LANG']['" . ImportService::APPROVAL_SETTING . "']",
+            ]) ?? '';
+        }
+
+        $partiallyApproved = $result->getPartiallyApproved();
+        if ($partiallyApproved !== []) {
+            $messages[] = $this->translate('message.import.partially.approved', [
+                count($partiallyApproved),
+                $this->listKeys($partiallyApproved),
+                "\$GLOBALS['TYPO3_CONF_VARS']['LANG']['" . ImportService::APPROVAL_SETTING . "']",
+            ]) ?? '';
+        }
+
+        $empty = $result->getSkippedEmpty();
+        if ($empty !== []) {
+            $messages[] = $this->translate('message.import.skipped.empty', [
+                count($empty),
+                $this->listKeys($empty),
+            ]) ?? '';
+        }
+
+        return $messages;
+    }
+
+    /**
+     * Lists the first keys, and how many more there are.
+     *
+     * @param list<string> $keys
+     */
+    private function listKeys(array $keys): string
+    {
+        $list = implode(', ', array_slice($keys, 0, ImportResult::LISTED_KEYS));
+        $more = count($keys) - ImportResult::LISTED_KEYS;
+
+        if ($more > 0) {
+            $list .= ' ' . ($this->translate('message.import.skipped.more', [$more]) ?? '');
+        }
+
+        return $list;
     }
 
     /**

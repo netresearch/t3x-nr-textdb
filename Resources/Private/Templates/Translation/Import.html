@@ -59,6 +59,10 @@
             </f:be.infobox>
         </f:if>
 
+        <f:for as="message" each="{skipped}">
+            <f:be.infobox state="1">{message -> f:format.htmlspecialchars()}</f:be.infobox>
+        </f:for>
+
         <f:if condition="{errors}">
             <f:be.infobox state="2">
                 <f:translate key="message.errors">The following errors occurs:</f:translate>

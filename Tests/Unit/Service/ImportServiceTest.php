@@ -26,8 +26,10 @@ use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
 use Netresearch\NrTextdb\Domain\Repository\TypeRepository;
 use Netresearch\NrTextdb\Service\ImportResult;
 use Netresearch\NrTextdb\Service\ImportService;
+use Netresearch\NrTextdb\Service\LoadedXliffFile;
 use Netresearch\NrTextdb\Service\TranslationService;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\MockObject\Stub;
@@ -43,6 +45,8 @@ use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 #[UsesClass(Component::class)]
 #[UsesClass(Environment::class)]
 #[UsesClass(Type::class)]
+#[UsesClass(ImportResult::class)]
+#[UsesClass(LoadedXliffFile::class)]
 final class ImportServiceTest extends UnitTestCase
 {
     private ImportService $subject;
@@ -59,9 +63,16 @@ final class ImportServiceTest extends UnitTestCase
 
     private TranslationService&Stub $translationService;
 
+    /**
+     * $GLOBALS['TYPO3_CONF_VARS'] as it was before the test.
+     */
+    private mixed $configurationBackup = null;
+
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->configurationBackup = $GLOBALS['TYPO3_CONF_VARS'] ?? null;
 
         $this->persistenceManager    = self::createStub(PersistenceManagerInterface::class);
         $this->translationService    = self::createStub(TranslationService::class);
@@ -71,6 +82,13 @@ final class ImportServiceTest extends UnitTestCase
         $this->environmentRepository = self::createStub(EnvironmentRepository::class);
 
         $this->subject = $this->createSubject($this->translationRepository);
+    }
+
+    protected function tearDown(): void
+    {
+        $GLOBALS['TYPO3_CONF_VARS'] = $this->configurationBackup;
+
+        parent::tearDown();
     }
 
     /**
@@ -83,9 +101,8 @@ final class ImportServiceTest extends UnitTestCase
     ): ImportService {
         return new ImportService(
             $this->persistenceManager,
-            // XliffLoader is final in TYPO3 v14 and cannot be doubled. The
-            // methods exercised here never touch it, so the real loader is
-            // handed in.
+            // XliffLoader is final in TYPO3 v14 and cannot be doubled, so the
+            // real loader is handed in. loadFile() reads XML strings with it.
             new XliffLoader(),
             $this->translationService,
             $translationRepository,
@@ -349,5 +366,382 @@ final class ImportServiceTest extends UnitTestCase
 
         $this->createSubject($this->translationRepository, $connectionPool)
             ->importEntries($entries, 0, false, new ImportResult());
+    }
+
+    #[Test]
+    public function importEntriesReportsTheSkippedUnitsOfACommittedFile(): void
+    {
+        $connection = self::createStub(Connection::class);
+        $connection->method('transactional')
+            ->willReturnCallback(static fn (Closure $work): mixed => $work());
+
+        $connectionPool = self::createStub(ConnectionPool::class);
+        $connectionPool->method('getConnectionForTable')->willReturn($connection);
+
+        // The plural entry is written as a new record.
+        $this->stubReferenceRecords(new Environment(), new Component(), new Type());
+        $this->translationService->method('createTranslation')->willReturn(new Translation());
+
+        $result = new ImportResult();
+
+        $this->createSubject($this->translationRepository, $connectionPool)
+            ->importEntries(
+                ['comp|type|empty' => '', 'comp|type|blank' => "  \n ", 'comp|type|plural' => 'eins'],
+                0,
+                false,
+                $result,
+                ['comp|type|draft'],
+                ['comp|type|plural'],
+            );
+
+        self::assertSame(1, $result->getImported());
+        self::assertSame(['comp|type|draft'], $result->getSkippedUnapproved());
+        self::assertSame(['comp|type|plural'], $result->getPartiallyApproved());
+        self::assertSame(['comp|type|empty', 'comp|type|blank'], $result->getSkippedEmpty());
+    }
+
+    #[Test]
+    public function importEntriesDoesNotReportAPartlyApprovedEntryWhoseWriteFails(): void
+    {
+        $connection = self::createStub(Connection::class);
+        $connection->method('transactional')
+            ->willReturnCallback(static fn (Closure $work): mixed => $work());
+
+        $connectionPool = self::createStub(ConnectionPool::class);
+        $connectionPool->method('getConnectionForTable')->willReturn($connection);
+
+        // importEntry() catches the error and records it; nothing is written.
+        $this->environmentRepository->method('setCreateIfMissing')->willReturnSelf();
+        $this->environmentRepository->method('findByName')
+            ->willThrowException(new RuntimeException('Environment lookup failed'));
+
+        $result = new ImportResult();
+
+        $this->createSubject($this->translationRepository, $connectionPool)
+            ->importEntries(['comp|type|plural' => 'eins'], 0, false, $result, [], ['comp|type|plural']);
+
+        self::assertSame(['Environment lookup failed'], $result->getErrors());
+        self::assertSame(0, $result->getImported());
+        self::assertSame([], $result->getPartiallyApproved());
+    }
+
+    #[Test]
+    public function importEntriesReportsNoSkippedUnitOfARolledBackFile(): void
+    {
+        $connection = self::createStub(Connection::class);
+        $connection->method('transactional')
+            ->willReturnCallback(static function (Closure $work): never {
+                $work();
+
+                throw new RuntimeException('Commit failed', 1793253603);
+            });
+
+        $connectionPool = self::createStub(ConnectionPool::class);
+        $connectionPool->method('getConnectionForTable')->willReturn($connection);
+
+        // The plural entry is written before the commit fails.
+        $this->stubReferenceRecords(new Environment(), new Component(), new Type());
+        $this->translationService->method('createTranslation')->willReturn(new Translation());
+
+        $result = new ImportResult();
+
+        try {
+            $this->createSubject($this->translationRepository, $connectionPool)
+                ->importEntries(
+                    ['comp|type|empty' => '', 'comp|type|plural' => 'eins'],
+                    0,
+                    false,
+                    $result,
+                    ['comp|type|draft'],
+                    ['comp|type|plural'],
+                );
+            self::fail('The failed commit did not reach the caller.');
+        } catch (RuntimeException $exception) {
+            self::assertSame(1793253603, $exception->getCode());
+        }
+
+        self::assertSame([], $result->getSkippedUnapproved());
+        self::assertSame([], $result->getSkippedEmpty());
+        self::assertSame([], $result->getPartiallyApproved());
+    }
+
+    #[Test]
+    public function aSkippedUnitMarkedUnusedIsReportedUnderItsOwnKey(): void
+    {
+        $GLOBALS['TYPO3_CONF_VARS']['LANG']['requireApprovedLocalizations'] = true;
+
+        $connection = self::createStub(Connection::class);
+        $connection->method('transactional')
+            ->willReturnCallback(static fn (Closure $work): mixed => $work());
+
+        $connectionPool = self::createStub(ConnectionPool::class);
+        $connectionPool->method('getConnectionForTable')->willReturn($connection);
+
+        $this->stubReferenceRecords(new Environment(), new Component(), new Type());
+        $this->translationService->method('createTranslation')->willReturn(new Translation());
+
+        $subject = $this->createSubject($this->translationRepository, $connectionPool);
+
+        // XliffLoader appends ".x-unused" to the id of a unit marked unused.
+        $loadedFile = $subject->loadFile(
+            '<?xml version="1.0" encoding="UTF-8"?>'
+            . '<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">'
+            . '<file source-language="en" target-language="de" datatype="plaintext" original="messages"><body>'
+            . '<trans-unit id="c|t|old" approved="no" x-unused-since="1.0"><source>o</source><target>alt</target></trans-unit>'
+            . '<group id="c|t|p" restype="x-gettext-plurals">'
+            . '<trans-unit id="c|t|p[0]" x-unused-since="1.0"><source>one</source><target>eins</target></trans-unit>'
+            . '<trans-unit id="c|t|p[1]" approved="no" x-unused-since="1.0"><source>many</source><target>viele</target></trans-unit>'
+            . '</group>'
+            . '<trans-unit id="c|t|empty" x-unused-since="1.0"><source>e</source></trans-unit>'
+            . '</body></file></xliff>',
+            'de',
+        );
+
+        $result = new ImportResult();
+        $subject->importEntries(
+            $loadedFile->entries,
+            0,
+            false,
+            $result,
+            $loadedFile->unapprovedKeys,
+            $loadedFile->partiallyApprovedKeys,
+        );
+
+        self::assertSame(['c|t|old'], $result->getSkippedUnapproved());
+        self::assertSame(['c|t|p'], $result->getPartiallyApproved());
+        self::assertSame(['c|t|empty'], $result->getSkippedEmpty());
+    }
+
+    #[Test]
+    public function aPluralUnitWithoutTextIsReportedOnlyAsWithoutText(): void
+    {
+        $GLOBALS['TYPO3_CONF_VARS']['LANG']['requireApprovedLocalizations'] = true;
+
+        $connection = self::createStub(Connection::class);
+        $connection->method('transactional')
+            ->willReturnCallback(static fn (Closure $work): mixed => $work());
+
+        $connectionPool = self::createStub(ConnectionPool::class);
+        $connectionPool->method('getConnectionForTable')->willReturn($connection);
+
+        $subject = $this->createSubject($this->translationRepository, $connectionPool);
+
+        // The approved form has an empty <target>, the other is not
+        // approved: the loader keeps the empty form only.
+        $loadedFile = $subject->loadFile(
+            '<?xml version="1.0" encoding="UTF-8"?>'
+            . '<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">'
+            . '<file source-language="en" target-language="de" datatype="plaintext" original="messages"><body>'
+            . '<group id="c|t|p" restype="x-gettext-plurals">'
+            . '<trans-unit id="c|t|p[0]"><source>one</source><target></target></trans-unit>'
+            . '<trans-unit id="c|t|p[1]" approved="no"><source>many</source><target>viele</target></trans-unit>'
+            . '</group>'
+            . '</body></file></xliff>',
+            'de',
+        );
+
+        $result = new ImportResult();
+        $subject->importEntries(
+            $loadedFile->entries,
+            0,
+            false,
+            $result,
+            $loadedFile->unapprovedKeys,
+            $loadedFile->partiallyApprovedKeys,
+        );
+
+        self::assertSame(['c|t|p'], $loadedFile->partiallyApprovedKeys);
+        self::assertSame(['c|t|p'], $result->getSkippedEmpty());
+        self::assertSame([], $result->getPartiallyApproved());
+    }
+
+    /**
+     * Plural units of translation files. The loader keeps the approved forms
+     * of a unit and drops the others.
+     *
+     * @return array<string, array{string, list<string>, list<string>, list<string>}>
+     */
+    public static function pluralFileProvider(): array
+    {
+        $xliff12 = static fn (string $body): string => '<?xml version="1.0" encoding="UTF-8"?>'
+            . '<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">'
+            . '<file source-language="en" target-language="de" datatype="plaintext" original="messages"><body>'
+            . $body
+            . '</body></file></xliff>';
+        $xliff20 = static fn (string $body): string => '<?xml version="1.0" encoding="UTF-8"?>'
+            . '<xliff version="2.0" xmlns="urn:oasis:names:tc:xliff:document:2.0" srcLang="en" trgLang="de">'
+            . '<file id="messages">' . $body . '</file></xliff>';
+
+        return [
+            'XLIFF 1.2, one form not approved' => [
+                $xliff12(
+                    '<group id="c|t|p" restype="x-gettext-plurals">'
+                    . '<trans-unit id="c|t|p[0]"><source>one</source><target>eins</target></trans-unit>'
+                    . '<trans-unit id="c|t|p[1]" approved="no"><source>many</source><target>viele</target></trans-unit>'
+                    . '</group>',
+                ),
+                ['c|t|p'],
+                [],
+                ['c|t|p'],
+            ],
+            'XLIFF 1.2, no form approved' => [
+                $xliff12(
+                    '<group id="c|t|p" restype="x-gettext-plurals">'
+                    . '<trans-unit id="c|t|p[0]" approved="no"><source>one</source><target>eins</target></trans-unit>'
+                    . '<trans-unit id="c|t|p[1]" approved="no"><source>many</source><target>viele</target></trans-unit>'
+                    . '</group>',
+                ),
+                [],
+                ['c|t|p'],
+                [],
+            ],
+            'XLIFF 1.2, every form approved' => [
+                $xliff12(
+                    '<group id="c|t|p" restype="x-gettext-plurals">'
+                    . '<trans-unit id="c|t|p[0]"><source>one</source><target>eins</target></trans-unit>'
+                    . '<trans-unit id="c|t|p[1]"><source>many</source><target>viele</target></trans-unit>'
+                    . '</group>',
+                ),
+                ['c|t|p'],
+                [],
+                [],
+            ],
+            'XLIFF 2.0, second segment initial' => [
+                $xliff20(
+                    '<unit id="c|t|p">'
+                    . '<segment state="final"><source>one</source><target>eins</target></segment>'
+                    . '<segment state="initial"><source>many</source><target>viele</target></segment>'
+                    . '</unit>',
+                ),
+                ['c|t|p'],
+                [],
+                ['c|t|p'],
+            ],
+            // The loader keeps the first two forms of a plural unit only, in
+            // both reads, so an unapproved third form is not reported.
+            'XLIFF 1.2, only the third form not approved' => [
+                $xliff12(
+                    '<group id="c|t|p" restype="x-gettext-plurals">'
+                    . '<trans-unit id="c|t|p[0]"><source>one</source><target>eins</target></trans-unit>'
+                    . '<trans-unit id="c|t|p[1]"><source>few</source><target>einige</target></trans-unit>'
+                    . '<trans-unit id="c|t|p[2]" approved="no"><source>many</source><target>viele</target></trans-unit>'
+                    . '</group>',
+                ),
+                ['c|t|p'],
+                [],
+                [],
+            ],
+            // The loader drops a segment without <target> in both reads, so
+            // the two values agree and the missing form is not reported.
+            'XLIFF 2.0, second segment without target' => [
+                $xliff20(
+                    '<unit id="c|t|p">'
+                    . '<segment state="final"><source>one</source><target>eins</target></segment>'
+                    . '<segment state="final"><source>many</source></segment>'
+                    . '</unit>',
+                ),
+                ['c|t|p'],
+                [],
+                [],
+            ],
+        ];
+    }
+
+    /**
+     * @param list<string> $expectedEntries
+     * @param list<string> $expectedUnapproved
+     * @param list<string> $expectedPartiallyApproved
+     */
+    #[Test]
+    #[DataProvider('pluralFileProvider')]
+    public function loadFileNamesThePluralUnitsTheLoaderKeptWithoutTheirUnapprovedForms(
+        string $xliff,
+        array $expectedEntries,
+        array $expectedUnapproved,
+        array $expectedPartiallyApproved,
+    ): void {
+        $GLOBALS['TYPO3_CONF_VARS']['LANG']['requireApprovedLocalizations'] = true;
+
+        $loadedFile = $this->subject->loadFile($xliff, 'de');
+
+        self::assertSame($expectedEntries, array_keys($loadedFile->entries));
+        self::assertSame($expectedUnapproved, $loadedFile->unapprovedKeys);
+        self::assertSame($expectedPartiallyApproved, $loadedFile->partiallyApprovedKeys);
+    }
+
+    /**
+     * @return array<string, array{string, list<string>, list<string>}>
+     */
+    public static function translationFileProvider(): array
+    {
+        return [
+            'XLIFF 1.2' => [
+                '<?xml version="1.0" encoding="UTF-8"?>'
+                . '<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">'
+                . '<file source-language="en" target-language="de" datatype="plaintext" original="messages"><body>'
+                . '<trans-unit id="c|t|approved" approved="yes"><source>A</source><target>A-de</target></trans-unit>'
+                . '<trans-unit id="c|t|unmarked"><source>U</source><target>U-de</target></trans-unit>'
+                . '<trans-unit id="c|t|draft" approved="no"><source>D</source><target>D-de</target></trans-unit>'
+                . '<trans-unit id="c|t|untranslated"><source>N</source></trans-unit>'
+                . '</body></file></xliff>',
+                ['c|t|approved', 'c|t|unmarked', 'c|t|untranslated'],
+                ['c|t|draft'],
+            ],
+            'XLIFF 2.0' => [
+                '<?xml version="1.0" encoding="UTF-8"?>'
+                . '<xliff version="2.0" xmlns="urn:oasis:names:tc:xliff:document:2.0" srcLang="en" trgLang="de">'
+                . '<file id="messages">'
+                . '<unit id="c|t|final"><segment state="final"><source>F</source><target>F-de</target></segment></unit>'
+                . '<unit id="c|t|reviewed"><segment state="reviewed"><source>R</source><target>R-de</target></segment></unit>'
+                . '<unit id="c|t|translated"><segment state="translated"><source>T</source><target>T-de</target></segment></unit>'
+                . '<unit id="c|t|initial"><segment state="initial"><source>I</source><target>I-de</target></segment></unit>'
+                . '</file></xliff>',
+                ['c|t|final', 'c|t|reviewed'],
+                ['c|t|translated', 'c|t|initial'],
+            ],
+        ];
+    }
+
+    /**
+     * @param list<string> $expectedEntries
+     * @param list<string> $expectedUnapproved
+     */
+    #[Test]
+    #[DataProvider('translationFileProvider')]
+    public function loadFileNamesTheUnitsTheLoaderLeftOutAsUnapproved(
+        string $xliff,
+        array $expectedEntries,
+        array $expectedUnapproved,
+    ): void {
+        $GLOBALS['TYPO3_CONF_VARS']['LANG']['requireApprovedLocalizations'] = true;
+
+        $loadedFile = $this->subject->loadFile($xliff, 'de');
+
+        self::assertSame($expectedEntries, array_keys($loadedFile->entries));
+        self::assertSame($expectedUnapproved, $loadedFile->unapprovedKeys);
+        self::assertTrue($GLOBALS['TYPO3_CONF_VARS']['LANG']['requireApprovedLocalizations']);
+    }
+
+    #[Test]
+    public function loadFileTreatsAMissingApprovalSettingAsEnabledAndLeavesItMissing(): void
+    {
+        unset($GLOBALS['TYPO3_CONF_VARS']['LANG']);
+
+        $loadedFile = $this->subject->loadFile(self::translationFileProvider()['XLIFF 1.2'][0], 'de');
+
+        self::assertSame(['c|t|draft'], $loadedFile->unapprovedKeys);
+        self::assertArrayNotHasKey('LANG', $GLOBALS['TYPO3_CONF_VARS']);
+    }
+
+    #[Test]
+    public function loadFileImportsUnapprovedUnitsWhenApprovalIsNotRequired(): void
+    {
+        $GLOBALS['TYPO3_CONF_VARS']['LANG']['requireApprovedLocalizations'] = false;
+
+        $loadedFile = $this->subject->loadFile(self::translationFileProvider()['XLIFF 1.2'][0], 'de');
+
+        self::assertSame([], $loadedFile->unapprovedKeys);
+        self::assertArrayHasKey('c|t|draft', $loadedFile->entries);
+        self::assertFalse($GLOBALS['TYPO3_CONF_VARS']['LANG']['requireApprovedLocalizations']);
     }
 }

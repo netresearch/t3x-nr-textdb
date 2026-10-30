@@ -143,6 +143,22 @@
         <source>File name does not match the expected pattern.</source>
         <target state="final">Der Dateiname stimmt nicht mit dem erwarteten Muster überein.</target>
       </trans-unit>
+      <trans-unit id="message.import.skipped.unapproved" approved="yes">
+        <source>Translations not imported because they are not approved and %3$s is enabled (%1$d): %2$s</source>
+        <target state="final">Übersetzungen nicht importiert, weil sie nicht freigegeben sind und %3$s aktiviert ist (%1$d): %2$s</target>
+      </trans-unit>
+      <trans-unit id="message.import.partially.approved" approved="yes">
+        <source>Plural translations imported without their forms that are not approved, because %3$s is enabled (%1$d): %2$s</source>
+        <target state="final">Pluralübersetzungen ohne ihre nicht freigegebenen Formen importiert, weil %3$s aktiviert ist (%1$d): %2$s</target>
+      </trans-unit>
+      <trans-unit id="message.import.skipped.empty" approved="yes">
+        <source>Translations not imported because they have no text (%1$d): %2$s</source>
+        <target state="final">Übersetzungen nicht importiert, weil sie keinen Text haben (%1$d): %2$s</target>
+      </trans-unit>
+      <trans-unit id="message.import.skipped.more" approved="yes">
+        <source>and %d more</source>
+        <target state="final">und %d weitere</target>
+      </trans-unit>
       <trans-unit id="error.storage.pid" approved="yes">
         <source>Please configure a valid storage page ID in the extension configuration.</source>
         <target state="final">Bitte konfigurieren Sie eine gültige Speicherseiten-ID in der Erweiterungskonfiguration.</target>
