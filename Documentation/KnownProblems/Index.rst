@@ -97,17 +97,14 @@ If you experience issues, please:
 Database Engines
 ----------------
 
-**Tested:**
-  * MariaDB 10.11+
-  * MySQL 8.0+
+The functional test suite runs in CI against these database servers:
 
-**Not tested:**
-  * PostgreSQL
-  * SQLite
+* SQLite
+* MariaDB 10.11
+* MySQL 8.0
+* PostgreSQL 16
 
-**Note:** PostgreSQL and SQLite may work but are not officially supported.
-
-**GitHub Issue:** `#26 <https://github.com/netresearch/t3x-nr-textdb/issues/26>`_
+Other versions of these servers are not tested.
 
 .. _browser-support:
 
