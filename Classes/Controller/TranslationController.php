@@ -478,8 +478,8 @@ final class TranslationController extends ActionController
         $rejectedCount = 0;
 
         if ($parentTranslation instanceof Translation) {
-            // getAllLanguages() resolves the first configured site only (see
-            // TranslationService::getAllLanguages()), matching the languages
+            // getAllLanguages() returns the languages of the storage page's
+            // site (see TranslationService::getAllLanguages()), the languages
             // translatedAction() renders as selectable. A language id that is
             // only configured on another site in a multi-site installation is
             // rejected here as well, same as it would be unreachable through

@@ -25,9 +25,6 @@ use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
 use Netresearch\NrTextdb\Domain\Repository\TypeRepository;
 use RuntimeException;
 use TYPO3\CMS\Core\Localization\Loader\XliffLoader;
-use TYPO3\CMS\Core\Site\Entity\Site;
-use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
-use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 
@@ -57,8 +54,6 @@ final readonly class ImportService
 
     private EnvironmentRepository $environmentRepository;
 
-    private SiteFinder $siteFinder;
-
     /**
      * Constructor.
      */
@@ -70,7 +65,6 @@ final readonly class ImportService
         ComponentRepository $componentRepository,
         TypeRepository $typeRepository,
         EnvironmentRepository $environmentRepository,
-        SiteFinder $siteFinder,
     ) {
         $this->persistenceManager    = $persistenceManager;
         $this->xliffLoader           = $xliffLoader;
@@ -79,7 +73,6 @@ final readonly class ImportService
         $this->componentRepository   = $componentRepository;
         $this->typeRepository        = $typeRepository;
         $this->environmentRepository = $environmentRepository;
-        $this->siteFinder            = $siteFinder;
     }
 
     /**
@@ -315,26 +308,13 @@ final readonly class ImportService
             $languageCode = 'en';
         }
 
-        foreach ($this->getAllLanguages() as $localLanguage) {
+        foreach ($this->translationService->getAllLanguages() as $localLanguage) {
             if ($languageCode === $localLanguage->getLocale()->getLanguageCode()) {
                 return max(-1, $localLanguage->getLanguageId());
             }
         }
 
         return 0;
-    }
-
-    /**
-     * Get all configured languages.
-     *
-     * @return SiteLanguage[]
-     */
-    private function getAllLanguages(): array
-    {
-        $sites     = $this->siteFinder->getAllSites();
-        $firstSite = reset($sites);
-
-        return ($firstSite instanceof Site) ? $firstSite->getAllLanguages() : [];
     }
 
     /**

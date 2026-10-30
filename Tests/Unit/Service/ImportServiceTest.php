@@ -31,7 +31,6 @@ use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\MockObject\Stub;
 use RuntimeException;
 use TYPO3\CMS\Core\Localization\Loader\XliffLoader;
-use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
@@ -56,8 +55,6 @@ final class ImportServiceTest extends UnitTestCase
 
     private TranslationService&Stub $translationService;
 
-    private SiteFinder&Stub $siteFinder;
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -68,7 +65,6 @@ final class ImportServiceTest extends UnitTestCase
         $this->componentRepository   = self::createStub(ComponentRepository::class);
         $this->typeRepository        = self::createStub(TypeRepository::class);
         $this->environmentRepository = self::createStub(EnvironmentRepository::class);
-        $this->siteFinder            = self::createStub(SiteFinder::class);
 
         $this->subject = $this->createSubject($this->translationRepository);
     }
@@ -90,7 +86,6 @@ final class ImportServiceTest extends UnitTestCase
             $this->componentRepository,
             $this->typeRepository,
             $this->environmentRepository,
-            $this->siteFinder,
         );
     }
 
