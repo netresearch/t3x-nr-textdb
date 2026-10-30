@@ -18,21 +18,34 @@ use Doctrine\DBAL\Exception as DBALException;
 use Exception;
 use Netresearch\NrTextdb\Domain\Model\Component;
 use Netresearch\NrTextdb\Domain\Model\Translation;
+use Netresearch\NrTextdb\Domain\Repository\ComponentRepository;
+use Netresearch\NrTextdb\Domain\Repository\EnvironmentRepository;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
+use Netresearch\NrTextdb\Domain\Repository\TypeRepository;
 use Netresearch\NrTextdb\Service\ImportResult;
 use Netresearch\NrTextdb\Service\ImportService;
+use Netresearch\NrTextdb\Service\TranslationService;
+use Netresearch\NrTextdb\Service\TranslationTableWriter;
 use Netresearch\NrTextdb\Tests\Functional\AbstractFunctionalTestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use RuntimeException;
 use Throwable;
+use TYPO3\CMS\Core\Configuration\FlexForm\FlexFormTools;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Platform\SQLitePlatform;
+use TYPO3\CMS\Core\Database\ReferenceIndex;
+use TYPO3\CMS\Core\DataHandling\SoftReference\SoftReferenceParserFactory;
 use TYPO3\CMS\Core\EventDispatcher\ListenerProvider;
+use TYPO3\CMS\Core\Localization\Loader\XliffLoader;
+use TYPO3\CMS\Core\Registry;
+use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Extbase\Event\Persistence\EntityAddedToPersistenceEvent;
 use TYPO3\CMS\Extbase\Persistence\Generic\Storage\Exception\SqlErrorException;
+use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
 
 /**
  * Functional tests for ImportService.
@@ -355,23 +368,11 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
             'rollbackcomponent|label|empty'  => '',
         ];
 
-        // Fails the write of the second new translation, after the first
-        // translation and the new component have reached the database.
-        $listener = new class {
-            public bool $enabled = true;
-
-            private int $translations = 0;
-
-            public function __invoke(EntityAddedToPersistenceEvent $event): void
-            {
-                if ($this->enabled && $event->getObject() instanceof Translation && ++$this->translations === 2) {
-                    throw new RuntimeException('Simulated write failure', 1793253600);
-                }
-            }
-        };
-        $this->getContainer()->set('nr_textdb.test.failing_write', $listener);
-        $this->get(ListenerProvider::class)
-            ->addListener(EntityAddedToPersistenceEvent::class, 'nr_textdb.test.failing_write');
+        // Fails the reference index update of the second new translation,
+        // after the translations of the file and the new component have
+        // reached the database.
+        $referenceIndex = $this->createFailingReferenceIndex(2);
+        $importService  = $this->createImportService($referenceIndex);
 
         // Without the fixture's environment, the import creates the
         // environment, the component and the type, all three inside the
@@ -384,7 +385,7 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
         $failedResult       = new ImportResult();
 
         try {
-            $this->importService->importEntries(
+            $importService->importEntries(
                 $entries,
                 0,
                 false,
@@ -397,6 +398,11 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
             self::assertSame(1793253600, $exception->getCode());
         }
 
+        self::assertSame(
+            $translationsBefore + 3,
+            $referenceIndex->translationsWhenFailing,
+            'The translations of the file were not written before the failure.',
+        );
         self::assertSame($translationsBefore, $this->countRows('tx_nrtextdb_domain_model_translation'));
         self::assertSame(0, $failedResult->getImported(), 'A rolled-back file counts no entry.');
         self::assertSame([], $failedResult->getSkippedUnapproved(), 'A rolled-back file reports no unapproved unit.');
@@ -409,9 +415,9 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
 
         // The same process imports the file again, as the CLI command does
         // with its next file. Each record it references must be a row again.
-        $listener->enabled = false;
-        $result            = new ImportResult();
-        $this->importService->importEntries($entries, 0, false, $result);
+        $referenceIndex->enabled = false;
+        $result                  = new ImportResult();
+        $importService->importEntries($entries, 0, false, $result);
 
         self::assertSame(3, $result->getImported());
 
@@ -542,6 +548,172 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
         self::assertSame(['second'], $this->importedPlaceholders('shortcomponent'));
     }
 
+    #[Test]
+    public function importEntriesImportsNothingWhenAValueIsTooLongForItsColumn(): void
+    {
+        if ($this->get(ConnectionPool::class)
+            ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
+            ->getDatabasePlatform() instanceof SQLitePlatform
+        ) {
+            self::markTestSkipped('SQLite does not enforce the length of a varchar column.');
+        }
+
+        // The bulk INSERT of the translations fails, after the component
+        // was created.
+        $entries = [
+            'atomiccomponent|label|first' => 'First',
+            'atomiccomponent|label|long'  => str_repeat('x', 2001),
+        ];
+
+        $translationsBefore = $this->countRows('tx_nrtextdb_domain_model_translation');
+        $failedResult       = new ImportResult();
+        $thrown             = null;
+
+        try {
+            $this->importService->importEntries($entries, 0, false, $failedResult);
+        } catch (Throwable $throwable) {
+            $thrown = $throwable;
+        }
+
+        self::assertInstanceOf(DBALException::class, $thrown, 'The database error did not reach the caller.');
+        self::assertSame([], $failedResult->getErrors(), 'The database error reaches the caller as the exception only.');
+        self::assertSame(0, $failedResult->getImported(), 'A rolled-back file counts no entry.');
+        self::assertSame($translationsBefore, $this->countRows('tx_nrtextdb_domain_model_translation'));
+        self::assertSame(0, $this->countRows('tx_nrtextdb_domain_model_component', 'atomiccomponent'));
+    }
+
+    #[Test]
+    public function importEntriesWritesARecordWithTheColumnsExtbaseWrote(): void
+    {
+        $GLOBALS['EXEC_TIME'] = 1793253600;
+
+        $result = new ImportResult();
+        $this->importService->importEntries(['mycomponent|button|fresh_key' => 'Fresh'], 0, false, $result);
+
+        $columns = $this->translationColumns('fresh_key', 0);
+        unset($columns['uid']);
+
+        self::assertSame(1, $result->getImported());
+        self::assertSame(
+            [
+                'pid'              => 1,
+                'tstamp'           => 1793253600,
+                'crdate'           => 1793253600,
+                'sys_language_uid' => 0,
+                'l10n_parent'      => 0,
+                'l10n_source'      => 0,
+                'deleted'          => 0,
+                'hidden'           => 0,
+                'sorting'          => 0,
+                'environment'      => 1,
+                'component'        => 1,
+                'type'             => 1,
+                'value'            => 'Fresh',
+            ],
+            $columns,
+        );
+    }
+
+    #[Test]
+    public function importEntriesLinksATranslationToTheRecordOfTheDefaultLanguage(): void
+    {
+        // existing_key exists in the default language (uid 1), lonely_key
+        // does not.
+        $result = new ImportResult();
+        $this->importService->importEntries(
+            ['mycomponent|button|existing_key' => 'Vorhanden', 'mycomponent|button|lonely_key' => 'Allein'],
+            1,
+            false,
+            $result,
+        );
+
+        self::assertSame(2, $result->getImported());
+        self::assertSame(1, $this->translationColumns('existing_key', 1)['l10n_parent']);
+        self::assertSame(0, $this->translationColumns('lonely_key', 1)['l10n_parent']);
+
+        // A translation without parent gets it with forceUpdate, once the
+        // record of the default language exists.
+        $this->importService->importEntries(['mycomponent|button|lonely_key' => 'Lonely'], 0, false, new ImportResult());
+        $parentUid = $this->translationColumns('lonely_key', 0)['uid'];
+
+        $result = new ImportResult();
+        $this->importService->importEntries(['mycomponent|button|lonely_key' => 'Allein'], 1, true, $result);
+
+        self::assertSame(1, $result->getUpdated());
+        self::assertSame($parentUid, $this->translationColumns('lonely_key', 1)['l10n_parent']);
+    }
+
+    #[Test]
+    public function importEntriesDoesNotWriteARecordWhoseValueDoesNotChange(): void
+    {
+        $GLOBALS['EXEC_TIME'] = 1793253600;
+
+        // existing_key is stored with "Existing Value" and tstamp 0.
+        $result = new ImportResult();
+        $this->importService->importEntries(
+            ['mycomponent|button|existing_key' => 'Existing Value', 'mycomponent|button|auto_created_key' => 'Real'],
+            0,
+            true,
+            $result,
+        );
+
+        self::assertSame(2, $result->getUpdated(), 'An unchanged record counts as updated, as it did through Extbase.');
+        self::assertSame(0, $this->translationColumns('existing_key', 0)['tstamp']);
+        self::assertSame(1793253600, $this->translationColumns('auto_created_key', 0)['tstamp']);
+        self::assertSame('Real', $this->translationColumns('auto_created_key', 0)['value']);
+    }
+
+    #[Test]
+    public function importEntriesFindsAHiddenRecord(): void
+    {
+        $this->get(ConnectionPool::class)
+            ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
+            ->update('tx_nrtextdb_domain_model_translation', ['hidden' => 1], ['uid' => 1]);
+
+        $translationsBefore = $this->countRows('tx_nrtextdb_domain_model_translation');
+
+        $result = new ImportResult();
+        $this->importService->importEntries(['mycomponent|button|existing_key' => 'Other'], 0, true, $result);
+
+        self::assertSame(0, $result->getImported());
+        self::assertSame(1, $result->getUpdated());
+        self::assertSame($translationsBefore, $this->countRows('tx_nrtextdb_domain_model_translation'));
+        self::assertSame('Other', $this->translationColumns('existing_key', 0)['value']);
+    }
+
+    #[Test]
+    public function importEntriesWritesTheReferenceIndexTheCoreComputes(): void
+    {
+        $this->importService->importEntries(
+            ['mycomponent|button|existing_key' => 'Changed', 'newcomponent|newtype|fresh_key' => 'Fresh'],
+            0,
+            true,
+            new ImportResult(),
+        );
+        $this->importService->importEntries(
+            ['mycomponent|button|existing_key' => 'Vorhanden', 'newcomponent|newtype|fresh_key' => 'Frisch'],
+            1,
+            false,
+            new ImportResult(),
+        );
+
+        $uids = $this->get(ConnectionPool::class)
+            ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
+            ->select(['uid'], 'tx_nrtextdb_domain_model_translation', ['tstamp' => $GLOBALS['EXEC_TIME']])
+            ->fetchFirstColumn();
+
+        self::assertCount(4, $uids);
+
+        $referenceIndex = $this->get(ReferenceIndex::class);
+        foreach ($uids as $uid) {
+            $check = $referenceIndex->updateRefIndexTable('tx_nrtextdb_domain_model_translation', (int) $uid, true);
+
+            self::assertSame(0, $check['addedNodes'], 'The reference index lacks a relation of record ' . $uid . '.');
+            self::assertSame(0, $check['deletedNodes'], 'The reference index holds a stale relation of record ' . $uid . '.');
+            self::assertGreaterThanOrEqual(3, $check['keptNodes']);
+        }
+    }
+
     /**
      * @return array<string, array{bool, int, list<string>}>
      */
@@ -584,9 +756,11 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
     public function importEntriesImportsNothingWhenAWriteInsideALaterEntryFailsAndCanBeRepeated(): void
     {
         // The new component "rvcompc" of the last entry is written by its
-        // lookup, inside importEntry(); that write also writes the pending
-        // translation "boom", whose write fails with an exception that does
-        // not come from the database.
+        // lookup, after the lookup of the first entry wrote "rvcompa"; the
+        // write of "rvcompc" fails with an exception that does not come from
+        // the database. The translations are written after the lookups of
+        // their chunk, without Extbase, so no translation write is pending
+        // there.
         $entries = [
             'rvcompa|label|aaa'   => 'A',
             'checkout|label|bbb'  => 'B',
@@ -601,7 +775,7 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
             {
                 $object = $event->getObject();
 
-                if ($this->enabled && $object instanceof Translation && $object->getPlaceholder() === 'boom') {
+                if ($this->enabled && $object instanceof Component && $object->getName() === 'rvcompc') {
                     throw new Exception('Simulated write failure', 1793253603);
                 }
             }
@@ -850,6 +1024,97 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
         foreach ($components as $component) {
             self::assertSame(0, $this->countRows('tx_nrtextdb_domain_model_component', $component), $component . ' was kept.');
         }
+    }
+
+    /**
+     * Returns the columns of the translation with the placeholder in a
+     * language that the import writes, without the free texts.
+     *
+     * @return array<string, int|string>
+     */
+    private function translationColumns(string $placeholder, int $languageUid): array
+    {
+        $queryBuilder = $this->get(ConnectionPool::class)
+            ->getQueryBuilderForTable('tx_nrtextdb_domain_model_translation');
+        $queryBuilder->getRestrictions()->removeAll();
+
+        $row = $queryBuilder
+            ->select('uid', 'pid', 'tstamp', 'crdate', 'sys_language_uid', 'l10n_parent', 'l10n_source', 'deleted', 'hidden', 'sorting', 'environment', 'component', 'type', 'value')
+            ->from('tx_nrtextdb_domain_model_translation')
+            ->where(
+                $queryBuilder->expr()->eq('placeholder', $queryBuilder->createNamedParameter($placeholder)),
+                $queryBuilder->expr()->eq('sys_language_uid', $queryBuilder->createNamedParameter($languageUid, Connection::PARAM_INT)),
+            )
+            ->executeQuery()
+            ->fetchAssociative();
+
+        self::assertIsArray($row, 'No translation ' . $placeholder . ' in language ' . $languageUid . '.');
+
+        $columns = [];
+        foreach ($row as $column => $value) {
+            $columns[$column] = ($column === 'value') ? (string) $value : (int) $value;
+        }
+
+        return $columns;
+    }
+
+    /**
+     * Returns an import service whose translations get the given reference
+     * index.
+     */
+    private function createImportService(ReferenceIndex $referenceIndex): ImportService
+    {
+        return new ImportService(
+            $this->get(PersistenceManagerInterface::class),
+            $this->get(XliffLoader::class),
+            $this->get(TranslationService::class),
+            $this->get(TranslationRepository::class),
+            $this->get(ComponentRepository::class),
+            $this->get(TypeRepository::class),
+            $this->get(EnvironmentRepository::class),
+            $this->get(ConnectionPool::class),
+            new TranslationTableWriter($this->get(ConnectionPool::class), $referenceIndex),
+        );
+    }
+
+    /**
+     * Returns a reference index that fails on its update for the nth
+     * translation, and records how many translations there are then.
+     */
+    private function createFailingReferenceIndex(int $failingTranslation): ReferenceIndex
+    {
+        return new class ($failingTranslation, $this->get(ConnectionPool::class), $this->get(EventDispatcherInterface::class), $this->get(SoftReferenceParserFactory::class), $this->get(Registry::class), $this->get(FlexFormTools::class), $this->get(TcaSchemaFactory::class)) extends ReferenceIndex {
+            public bool $enabled = true;
+
+            public ?int $translationsWhenFailing = null;
+
+            private int $translations = 0;
+
+            public function __construct(
+                private readonly int $failingTranslation,
+                private readonly ConnectionPool $pool,
+                EventDispatcherInterface $eventDispatcher,
+                SoftReferenceParserFactory $softReferenceParserFactory,
+                Registry $registry,
+                FlexFormTools $flexFormTools,
+                TcaSchemaFactory $tcaSchemaFactory,
+            ) {
+                parent::__construct($eventDispatcher, $softReferenceParserFactory, $pool, $registry, $flexFormTools, $tcaSchemaFactory);
+            }
+
+            public function updateRefIndexTable(string $tableName, int $uid, bool $testOnly = false, int $workspaceUid = 0, ?array $currentRecord = null): array
+            {
+                if ($this->enabled && ($tableName === 'tx_nrtextdb_domain_model_translation') && (++$this->translations === $this->failingTranslation)) {
+                    $this->translationsWhenFailing = $this->pool
+                        ->getConnectionForTable($tableName)
+                        ->count('*', $tableName, []);
+
+                    throw new RuntimeException('Simulated write failure', 1793253600);
+                }
+
+                return parent::updateRefIndexTable($tableName, $uid, $testOnly, $workspaceUid, $currentRecord);
+            }
+        };
     }
 
     /**

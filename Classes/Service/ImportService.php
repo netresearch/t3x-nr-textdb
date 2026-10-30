@@ -46,11 +46,11 @@ use function count;
 final readonly class ImportService
 {
     /**
-     * Entries written before the persistence session is cleared. Without
-     * clearing, every record of a file stays in memory until the end, and a
-     * file of 48,500 units exhausted a memory limit of 256 MB.
+     * Entries looked up and written together. It bounds the memory a large
+     * file needs; a file of 48,500 units ran out of a memory limit of 256 MB
+     * when its records were looked up at once.
      */
-    private const PERSIST_BATCH_SIZE = 1000;
+    private const WRITE_CHUNK_SIZE = 1000;
 
     /**
      * Suffix XliffLoader appends to the id of a unit marked unused: XLIFF 1.2
@@ -80,6 +80,8 @@ final readonly class ImportService
 
     private ConnectionPool $connectionPool;
 
+    private TranslationTableWriter $tableWriter;
+
     /**
      * Constructor.
      */
@@ -92,6 +94,7 @@ final readonly class ImportService
         TypeRepository $typeRepository,
         EnvironmentRepository $environmentRepository,
         ConnectionPool $connectionPool,
+        TranslationTableWriter $tableWriter,
     ) {
         $this->persistenceManager    = $persistenceManager;
         $this->xliffLoader           = $xliffLoader;
@@ -101,6 +104,7 @@ final readonly class ImportService
         $this->typeRepository        = $typeRepository;
         $this->environmentRepository = $environmentRepository;
         $this->connectionPool        = $connectionPool;
+        $this->tableWriter           = $tableWriter;
     }
 
     /**
@@ -209,15 +213,12 @@ final readonly class ImportService
      * Every key is checked before the first entry is written, so a file with
      * an unusable key imports nothing instead of a part of it.
      *
-     * The entries are written in one database transaction. Extbase writes
-     * each new record with an INSERT, an UPDATE for its relations and two
-     * reference index updates, and committing every statement on its own
-     * made a large file slow (issue #30). When a write fails, the transaction
-     * rolls back, the exception propagates and the file imports nothing, on
-     * every database: importEntry() passes a database error, and any
-     * exception raised while it writes the persistence session, on instead
-     * of recording it, because the rest of the file would otherwise be
-     * committed.
+     * The entries are written in one database transaction, the translations
+     * without Extbase (see writeEntries()). When a write fails, the
+     * transaction rolls back, the exception propagates and the file imports
+     * nothing, on every database: a database error, and any exception raised
+     * while the persistence session is written, is passed on instead of
+     * recorded, because the rest of the file would otherwise be committed.
      * The persistence session and the name caches of the repositories are
      * cleared then, because they hold records whose rows were rolled back.
      * The counts of the file reach $result only once the transaction has
@@ -308,30 +309,9 @@ final readonly class ImportService
 
         try {
             $this->connectionPool
-                ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
+                ->getConnectionForTable(TranslationTableWriter::TABLE)
                 ->transactional(function () use ($parsedEntries, $languageUid, $forceUpdate, $fileResult, $partiallyApproved): void {
-                    foreach ($parsedEntries as $index => [$key, $componentName, $typeName, $placeholder, $value]) {
-                        $written = $this->importEntry(
-                            $languageUid,
-                            $componentName,
-                            $typeName,
-                            $placeholder,
-                            $value,
-                            $forceUpdate,
-                            $fileResult,
-                        );
-
-                        if ($written && array_key_exists($key, $partiallyApproved)) {
-                            $fileResult->recordPartiallyApproved($key);
-                        }
-
-                        if ((($index + 1) % self::PERSIST_BATCH_SIZE) === 0) {
-                            $this->persistenceManager->persistAll();
-                            $this->persistenceManager->clearState();
-                        }
-                    }
-
-                    $this->persistenceManager->persistAll();
+                    $this->writeEntries($parsedEntries, $languageUid, $forceUpdate, $fileResult, $partiallyApproved);
                 });
         } catch (Throwable $throwable) {
             foreach (array_unique($fileResult->getErrors()) as $error) {
@@ -347,6 +327,152 @@ final readonly class ImportService
         }
 
         $result->add($fileResult);
+    }
+
+    /**
+     * Writes the entries of a file, inside the transaction of importEntries(),
+     * in chunks of WRITE_CHUNK_SIZE entries.
+     *
+     * Decides for each entry what importEntry() decides, in the same order,
+     * but looks the records of a chunk up together and writes them without
+     * Extbase: new records in bulk, existing ones that change with one UPDATE
+     * each. An existing record whose values do not change is not written, as
+     * Extbase did not write it, and still counts as updated. A chunk finds
+     * the records the chunks before it wrote, as an entry found the records
+     * Extbase had persisted every 1,000 entries.
+     *
+     * @param list<array{string, string, string, string, string}> $parsedEntries     Key, component, type, placeholder and value of each entry
+     * @param int<-1, max>                                        $languageUid
+     * @param array<string, true>                                 $partiallyApproved
+     */
+    private function writeEntries(
+        array $parsedEntries,
+        int $languageUid,
+        bool $forceUpdate,
+        ImportResult $result,
+        array $partiallyApproved,
+    ): void {
+        foreach (array_chunk($parsedEntries, self::WRITE_CHUNK_SIZE) as $chunk) {
+            $this->writeChunk($chunk, $languageUid, $forceUpdate, $result, $partiallyApproved);
+        }
+    }
+
+    /**
+     * @param list<array{string, string, string, string, string}> $parsedEntries     Key, component, type, placeholder and value of each entry
+     * @param int<-1, max>                                        $languageUid
+     * @param array<string, true>                                 $partiallyApproved
+     */
+    private function writeChunk(
+        array $parsedEntries,
+        int $languageUid,
+        bool $forceUpdate,
+        ImportResult $result,
+        array $partiallyApproved,
+    ): void {
+        $pageId  = $this->translationRepository->getConfiguredPageId();
+        $entries = [];
+        $keys    = [];
+
+        foreach ($parsedEntries as [$key, $componentName, $typeName, $placeholder, $value]) {
+            try {
+                $references = $this->findReferences($componentName, $typeName);
+            } catch (Exception $exception) {
+                $this->recordError($exception, $result);
+
+                continue;
+            } finally {
+                $this->resetCreateIfMissing();
+            }
+
+            if ($references === null) {
+                continue;
+            }
+
+            [$environment, $component, $type] = $references;
+
+            $keys[]    = [(int) $environment->getUid(), (int) $component->getUid(), (int) $type->getUid(), $placeholder];
+            $entries[] = [$key, $value];
+        }
+
+        $stored  = $this->tableWriter->findTranslations($pageId, $languageUid, $keys);
+        $parents = ($languageUid !== 0)
+            ? $this->tableWriter->findTranslations($pageId, 0, $keys)
+            : [];
+
+        $time      = $this->getExecutionTime();
+        $inserts   = [];
+        $updates   = [];
+        $originals = [];
+
+        foreach ($entries as $index => [$key, $value]) {
+            [$environmentUid, $componentUid, $typeUid, $placeholder] = $keys[$index];
+
+            $parentUid   = $parents[$index]['uid'] ?? null;
+            $translation = $stored[$index] ?? null;
+
+            if ($translation === null) {
+                $inserts[] = [
+                    'pid'              => $pageId,
+                    'tstamp'           => $time,
+                    'crdate'           => $time,
+                    'sys_language_uid' => $languageUid,
+                    'l10n_parent'      => $parentUid ?? 0,
+                    'l10n_diffsource'  => '',
+                    'deleted'          => 0,
+                    'hidden'           => 0,
+                    'sorting'          => 0,
+                    'environment'      => $environmentUid,
+                    'component'        => $componentUid,
+                    'type'             => $typeUid,
+                    'placeholder'      => $placeholder,
+                    'value'            => $value,
+                ];
+
+                $result->recordImported();
+            } else {
+                $uid = $translation['uid'];
+
+                // A key the file holds twice meets the value its first
+                // occurrence set, as it met the changed Extbase object.
+                $originals[$uid] ??= $translation;
+                $updates[$uid] ??= $translation;
+
+                if (!$this->isOverwritable($updates[$uid]['value'] === Translation::AUTO_CREATE_IDENTIFIER, $forceUpdate)) {
+                    continue;
+                }
+
+                $updates[$uid]['value'] = $value;
+
+                if ($parentUid !== null) {
+                    $updates[$uid]['l10n_parent'] = $parentUid;
+                }
+
+                $result->recordUpdated();
+            }
+
+            if (array_key_exists($key, $partiallyApproved)) {
+                $result->recordPartiallyApproved($key);
+            }
+        }
+
+        $this->tableWriter->insert($inserts);
+
+        // Extbase writes the columns that changed, with tstamp and the
+        // language, and nothing for a record that did not change.
+        $changes = [];
+        foreach ($updates as $uid => $update) {
+            $columns = array_diff_assoc($update, $originals[$uid]);
+
+            if ($columns !== []) {
+                $changes[$uid] = [
+                    ...$columns,
+                    'tstamp'           => $time,
+                    'sys_language_uid' => $languageUid,
+                ];
+            }
+        }
+
+        $this->tableWriter->update($changes);
     }
 
     /**
@@ -379,25 +505,13 @@ final readonly class ImportService
                 return false;
             }
 
-            $environment = $this->environmentRepository
-                ->setCreateIfMissing(true)
-                ->findByName('default');
+            $references = $this->findReferences($componentName, $typeName);
 
-            $component = $this->componentRepository
-                ->setCreateIfMissing(true)
-                ->findByName($componentName);
-
-            $type = $this->typeRepository
-                ->setCreateIfMissing(true)
-                ->findByName($typeName);
-
-            if (
-                (!$environment instanceof Environment)
-                || (!$component instanceof Component)
-                || (!$type instanceof Type)
-            ) {
+            if ($references === null) {
                 return false;
             }
+
+            [$environment, $component, $type] = $references;
 
             // Find existing translation record
             $translation = $this->translationRepository
@@ -409,17 +523,10 @@ final readonly class ImportService
                     $languageUid,
                 );
 
-            if (
-                ($translation instanceof Translation)
-                && $translation->isAutoCreated()
-            ) {
-                $forceUpdate = true;
-            }
-
             // Skip if translation exists and update is not requested
             if (
                 ($translation instanceof Translation)
-                && ($forceUpdate === false)
+                && !$this->isOverwritable($translation->isAutoCreated(), $forceUpdate)
             ) {
                 return false;
             }
@@ -471,19 +578,93 @@ final readonly class ImportService
 
             return true;
         } catch (Exception $exception) {
-            if ($this->isDatabaseError($exception) || $this->isWriteError($exception)) {
-                throw $exception;
-            }
-
-            $result->recordError($exception->getMessage());
+            $this->recordError($exception, $result);
 
             return false;
         } finally {
-            // Reset createIfMissing to prevent leaking state on shared singleton repositories
-            $this->environmentRepository->setCreateIfMissing(false);
-            $this->componentRepository->setCreateIfMissing(false);
-            $this->typeRepository->setCreateIfMissing(false);
+            $this->resetCreateIfMissing();
         }
+    }
+
+    /**
+     * Returns the environment "default", the component and the type of an
+     * entry, each created when it is missing, or NULL when one is not found.
+     *
+     * @return array{Environment, Component, Type}|null
+     *
+     * @throws Exception when a record cannot be read or created
+     */
+    private function findReferences(string $componentName, string $typeName): ?array
+    {
+        $environment = $this->environmentRepository
+            ->setCreateIfMissing(true)
+            ->findByName('default');
+
+        $component = $this->componentRepository
+            ->setCreateIfMissing(true)
+            ->findByName($componentName);
+
+        $type = $this->typeRepository
+            ->setCreateIfMissing(true)
+            ->findByName($typeName);
+
+        if (
+            (!$environment instanceof Environment)
+            || (!$component instanceof Component)
+            || (!$type instanceof Type)
+        ) {
+            return null;
+        }
+
+        return [$environment, $component, $type];
+    }
+
+    /**
+     * Resets createIfMissing, to prevent leaking state on the shared singleton repositories.
+     */
+    private function resetCreateIfMissing(): void
+    {
+        $this->environmentRepository->setCreateIfMissing(false);
+        $this->componentRepository->setCreateIfMissing(false);
+        $this->typeRepository->setCreateIfMissing(false);
+    }
+
+    /**
+     * Whether an entry overwrites a stored record: with forceUpdate, or when
+     * the repository created the record as a stand-in.
+     */
+    private function isOverwritable(bool $autoCreated, bool $forceUpdate): bool
+    {
+        return $forceUpdate || $autoCreated;
+    }
+
+    /**
+     * Records the message of an exception an entry failed with. An exception
+     * from the database, or one raised while the persistence session is
+     * written, is thrown on instead: a statement or a write that failed
+     * inside the transaction of importEntries() has to roll back the whole
+     * file. The lookup of an environment, component or type that does not
+     * exist yet writes the session.
+     *
+     * @throws Exception the exception, when it comes from the database or a write
+     */
+    private function recordError(Exception $exception, ImportResult $result): void
+    {
+        if ($this->isDatabaseError($exception) || $this->isWriteError($exception)) {
+            throw $exception;
+        }
+
+        $result->recordError($exception->getMessage());
+    }
+
+    /**
+     * Returns the time Extbase writes into crdate and tstamp.
+     */
+    private function getExecutionTime(): int
+    {
+        $time = $GLOBALS['EXEC_TIME'] ?? null;
+
+        return is_int($time) ? $time : time();
     }
 
     /**
