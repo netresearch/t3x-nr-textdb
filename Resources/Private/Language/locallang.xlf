@@ -103,6 +103,9 @@
             <trans-unit id="message.error.filter">
                 <source>Please select at least one type or component to create an export.</source>
             </trans-unit>
+            <trans-unit id="message.error.export.empty">
+                <source>No translation matches the current filter, so there is nothing to export.</source>
+            </trans-unit>
             <trans-unit id="message.error.archive">
                 <source>Archive cloud not be created.</source>
             </trans-unit>
