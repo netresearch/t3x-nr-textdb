@@ -16,7 +16,6 @@ namespace Netresearch\NrTextdb\Domain\Repository;
 
 use Exception;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\DomainObject\DomainObjectInterface;
 use TYPO3\CMS\Extbase\Persistence\Repository;
 
@@ -41,6 +40,12 @@ abstract class AbstractRepository extends Repository
 
     private ?bool $cachedCreateIfMissing = null;
 
+    public function __construct(
+        private readonly ExtensionConfiguration $extensionConfiguration,
+    ) {
+        parent::__construct();
+    }
+
     /**
      * Get the extension configuration.
      *
@@ -49,10 +54,7 @@ abstract class AbstractRepository extends Repository
     private function getExtensionConfiguration(string $path): mixed
     {
         try {
-            /** @var ExtensionConfiguration $extensionConfiguration */
-            $extensionConfiguration = GeneralUtility::makeInstance(ExtensionConfiguration::class);
-
-            return $extensionConfiguration->get('nr_textdb', $path);
+            return $this->extensionConfiguration->get('nr_textdb', $path);
         } catch (Exception) {
             return null;
         }
