@@ -250,9 +250,8 @@ Problem: Export Exceeds the Time Limit
   * 10,000 entries: 9 seconds, 10 MB of memory beyond the request
   * 48,500 entries: 44 seconds, 28.5 MB of memory beyond the request
 
-  Before this change the export read all entries at once and needed
-  685 MB for the 48,500 entries. Version 4.0.2 and earlier read all
-  entries at once as well.
+  Version 4.0.2 and earlier read all entries at once, so their memory use
+  grows with the data set.
 
 **Solution:**
   * Raise ``max_execution_time`` for backend requests. TYPO3 recommends
