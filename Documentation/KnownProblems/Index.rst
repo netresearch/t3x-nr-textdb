@@ -18,7 +18,8 @@ TYPO3 Version Support
 ---------------------
 
 * **Minimum TYPO3:** 14.3.0
-* **Earlier versions:** Not supported (use version 2.x for TYPO3 12)
+* **Earlier versions:** Not supported by this version. Use version 3.x
+  for TYPO3 13.4 and version 2.x for TYPO3 12.4.
 
 PHP Version Requirements
 ------------------------
@@ -112,13 +113,11 @@ Browser Support
 Backend Module
 --------------
 
-The TextDB backend module is tested with:
-
-* ✅ Chrome/Chromium (latest)
-* ✅ Firefox (latest)
-* ✅ Safari (latest)
-* ✅ Edge (Chromium-based)
-* ⚠️  Internet Explorer (not supported)
+The TextDB backend module runs in the TYPO3 backend and has no browser
+requirements of its own. Its tests do not run in a browser. TYPO3 14.3
+lists the latest versions of Chrome, Edge, Firefox and Safari as supported
+browsers, see the
+`system requirements of TYPO3 14 <https://get.typo3.org/version/14#system-requirements>`__.
 
 .. _workarounds:
 
@@ -134,16 +133,19 @@ Problem: Module Not Visible
 
 **Solution:**
 
-.. code-block:: bash
+1. Check that the extension is active and its module registered, and
+   flush the caches, which hold the module registration:
 
-   # Clear all caches
-   vendor/bin/typo3 cache:flush
+   .. code-block:: bash
 
-   # Rebuild backend modules
-   vendor/bin/typo3 backend:listmodules
+      vendor/bin/typo3 extension:list | grep nr_textdb
+      vendor/bin/typo3 debug:backend:modules | grep netresearch_textdb
+      vendor/bin/typo3 cache:flush
 
-   # Check module registration
-   ls -la typo3conf/ext/nr_textdb/Configuration/Backend/Modules.php
+2. For an editor who is no administrator, check that the backend user or
+   one of the user's groups lists the module :guilabel:`Netresearch > TextDb`
+   in :guilabel:`Allowed modules` on the tab
+   :guilabel:`Module Permissions`.
 
 Problem: Translations Not Updating
 -----------------------------------
@@ -152,17 +154,25 @@ Problem: Translations Not Updating
   * Changes in backend don't reflect on frontend
   * Old translations still showing
 
+**Cause:**
+  The ViewHelpers render the value into the page, and TYPO3 keeps the
+  rendered page in the page cache. With TYPO3's default configuration,
+  saving an entry in the module does not clear the cache of the pages that
+  show the value.
+
 **Solution:**
 
-.. code-block:: bash
+1. Flush the page cache, in the backend with
+   :guilabel:`Flush frontend caches` in the cache menu of the toolbar, or
+   on the command line:
 
-   # Clear frontend page cache
-   vendor/bin/typo3 cache:flush
+   .. code-block:: bash
 
-   # Clear specific page cache via backend:
-   # Page > Clear Cache > Clear cache for this page
+      vendor/bin/typo3 cache:flush --group pages
 
-   # Verify correct storage PID in extension configuration
+2. If the value is still old, check that the entry is stored in the folder
+   that ``textDbPid`` in the extension configuration names. The ViewHelpers
+   read entries from that folder only.
 
 Problem: Import Fails Silently
 -------------------------------
@@ -173,13 +183,13 @@ Problem: Import Fails Silently
 
 **Solution:**
 
-1. Check TYPO3 logs:
+1. Check the size of the file. A file larger than PHP's
+   ``upload_max_filesize`` or ``post_max_size`` does not reach the module,
+   which then shows the empty import form again without a message.
 
-   .. code-block:: bash
-
-      tail -f var/log/typo3_*.log
-
-2. Verify XLIFF format:
+2. Verify the XLIFF format. The module imports the ``<trans-unit>``
+   elements of ``<file><body>``, and each ``id`` names component, type and
+   placeholder. A file exported by the module has this structure:
 
    .. code-block:: xml
 
@@ -194,17 +204,16 @@ Problem: Import Fails Silently
           </file>
       </xliff>
 
-3. Check file permissions:
+3. Check the language prefix of the file name. ``de.textdb_import.xlf``
+   imports into the site language whose language code is ``de``, and a
+   file without prefix into the language with the code ``en``. The
+   languages come from the site of the storage folder. A prefix that no
+   language of this site has imports nothing and shows no message.
 
-   .. code-block:: bash
-
-      ls -la /path/to/upload/directory
-
-4. Validate XML:
-
-   .. code-block:: bash
-
-      xmllint --noout yourfile.xlf
+4. Select :guilabel:`Override existing` to change entries that exist
+   already. Without it the import leaves them unchanged and does not count
+   them. Entries the extension created automatically are overwritten in
+   both cases.
 
 5. Check the units the import skips without a message:
 
@@ -283,9 +292,9 @@ If you encounter issues not listed here:
       Issue Title: Brief description
 
       Environment:
-      - TYPO3: 14.3.5
-      - PHP: 8.3.2
-      - Extension: 3.0.1
+      - TYPO3: 14.3.10
+      - PHP: 8.4.14
+      - Extension: 4.0.2
       - Database: MariaDB 10.11
 
       Description:
@@ -337,37 +346,5 @@ For commercial support and custom development:
 Planned Improvements
 ====================
 
-Version 3.1.0
--------------
-
-* Performance optimizations for large datasets
-* Enhanced import/export UI with progress indicators
-* Batch operations for bulk translation management
-* Advanced filtering options
-
-**GitHub Issue:** `#33 <https://github.com/netresearch/t3x-nr-textdb/issues/33>`_
-
-Version 3.2.0
--------------
-
-* PSR-14 events for extensibility
-* Translation versioning and history
-* REST API for external integrations
-
-**GitHub Issue:** `#34 <https://github.com/netresearch/t3x-nr-textdb/issues/34>`_
-
-Version 4.0.0
--------------
-
-* TYPO3 14 LTS compatibility
-* AI-assisted translation suggestions
-* Translation memory integration
-* Workflow management with approval process
-
-**GitHub Issue:** `#35 <https://github.com/netresearch/t3x-nr-textdb/issues/35>`_
-
-.. note::
-
-   Planned features are subject to change. Check the
-   `GitHub milestones <https://github.com/netresearch/t3x-nr-textdb/milestones>`_
-   for current roadmap.
+Open feature requests and their status are tracked in the
+`issue tracker <https://github.com/netresearch/t3x-nr-textdb/issues>`__.
