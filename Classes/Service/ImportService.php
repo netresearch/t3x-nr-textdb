@@ -240,21 +240,15 @@ final readonly class ImportService
         $fileResult    = new ImportResult();
 
         foreach ($unapprovedKeys as $unapprovedKey) {
-            $fileResult->recordSkippedUnapproved($unapprovedKey);
+            $fileResult->recordSkippedUnapproved($this->withoutUnusedSuffix($unapprovedKey));
         }
 
         foreach ($partiallyApprovedKeys as $partiallyApprovedKey) {
-            $fileResult->recordPartiallyApproved($partiallyApprovedKey);
+            $fileResult->recordPartiallyApproved($this->withoutUnusedSuffix($partiallyApprovedKey));
         }
 
         foreach ($entries as $key => $value) {
-            $key = (string) $key;
-
-            // A unit marked unused imports under its own placeholder, as it
-            // did before the import read files with XliffLoader.
-            if (str_ends_with($key, self::UNUSED_SUFFIX)) {
-                $key = substr($key, 0, -strlen(self::UNUSED_SUFFIX));
-            }
+            $key = $this->withoutUnusedSuffix((string) $key);
 
             $componentName = $this->getComponentFromKey($key);
             if ($componentName === null) {
@@ -464,6 +458,18 @@ final readonly class ImportService
             $this->componentRepository->setCreateIfMissing(false);
             $this->typeRepository->setCreateIfMissing(false);
         }
+    }
+
+    /**
+     * Returns the key of a unit without the suffix XliffLoader appends when
+     * the unit is marked unused. Such a unit imports, and is reported, under
+     * its own key, as it was before the import read files with XliffLoader.
+     */
+    private function withoutUnusedSuffix(string $key): string
+    {
+        return str_ends_with($key, self::UNUSED_SUFFIX)
+            ? substr($key, 0, -strlen(self::UNUSED_SUFFIX))
+            : $key;
     }
 
     /**

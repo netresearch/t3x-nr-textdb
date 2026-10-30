@@ -424,6 +424,53 @@ final class ImportServiceTest extends UnitTestCase
         self::assertSame([], $result->getPartiallyApproved());
     }
 
+    #[Test]
+    public function aSkippedUnitMarkedUnusedIsReportedUnderItsOwnKey(): void
+    {
+        $GLOBALS['TYPO3_CONF_VARS']['LANG']['requireApprovedLocalizations'] = true;
+
+        $connection = self::createStub(Connection::class);
+        $connection->method('transactional')
+            ->willReturnCallback(static fn (Closure $work): mixed => $work());
+
+        $connectionPool = self::createStub(ConnectionPool::class);
+        $connectionPool->method('getConnectionForTable')->willReturn($connection);
+
+        $this->stubReferenceRecords(new Environment(), new Component(), new Type());
+        $this->translationService->method('createTranslation')->willReturn(new Translation());
+
+        $subject = $this->createSubject($this->translationRepository, $connectionPool);
+
+        // XliffLoader appends ".x-unused" to the id of a unit marked unused.
+        $loadedFile = $subject->loadFile(
+            '<?xml version="1.0" encoding="UTF-8"?>'
+            . '<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">'
+            . '<file source-language="en" target-language="de" datatype="plaintext" original="messages"><body>'
+            . '<trans-unit id="c|t|old" approved="no" x-unused-since="1.0"><source>o</source><target>alt</target></trans-unit>'
+            . '<group id="c|t|p" restype="x-gettext-plurals">'
+            . '<trans-unit id="c|t|p[0]" x-unused-since="1.0"><source>one</source><target>eins</target></trans-unit>'
+            . '<trans-unit id="c|t|p[1]" approved="no" x-unused-since="1.0"><source>many</source><target>viele</target></trans-unit>'
+            . '</group>'
+            . '<trans-unit id="c|t|empty" x-unused-since="1.0"><source>e</source></trans-unit>'
+            . '</body></file></xliff>',
+            'de',
+        );
+
+        $result = new ImportResult();
+        $subject->importEntries(
+            $loadedFile->entries,
+            0,
+            false,
+            $result,
+            $loadedFile->unapprovedKeys,
+            $loadedFile->partiallyApprovedKeys,
+        );
+
+        self::assertSame(['c|t|old'], $result->getSkippedUnapproved());
+        self::assertSame(['c|t|p'], $result->getPartiallyApproved());
+        self::assertSame(['c|t|empty'], $result->getSkippedEmpty());
+    }
+
     /**
      * Plural units of translation files. The loader keeps the approved forms
      * of a unit and drops the others.
