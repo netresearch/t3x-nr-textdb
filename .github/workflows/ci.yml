@@ -39,3 +39,36 @@ jobs:
       functional-test-db: sqlite
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  # The functional suite once more against the database servers the manual
+  # names as tested. Only the functional tests run here, on the newest PHP;
+  # the job above covers everything else. The reusable workflow maps every
+  # functional-test-db value except sqlite and postgres to mysqli and starts
+  # db-image, which defaults to MySQL 9.6, so each cell names its image.
+  functional-db:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - db: mariadb
+            image: ghcr.io/netresearch/ci-mirror/mariadb:10.11
+          - db: mysql
+            image: ghcr.io/netresearch/ci-mirror/mysql:8.0
+          - db: postgres
+            image: ghcr.io/netresearch/ci-mirror/postgres:16-alpine
+    uses: netresearch/typo3-ci-workflows/.github/workflows/ci.yml@main
+    permissions:
+      contents: read
+    with:
+      php-versions: '["8.5"]'
+      typo3-versions: '["^14.3"]'
+      run-lint: false
+      run-cgl: false
+      run-phpstan: false
+      run-phpstan-unpinned: false
+      run-rector: false
+      run-unit-tests: false
+      run-docs: false
+      run-functional-tests: true
+      functional-test-db: ${{ matrix.db }}
+      db-image: ${{ matrix.image }}
