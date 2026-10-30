@@ -54,7 +54,7 @@ If an import fails, the file imports nothing.
   * Split large files into smaller files for the backend module. A file
     uploaded there must also fit PHP's ``upload_max_filesize`` and
     ``post_max_size``, which default to 2 MB and 8 MB.
-  * Increase PHP `max_execution_time` for the backend. Choose the value
+  * Increase PHP ``max_execution_time`` for the backend. Choose the value
     from the times above; a backend upload of the 10 MB file was not
     measured.
 

@@ -134,7 +134,8 @@ final readonly class ImportService
      * The persistence session and the name caches of the repositories are
      * cleared then, because they hold records whose rows were rolled back.
      * The counts of the file reach $result only once the transaction has
-     * committed, so a rolled-back file adds nothing to them.
+     * committed, so a rolled-back file adds nothing to them. Its error
+     * messages do reach $result, because one of them can name the cause.
      *
      * @param array<array-key, mixed> $entries
      * @param int<-1, max>            $languageUid
@@ -225,6 +226,10 @@ final readonly class ImportService
                     $this->persistenceManager->persistAll();
                 });
         } catch (Throwable $throwable) {
+            foreach ($fileResult->getErrors() as $error) {
+                $result->recordError($error);
+            }
+
             $this->persistenceManager->clearState();
             $this->environmentRepository->clearCache();
             $this->componentRepository->clearCache();

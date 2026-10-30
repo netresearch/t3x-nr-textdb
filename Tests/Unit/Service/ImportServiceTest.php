@@ -281,6 +281,40 @@ final class ImportServiceTest extends UnitTestCase
     }
 
     #[Test]
+    public function importEntriesReportsTheEntryErrorsOfARolledBackFileButNoCounts(): void
+    {
+        // The work runs, then the commit fails: the file is rolled back.
+        $connection = self::createStub(Connection::class);
+        $connection->method('transactional')
+            ->willReturnCallback(static function (Closure $work): never {
+                $work();
+
+                throw new RuntimeException('Commit failed', 1793253602);
+            });
+
+        $connectionPool = self::createStub(ConnectionPool::class);
+        $connectionPool->method('getConnectionForTable')->willReturn($connection);
+
+        // The first entry fails on its own and records its error.
+        $this->environmentRepository->method('setCreateIfMissing')->willReturnSelf();
+        $this->environmentRepository->method('findByName')
+            ->willThrowException(new RuntimeException('Environment write failed'));
+
+        $result = new ImportResult();
+
+        try {
+            $this->createSubject($this->translationRepository, $connectionPool)
+                ->importEntries(['comp|type|key' => 'value'], 0, false, $result);
+            self::fail('The failed commit did not reach the caller.');
+        } catch (RuntimeException $exception) {
+            self::assertSame(1793253602, $exception->getCode());
+        }
+
+        self::assertSame(['Environment write failed'], $result->getErrors());
+        self::assertSame(0, $result->getImported());
+    }
+
+    #[Test]
     public function importEntriesClearsThePersistenceSessionAfterEachThousandEntries(): void
     {
         $connection = self::createStub(Connection::class);
