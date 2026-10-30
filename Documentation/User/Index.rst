@@ -325,6 +325,9 @@ Import Failed
 * **File Size**: A file with tens of thousands of entries can take longer
   than the time limit of the backend. Split it into smaller files, or ask
   the administrator to import it with the CLI command
+* **Database Error**: The file was not imported at all, not even in part.
+  The message names the cause, a component name longer than 255 characters
+  for example. Correct the file and import it again
 
 Cannot Edit Translation
 -----------------------
