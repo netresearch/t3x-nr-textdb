@@ -15,7 +15,7 @@ TYPO3 extension (`nr_textdb`) providing an auto-creating translation database: F
 | Component | Responsibility | Key Files |
 |---|---|---|
 | ViewHelpers | Fluid entry points for translation lookup (`textdb:translate`, `textdb:textdb`) | `Classes/ViewHelpers/TranslateViewHelper.php`, `Classes/ViewHelpers/TextdbViewHelper.php` |
-| Translation service | Lookup with per-request cache; auto-creates missing translation records (incl. default-language parent) when `createIfMissing` is enabled | `Classes/Service/TranslationService.php` |
+| Translation service | Lookup with per-request cache; auto-creates missing translation records (incl. default-language parent) when `createIfMissing` is enabled; read-only lookup along the language fallback chain (`translateFromFallbackLanguages()`) | `Classes/Service/TranslationService.php` |
 | Import service | Parses XLIFF files and creates/updates translation records; returns an `ImportResult` | `Classes/Service/ImportService.php`, `Classes/Service/ImportResult.php` |
 | Backend module | Extbase controller: list/filter, translate records, XLIFF import/export | `Classes/Controller/TranslationController.php`, `Configuration/Backend/Modules.php` |
 | CLI import | Symfony Console command wrapping the import service | `Classes/Command/ImportCommand.php` |
@@ -26,7 +26,7 @@ TYPO3 extension (`nr_textdb`) providing an auto-creating translation database: F
 
 ## Data Flow
 
-- **Frontend lookup**: Fluid template → `TranslateViewHelper`/`TextdbViewHelper` → `TranslationService::translate()` → repositories (environment/component/type/translation) → value returned; if no record exists and auto-create is enabled, the service persists a new `Translation` (and a default-language parent for localized requests) before returning the placeholder.
+- **Frontend lookup**: Fluid template → `TranslateViewHelper`/`TextdbViewHelper` → `TranslationService::translate()` → repositories (environment/component/type/translation) → value returned; if no record exists and auto-create is enabled, the service persists a new `Translation` (and a default-language parent for localized requests) before returning the placeholder. Where `translate()` returns the placeholder, the ViewHelpers try `TranslationService::translateFromFallbackLanguages()` (the fallback chain of the current language, then language 0) before rendering the key; `TranslateViewHelper` asks the language file first.
 - **Import**: Backend module upload (`TranslationController::importAction()`, which loads the file with TYPO3's `XliffLoader`) → `ImportService::importEntries()`; CLI (`ImportCommand`) → `ImportService::importFile()` → `importEntries()`. `importEntries()` checks every key, skips units without text, then calls `importEntry()` per XLIFF unit → repositories → `ImportResult` summary.
 - **Export**: `TranslationController::exportAction()` collects translations and streams an XLIFF archive (uses `ext-zip`).
 

@@ -318,7 +318,8 @@ site language without fallback languages still falls back to the default
 language in step 3.
 
 When ``createIfMissing`` is enabled, step 1 creates the missing entry in
-the current language, as before. Steps 3 and 4 never create records.
+the current language, as before. Steps 3 and 4 never create translation
+records.
 
 For example, a German page (language ``1``) whose site language falls back
 to ``0`` renders the English TextDB entry when no German entry exists. With
@@ -404,7 +405,7 @@ TranslationService
    Returns the value of the first usable entry along the fallback chain of
    the current language, then in the default language, as in step 3 of
    :ref:`dev-viewhelpers-fallback`. The current language itself is not
-   searched. The method never creates records.
+   searched. The method never creates translation records.
 
    :param string $placeholder: Translation key
    :param string $typeName: Type name (e.g., "label", "button")

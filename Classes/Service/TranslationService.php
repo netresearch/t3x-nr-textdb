@@ -215,7 +215,9 @@ class TranslationService
      * skipped, because translate() has already looked there. An entry is
      * usable when its value is not empty and it was not auto-created.
      *
-     * The lookup is read-only: unlike translate(), it never creates a record.
+     * Unlike translate(), it never creates a translation record. With
+     * createIfMissing enabled, the repositories still create a missing
+     * environment, component or type, as they do for translate().
      * Callers use it only where translate() returned the bare placeholder.
      */
     public function translateFromFallbackLanguages(
@@ -311,20 +313,18 @@ class TranslationService
             return [];
         }
 
+        // In the default language the list stays empty: 0 is the current
+        // language and therefore skipped.
         $currentLanguage = $languageAspect->getId();
-
-        if ($currentLanguage === 0) {
-            return [];
-        }
-
-        $languages = [];
+        $languages       = [];
 
         foreach ([...$languageAspect->getFallbackChain(), 0] as $languageUid) {
+            // A language listed twice is not filtered here: the second lookup
+            // is answered from the fallback cache.
             if (
                 !is_int($languageUid)
                 || $languageUid < 0
                 || $languageUid === $currentLanguage
-                || in_array($languageUid, $languages, true)
             ) {
                 continue;
             }
