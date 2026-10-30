@@ -54,6 +54,16 @@ class TextDbModule
                     (event) => {
                         event.preventDefault();
 
+                        const linkOpenClicked = event.currentTarget;
+
+                        // A second click while the row loads, a double-click
+                        // for example, would insert the row twice.
+                        if (linkOpenClicked.dataset.loading === "true") {
+                            return;
+                        }
+
+                        linkOpenClicked.dataset.loading = "true";
+
                         document
                             .querySelectorAll(".translated-link-close")
                             .forEach(linkClose => linkClose.click());
@@ -109,6 +119,9 @@ class TextDbModule
                                 if (translatedLinkClose !== null) {
                                     translatedLinkClose.style.display = "";
                                 }
+                            })
+                            .finally(() => {
+                                delete linkOpenClicked.dataset.loading;
                             });
                     })
             );
