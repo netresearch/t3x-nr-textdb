@@ -131,6 +131,7 @@ class TranslationRepository extends AbstractRepository
      * @param string|null $placeholder Placeholder to search for
      * @param string|null $value       Value to search for
      * @param int         $languageId  Language ID
+     * @param int|null    $pageId      Only records on this page; null for records on any page
      *
      * @return QueryResultInterface<int, Translation>
      *
@@ -142,6 +143,7 @@ class TranslationRepository extends AbstractRepository
         ?string $placeholder = null,
         ?string $value = null,
         int $languageId = 0,
+        ?int $pageId = null,
     ): QueryResultInterface {
         $query = $this->createQuery();
         $query
@@ -176,6 +178,10 @@ class TranslationRepository extends AbstractRepository
             $query->getQuerySettings()->setRespectSysLanguage(false);
 
             $constraints[] = $query->equals('sys_language_uid', $languageId);
+        }
+
+        if ($pageId !== null) {
+            $constraints[] = $query->equals('pid', $pageId);
         }
 
         if ($constraints !== []) {
