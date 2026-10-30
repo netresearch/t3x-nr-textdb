@@ -56,10 +56,10 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
 
         // Build a minimal SiteLanguage for English (language id 0)
         $siteLanguage = $this->buildSiteLanguage(0, 'en');
-        $siteMock     = $this->createMock(Site::class);
+        $siteMock     = self::createStub(Site::class);
         $siteMock->method('getAllLanguages')->willReturn([$siteLanguage]);
 
-        $siteFinderMock = $this->createMock(SiteFinder::class);
+        $siteFinderMock = self::createStub(SiteFinder::class);
         $siteFinderMock->method('getAllSites')->willReturn([$siteMock]);
 
         GeneralUtility::addInstance(SiteFinder::class, $siteFinderMock);

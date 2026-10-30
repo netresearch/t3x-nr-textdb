@@ -26,7 +26,7 @@ use Netresearch\NrTextdb\Service\TranslationService;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\UsesClass;
-use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\LanguageAspect;
 use TYPO3\CMS\Core\Site\SiteFinder;
@@ -42,31 +42,31 @@ final class TranslationServiceTest extends UnitTestCase
 {
     private TranslationService $subject;
 
-    private EnvironmentRepository&MockObject $environmentRepository;
+    private EnvironmentRepository&Stub $environmentRepository;
 
-    private ComponentRepository&MockObject $componentRepository;
+    private ComponentRepository&Stub $componentRepository;
 
-    private TypeRepository&MockObject $typeRepository;
+    private TypeRepository&Stub $typeRepository;
 
-    private TranslationRepository&MockObject $translationRepository;
+    private TranslationRepository&Stub $translationRepository;
 
-    private SiteFinder&MockObject $siteFinder;
+    private SiteFinder&Stub $siteFinder;
 
-    private PersistenceManagerInterface&MockObject $persistenceManager;
+    private PersistenceManagerInterface&Stub $persistenceManager;
 
-    private Context&MockObject $context;
+    private Context&Stub $context;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->environmentRepository = $this->createMock(EnvironmentRepository::class);
-        $this->componentRepository   = $this->createMock(ComponentRepository::class);
-        $this->typeRepository        = $this->createMock(TypeRepository::class);
-        $this->translationRepository = $this->createMock(TranslationRepository::class);
-        $this->siteFinder            = $this->createMock(SiteFinder::class);
-        $this->persistenceManager    = $this->createMock(PersistenceManagerInterface::class);
-        $this->context               = $this->createMock(Context::class);
+        $this->environmentRepository = self::createStub(EnvironmentRepository::class);
+        $this->componentRepository   = self::createStub(ComponentRepository::class);
+        $this->typeRepository        = self::createStub(TypeRepository::class);
+        $this->translationRepository = self::createStub(TranslationRepository::class);
+        $this->siteFinder            = self::createStub(SiteFinder::class);
+        $this->persistenceManager    = self::createStub(PersistenceManagerInterface::class);
+        $this->context               = self::createStub(Context::class);
 
         $languageAspect = new LanguageAspect(0);
         // with() requires expects(), and PHPUnit 13 deprecated both any() and
@@ -83,13 +83,24 @@ final class TranslationServiceTest extends UnitTestCase
                 },
             );
 
-        $this->subject = new TranslationService(
+        $this->subject = $this->createSubject();
+    }
+
+    /**
+     * The doubles set up above are stubs. A test that verifies an invocation
+     * passes its own mock for that collaborator.
+     */
+    private function createSubject(
+        ?TranslationRepository $translationRepository = null,
+        ?PersistenceManagerInterface $persistenceManager = null,
+    ): TranslationService {
+        return new TranslationService(
             $this->environmentRepository,
             $this->componentRepository,
             $this->typeRepository,
-            $this->translationRepository,
+            $translationRepository ?? $this->translationRepository,
             $this->siteFinder,
-            $this->persistenceManager,
+            $persistenceManager ?? $this->persistenceManager,
             $this->context,
         );
     }
@@ -115,13 +126,18 @@ final class TranslationServiceTest extends UnitTestCase
         $this->environmentRepository->method('findByName')->willReturn($environment);
         $this->componentRepository->method('findByName')->willReturn($component);
         $this->typeRepository->method('findByName')->willReturn($type);
-        $this->translationRepository->method('findByEnvironmentComponentTypePlaceholderAndLanguage')
+        // The second call is served from the cache, so the translation is
+        // looked up once.
+        $translationRepository = $this->createMock(TranslationRepository::class);
+        $translationRepository
+            ->expects(self::once())
+            ->method('findByEnvironmentComponentTypePlaceholderAndLanguage')
             ->willReturn($translation);
 
-        // First call
-        $result1 = $this->subject->translate('test.key', 'label', 'website', 'default');
-        // Second call should use cache - repositories should not be called again
-        $result2 = $this->subject->translate('test.key', 'label', 'website', 'default');
+        $subject = $this->createSubject($translationRepository);
+
+        $result1 = $subject->translate('test.key', 'label', 'website', 'default');
+        $result2 = $subject->translate('test.key', 'label', 'website', 'default');
 
         self::assertSame('Translated value', $result1);
         self::assertSame('Translated value', $result2);
@@ -237,13 +253,18 @@ final class TranslationServiceTest extends UnitTestCase
         $this->environmentRepository->method('getConfiguredPageId')->willReturn(1);
         $this->componentRepository->method('findByName')->willReturn($component);
         $this->typeRepository->method('findByName')->willReturn($type);
-        $this->translationRepository->method('findByEnvironmentComponentTypePlaceholderAndLanguage')
-            ->willReturn(null);
-        $this->translationRepository->method('getCreateIfMissing')->willReturn(true);
-        $this->translationRepository->expects(self::once())->method('add');
-        $this->persistenceManager->expects(self::once())->method('persistAll');
 
-        $result = $this->subject->translate('auto.key', 'label', 'website', 'default');
+        $translationRepository = $this->createMock(TranslationRepository::class);
+        $translationRepository->method('findByEnvironmentComponentTypePlaceholderAndLanguage')
+            ->willReturn(null);
+        $translationRepository->method('getCreateIfMissing')->willReturn(true);
+        $translationRepository->expects(self::once())->method('add');
+
+        $persistenceManager = $this->createMock(PersistenceManagerInterface::class);
+        $persistenceManager->expects(self::once())->method('persistAll');
+
+        $result = $this->createSubject($translationRepository, $persistenceManager)
+            ->translate('auto.key', 'label', 'website', 'default');
 
         self::assertSame('auto.key', $result);
     }
