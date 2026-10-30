@@ -114,6 +114,9 @@
             <trans-unit id="message.error.import">
                 <source>File name does not match the expected pattern.</source>
             </trans-unit>
+            <trans-unit id="message.error.import.upload">
+                <source>The uploaded file could not be read.</source>
+            </trans-unit>
             <trans-unit id="error.storage.pid">
                 <source>Please configure a valid storage page ID in the extension configuration.</source>
             </trans-unit>

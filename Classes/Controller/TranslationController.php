@@ -927,7 +927,18 @@ final class TranslationController extends ActionController
         $uploadedFile = $translationFile->getTemporaryFileName();
 
         if ($uploadedFile === null) {
-            return $this->moduleTemplate()->renderResponse('Translation/Import');
+            // A PSR-7 upload built from a stream has no temporary file the
+            // loader could read.
+            $this->addFlashMessageToQueue(
+                'Import',
+                $this->getLanguageService()->sL(
+                    'nr_textdb.messages:message.error.import.upload',
+                ),
+            );
+
+            return $this->redirectToUri(
+                $this->uriBuilder->reset()->uriFor('import'),
+            );
         }
 
         $matches     = [];

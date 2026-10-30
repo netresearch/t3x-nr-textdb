@@ -32,6 +32,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Psr\Http\Message\ResponseInterface;
 use ReflectionClass;
 use RuntimeException;
+use Symfony\Component\Filesystem\Filesystem;
 use TYPO3\CMS\Backend\Routing\Router;
 use TYPO3\CMS\Backend\Template\Components\ComponentFactory;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
@@ -44,6 +45,7 @@ use TYPO3\CMS\Core\Crypto\HashService;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Http\ServerRequest;
+use TYPO3\CMS\Core\Http\Stream;
 use TYPO3\CMS\Core\Http\UploadedFile;
 use TYPO3\CMS\Core\Imaging\IconFactory;
 use TYPO3\CMS\Core\Localization\LanguageServiceFactory;
@@ -1703,6 +1705,22 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
     }
 
     #[Test]
+    public function importOfAnUploadWithoutATemporaryFileShowsAnError(): void
+    {
+        $stream = new Stream('php://memory', 'r+');
+        $stream->write('<xliff/>');
+
+        $response = $this->dispatchModuleAction(
+            'import',
+            [],
+            ['translationFile' => new UploadedFile($stream, 8, UPLOAD_ERR_OK, 'textdb_import.xlf')],
+        );
+
+        self::assertSame(303, $response->getStatusCode());
+        self::assertSame(['The uploaded file could not be read.'], $this->errorFlashMessages());
+    }
+
+    #[Test]
     public function importOfAFileThatIsNoXmlShowsAnErrorAndImportsNothing(): void
     {
         $response = $this->dispatchImportFile('textdb_import.xlf', 'not <xml');
@@ -1877,11 +1895,17 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         $file = Environment::getVarPath() . '/textdb-upload-' . bin2hex(random_bytes(4));
         file_put_contents($file, $content);
 
-        return $this->dispatchModuleAction(
-            'import',
-            $queryParams,
-            ['translationFile' => new UploadedFile($file, (int) filesize($file), UPLOAD_ERR_OK, $clientFilename)],
-        );
+        try {
+            return $this->dispatchModuleAction(
+                'import',
+                $queryParams,
+                ['translationFile' => new UploadedFile($file, (int) filesize($file), UPLOAD_ERR_OK, $clientFilename)],
+            );
+        } finally {
+            // Symfony Filesystem rather than unlink(), as in
+            // AbstractFunctionalTestCase::renderTemplate().
+            (new Filesystem())->remove($file);
+        }
     }
 
     /**

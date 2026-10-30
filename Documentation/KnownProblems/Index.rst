@@ -220,7 +220,12 @@ Problem: Line Breaks Lost After Re-Import
   Files exported by version 4.0.2 and earlier do not declare it.
 
 **Solution:**
-  Export the translations again and import the new file.
+  Export the translations again and import the new file instead of the old
+  one. This helps only while the stored values still have their line breaks.
+  A value that an import has already flattened is stored without them, so a
+  new export carries the flattened value as well. Restore such a value from
+  the original XLIFF file or a database backup, or edit it in the backend
+  module.
 
 Problem: Memory Exhaustion on Export
 -------------------------------------

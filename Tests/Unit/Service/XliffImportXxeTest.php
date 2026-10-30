@@ -34,14 +34,17 @@ use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 #[CoversNothing]
 final class XliffImportXxeTest extends UnitTestCase
 {
+    private const DATA_ENTITY_TEXT = 'resolved-external-entity';
+
     /**
      * @return array<string, array{string}>
      */
     public static function externalEntityProvider(): array
     {
         return [
-            'local file'  => ['file:///etc/passwd'],
-            'php wrapper' => ['php://filter/convert.base64-encode/resource=/etc/passwd'],
+            'local file'   => ['file:///etc/passwd'],
+            'php wrapper'  => ['php://filter/convert.base64-encode/resource=/etc/passwd'],
+            'data wrapper' => ['data://text/plain,' . self::DATA_ENTITY_TEXT],
         ];
     }
 
@@ -55,30 +58,27 @@ final class XliffImportXxeTest extends UnitTestCase
         );
 
         self::assertStringNotContainsString('root:', $value);
+        self::assertStringNotContainsString(self::DATA_ENTITY_TEXT, $value);
 
         $decoded = base64_decode($value, true);
         self::assertTrue(($decoded === false) || !str_contains($decoded, 'root:'));
     }
 
     #[Test]
-    public function theLocalFilePayloadResolvesWhenAParserSubstitutesEntities(): void
+    public function theDataPayloadResolvesWhenAParserSubstitutesEntities(): void
     {
-        // Control for the test above: the same payload does read the file
-        // once entities are substituted, so a passing test means the loader
-        // did not substitute it.
-        if (!is_readable('/etc/passwd')) {
-            self::markTestSkipped('/etc/passwd is not readable here.');
-        }
-
+        // Control for the test above: the data:// payload does resolve once
+        // entities are substituted, so a passing test means the loader did
+        // not substitute it. Unlike file:// it depends on no file of the host.
         $document = simplexml_load_string(
-            '<?xml version="1.0"?><!DOCTYPE xliff [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>'
+            '<?xml version="1.0"?><!DOCTYPE xliff [<!ENTITY xxe SYSTEM "data://text/plain,' . self::DATA_ENTITY_TEXT . '">]>'
             . '<xliff><file><body><trans-unit id="a"><source>&xxe;</source></trans-unit></body></file></xliff>',
             SimpleXMLElement::class,
             LIBXML_NOENT,
         );
 
         self::assertNotFalse($document);
-        self::assertStringContainsString('root:', (string) $document->file->body->{'trans-unit'}->source);
+        self::assertSame(self::DATA_ENTITY_TEXT, (string) $document->file->body->{'trans-unit'}->source);
     }
 
     #[Test]
