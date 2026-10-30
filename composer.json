@@ -156,6 +156,9 @@
             "@ci:test:php:unit",
             "@ci:test:php:functional",
             "@ci:test:php:cgl"
-        ]
+        ],
+        "docs:render": "docker run --rm --pull always -v \"$(pwd):/project\" ghcr.io/typo3-documentation/render-guides:latest --config=Documentation/guides.xml",
+        "docs:serve": "php -S localhost:8090 -t Documentation-GENERATED-temp/",
+        "docs:clean": "rm -rf Documentation-GENERATED-temp/"
     }
 }

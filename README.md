@@ -553,6 +553,16 @@ composer ci:rector             # Apply Rector refactorings
 composer ci:fractor            # Apply Fractor migrations
 ```
 
+### Documentation
+
+The manual in `Documentation/` renders with the official TYPO3 `render-guides` container, so Docker has to be running:
+
+```bash
+composer docs:render           # Render to Documentation-GENERATED-temp/
+composer docs:serve            # Serve the rendered manual on http://localhost:8090
+composer docs:clean            # Remove Documentation-GENERATED-temp/
+```
+
 ---
 
 ## 🤝 Contributing
