@@ -28,6 +28,7 @@ use Netresearch\NrTextdb\Service\ImportResult;
 use Netresearch\NrTextdb\Service\ImportService;
 use Netresearch\NrTextdb\Service\LoadedXliffFile;
 use Netresearch\NrTextdb\Service\TranslationService;
+use Netresearch\NrTextdb\Service\TranslationTableWriter;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -93,11 +94,13 @@ final class ImportServiceTest extends UnitTestCase
 
     /**
      * The doubles set up above are stubs. A test that verifies an invocation
-     * passes its own translation repository mock or connection pool.
+     * passes its own translation repository mock, connection pool or writer.
+     * The default writer finds no stored record, so every entry is new.
      */
     private function createSubject(
         TranslationRepository $translationRepository,
         ?ConnectionPool $connectionPool = null,
+        ?TranslationTableWriter $tableWriter = null,
     ): ImportService {
         return new ImportService(
             $this->persistenceManager,
@@ -110,6 +113,7 @@ final class ImportServiceTest extends UnitTestCase
             $this->typeRepository,
             $this->environmentRepository,
             $connectionPool ?? self::createStub(ConnectionPool::class),
+            $tableWriter ?? self::createStub(TranslationTableWriter::class),
         );
     }
 
@@ -297,6 +301,46 @@ final class ImportServiceTest extends UnitTestCase
     }
 
     #[Test]
+    public function importEntriesThrowsAnExceptionOfAWriteItsLookupReaches(): void
+    {
+        // The lookup of a missing component writes the persistence session.
+        $persistenceManager = self::createStub(PersistenceManagerInterface::class);
+        $persistenceManager->method('persistAll')
+            ->willReturnCallback(static function (): never {
+                throw new RuntimeException('Write failed', 1793253605);
+            });
+
+        $this->stubReferenceRecords(new Environment(), new Component(), new Type());
+        $this->componentRepository->method('findByName')
+            ->willReturnCallback(static function () use ($persistenceManager): Component {
+                $persistenceManager->persistAll();
+
+                return new Component();
+            });
+
+        $connection = self::createStub(Connection::class);
+        $connection->method('transactional')
+            ->willReturnCallback(static fn (Closure $work): mixed => $work());
+
+        $connectionPool = self::createStub(ConnectionPool::class);
+        $connectionPool->method('getConnectionForTable')->willReturn($connection);
+
+        $result = new ImportResult();
+        $thrown = null;
+
+        try {
+            $this->createSubject($this->translationRepository, $connectionPool)
+                ->importEntries(['comp|type|key' => 'value'], 0, false, $result);
+        } catch (RuntimeException $exception) {
+            $thrown = $exception;
+        }
+
+        self::assertInstanceOf(RuntimeException::class, $thrown, 'The failed write was recorded instead of thrown.');
+        self::assertSame(1793253605, $thrown->getCode());
+        self::assertSame([], $result->getErrors());
+    }
+
+    #[Test]
     public function importEntriesWritesTheEntriesInOneTransaction(): void
     {
         /** @var ArrayObject<int, string> $calls */
@@ -316,18 +360,19 @@ final class ImportServiceTest extends UnitTestCase
         $connectionPool = self::createStub(ConnectionPool::class);
         $connectionPool->method('getConnectionForTable')->willReturn($connection);
 
-        $persistenceManager = $this->createMock(PersistenceManagerInterface::class);
-        $persistenceManager->expects(self::once())
-            ->method('persistAll')
-            ->willReturnCallback(static function () use ($calls): void {
-                $calls[] = 'persistAll';
-            });
-        $this->persistenceManager = $persistenceManager;
+        $this->stubReferenceRecords(new Environment(), new Component(), new Type());
 
-        $this->createSubject($this->translationRepository, $connectionPool)
+        $tableWriter = $this->createMock(TranslationTableWriter::class);
+        $tableWriter->expects(self::once())
+            ->method('insert')
+            ->willReturnCallback(static function () use ($calls): void {
+                $calls[] = 'insert';
+            });
+
+        $this->createSubject($this->translationRepository, $connectionPool, $tableWriter)
             ->importEntries(['comp|type|key' => 'value'], 0, false, new ImportResult());
 
-        self::assertSame(['begin', 'persistAll', 'commit'], $calls->getArrayCopy());
+        self::assertSame(['begin', 'insert', 'commit'], $calls->getArrayCopy());
     }
 
     #[Test]
@@ -378,7 +423,7 @@ final class ImportServiceTest extends UnitTestCase
     }
 
     #[Test]
-    public function importEntriesClearsThePersistenceSessionAfterEachThousandEntries(): void
+    public function importEntriesWritesTheEntriesInChunksOfAThousand(): void
     {
         $connection = self::createStub(Connection::class);
         $connection->method('transactional')
@@ -387,18 +432,31 @@ final class ImportServiceTest extends UnitTestCase
         $connectionPool = self::createStub(ConnectionPool::class);
         $connectionPool->method('getConnectionForTable')->willReturn($connection);
 
-        $persistenceManager = $this->createMock(PersistenceManagerInterface::class);
-        $persistenceManager->expects(self::exactly(2))->method('persistAll');
-        $persistenceManager->expects(self::once())->method('clearState');
-        $this->persistenceManager = $persistenceManager;
+        $this->stubReferenceRecords(new Environment(), new Component(), new Type());
+
+        /** @var ArrayObject<int, int> $chunkSizes */
+        $chunkSizes  = new ArrayObject();
+        $tableWriter = $this->createMock(TranslationTableWriter::class);
+        $tableWriter->expects(self::exactly(2))
+            ->method('findTranslations')
+            ->willReturn([]);
+        $tableWriter->expects(self::exactly(2))
+            ->method('insert')
+            ->willReturnCallback(static function (array $rows) use ($chunkSizes): void {
+                $chunkSizes[] = count($rows);
+            });
 
         $entries = [];
-        for ($i = 0; $i < 1000; ++$i) {
+        for ($i = 0; $i < 1001; ++$i) {
             $entries['comp|type|key' . $i] = 'value';
         }
 
-        $this->createSubject($this->translationRepository, $connectionPool)
-            ->importEntries($entries, 0, false, new ImportResult());
+        $result = new ImportResult();
+        $this->createSubject($this->translationRepository, $connectionPool, $tableWriter)
+            ->importEntries($entries, 0, false, $result);
+
+        self::assertSame([1000, 1], $chunkSizes->getArrayCopy());
+        self::assertSame(1001, $result->getImported());
     }
 
     #[Test]

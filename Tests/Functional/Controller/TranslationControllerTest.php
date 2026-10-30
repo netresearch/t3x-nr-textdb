@@ -17,9 +17,7 @@ namespace Netresearch\NrTextdb\Tests\Functional\Controller;
 use DOMDocument;
 use DOMElement;
 use DOMXPath;
-use Exception;
 use Netresearch\NrTextdb\Controller\TranslationController;
-use Netresearch\NrTextdb\Domain\Model\Translation;
 use Netresearch\NrTextdb\Domain\Repository\ComponentRepository;
 use Netresearch\NrTextdb\Domain\Repository\EnvironmentRepository;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
@@ -46,7 +44,6 @@ use TYPO3\CMS\Core\Core\SystemEnvironmentBuilder;
 use TYPO3\CMS\Core\Crypto\HashAlgo;
 use TYPO3\CMS\Core\Crypto\HashService;
 use TYPO3\CMS\Core\Database\ConnectionPool;
-use TYPO3\CMS\Core\EventDispatcher\ListenerProvider;
 use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Http\Stream;
@@ -58,7 +55,6 @@ use TYPO3\CMS\Core\Type\Bitmask\Permission;
 use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Core\Bootstrap;
-use TYPO3\CMS\Extbase\Event\Persistence\EntityAddedToPersistenceEvent;
 use TYPO3\CMS\Extbase\Mvc\ExtbaseRequestParameters;
 use TYPO3\CMS\Extbase\Mvc\Request as ExtbaseRequest;
 use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
@@ -1880,22 +1876,20 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
     public function importOfAFileWhoseWriteFailsShowsAnErrorAndImportsNothing(): void
     {
         // A database error is an Exception, not a RuntimeException, and used
-        // to reach the editor as the backend error page.
-        $this->getContainer()->set('nr_textdb.test.failing_write', new class {
-            public function __invoke(EntityAddedToPersistenceEvent $event): void
-            {
-                if ($event->getObject() instanceof Translation) {
-                    throw new Exception('Simulated write failure', 1793253601);
-                }
-            }
-        });
-        $this->get(ListenerProvider::class)
-            ->addListener(EntityAddedToPersistenceEvent::class, 'nr_textdb.test.failing_write');
-
-        $response = $this->dispatchImport('checkout|label|written_never', 'Hello');
+        // to reach the editor as the backend error page. The unit is in the
+        // file twice, once marked unused: both import under the same key, and
+        // the INSERT fails on the unique key of the table.
+        $response = $this->dispatchImportFile(
+            'textdb_import.xlf',
+            self::XML_DECLARATION
+            . '<xliff version="1.2"><file source-language="en" datatype="plaintext" original="textdb"><body>'
+            . '<trans-unit id="checkout|label|written_never"><source>Hello</source></trans-unit>'
+            . '<trans-unit id="checkout|label|written_never" x-unused-since="1.0"><source>Hello again</source></trans-unit>'
+            . '</body></file></xliff>',
+        );
 
         self::assertSame(200, $response->getStatusCode());
-        self::assertStringContainsString('Simulated write failure', (string) $response->getBody());
+        self::assertStringContainsString('An exception occurred while executing a query', (string) $response->getBody());
         self::assertSame(0, $this->countPlaceholderRows('written_never'));
     }
 

@@ -64,6 +64,7 @@ parameters:
                 - Netresearch\NrTextdb\Domain\Repository\TranslationRepository
                 - Netresearch\NrTextdb\Domain\Repository\TypeRepository
                 - Netresearch\NrTextdb\Service\TranslationService
+                - Netresearch\NrTextdb\Service\TranslationTableWriter
         # The following ergebnis rules fundamentally conflict with the TYPO3
         # Extbase persistence idiom: Extbase reflectively populates entity
         # properties after construction, so domain-relation getters MUST be

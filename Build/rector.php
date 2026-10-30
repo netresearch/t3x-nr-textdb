@@ -14,6 +14,7 @@ declare(strict_types=1);
 
 use Rector\Config\RectorConfig;
 use Rector\Privatization\Rector\Property\PrivatizeFinalClassPropertyRector;
+use Ssch\TYPO3Rector\TYPO311\v0\DateTimeAspectInsteadOfGlobalsExecTimeRector;
 
 $configure = require_once __DIR__ . '/../.Build/vendor/netresearch/typo3-ci-workflows/config/rector/rector.php';
 
@@ -37,6 +38,13 @@ return static function (RectorConfig $rectorConfig) use ($configure): void {
         // fails with "Cannot access private property" on private declarations.
         PrivatizeFinalClassPropertyRector::class => [
             __DIR__ . '/../Classes/Domain/Model',
+        ],
+        // The import writes translations without Extbase, and its rows must
+        // carry the crdate and tstamp Extbase wrote: $GLOBALS['EXEC_TIME'],
+        // not the date aspect of the Context. The tests set the same value.
+        DateTimeAspectInsteadOfGlobalsExecTimeRector::class => [
+            __DIR__ . '/../Classes/Service/ImportService.php',
+            __DIR__ . '/../Tests/Functional/Service/ImportServiceTest.php',
         ],
     ]);
 };
