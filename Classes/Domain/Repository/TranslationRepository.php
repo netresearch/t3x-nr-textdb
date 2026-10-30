@@ -15,6 +15,7 @@ use Netresearch\NrTextdb\Domain\Model\Component;
 use Netresearch\NrTextdb\Domain\Model\Environment;
 use Netresearch\NrTextdb\Domain\Model\Translation;
 use Netresearch\NrTextdb\Domain\Model\Type;
+use TYPO3\CMS\Core\Context\LanguageAspect;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException;
 use TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings;
@@ -86,6 +87,12 @@ class TranslationRepository extends AbstractRepository
      * context (language 0). The backend module edits rows of every language by
      * uid, and silently getting null there is what made saving a translation
      * discard the change (issue #100).
+     *
+     * The language aspect is pinned to "overlays off". With the default aspect
+     * of the global Context, Extbase on TYPO3 13.4 overlays a localized row
+     * onto its default-language parent and drops the row when that parent is
+     * deleted, so a translation whose parent was deleted while the module's
+     * dialog was open could not be loaded any more.
      */
     public function findRawByUid(int $uid): ?Translation
     {
@@ -94,7 +101,8 @@ class TranslationRepository extends AbstractRepository
             ->getQuerySettings()
             ->setIgnoreEnableFields(true)
             ->setRespectStoragePage(false)
-            ->setRespectSysLanguage(false);
+            ->setRespectSysLanguage(false)
+            ->setLanguageAspect(new LanguageAspect(0, 0, LanguageAspect::OVERLAYS_OFF));
 
         return $query
             ->matching($query->equals('uid', $uid))
