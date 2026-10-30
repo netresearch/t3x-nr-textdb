@@ -14,6 +14,7 @@ declare(strict_types=1);
 
 namespace Netresearch\NrTextdb\Tests\Functional\Service;
 
+use ArrayObject;
 use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Exception;
@@ -722,6 +723,47 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
     }
 
     #[Test]
+    public function importEntriesReadsNoRecordOfAComponentTheFileDoesNotName(): void
+    {
+        // Another component holds the placeholders of the file as well. The
+        // lookups of the import read the records of the components in the
+        // file only, so their result grows with the file, not with the table.
+        $connectionPool = $this->get(ConnectionPool::class);
+        $connectionPool->getConnectionForTable('tx_nrtextdb_domain_model_component')
+            ->insert('tx_nrtextdb_domain_model_component', ['uid' => 7, 'pid' => 1, 'name' => 'othercomponent']);
+        foreach (['existing_key', 'brand_new'] as $placeholder) {
+            $connectionPool->getConnectionForTable('tx_nrtextdb_domain_model_translation')
+                ->insert('tx_nrtextdb_domain_model_translation', [
+                    'pid'         => 1,
+                    'environment' => 1,
+                    'component'   => 7,
+                    'type'        => 1,
+                    'placeholder' => $placeholder,
+                    'value'       => 'Other',
+                ]);
+        }
+
+        /** @var ArrayObject<int, int> $components */
+        $components    = new ArrayObject();
+        $importService = $this->createImportServiceWithWriter(
+            new RowRecordingTranslationTableWriter($connectionPool, $this->get(ReferenceIndex::class), $components),
+        );
+
+        $result = new ImportResult();
+        $importService->importEntries(
+            ['mycomponent|button|existing_key' => 'Changed', 'mycomponent|button|brand_new' => 'New'],
+            0,
+            true,
+            $result,
+        );
+
+        self::assertSame(1, $result->getUpdated());
+        self::assertSame(1, $result->getImported());
+        self::assertContains(1, $components->getArrayCopy(), 'The lookup did not read the record of the file.');
+        self::assertNotContains(7, $components->getArrayCopy(), 'The lookup read records of a component the file does not name.');
+    }
+
+    #[Test]
     public function importEntriesWritesTheReferenceIndexTheCoreComputes(): void
     {
         $this->importService->importEntries(
@@ -1119,6 +1161,17 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
      */
     private function createImportService(ReferenceIndex $referenceIndex): ImportService
     {
+        return $this->createImportServiceWithWriter(
+            new TranslationTableWriter($this->get(ConnectionPool::class), $referenceIndex),
+        );
+    }
+
+    /**
+     * Returns an import service that writes the translations with the given
+     * writer.
+     */
+    private function createImportServiceWithWriter(TranslationTableWriter $tableWriter): ImportService
+    {
         return new ImportService(
             $this->get(PersistenceManagerInterface::class),
             $this->get(XliffLoader::class),
@@ -1128,7 +1181,7 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
             $this->get(TypeRepository::class),
             $this->get(EnvironmentRepository::class),
             $this->get(ConnectionPool::class),
-            new TranslationTableWriter($this->get(ConnectionPool::class), $referenceIndex),
+            $tableWriter,
         );
     }
 

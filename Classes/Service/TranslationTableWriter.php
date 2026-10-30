@@ -21,12 +21,15 @@ use TYPO3\CMS\Core\Database\Query\QueryBuilder;
 use TYPO3\CMS\Core\Database\ReferenceIndex;
 
 use function array_chunk;
+use function array_column;
 use function array_key_exists;
 use function array_keys;
 use function array_unique;
 use function array_values;
 use function count;
 use function implode;
+use function intdiv;
+use function intval;
 use function is_numeric;
 use function is_string;
 use function max;
@@ -54,7 +57,7 @@ readonly class TranslationTableWriter
     public const TABLE = 'tx_nrtextdb_domain_model_translation';
 
     /**
-     * Parameters the queries need besides the placeholders of a chunk.
+     * Parameters the queries need besides the placeholders and reference uids of a chunk.
      */
     private const RESERVED_PARAMETERS = 10;
 
@@ -92,22 +95,22 @@ readonly class TranslationTableWriter
         }
 
         $connection = $this->getConnection();
-        $chunkSize  = max(1, PlatformInformation::getMaxBindParameters($connection->getDatabasePlatform()) - self::RESERVED_PARAMETERS);
-        $found      = [];
+        // A key binds its placeholder and up to three reference uids.
+        $chunkSize = max(1, intdiv(PlatformInformation::getMaxBindParameters($connection->getDatabasePlatform()) - self::RESERVED_PARAMETERS, 4));
+        $found     = [];
 
         foreach (array_chunk($keys, $chunkSize, true) as $chunk) {
             $placeholders = array_values(array_unique(array_map(static fn (array $key): string => $key[3], $chunk)));
 
-            $queryBuilder = $this->createLookupQuery($pageId, $languageUid);
-            $rows         = $queryBuilder
-                ->andWhere(
+            $queryBuilder = $this->createLookupQuery($pageId, $languageUid, $chunk);
+            $rows         = $this->fetchRows(
+                $queryBuilder->andWhere(
                     $queryBuilder->expr()->in(
                         'placeholder',
                         $queryBuilder->createNamedParameter($placeholders, Connection::PARAM_STR_ARRAY),
                     ),
-                )
-                ->executeQuery()
-                ->fetchAllAssociative();
+                ),
+            );
 
             $rowsByKey = [];
             foreach ($rows as $row) {
@@ -133,9 +136,9 @@ readonly class TranslationTableWriter
             // placeholder the database considers equal, also one another key
             // of the chunk matched exactly. Such a record is among those this
             // query returns for the placeholders without an exact match.
-            $queryBuilder = $this->createLookupQuery($pageId, $languageUid);
-            $looseRows    = $queryBuilder
-                ->andWhere(
+            $queryBuilder = $this->createLookupQuery($pageId, $languageUid, $unmatched);
+            $looseRows    = $this->fetchRows(
+                $queryBuilder->andWhere(
                     $queryBuilder->expr()->in(
                         'placeholder',
                         $queryBuilder->createNamedParameter(
@@ -143,9 +146,8 @@ readonly class TranslationTableWriter
                             Connection::PARAM_STR_ARRAY,
                         ),
                     ),
-                )
-                ->executeQuery()
-                ->fetchAllAssociative();
+                ),
+            );
 
             $looseMatches = [];
             foreach ($looseRows as $row) {
@@ -157,12 +159,9 @@ readonly class TranslationTableWriter
                     continue;
                 }
 
-                $queryBuilder = $this->createLookupQuery($pageId, $languageUid);
+                $queryBuilder = $this->createLookupQuery($pageId, $languageUid, [[$environment, $component, $type, $placeholder]]);
                 $row          = $queryBuilder
                     ->andWhere(
-                        $queryBuilder->expr()->eq('environment', $queryBuilder->createNamedParameter($environment, Connection::PARAM_INT)),
-                        $queryBuilder->expr()->eq('component', $queryBuilder->createNamedParameter($component, Connection::PARAM_INT)),
-                        $queryBuilder->expr()->eq('type', $queryBuilder->createNamedParameter($type, Connection::PARAM_INT)),
                         $queryBuilder->expr()->eq('placeholder', $queryBuilder->createNamedParameter($placeholder)),
                     )
                     ->setMaxResults(1)
@@ -270,6 +269,16 @@ readonly class TranslationTableWriter
         }
     }
 
+    /**
+     * Returns the rows of a lookup query. A test double records them.
+     *
+     * @return list<array<string, mixed>>
+     */
+    protected function fetchRows(QueryBuilder $queryBuilder): array
+    {
+        return $queryBuilder->executeQuery()->fetchAllAssociative();
+    }
+
     private function getConnection(): Connection
     {
         return $this->connectionPool->getConnectionForTable(self::TABLE);
@@ -291,12 +300,23 @@ readonly class TranslationTableWriter
 
     /**
      * Selects the records of a page and language, hidden or not, that are not
-     * deleted.
+     * deleted, of the environments, components and types of the keys.
+     *
+     * The reference uids keep the result to the records the keys can match:
+     * a placeholder such as "title" is used in many components, and without
+     * them the query returned the records of all of them.
+     *
+     * @param array<int, TranslationKey> $keys
      */
-    private function createLookupQuery(int $pageId, int $languageUid): QueryBuilder
+    private function createLookupQuery(int $pageId, int $languageUid, array $keys): QueryBuilder
     {
         $queryBuilder = $this->getConnection()->createQueryBuilder();
         $queryBuilder->getRestrictions()->removeAll();
+
+        $uids = static fn (int $position): array => array_values(array_unique(array_map(
+            intval(...),
+            array_column($keys, $position),
+        )));
 
         return $queryBuilder
             ->select('uid', 'environment', 'component', 'type', 'placeholder', 'value', 'l10n_parent')
@@ -305,6 +325,9 @@ readonly class TranslationTableWriter
                 $queryBuilder->expr()->eq('pid', $queryBuilder->createNamedParameter($pageId, Connection::PARAM_INT)),
                 $queryBuilder->expr()->eq('sys_language_uid', $queryBuilder->createNamedParameter($languageUid, Connection::PARAM_INT)),
                 $queryBuilder->expr()->eq('deleted', $queryBuilder->createNamedParameter(0, Connection::PARAM_INT)),
+                $queryBuilder->expr()->in('environment', $queryBuilder->createNamedParameter($uids(0), Connection::PARAM_INT_ARRAY)),
+                $queryBuilder->expr()->in('component', $queryBuilder->createNamedParameter($uids(1), Connection::PARAM_INT_ARRAY)),
+                $queryBuilder->expr()->in('type', $queryBuilder->createNamedParameter($uids(2), Connection::PARAM_INT_ARRAY)),
             );
     }
 
