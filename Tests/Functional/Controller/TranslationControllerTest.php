@@ -1257,6 +1257,11 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
 
         self::assertSame('application/zip; charset=utf-8', $response->getHeaderLine('Content-Type'));
         self::assertStringNotContainsString('Only on page two', $this->exportedText($response));
+        // On TYPO3 13.4 Extbase overlays a translated row through its parent,
+        // which replaces record 50 with uid 6 from page 1, so the assertion
+        // above holds even without the page filter. Record 8 is a default-
+        // language row on page 2 and has no such overlay.
+        self::assertStringNotContainsString('Submit PID2', $this->exportedText($response));
         self::assertStringContainsString('Absenden', $this->exportedText($response));
     }
 
