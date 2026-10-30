@@ -756,26 +756,36 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
     public function importEntriesImportsNothingWhenAWriteInsideALaterEntryFailsAndCanBeRepeated(): void
     {
         // The new component "rvcompc" of the last entry is written by its
-        // lookup, after the lookup of the first entry wrote "rvcompa"; the
-        // write of "rvcompc" fails with an exception that does not come from
-        // the database. The translations are written after the lookups of
-        // their chunk, without Extbase, so no translation write is pending
-        // there.
+        // lookup, in the second chunk of 1,000 entries, after the first chunk
+        // wrote "rvcompa" and its translations; the write of "rvcompc" fails
+        // with an exception that does not come from the database.
         $entries = [
             'rvcompa|label|aaa'   => 'A',
             'checkout|label|bbb'  => 'B',
             'checkout|label|boom' => 'X',
-            'rvcompc|label|ccc'   => 'C',
         ];
+        for ($i = count($entries); $i < 1000; ++$i) {
+            $entries['checkout|label|fill' . $i] = 'Fill ' . $i;
+        }
 
-        $listener = new class {
+        $entries['rvcompc|label|ccc'] = 'C';
+
+        $listener = new class ($this->get(ConnectionPool::class)) {
             public bool $enabled = true;
+
+            public ?int $translationsWhenFailing = null;
+
+            public function __construct(private readonly ConnectionPool $pool) {}
 
             public function __invoke(EntityAddedToPersistenceEvent $event): void
             {
                 $object = $event->getObject();
 
                 if ($this->enabled && $object instanceof Component && $object->getName() === 'rvcompc') {
+                    $this->translationsWhenFailing = $this->pool
+                        ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
+                        ->count('*', 'tx_nrtextdb_domain_model_translation', []);
+
                     throw new Exception('Simulated write failure', 1793253603);
                 }
             }
@@ -790,6 +800,11 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
 
         self::assertInstanceOf(Exception::class, $thrown, 'The failed write did not reach the caller.');
         self::assertSame(1793253603, $thrown->getCode());
+        self::assertSame(
+            $translationsBefore + 1000,
+            $listener->translationsWhenFailing,
+            'The translations of the first chunk were not written before the failure.',
+        );
         $this->assertNothingOfTheFileStored($failedResult, $translationsBefore, ['rvcompa', 'rvcompc']);
 
         // The cause is gone, the same process imports the file again.
@@ -797,8 +812,8 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
         $result            = new ImportResult();
 
         self::assertNull($this->importEntriesCatching($entries, $result));
-        self::assertSame($translationsBefore + 4, $this->countRows('tx_nrtextdb_domain_model_translation'));
-        self::assertSame(4, $result->getImported());
+        self::assertSame($translationsBefore + 1001, $this->countRows('tx_nrtextdb_domain_model_translation'));
+        self::assertSame(1001, $result->getImported());
         self::assertSame([], $result->getErrors());
     }
 
