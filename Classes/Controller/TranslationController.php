@@ -23,7 +23,6 @@ use Netresearch\NrTextdb\Domain\Model\Environment;
 use Netresearch\NrTextdb\Domain\Model\Translation;
 use Netresearch\NrTextdb\Domain\Model\Type;
 use Netresearch\NrTextdb\Domain\Repository\ComponentRepository;
-use Netresearch\NrTextdb\Domain\Repository\EnvironmentRepository;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
 use Netresearch\NrTextdb\Domain\Repository\TypeRepository;
 use Netresearch\NrTextdb\Service\ImportResult;
@@ -129,8 +128,6 @@ final class TranslationController extends ActionController
 
     private readonly IconFactory $iconFactory;
 
-    private readonly EnvironmentRepository $environmentRepository;
-
     private readonly TranslationRepository $translationRepository;
 
     private readonly ComponentRepository $componentRepository;
@@ -154,7 +151,6 @@ final class TranslationController extends ActionController
         ModuleTemplateFactory $moduleTemplateFactory,
         ExtensionConfiguration $extensionConfiguration,
         IconFactory $iconFactory,
-        EnvironmentRepository $environmentRepository,
         TranslationRepository $translationRepository,
         TranslationService $translationService,
         PersistenceManagerInterface $persistenceManager,
@@ -164,7 +160,6 @@ final class TranslationController extends ActionController
         FlashMessageService $flashMessageService,
     ) {
         $this->extensionConfiguration = $extensionConfiguration;
-        $this->environmentRepository  = $environmentRepository;
         $this->translationRepository  = $translationRepository;
         $this->translationService     = $translationService;
         $this->persistenceManager     = $persistenceManager;
@@ -173,11 +168,6 @@ final class TranslationController extends ActionController
         $this->moduleTemplateFactory  = $moduleTemplateFactory;
         $this->iconFactory            = $iconFactory;
         $this->flashMessageService    = $flashMessageService;
-
-        $this->environmentRepository->setCreateIfMissing(true);
-        $this->typeRepository->setCreateIfMissing(true);
-        $this->componentRepository->setCreateIfMissing(true);
-        $this->translationRepository->setCreateIfMissing(true);
 
         $this->importService = $importService;
     }
