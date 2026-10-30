@@ -24,6 +24,8 @@ use Netresearch\NrTextdb\Domain\Repository\EnvironmentRepository;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
 use Netresearch\NrTextdb\Domain\Repository\TypeRepository;
 use RuntimeException;
+use Throwable;
+use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Localization\Loader\XliffLoader;
 use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
@@ -40,6 +42,13 @@ use function count;
  */
 final readonly class ImportService
 {
+    /**
+     * Entries written before the persistence session is cleared. Without
+     * clearing, every record of a file stays in memory until the end, and a
+     * file of 48,500 units exhausted a memory limit of 256 MB.
+     */
+    private const PERSIST_BATCH_SIZE = 1000;
+
     private PersistenceManagerInterface $persistenceManager;
 
     private XliffLoader $xliffLoader;
@@ -54,6 +63,8 @@ final readonly class ImportService
 
     private EnvironmentRepository $environmentRepository;
 
+    private ConnectionPool $connectionPool;
+
     /**
      * Constructor.
      */
@@ -65,6 +76,7 @@ final readonly class ImportService
         ComponentRepository $componentRepository,
         TypeRepository $typeRepository,
         EnvironmentRepository $environmentRepository,
+        ConnectionPool $connectionPool,
     ) {
         $this->persistenceManager    = $persistenceManager;
         $this->xliffLoader           = $xliffLoader;
@@ -73,6 +85,7 @@ final readonly class ImportService
         $this->componentRepository   = $componentRepository;
         $this->typeRepository        = $typeRepository;
         $this->environmentRepository = $environmentRepository;
+        $this->connectionPool        = $connectionPool;
     }
 
     /**
@@ -112,6 +125,19 @@ final readonly class ImportService
      *
      * Every key is checked before the first entry is written, so a file with
      * an unusable key imports nothing instead of a part of it.
+     *
+     * The entries are written in one database transaction. Extbase writes
+     * each new record with an INSERT, an UPDATE for its relations and two
+     * reference index updates, and committing every statement on its own
+     * made a large file slow (issue #30). When a write fails, the transaction
+     * rolls back, the exception propagates and the file imports nothing.
+     * The persistence session and the name caches of the repositories are
+     * cleared then, because they hold records whose rows were rolled back.
+     * The counts of the file reach $result only once the transaction has
+     * committed, so a rolled-back file adds nothing to them. Its error
+     * messages do reach $result, each once, because one of them can name the
+     * cause; on PostgreSQL every statement after a failed one repeats the
+     * same error.
      *
      * @param array<array-key, mixed> $entries
      * @param int<-1, max>            $languageUid
@@ -176,20 +202,45 @@ final readonly class ImportService
             $parsedEntries[] = [$componentName, $typeName, $placeholder, $value];
         }
 
-        foreach ($parsedEntries as [$componentName, $typeName, $placeholder, $value]) {
-            $this->importEntry(
-                $languageUid,
-                $componentName,
-                $typeName,
-                $placeholder,
-                $value,
-                $forceUpdate,
-                $result,
-            );
+        $fileResult = new ImportResult();
+
+        try {
+            $this->connectionPool
+                ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
+                ->transactional(function () use ($parsedEntries, $languageUid, $forceUpdate, $fileResult): void {
+                    foreach ($parsedEntries as $index => [$componentName, $typeName, $placeholder, $value]) {
+                        $this->importEntry(
+                            $languageUid,
+                            $componentName,
+                            $typeName,
+                            $placeholder,
+                            $value,
+                            $forceUpdate,
+                            $fileResult,
+                        );
+
+                        if ((($index + 1) % self::PERSIST_BATCH_SIZE) === 0) {
+                            $this->persistenceManager->persistAll();
+                            $this->persistenceManager->clearState();
+                        }
+                    }
+
+                    $this->persistenceManager->persistAll();
+                });
+        } catch (Throwable $throwable) {
+            foreach (array_unique($fileResult->getErrors()) as $error) {
+                $result->recordError($error);
+            }
+
+            $this->persistenceManager->clearState();
+            $this->environmentRepository->clearCache();
+            $this->componentRepository->clearCache();
+            $this->typeRepository->clearCache();
+
+            throw $throwable;
         }
 
-        // Batch persist all entries at once instead of per-entry for performance
-        $this->persistenceManager->persistAll();
+        $result->add($fileResult);
     }
 
     /**

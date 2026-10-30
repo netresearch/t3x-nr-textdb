@@ -14,6 +14,7 @@ declare(strict_types=1);
 
 namespace Netresearch\NrTextdb\Controller;
 
+use Exception;
 use LogicException;
 use Netresearch\NrTextdb\Domain\Model\Component;
 use Netresearch\NrTextdb\Domain\Model\Environment;
@@ -1002,9 +1003,11 @@ final class TranslationController extends ActionController
 
             try {
                 $this->importService->importEntries($entries, $languageUid, $forceUpdate, $result);
-            } catch (RuntimeException $exception) {
-                // An unusable key; importEntries() checks every key before it
-                // writes, so nothing of this file was imported.
+            } catch (Exception $exception) {
+                // An unusable key, which importEntries() reports before it
+                // writes, or a failed write, after which it rolls back. In
+                // both cases nothing of this file was imported for this
+                // language.
                 $errors[] = $exception->getMessage();
             }
         }

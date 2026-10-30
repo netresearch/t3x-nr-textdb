@@ -266,7 +266,9 @@ Import Failed
 * **File Format**: Verify XLIFF file format is correct
 * **File Naming**: Check file name follows convention
 * **Permissions**: Contact administrator if upload fails
-* **File Size**: Large files may timeout - split into smaller files
+* **File Size**: A file with tens of thousands of entries can take longer
+  than the time limit of the backend. Split it into smaller files, or ask
+  the administrator to import it with the CLI command
 
 Cannot Edit Translation
 -----------------------
