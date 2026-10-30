@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0">
+    <file source-language="en" target-language="fr" datatype="plaintext" original="messages" product-name="nr_textdb_export">
+        <header>
+            <authorName>Netresearch</authorName>
+            <authorEmail>info@netresearch.de</authorEmail>
+        </header>
+        <body>
+        <trans-unit id="export|button|gamma" xml:space="preserve">
+            <target><![CDATA[Gamma for all languages]]></target>
+        </trans-unit>
+
+        </body>
+    </file>
+</xliff>

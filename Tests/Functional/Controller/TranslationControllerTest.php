@@ -29,6 +29,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Psr\Http\Message\ResponseInterface;
 use ReflectionClass;
+use ReflectionProperty;
 use RuntimeException;
 use TYPO3\CMS\Backend\Routing\Router;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
@@ -1128,6 +1129,63 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         ];
     }
 
+    /**
+     * The expected files are the output of the export before it read the
+     * records in batches. The data set holds a record for all languages, a
+     * hidden and a deleted one, a record whose type was deleted (skipped
+     * together with its translation), line breaks, "]]>" and translations
+     * whose uids are not in the order of their originals. The French file
+     * holds the text of uid 100 in place of its translation uid 301: on
+     * TYPO3 13.4 the export loads translations with language overlays, and
+     * the overlay of a translation whose parent is in language -1 returns
+     * the parent.
+     */
+    #[Test]
+    #[DataProvider('exportBatchSizeProvider')]
+    public function exportWritesTheSameFilesForEveryBatchSize(int $batchSize): void
+    {
+        $this->importCSVDataSet(__DIR__ . '/../Fixtures/Export/Components.csv');
+        $this->importCSVDataSet(__DIR__ . '/../Fixtures/Export/Types.csv');
+        $this->importCSVDataSet(__DIR__ . '/../Fixtures/Export/Translations.csv');
+        $this->storeFilterConfig(['component' => 4]);
+
+        $controller = $this->get(TranslationController::class);
+        (new ReflectionProperty($controller, 'exportBatchSize'))->setValue($controller, $batchSize);
+        $this->getContainer()->set(TranslationController::class, $controller);
+
+        $response = $this->dispatchModuleAction('export');
+
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame(
+            ['de.textdb_import.xlf', 'fr.textdb_import.xlf', 'textdb_import.xlf'],
+            $this->exportedFileNames($response),
+        );
+
+        foreach (['textdb_import.xlf', 'de.textdb_import.xlf', 'fr.textdb_import.xlf'] as $fileName) {
+            self::assertStringEqualsFile(
+                __DIR__ . '/../Fixtures/Export/' . $fileName,
+                $this->exportedFile($response, $fileName),
+            );
+        }
+    }
+
+    /**
+     * The query for the default language matches seven records, the one
+     * with the deleted type included: batches of 7 end on a full batch,
+     * batches of 2 on a partial one, and 1000 reads all at once.
+     *
+     * @return array<string, array{int}>
+     */
+    public static function exportBatchSizeProvider(): array
+    {
+        return [
+            'one record per batch'          => [1],
+            'last batch is a partial batch' => [2],
+            'last batch is a full batch'    => [7],
+            'all records in one batch'      => [1000],
+        ];
+    }
+
     #[Test]
     public function exportWithAStoredTypeOnlyFilterIsCarriedOut(): void
     {
@@ -1794,6 +1852,30 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         return (int) GeneralUtility::makeInstance(ConnectionPool::class)
             ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
             ->count('uid', 'tx_nrtextdb_domain_model_translation', ['l10n_parent' => $parentUid]);
+    }
+
+    /**
+     * Lists the file names of an export archive, sorted.
+     *
+     * @return string[]
+     */
+    private function exportedFileNames(ResponseInterface $response): array
+    {
+        $archive = Environment::getVarPath() . '/textdb-export-test.zip';
+        file_put_contents($archive, (string) $response->getBody());
+
+        $zip = new ZipArchive();
+        self::assertTrue($zip->open($archive));
+
+        $names = [];
+        for ($index = 0; $index < $zip->numFiles; ++$index) {
+            $names[] = (string) $zip->getNameIndex($index);
+        }
+
+        $zip->close();
+        sort($names);
+
+        return $names;
     }
 
     /**
