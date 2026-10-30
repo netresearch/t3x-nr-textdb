@@ -120,7 +120,7 @@
             "@ci:cgl --dry-run"
         ],
         "ci:test:php:lint": [
-            "phplint --configuration Build/.phplint.yml"
+            "phplint lint --configuration Build/.phplint.yml"
         ],
         "ci:test:php:unit": [
             "XDEBUG_MODE=coverage phpunit -c Build/UnitTests.xml"
