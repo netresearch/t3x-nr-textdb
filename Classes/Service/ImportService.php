@@ -49,6 +49,12 @@ final readonly class ImportService
      */
     private const PERSIST_BATCH_SIZE = 1000;
 
+    /**
+     * Suffix XliffLoader appends to the id of a unit marked unused: XLIFF 1.2
+     * `x-unused-since`, XLIFF 2.0 segment `subState="deprecated"`.
+     */
+    private const UNUSED_SUFFIX = '.x-unused';
+
     private PersistenceManagerInterface $persistenceManager;
 
     private XliffLoader $xliffLoader;
@@ -123,6 +129,9 @@ final readonly class ImportService
     /**
      * Imports the messages of a loaded XLIFF file, keyed "component|type|placeholder".
      *
+     * A key ending in ".x-unused", the suffix XliffLoader appends to a unit
+     * marked unused, imports without that suffix.
+     *
      * Every key is checked before the first entry is written, so a file with
      * an unusable key imports nothing instead of a part of it.
      *
@@ -153,7 +162,14 @@ final readonly class ImportService
         $parsedEntries = [];
 
         foreach ($entries as $key => $value) {
-            $key           = (string) $key;
+            $key = (string) $key;
+
+            // A unit marked unused imports under its own placeholder, as it
+            // did before the import read files with XliffLoader.
+            if (str_ends_with($key, self::UNUSED_SUFFIX)) {
+                $key = substr($key, 0, -strlen(self::UNUSED_SUFFIX));
+            }
+
             $componentName = $this->getComponentFromKey($key);
             if ($componentName === null) {
                 throw new RuntimeException(
