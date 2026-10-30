@@ -126,6 +126,18 @@ To edit translations in different languages:
 
    Ensure you're editing the correct language before making changes!
 
+Hiding a Translation
+--------------------
+
+A translation record can be hidden on the **Access** tab of its record form
+in the **List** module. The frontend then no longer shows its value. A
+hidden translation in a language other than the default language shows the
+value of the default-language entry of the same key instead, when that entry
+exists, is not hidden, and has a value that is not empty and was not
+auto-created. Otherwise the frontend shows the label from the language file
+(``textdb:translate`` only) or the key. The record stays in the TextDB module
+and is still exported. Unhide it to show its value again.
+
 .. _importing-translations:
 
 Importing Translations

@@ -314,6 +314,25 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         self::assertSame(1, $this->countNamedRows('tx_nrtextdb_domain_model_component', 'brand-new-component'));
     }
 
+    /**
+     * The lookup of an existing record in the submitted language used to
+     * load with language overlays: a hidden translation came back as its
+     * default-language parent, so the value went into the parent.
+     */
+    #[Test]
+    public function translateRecordUpdatesAHiddenTranslationSubmittedAsNewAndLeavesTheParent(): void
+    {
+        GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
+            ->update('tx_nrtextdb_domain_model_translation', ['hidden' => 1], ['uid' => 5]);
+
+        $this->dispatchTranslateRecord(['parent' => '1', 'new' => [1 => 'Abschicken']]);
+
+        self::assertSame('Submit', $this->fetchTranslationColumn(1));
+        self::assertSame('Abschicken', $this->fetchTranslationColumn(5));
+        self::assertSame(1, $this->countRows(placeholder: 'submit', languageUid: 0));
+    }
+
     #[Test]
     public function translateRecordUpdatesLocalizedRecordAddressedByUid(): void
     {

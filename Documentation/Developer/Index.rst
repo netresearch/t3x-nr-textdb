@@ -332,12 +332,19 @@ TranslationService
 
    Retrieves a translated string from the database. If ``createIfMissing`` is enabled
    and the translation doesn't exist, it will be auto-created with a placeholder value.
+   A hidden translation is not rendered. In a language other than the default
+   language, the value of the default-language entry of the same key is
+   returned instead, when that entry is not hidden, not empty and not
+   auto-created; otherwise the placeholder. A missing translation never takes
+   the default-language value. The lookup still finds the hidden translation,
+   so ``createIfMissing`` does not create a second one for the same key.
 
    :param string $placeholder: Translation key
    :param string $typeName: Type name (e.g., "label", "button")
    :param string $componentName: Component name (e.g., "website", "checkout")
    :param string $environmentName: Environment name (e.g., "default")
-   :returns: The translated value, or the placeholder if not found
+   :returns: The translated value, or the placeholder if not found (for a hidden
+      translation, see above)
 
    **Example:**
 
@@ -501,6 +508,8 @@ findByEnvironmentComponentTypePlaceholderAndLanguage()
    ): ?Translation
 
 Find a single translation by exact environment, component, type, placeholder, and language.
+Hidden translations are returned too; callers that render a value check
+``Translation::isHidden()`` themselves.
 
 findByEnvironmentComponentTypeAndPlaceholder()
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

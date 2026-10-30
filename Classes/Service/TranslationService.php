@@ -179,6 +179,16 @@ class TranslationService
             $this->persistenceManager->persistAll();
         }
 
+        // A hidden entry is not rendered. The lookup above still finds it, so
+        // createIfMissing does not create a second entry for the same key.
+        if (($translation instanceof Translation) && $translation->isHidden()) {
+            $result = $this->usableDefaultLanguageValue($translation, $languageUid) ?? $placeholder;
+
+            $this->translationCache[$cacheKey] = $result;
+
+            return $result;
+        }
+
         if (!$translation instanceof Translation) {
             $this->translationCache[$cacheKey] = $placeholder;
 
@@ -191,6 +201,54 @@ class TranslationService
         $this->translationCache[$cacheKey] = $result;
 
         return $result;
+    }
+
+    /**
+     * Returns the value of the default-language entry of a hidden entry in
+     * another language, or null when there is none, or it is hidden, empty or
+     * auto-created.
+     *
+     * Before hidden entries were skipped, the lookup loaded a translation with
+     * language overlays, which replaced a hidden translation by its visible
+     * default-language parent, so the page showed the parent's text. This
+     * keeps that result for hidden entries. A missing entry still renders the
+     * key: TYPO3 13.4 has no language fallback for TextDB entries.
+     *
+     * @param int<-1, max> $languageUid
+     */
+    private function usableDefaultLanguageValue(Translation $hiddenTranslation, int $languageUid): ?string
+    {
+        $environment = $hiddenTranslation->getEnvironment();
+        $component   = $hiddenTranslation->getComponent();
+        $type        = $hiddenTranslation->getType();
+
+        if (
+            ($languageUid === 0)
+            || !($environment instanceof Environment)
+            || !($component instanceof Component)
+            || !($type instanceof Type)
+        ) {
+            return null;
+        }
+
+        $defaultTranslation = $this->translationRepository
+            ->findByEnvironmentComponentTypeAndPlaceholder(
+                $environment,
+                $component,
+                $type,
+                $hiddenTranslation->getPlaceholder(),
+            );
+
+        if (
+            !($defaultTranslation instanceof Translation)
+            || $defaultTranslation->isHidden()
+            || $defaultTranslation->isAutoCreated()
+            || ($defaultTranslation->getValue() === '')
+        ) {
+            return null;
+        }
+
+        return $defaultTranslation->getValue();
     }
 
     /**

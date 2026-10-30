@@ -11,13 +11,23 @@ declare(strict_types=1);
 
 namespace Netresearch\NrTextdb\Tests\Functional\ViewHelpers;
 
+use Netresearch\NrTextdb\Domain\Model\Translation;
 use Netresearch\NrTextdb\Tests\Functional\AbstractFunctionalTestCase;
 use Netresearch\NrTextdb\ViewHelpers\TranslateViewHelper;
 use Override;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use RuntimeException;
+use TYPO3\CMS\Core\Context\Context;
+use TYPO3\CMS\Core\Context\LanguageAspect;
+use TYPO3\CMS\Core\Core\SystemEnvironmentBuilder;
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Http\ServerRequest;
+use TYPO3\CMS\Core\Http\Uri;
+use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
+use TYPO3\CMS\Core\TypoScript\AST\Node\RootNode;
+use TYPO3\CMS\Core\TypoScript\FrontendTypoScript;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Fluid\View\StandaloneView;
 
@@ -44,6 +54,12 @@ use TYPO3\CMS\Fluid\View\StandaloneView;
 #[CoversClass(TranslateViewHelper::class)]
 final class TranslateViewHelperTest extends AbstractFunctionalTestCase
 {
+    private const ENVIRONMENT_LABEL_TEMPLATE = "{nrtextdb:translate(key: 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:tx_nrtextdb_domain_model_environment', environment: 'default')}";
+
+    private const PLAIN_PLACEHOLDER_TEMPLATE = "{nrtextdb:translate(key: 'some-plain-placeholder', environment: 'default')}";
+
+    private const ENVIRONMENT_TEXTDB_VALUE = 'Environment from TextDB';
+
     /**
      * @var non-empty-string[]
      */
@@ -76,6 +92,7 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
         // Guarantee cleanup of the static component property even if an
         // assertion fails inside a test.
         TranslateViewHelper::$component = '';
+        unset($GLOBALS['TYPO3_REQUEST']);
 
         parent::tearDown();
     }
@@ -286,8 +303,140 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
     }
 
     // =========================================================================
+    // Scenario 5 – Hidden entries
+    // =========================================================================
+
+    /**
+     * A hidden German entry renders the value of the English entry of its key,
+     * when that one is usable; otherwise the label of the language file.
+     */
+    #[Test]
+    #[DataProvider('defaultLanguageEntryProvider')]
+    public function hiddenGermanEntryOfALanguageFileKeyRendersAUsableEnglishValueOrTheGermanLabel(
+        ?string $defaultValue,
+        bool $defaultHidden,
+        bool $linked,
+        ?string $expectedTextDbValue,
+    ): void {
+        TranslateViewHelper::$component = 'lll-migration-component';
+
+        $parent = $defaultValue === null
+            ? 0
+            : $this->insertTranslation(0, 1, 1, 'tx_nrtextdb_domain_model_environment', $defaultValue, hidden: $defaultHidden);
+        $this->insertTranslation(1, 1, 1, 'tx_nrtextdb_domain_model_environment', 'Hidden DE', hidden: true, l10nParent: $linked ? $parent : 0);
+        $this->switchToGermanPage();
+
+        $output = $this->renderFluidTemplate(self::ENVIRONMENT_LABEL_TEMPLATE);
+
+        self::assertSame($expectedTextDbValue ?? 'Umgebung', trim($output));
+
+        // createIfMissing is enabled in setUp(); the hidden entry is found, so
+        // no second German entry is created for the key.
+        self::assertSame(1, $this->countTranslationRowsInLanguage('tx_nrtextdb_domain_model_environment', 1));
+    }
+
+    /**
+     * A key that no language file knows renders the English value when it is
+     * usable, otherwise the key.
+     */
+    #[Test]
+    #[DataProvider('defaultLanguageEntryProvider')]
+    public function hiddenGermanEntryOfAKeyInNoLanguageFileRendersAUsableEnglishValueOrTheKey(
+        ?string $defaultValue,
+        bool $defaultHidden,
+        bool $linked,
+        ?string $expectedTextDbValue,
+    ): void {
+        TranslateViewHelper::$component = 'lll-migration-component';
+
+        $parent = $defaultValue === null
+            ? 0
+            : $this->insertTranslation(0, 1, 1, 'some-plain-placeholder', $defaultValue, hidden: $defaultHidden);
+        $this->insertTranslation(1, 1, 1, 'some-plain-placeholder', 'Hidden DE', hidden: true, l10nParent: $linked ? $parent : 0);
+        $this->switchToGermanPage();
+
+        $output = $this->renderFluidTemplate(self::PLAIN_PLACEHOLDER_TEMPLATE);
+
+        self::assertSame($expectedTextDbValue ?? 'some-plain-placeholder', trim($output));
+    }
+
+    /**
+     * Default-language entry of the key: value (null for none), hidden,
+     * linked as l10n_parent of the hidden German entry, and the value
+     * expected on the page (null where the language file or the key applies).
+     *
+     * @return array<string, array{?string, bool, bool, ?string}>
+     */
+    public static function defaultLanguageEntryProvider(): array
+    {
+        return [
+            'no default entry'               => [null, false, false, null],
+            'visible default, not linked'    => [self::ENVIRONMENT_TEXTDB_VALUE, false, false, self::ENVIRONMENT_TEXTDB_VALUE],
+            'visible default as parent'      => [self::ENVIRONMENT_TEXTDB_VALUE, false, true, self::ENVIRONMENT_TEXTDB_VALUE],
+            'hidden default as parent'       => [self::ENVIRONMENT_TEXTDB_VALUE, true, true, null],
+            'empty default as parent'        => ['', false, true, null],
+            'auto-created default as parent' => [Translation::AUTO_CREATE_IDENTIFIER, false, true, null],
+        ];
+    }
+
+    /**
+     * TYPO3 13.4 has no language fallback: a missing German entry does not
+     * take the English value.
+     */
+    #[Test]
+    public function missingGermanEntryOfAKeyInNoLanguageFileRendersTheKeyAlthoughAnEnglishEntryExists(): void
+    {
+        TranslateViewHelper::$component = 'lll-migration-component';
+
+        $this->setExtensionConfiguration(textDbPid: '1', createIfMissing: '0');
+        $this->insertTranslation(0, 1, 1, 'some-plain-placeholder', 'Plain English value');
+        $this->switchToGermanPage();
+
+        $output = $this->renderFluidTemplate(self::PLAIN_PLACEHOLDER_TEMPLATE);
+
+        self::assertSame('some-plain-placeholder', trim($output));
+    }
+
+    #[Test]
+    public function hiddenDefaultLanguageEntryOnADefaultLanguagePageRendersTheLabelOfTheLanguageFile(): void
+    {
+        TranslateViewHelper::$component = 'lll-migration-component';
+
+        $this->insertTranslation(0, 1, 1, 'tx_nrtextdb_domain_model_environment', 'Hidden EN', hidden: true);
+
+        $output = $this->renderFluidTemplate(self::ENVIRONMENT_LABEL_TEMPLATE);
+
+        self::assertSame('Environment', trim($output));
+        self::assertSame(1, $this->countTranslationRowsInLanguage('tx_nrtextdb_domain_model_environment', 0));
+    }
+
+    // =========================================================================
     // Helpers
     // =========================================================================
+
+    /**
+     * Makes the rendering run for a German frontend page (language 1): the
+     * language aspect drives the TextDB lookup, the request the language
+     * LocalizationUtility reads its labels in.
+     */
+    private function switchToGermanPage(): void
+    {
+        GeneralUtility::makeInstance(Context::class)
+            ->setAspect('language', new LanguageAspect(1, 1, LanguageAspect::OVERLAYS_ON_WITH_FLOATING));
+
+        // Extbase reads the frontend TypoScript of a frontend request; an
+        // empty setup is enough for the repositories.
+        $frontendTypoScript = new FrontendTypoScript(new RootNode(), [], [], []);
+        $frontendTypoScript->setSetupArray([]);
+
+        $GLOBALS['TYPO3_REQUEST'] = (new ServerRequest('https://example.com/de/'))
+            ->withAttribute('applicationType', SystemEnvironmentBuilder::REQUESTTYPE_FE)
+            ->withAttribute('frontend.typoscript', $frontendTypoScript)
+            ->withAttribute(
+                'language',
+                new SiteLanguage(1, 'de_DE.UTF-8', new Uri('https://example.com/de/'), ['typo3Language' => 'de']),
+            );
+    }
 
     /**
      * Renders a minimal Fluid template string that registers the extension's

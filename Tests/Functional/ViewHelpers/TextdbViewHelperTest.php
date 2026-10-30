@@ -11,11 +11,13 @@ declare(strict_types=1);
 
 namespace Netresearch\NrTextdb\Tests\Functional\ViewHelpers;
 
+use Netresearch\NrTextdb\Domain\Model\Translation;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
 use Netresearch\NrTextdb\Tests\Functional\AbstractFunctionalTestCase;
 use Netresearch\NrTextdb\ViewHelpers\TextdbViewHelper;
 use Override;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\LanguageAspect;
@@ -286,6 +288,126 @@ final class TextdbViewHelperTest extends AbstractFunctionalTestCase
         );
 
         self::assertSame('auto-created-entry', trim($output));
+    }
+
+    // =========================================================================
+    // Scenario 6 – Hidden entries
+    // =========================================================================
+
+    /**
+     * A hidden entry in the current language renders the value of the
+     * default-language entry of its key, when that one is usable; otherwise
+     * the key. Before, the lookup loaded a hidden translation with language
+     * overlays, which returned its visible parent, so linked entries showed
+     * the parent's text and unlinked ones their hidden value.
+     */
+    #[Test]
+    #[DataProvider('defaultLanguageEntryProvider')]
+    public function hiddenEntryInTheCurrentLanguageRendersAUsableDefaultLanguageValueOrTheKey(
+        ?string $defaultValue,
+        bool $defaultHidden,
+        bool $linked,
+        string $expected,
+    ): void {
+        $parent = $defaultValue === null
+            ? 0
+            : $this->insertTranslation(0, 1, 1, 'probe-key', $defaultValue, hidden: $defaultHidden);
+
+        $this->insertTranslation(1, 1, 1, 'probe-key', 'Hidden DE', hidden: true, l10nParent: $linked ? $parent : 0);
+
+        $this->setLanguageAspect(1);
+
+        $template = "{nrtextdb:textdb(placeholder: 'probe-key', component: 'test-component', environment: 'default')}";
+
+        // The second render is answered from the cache of the service.
+        self::assertSame($expected, trim($this->renderFluidTemplate($template)));
+        self::assertSame($expected, trim($this->renderFluidTemplate($template)));
+    }
+
+    /**
+     * @return array<string, array{?string, bool, bool, string}>
+     */
+    public static function defaultLanguageEntryProvider(): array
+    {
+        return [
+            'no default entry'               => [null, false, false, 'probe-key'],
+            'visible default, not linked'    => ['English value', false, false, 'English value'],
+            'visible default as parent'      => ['English value', false, true, 'English value'],
+            'hidden default as parent'       => ['English value', true, true, 'probe-key'],
+            'hidden default, not linked'     => ['English value', true, false, 'probe-key'],
+            'empty default as parent'        => ['', false, true, 'probe-key'],
+            'auto-created default as parent' => [Translation::AUTO_CREATE_IDENTIFIER, false, true, 'probe-key'],
+        ];
+    }
+
+    /**
+     * TYPO3 13.4 has no language fallback: only a hidden entry takes the
+     * default-language value, a missing one renders the key.
+     */
+    #[Test]
+    public function missingEntryInTheCurrentLanguageRendersTheKeyAlthoughADefaultEntryExists(): void
+    {
+        $this->insertTranslation(0, 1, 1, 'probe-key', 'English value');
+
+        $this->setLanguageAspect(1);
+
+        $output = $this->renderFluidTemplate(
+            "{nrtextdb:textdb(placeholder: 'probe-key', component: 'test-component', environment: 'default')}",
+        );
+
+        self::assertSame('probe-key', trim($output));
+    }
+
+    #[Test]
+    public function hiddenDefaultLanguageEntryOnADefaultLanguagePageRendersTheKeyWithoutADuplicate(): void
+    {
+        $this->get(TranslationRepository::class)->setCreateIfMissing(true);
+        $this->insertTranslation(0, 1, 1, 'hidden-key', 'Hidden EN', hidden: true);
+
+        $this->setLanguageAspect(0);
+
+        $template = "{nrtextdb:textdb(placeholder: 'hidden-key', component: 'test-component', environment: 'default')}";
+
+        // The second render in the same request is answered from the cache
+        // of the service, which must not hold the hidden value either.
+        self::assertSame('hidden-key', trim($this->renderFluidTemplate($template)));
+        self::assertSame('hidden-key', trim($this->renderFluidTemplate($template)));
+
+        // The lookup still finds the hidden entry, so createIfMissing does not
+        // add a second one for the same key.
+        self::assertSame(1, $this->countTranslationRowsInLanguage('hidden-key', 0));
+    }
+
+    #[Test]
+    #[DataProvider('hiddenEntryParentProvider')]
+    public function hiddenCurrentLanguageEntryIsNotDuplicatedByCreateIfMissing(int $l10nParent): void
+    {
+        $this->get(TranslationRepository::class)->setCreateIfMissing(true);
+        $this->insertTranslation(1, 1, 1, 'submit-button', 'Hidden DE', hidden: true, l10nParent: $l10nParent);
+
+        $this->setLanguageAspect(1);
+
+        $output = $this->renderFluidTemplate(
+            '{nrtextdb:textdb(placeholder: \'submit-button\', component: \'test-component\', environment: \'default\')}',
+        );
+
+        // Fixture uid 2 is the visible default-language entry of the key.
+        self::assertSame('Submit Order', trim($output));
+        self::assertSame(1, $this->countTranslationRowsInLanguage('submit-button', 1));
+        self::assertSame(1, $this->countTranslationRowsInLanguage('submit-button', 0));
+    }
+
+    /**
+     * Fixture uid 2 is the default-language "submit-button" entry.
+     *
+     * @return array<string, array{int}>
+     */
+    public static function hiddenEntryParentProvider(): array
+    {
+        return [
+            'without a parent'           => [0],
+            'with the default as parent' => [2],
+        ];
     }
 
     // =========================================================================
