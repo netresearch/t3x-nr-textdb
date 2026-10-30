@@ -57,6 +57,12 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 #[CoversClass(TranslateViewHelper::class)]
 final class TranslateViewHelperTest extends AbstractFunctionalTestCase
 {
+    private const ENVIRONMENT_LABEL_TEMPLATE = "{nrtextdb:translate(key: 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:tx_nrtextdb_domain_model_environment', environment: 'default')}";
+
+    private const PLAIN_PLACEHOLDER_TEMPLATE = "{nrtextdb:translate(key: 'some-plain-placeholder', environment: 'default')}";
+
+    private const ENVIRONMENT_TEXTDB_VALUE = 'Environment from TextDB';
+
     /**
      * @var non-empty-string[]
      */
@@ -417,11 +423,11 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
 
         // English (default language) TextDB entry; no German entry. The
         // German language file of nr_textdb translates the key as "Umgebung".
-        $this->insertDefaultLanguageTranslation('tx_nrtextdb_domain_model_environment', 'Environment from TextDB');
+        $this->insertDefaultLanguageTranslation('tx_nrtextdb_domain_model_environment', self::ENVIRONMENT_TEXTDB_VALUE);
         $this->switchToGermanPage();
 
         $output = $this->renderFluidTemplate(
-            "{nrtextdb:translate(key: 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:tx_nrtextdb_domain_model_environment', environment: 'default')}",
+            self::ENVIRONMENT_LABEL_TEMPLATE,
         );
 
         self::assertSame('Umgebung', trim($output));
@@ -438,7 +444,7 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
         $this->switchToGermanPage();
 
         $output = $this->renderFluidTemplate(
-            "{nrtextdb:translate(key: 'some-plain-placeholder', environment: 'default')}",
+            self::PLAIN_PLACEHOLDER_TEMPLATE,
         );
 
         self::assertSame('Plain English value', trim($output));
@@ -449,18 +455,18 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
     {
         TranslateViewHelper::$component = 'lll-migration-component';
 
-        $this->insertDefaultLanguageTranslation('tx_nrtextdb_domain_model_environment', 'Environment from TextDB');
+        $this->insertDefaultLanguageTranslation('tx_nrtextdb_domain_model_environment', self::ENVIRONMENT_TEXTDB_VALUE);
         $this->switchToGermanPage();
 
         $textdbTemplate    = "{nrtextdb:textdb(placeholder: 'tx_nrtextdb_domain_model_environment', type: 'label', component: 'lll-migration-component', environment: 'default')}";
-        $translateTemplate = "{nrtextdb:translate(key: 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:tx_nrtextdb_domain_model_environment', environment: 'default')}";
+        $translateTemplate = self::ENVIRONMENT_LABEL_TEMPLATE;
 
         // textdb:textdb has no language-file step and falls back to the
         // English entry; textdb:translate shows the German label. The service
         // is a singleton, so both share its cache within the request.
-        self::assertSame('Environment from TextDB', trim($this->renderFluidTemplate($textdbTemplate)));
+        self::assertSame(self::ENVIRONMENT_TEXTDB_VALUE, trim($this->renderFluidTemplate($textdbTemplate)));
         self::assertSame('Umgebung', trim($this->renderFluidTemplate($translateTemplate)));
-        self::assertSame('Environment from TextDB', trim($this->renderFluidTemplate($textdbTemplate)));
+        self::assertSame(self::ENVIRONMENT_TEXTDB_VALUE, trim($this->renderFluidTemplate($textdbTemplate)));
     }
 
     // =========================================================================

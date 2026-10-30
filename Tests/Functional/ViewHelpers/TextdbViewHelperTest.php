@@ -48,6 +48,12 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 #[CoversClass(TextdbViewHelper::class)]
 final class TextdbViewHelperTest extends AbstractFunctionalTestCase
 {
+    private const SUBMIT_BUTTON_TEMPLATE = "{nrtextdb:textdb(placeholder: 'submit-button', component: 'test-component', environment: 'default')}";
+
+    private const CHECKOUT_TITLE_TEMPLATE = "{nrtextdb:textdb(placeholder: 'checkout-title', type: 'label', component: 'checkout', environment: 'default')}";
+
+    private const SUBMIT_BUTTON_VALUE = 'Submit Order';
+
     /**
      * Extensions to load. Inherits from AbstractFunctionalTestCase so we only
      * need to declare it here if we want to override.
@@ -330,10 +336,10 @@ final class TextdbViewHelperTest extends AbstractFunctionalTestCase
         $this->setLanguageAspect(1, [0]);
 
         $output = $this->renderFluidTemplate(
-            "{nrtextdb:textdb(placeholder: 'submit-button', component: 'test-component', environment: 'default')}",
+            self::SUBMIT_BUTTON_TEMPLATE,
         );
 
-        self::assertSame('Submit Order', trim($output));
+        self::assertSame(self::SUBMIT_BUTTON_VALUE, trim($output));
     }
 
     #[Test]
@@ -360,13 +366,13 @@ final class TextdbViewHelperTest extends AbstractFunctionalTestCase
         $this->setLanguageAspect(1, [0]);
 
         $emptyOutput = $this->renderFluidTemplate(
-            "{nrtextdb:textdb(placeholder: 'submit-button', component: 'test-component', environment: 'default')}",
+            self::SUBMIT_BUTTON_TEMPLATE,
         );
         $autoCreatedOutput = $this->renderFluidTemplate(
-            "{nrtextdb:textdb(placeholder: 'checkout-title', type: 'label', component: 'checkout', environment: 'default')}",
+            self::CHECKOUT_TITLE_TEMPLATE,
         );
 
-        self::assertSame('Submit Order', trim($emptyOutput));
+        self::assertSame(self::SUBMIT_BUTTON_VALUE, trim($emptyOutput));
         self::assertSame('Checkout', trim($autoCreatedOutput));
     }
 
@@ -381,13 +387,13 @@ final class TextdbViewHelperTest extends AbstractFunctionalTestCase
         $this->setLanguageAspect(3, [4, 0]);
 
         $emptyOutput = $this->renderFluidTemplate(
-            "{nrtextdb:textdb(placeholder: 'submit-button', component: 'test-component', environment: 'default')}",
+            self::SUBMIT_BUTTON_TEMPLATE,
         );
         $autoCreatedOutput = $this->renderFluidTemplate(
-            "{nrtextdb:textdb(placeholder: 'checkout-title', type: 'label', component: 'checkout', environment: 'default')}",
+            self::CHECKOUT_TITLE_TEMPLATE,
         );
 
-        self::assertSame('Submit Order', trim($emptyOutput));
+        self::assertSame(self::SUBMIT_BUTTON_VALUE, trim($emptyOutput));
         self::assertSame('Checkout', trim($autoCreatedOutput));
     }
 
