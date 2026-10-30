@@ -950,6 +950,40 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
     }
 
     #[Test]
+    public function theListShowsDefaultLanguageRecordsOnly(): void
+    {
+        // uid 5 is the German translation of uid 1. It belongs in the dialog
+        // of uid 1. Listed as a record of its own it rendered a second row
+        // "entry-1", because Extbase reports a translation's l10n_parent as
+        // its uid.
+        $body = (string) $this->dispatchModuleAction('list', ['component' => '1', 'type' => '1'])->getBody();
+
+        self::assertSame(1, substr_count($body, 'id="entry-1"'));
+        self::assertStringNotContainsString('Absenden', $body);
+    }
+
+    #[Test]
+    public function theDefaultLanguageExportFileHoldsNoTranslation(): void
+    {
+        // A German value in the default-language file has the key of its
+        // original, so importing that file wrote the German text over it.
+        $this->storeFilterConfig(['component' => 1, 'type' => 1]);
+
+        $archive = Environment::getVarPath() . '/textdb-export-default.zip';
+        file_put_contents($archive, (string) $this->dispatchModuleAction('export')->getBody());
+
+        $zip = new ZipArchive();
+        self::assertTrue($zip->open($archive));
+        $defaultLanguageFile = (string) $zip->getFromName('textdb_import.xlf');
+        $germanFile          = (string) $zip->getFromName('de.textdb_import.xlf');
+        $zip->close();
+
+        self::assertStringContainsString('Submit', $defaultLanguageFile);
+        self::assertStringNotContainsString('Absenden', $defaultLanguageFile);
+        self::assertStringContainsString('Absenden', $germanFile);
+    }
+
+    #[Test]
     public function exportWithAStoredTypeOnlyFilterIsCarriedOut(): void
     {
         // The export filters by component and type, and either one on its own is
