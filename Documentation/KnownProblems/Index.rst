@@ -133,12 +133,13 @@ Problem: Module Not Visible
 
 **Solution:**
 
-1. Check that the extension is active and flush the caches, which hold the
-   module registration:
+1. Check that the extension is active and its module registered, and
+   flush the caches, which hold the module registration:
 
    .. code-block:: bash
 
       vendor/bin/typo3 extension:list | grep nr_textdb
+      vendor/bin/typo3 debug:backend:modules | grep netresearch_textdb
       vendor/bin/typo3 cache:flush
 
 2. For an editor who is no administrator, check that the backend user or
