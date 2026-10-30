@@ -3,6 +3,44 @@
  * SPDX-FileCopyrightText: Netresearch DTT GmbH
  */
 
+/**
+ * Moves the flash messages and the ".return" fragment of a module response
+ * into the given element, replacing what it held.
+ *
+ * The backend layout renders the flash messages a request flushed from the
+ * queue in ".typo3-messages-container", outside ".return", so they are moved
+ * along or they are lost (#142). The container keeps its role="alert", so a
+ * screen reader announces the inserted messages. Nodes are moved out of the
+ * inert DOMParser document, never inserted as an HTML string.
+ *
+ * Returns false and leaves the element unchanged when the response carries
+ * neither, for example an error page.
+ */
+function moveResponseInto(content, element)
+{
+    const messages = content.querySelector(".typo3-messages-container");
+    const hasMessages = messages !== null && messages.querySelector(".alert") !== null;
+    const contentReturn = content.querySelector(".return");
+
+    if (!hasMessages && contentReturn === null) {
+        return false;
+    }
+
+    element.replaceChildren();
+
+    if (hasMessages) {
+        element.appendChild(messages);
+    }
+
+    if (contentReturn !== null) {
+        while (contentReturn.firstChild !== null) {
+            element.appendChild(contentReturn.firstChild);
+        }
+    }
+
+    return true;
+}
+
 class TextDbModule
 {
     constructor()
@@ -15,6 +53,16 @@ class TextDbModule
                     "click",
                     (event) => {
                         event.preventDefault();
+
+                        const linkOpenClicked = event.currentTarget;
+
+                        // A second click while the row loads, a double-click
+                        // for example, would insert the row twice.
+                        if (linkOpenClicked.dataset.loading === "true") {
+                            return;
+                        }
+
+                        linkOpenClicked.dataset.loading = "true";
 
                         document
                             .querySelectorAll(".translated-link-close")
@@ -39,7 +87,6 @@ class TextDbModule
                                 // Initialize the DOM parser and parse to response
                                 const parser = new DOMParser();
                                 const content = parser.parseFromString(html, "text/html");
-                                const contentReturn = content.querySelector('.return');
 
                                 // Build the new row via DOM APIs instead of insertAdjacentHTML
                                 // to avoid HTML injection via the server response.
@@ -49,15 +96,7 @@ class TextDbModule
                                 const newCell = document.createElement("td");
                                 newCell.setAttribute("colspan", "5");
 
-                                if (contentReturn !== null) {
-                                    // Move parsed nodes from the trusted DOMParser document
-                                    // into the new cell. The parser created an inert document
-                                    // (scripts do not execute), and we attach only the parsed
-                                    // child nodes — never raw string HTML.
-                                    while (contentReturn.firstChild !== null) {
-                                        newCell.appendChild(contentReturn.firstChild);
-                                    }
-                                }
+                                moveResponseInto(content, newCell);
 
                                 newRow.appendChild(newCell);
                                 parentTableRow.parentNode.insertBefore(
@@ -80,6 +119,9 @@ class TextDbModule
                                 if (translatedLinkClose !== null) {
                                     translatedLinkClose.style.display = "";
                                 }
+                            })
+                            .finally(() => {
+                                delete linkOpenClicked.dataset.loading;
                             });
                     })
             );
@@ -156,16 +198,13 @@ class TextDbModule
                             // Initialize the DOM parser and parse to response
                             const parser = new DOMParser();
                             const content = parser.parseFromString(html, "text/html");
-                            const contentReturn = content.querySelector('.return');
 
-                            if (contentReturn !== null) {
-                                let translationTableData = document
-                                    .getElementById("translation-" + uid)
-                                    .querySelector("td");
+                            let translationTableData = document
+                                .getElementById("translation-" + uid)
+                                .querySelector("td");
 
-                                if (translationTableData !== null) {
-                                    translationTableData.innerHTML = contentReturn.innerHTML;
-                                }
+                            if (translationTableData !== null) {
+                                moveResponseInto(content, translationTableData);
                             }
 
                             // Hide loading animation
