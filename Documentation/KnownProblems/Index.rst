@@ -47,7 +47,8 @@ imported in these times:
 * MariaDB 10.11, the same entries through the import service:
   6 minutes 15 seconds, at most 190 MB
 
-If an import fails, the file imports nothing.
+If an import fails, the file imports nothing, on every supported database,
+and the backend module and the CLI command show the error.
 
 **Workaround:**
   * Import large files with the CLI command ``nr_textdb:import``, which

@@ -608,8 +608,10 @@ importEntry()
    ): bool
 
 Imports a single translation entry and returns whether it imported or updated
-it. It records an error on ``$result`` instead of throwing, and returns
-``false`` then.
+it. When the entry fails, it records the error on ``$result`` and returns
+``false``. A database error is the exception: it throws a DBAL exception, or
+the Extbase ``SqlErrorException`` that wraps one, so that ``importEntries()``
+rolls back the whole file on every database.
 
 ImportResult
 ~~~~~~~~~~~~
