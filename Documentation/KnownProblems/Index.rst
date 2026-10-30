@@ -244,12 +244,15 @@ Problem: Export Exceeds the Time Limit
   * The export of a large data set ends with a timeout
 
 **Cause:**
-  The export reads the entries in batches of 1,000, so its memory use
-  does not grow with the data set. Its time does: an export of 48,500
-  entries in the default language and one translation of each took
-  44 seconds on SQLite and needed 29 MB of memory beyond the request.
-  Earlier versions, 4.0.2 included, read all entries at once. There the
-  same export needs 685 MB and fails under any lower memory limit.
+  The export reads the entries in batches of 1,000. Measured on SQLite
+  with entries in the default language and one translation of each:
+
+  * 10,000 entries: 9 seconds, 10 MB of memory beyond the request
+  * 48,500 entries: 44 seconds, 28.5 MB of memory beyond the request
+
+  Before this change the export read all entries at once and needed
+  685 MB for the 48,500 entries. Version 4.0.2 and earlier read all
+  entries at once as well.
 
 **Solution:**
   * Raise ``max_execution_time`` for backend requests. TYPO3 recommends
