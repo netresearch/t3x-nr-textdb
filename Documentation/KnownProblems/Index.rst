@@ -35,17 +35,29 @@ Reported Issues
 Import Performance
 ------------------
 
-**Issue:** A large XLIFF file can take longer than the PHP time limit of a
+**Issue:** A large XLIFF file can take longer than the time limits of a
 backend request.
 
-An import writes every entry of a file in one database transaction and
-keeps at most 1,000 records in memory. A file of 10 MB with 48,500 units
-imported in these times:
+An import writes every entry of a file in one database transaction, the
+translations in chunks of 1,000 entries without Extbase. A file of 10 MB
+with 48,500 units imported in these times through the import service, with
+a memory limit of 256 MB (median of three runs):
 
-* SQLite, CLI import with a memory limit of 256 MB: 1 minute 43 seconds,
-  at most 160 MB
-* MariaDB 10.11, the same entries through the import service:
-  6 minutes 15 seconds, at most 190 MB
+* SQLite: 10 seconds; a second import of the same file with
+  :guilabel:`Override existing` 1 second
+* MariaDB 10.11: 44 seconds; the second import 1 second
+* PostgreSQL 16: 31 seconds; the second import 1 second
+
+An import that changes all 48,500 values took 5 seconds on SQLite,
+39 seconds on MariaDB and 26 seconds on PostgreSQL. No import through the
+service needed more than 176 MB of memory.
+
+The same file uploaded in the backend module took 44 seconds on MariaDB, of
+which 25 seconds were CPU time, and finished with PHP's default
+``max_execution_time`` of 30 seconds, using at most 188 MB of memory; a
+second upload with :guilabel:`Override existing` took 1 second. On Linux, PHP counts only the CPU time
+of the script against that limit, not the time it waits for the database.
+A web server or proxy timeout counts the whole 44 seconds.
 
 If an import fails, the file imports nothing, on every supported database,
 and the backend module and the CLI command show the error.
@@ -56,12 +68,12 @@ and the backend module and the CLI command show the error.
   * Split large files into smaller files for the backend module. A file
     uploaded there must also fit PHP's ``upload_max_filesize`` and
     ``post_max_size``, which default to 2 MB and 8 MB.
-  * Increase PHP ``max_execution_time`` for the backend. Choose the value
-    from the times above; a backend upload of the 10 MB file was not
-    measured.
+  * Set the request timeout of the web server and of a proxy in front of
+    it above the wall time above, for example to the 240 seconds TYPO3
+    recommends for ``max_execution_time``.
 
-**Status:** Open. Each new entry costs Extbase several SQL statements,
-which limits the speed.
+**Status:** Improved. The 10 MB file imports in a backend request within
+PHP's default time limit; the time limits of the web server remain.
 
 **GitHub Issue:** `#30 <https://github.com/netresearch/t3x-nr-textdb/issues/30>`_
 

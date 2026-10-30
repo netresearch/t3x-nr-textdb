@@ -592,6 +592,18 @@ counts and the skipped keys reach ``$result`` once
 the transaction has committed; after a rollback only the error messages do,
 and the exception is thrown on.
 
+The translations are written without Extbase, in chunks of 1,000 entries:
+new records with one bulk ``INSERT``, a changed record with one ``UPDATE``,
+and the reference index of each written record through TYPO3's
+``ReferenceIndex``. The rows are the ones Extbase wrote before. The Extbase
+persistence events ``EntityAddedToPersistenceEvent``,
+``EntityUpdatedInPersistenceEvent``, ``EntityPersistedEvent`` and
+``EntityFinalizedAfterPersistenceEvent`` no longer fire for imported
+translations; they still fire for an environment, component or type the
+import creates. The error rule of ``importEntry()`` applies: a database
+error, and any exception raised while such a record is written, rolls back
+the file.
+
 importEntry()
 ~~~~~~~~~~~~~
 
@@ -607,10 +619,12 @@ importEntry()
        ImportResult $result,
    ): bool
 
-Imports a single translation entry and returns whether it imported or updated
-it. When the entry fails, it records the error on ``$result`` and returns
-``false``. Two kinds of error are thrown instead, so that ``importEntries()``
-rolls back the whole file on every database: a database error, as a DBAL
+Imports a single translation entry through Extbase and returns whether it
+imported or updated it. The caller persists the record, for example with
+``PersistenceManagerInterface::persistAll()``; ``importEntries()`` does not
+use this method. When the entry fails, it records the error on ``$result``
+and returns ``false``. Two kinds of error are thrown instead, so that a transaction around
+the import rolls back on every database: a database error, as a DBAL
 exception or the Extbase ``SqlErrorException`` that wraps one, and any
 exception raised while the persistence session is written. The lookup of a
 component, type or environment that does not exist yet writes the session,
