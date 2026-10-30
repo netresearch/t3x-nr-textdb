@@ -416,8 +416,7 @@ TranslationService
    Same lookup as ``translate()``, including the auto-creation with
    ``createIfMissing``, but returns ``null`` when the current language has
    no usable entry: none, a hidden one, an empty value, or an auto-created
-   one. The
-   ViewHelpers use it for step 1 of :ref:`dev-viewhelpers-fallback`.
+   one. The ViewHelpers use it for step 1 of :ref:`dev-viewhelpers-fallback`.
 
    :returns: The value, or ``null`` if the current language has no usable entry
 
