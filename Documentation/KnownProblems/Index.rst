@@ -33,6 +33,9 @@ Import Performance
 
 **Issue:** Large XLIFF files (>10MB) may timeout during import
 
+If an import fails, the file imports nothing, on every supported database,
+and the backend module and the CLI command show the error.
+
 **Workaround:**
   * Split large files into smaller chunks
   * Increase PHP `max_execution_time`:

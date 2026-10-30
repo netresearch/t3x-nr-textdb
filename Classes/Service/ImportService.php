@@ -13,6 +13,7 @@ namespace Netresearch\NrTextdb\Service;
 
 use function count;
 
+use Doctrine\DBAL\Exception as DBALException;
 use Exception;
 use Netresearch\NrTextdb\Domain\Model\Component;
 use Netresearch\NrTextdb\Domain\Model\Environment;
@@ -131,14 +132,15 @@ final readonly class ImportService
      * each new record with an INSERT, an UPDATE for its relations and two
      * reference index updates, and committing every statement on its own
      * made a large file slow (issue #30). When a write fails, the transaction
-     * rolls back, the exception propagates and the file imports nothing.
+     * rolls back, the exception propagates and the file imports nothing, on
+     * every database: importEntry() passes a database error on instead of
+     * recording it, because MariaDB, MySQL and SQLite would otherwise go on
+     * and commit the rest of the file.
      * The persistence session and the name caches of the repositories are
      * cleared then, because they hold records whose rows were rolled back.
      * The counts of the file reach $result only once the transaction has
-     * committed, so a rolled-back file adds nothing to them. Its error
-     * messages do reach $result, each once, because one of them can name the
-     * cause; on PostgreSQL every statement after a failed one repeats the
-     * same error.
+     * committed, so a rolled-back file adds nothing to them. The error
+     * messages importEntry() recorded before do reach $result, each once.
      *
      * @param array<array-key, mixed> $entries
      * @param int<-1, max>            $languageUid
@@ -241,10 +243,14 @@ final readonly class ImportService
     /**
      * Imports a single entry into the database.
      *
-     * Imported / updated counts and any thrown error message accumulate on
-     * the provided {@see ImportResult}.
+     * Imported / updated counts accumulate on the provided {@see ImportResult},
+     * as does the message of an exception the entry fails with. An exception
+     * from the database is thrown on instead: a statement that failed inside
+     * the transaction of importEntries() has to roll back the whole file.
      *
      * @param int<-1, max> $languageUid
+     *
+     * @throws Exception when a statement fails: a DBAL exception, or one that wraps it
      */
     public function importEntry(
         int $languageUid,
@@ -350,6 +356,10 @@ final readonly class ImportService
                 $result->recordImported();
             }
         } catch (Exception $exception) {
+            if ($this->isDatabaseError($exception)) {
+                throw $exception;
+            }
+
             $result->recordError($exception->getMessage());
         } finally {
             // Reset createIfMissing to prevent leaking state on shared singleton repositories
@@ -357,6 +367,23 @@ final readonly class ImportService
             $this->componentRepository->setCreateIfMissing(false);
             $this->typeRepository->setCreateIfMissing(false);
         }
+    }
+
+    /**
+     * Whether an exception, or one it wraps, comes from the database. Extbase
+     * wraps a failed write of its own in a SqlErrorException around the DBAL
+     * exception; a statement run by anything else, an event listener for
+     * example, throws the DBAL exception itself.
+     */
+    private function isDatabaseError(Throwable $throwable): bool
+    {
+        for ($current = $throwable; $current instanceof Throwable; $current = $current->getPrevious()) {
+            if ($current instanceof DBALException) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace Netresearch\NrTextdb\Tests\Functional\Service;
 
+use Doctrine\DBAL\Exception as DBALException;
+use Netresearch\NrTextdb\Domain\Model\Component;
 use Netresearch\NrTextdb\Domain\Model\Translation;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
 use Netresearch\NrTextdb\Service\ImportResult;
@@ -19,9 +21,13 @@ use Netresearch\NrTextdb\Tests\Functional\AbstractFunctionalTestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use RuntimeException;
+use Throwable;
+use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Database\Platform\SQLitePlatform;
 use TYPO3\CMS\Core\EventDispatcher\ListenerProvider;
 use TYPO3\CMS\Extbase\Event\Persistence\EntityAddedToPersistenceEvent;
+use TYPO3\CMS\Extbase\Persistence\Generic\Storage\Exception\SqlErrorException;
 use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
 
 /**
@@ -266,6 +272,116 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
         }
     }
 
+    #[Test]
+    public function importEntriesImportsNothingWhenAStatementFailsInsideAnEntryAndCanBeRepeated(): void
+    {
+        $entries = [
+            'atomiccomponent|label|first'  => 'First',
+            'brokencomponent|label|second' => 'Second',
+            'atomiccomponent|label|third'  => 'Third',
+            'atomiccomponent|label|fourth' => 'Fourth',
+        ];
+
+        // Runs a statement that fails once the new component "brokencomponent"
+        // is inserted, inside importEntry(). The component itself is written,
+        // so no later persistAll() repeats the failure.
+        $connection = $this->get(ConnectionPool::class)
+            ->getConnectionForTable('tx_nrtextdb_domain_model_translation');
+        $listener = new class ($connection) {
+            public bool $enabled = true;
+
+            public function __construct(private readonly Connection $connection) {}
+
+            public function __invoke(EntityAddedToPersistenceEvent $event): void
+            {
+                $object = $event->getObject();
+
+                if ($this->enabled && $object instanceof Component && $object->getName() === 'brokencomponent') {
+                    $this->connection->executeQuery('SELECT uid FROM tx_nrtextdb_missing_table');
+                }
+            }
+        };
+        $this->getContainer()->set('nr_textdb.test.failing_statement', $listener);
+        $this->get(ListenerProvider::class)
+            ->addListener(EntityAddedToPersistenceEvent::class, 'nr_textdb.test.failing_statement');
+
+        $translationsBefore = $this->countRows('tx_nrtextdb_domain_model_translation');
+        $failedResult       = new ImportResult();
+        $thrown             = null;
+
+        try {
+            $this->importService->importEntries($entries, 0, false, $failedResult);
+        } catch (Throwable $throwable) {
+            $thrown = $throwable;
+        }
+
+        self::assertInstanceOf(DBALException::class, $thrown, 'The database error did not reach the caller.');
+        self::assertStringContainsString('tx_nrtextdb_missing_table', $thrown->getMessage());
+        self::assertSame([], $failedResult->getErrors(), 'The database error reaches the caller as the exception only.');
+        self::assertSame(0, $failedResult->getImported(), 'A rolled-back file counts no entry.');
+        self::assertSame($translationsBefore, $this->countRows('tx_nrtextdb_domain_model_translation'));
+        self::assertSame(0, $this->countRows('tx_nrtextdb_domain_model_component', 'atomiccomponent'));
+        self::assertSame(0, $this->countRows('tx_nrtextdb_domain_model_component', 'brokencomponent'));
+
+        // The cause is gone, the same process imports the file again.
+        $listener->enabled = false;
+        $result            = new ImportResult();
+        $this->importService->importEntries($entries, 0, false, $result);
+
+        self::assertSame([], $result->getErrors());
+        self::assertSame(4, $result->getImported());
+        self::assertSame($translationsBefore + 4, $this->countRows('tx_nrtextdb_domain_model_translation'));
+        self::assertSame(['first', 'fourth', 'third'], $this->importedPlaceholders('atomiccomponent'));
+        self::assertSame(['second'], $this->importedPlaceholders('brokencomponent'));
+    }
+
+    #[Test]
+    public function importEntriesImportsNothingWhenANameIsTooLongForItsColumnAndCanBeRepeated(): void
+    {
+        if ($this->get(ConnectionPool::class)
+            ->getConnectionForTable('tx_nrtextdb_domain_model_component')
+            ->getDatabasePlatform() instanceof SQLitePlatform
+        ) {
+            self::markTestSkipped('SQLite does not enforce the length of a varchar column.');
+        }
+
+        $longName = str_repeat('x', 300);
+        $entries  = [
+            'atomiccomponent|label|first' => 'First',
+            $longName . '|label|second'   => 'Second',
+            'atomiccomponent|label|third' => 'Third',
+        ];
+
+        $translationsBefore = $this->countRows('tx_nrtextdb_domain_model_translation');
+        $failedResult       = new ImportResult();
+        $thrown             = null;
+
+        try {
+            $this->importService->importEntries($entries, 0, false, $failedResult);
+        } catch (Throwable $throwable) {
+            $thrown = $throwable;
+        }
+
+        self::assertInstanceOf(SqlErrorException::class, $thrown, 'The database error did not reach the caller.');
+        self::assertSame([], $failedResult->getErrors(), 'The database error reaches the caller as the exception only.');
+        self::assertSame($translationsBefore, $this->countRows('tx_nrtextdb_domain_model_translation'));
+        self::assertSame(0, $this->countRows('tx_nrtextdb_domain_model_component', 'atomiccomponent'));
+
+        // The file is fixed, the same process imports it again.
+        $entries = [
+            'atomiccomponent|label|first' => 'First',
+            'shortcomponent|label|second' => 'Second',
+            'atomiccomponent|label|third' => 'Third',
+        ];
+        $result = new ImportResult();
+        $this->importService->importEntries($entries, 0, false, $result);
+
+        self::assertSame([], $result->getErrors());
+        self::assertSame(3, $result->getImported());
+        self::assertSame(['first', 'third'], $this->importedPlaceholders('atomiccomponent'));
+        self::assertSame(['second'], $this->importedPlaceholders('shortcomponent'));
+    }
+
     // -------------------------------------------------------------------------
     // importEntry
     // -------------------------------------------------------------------------
@@ -469,5 +585,32 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
         return $this->get(ConnectionPool::class)
             ->getConnectionForTable($table)
             ->count('*', $table, $name === null ? [] : ['name' => $name]);
+    }
+
+    /**
+     * Returns the placeholders of the translations of a component, sorted.
+     *
+     * @return list<string>
+     */
+    private function importedPlaceholders(string $component): array
+    {
+        $queryBuilder = $this->get(ConnectionPool::class)
+            ->getQueryBuilderForTable('tx_nrtextdb_domain_model_translation');
+
+        $placeholders = $queryBuilder
+            ->select('translation.placeholder')
+            ->from('tx_nrtextdb_domain_model_translation', 'translation')
+            ->join(
+                'translation',
+                'tx_nrtextdb_domain_model_component',
+                'component',
+                $queryBuilder->expr()->eq('component.uid', $queryBuilder->quoteIdentifier('translation.component')),
+            )
+            ->where($queryBuilder->expr()->eq('component.name', $queryBuilder->createNamedParameter($component)))
+            ->orderBy('translation.placeholder')
+            ->executeQuery()
+            ->fetchFirstColumn();
+
+        return array_map(strval(...), $placeholders);
     }
 }

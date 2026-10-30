@@ -464,7 +464,9 @@ importEntry()
        array &$errors,
    ): void
 
-Imports a single translation entry into the database.
+Imports a single translation entry into the database. A database error is
+thrown, as a DBAL exception or the Extbase ``SqlErrorException`` that wraps
+one, so that the import of the file rolls back as a whole on every database.
 
 .. _dev-repositories:
 
