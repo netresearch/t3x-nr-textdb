@@ -1133,7 +1133,8 @@ final class TranslationController extends ActionController
      *
      * The encoding check is what keeps listAction() alive. The term is written
      * back with json_encode(), which throws on malformed UTF-8, and a query
-     * parameter carries arbitrary bytes.
+     * parameter carries arbitrary bytes. An empty term is no filter, the
+     * reset link of the list submits one for each text filter.
      */
     private function normalizeTextFilter(mixed $value): ?string
     {
@@ -1145,7 +1146,9 @@ final class TranslationController extends ActionController
             return null;
         }
 
-        return trim($value);
+        $value = trim($value);
+
+        return $value === '' ? null : $value;
     }
 
     /**
