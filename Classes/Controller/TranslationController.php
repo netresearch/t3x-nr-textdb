@@ -15,6 +15,7 @@ declare(strict_types=1);
 namespace Netresearch\NrTextdb\Controller;
 
 use Exception;
+use Generator;
 use LogicException;
 use Netresearch\NrTextdb\Domain\Model\Component;
 use Netresearch\NrTextdb\Domain\Model\Environment;
@@ -156,6 +157,14 @@ final class TranslationController extends ActionController
     private readonly ComponentFactory $componentFactory;
 
     private int $pid = 0;
+
+    /**
+     * Records the export reads per query and keeps in memory at a time. Not
+     * readonly so that a test can make a small data set span several batches.
+     *
+     * @var int<1, max>
+     */
+    private int $exportBatchSize = 1000;
 
     /**
      * TranslationController constructor.
@@ -770,19 +779,9 @@ final class TranslationController extends ActionController
                 $enableTargetMarker = $language->getLocale()->getLanguageCode() !== 'en';
 
                 if ($language->getLanguageId() === 0) {
-                    $translations = $this->translationRepository
-                        ->findAllByComponentTypePlaceholderValueAndLanguage(
-                            $component,
-                            $type,
-                            $placeholder,
-                            $value,
-                            0,
-                            $this->getVisiblePageId(),
-                        );
-
                     $originals = $this->writeTranslationExportFile(
                         $language,
-                        $translations,
+                        $this->findOriginalsForExport($component, $type, $placeholder, $value),
                         $exportDir,
                         $targetFileName,
                         $enableTargetMarker,
@@ -791,16 +790,9 @@ final class TranslationController extends ActionController
                     // An empty list would reach Extbase as "uid IN ()", which
                     // it refuses with a BadConstraintException. No original
                     // means no translation of one either.
-                    $translations = $this->translationRepository
-                        ->findByTranslationsAndLanguage(
-                            $originals,
-                            $language->getLanguageId(),
-                            $this->getVisiblePageId(),
-                        );
-
                     $this->writeTranslationExportFile(
                         $language,
-                        $translations,
+                        $this->findTranslationsForExport($originals, $language->getLanguageId()),
                         $exportDir,
                         $targetFileName,
                         $enableTargetMarker,
@@ -836,6 +828,70 @@ final class TranslationController extends ActionController
             return $this->createStreamResponseFromFile($archivePath);
         } finally {
             $this->removeDirectory($exportDir);
+        }
+    }
+
+    /**
+     * Reads the default-language records of the export in batches of
+     * $exportBatchSize, ordered by uid.
+     *
+     * Extbase maps every record of a query result at once and keeps each
+     * object in its persistence session, so reading all records with one
+     * query held them all in memory: about 685 MB for 48,500 records and
+     * their translations. Clearing the session after each batch lets PHP
+     * free the objects already written.
+     *
+     * @return Generator<int, Translation>
+     *
+     * @throws InvalidQueryException
+     */
+    private function findOriginalsForExport(int $component, int $type, ?string $placeholder, ?string $value): Generator
+    {
+        $afterUid = 0;
+
+        do {
+            $batch = $this->translationRepository
+                ->findAllByComponentTypePlaceholderValueAndLanguage(
+                    $component,
+                    $type,
+                    $placeholder,
+                    $value,
+                    0,
+                    $this->getVisiblePageId(),
+                    $this->exportBatchSize,
+                    $afterUid,
+                )
+                ->toArray();
+
+            foreach ($batch as $translation) {
+                $afterUid = (int) $translation->getUid();
+
+                yield $translation;
+            }
+
+            $this->persistenceManager->clearState();
+        } while (count($batch) === $this->exportBatchSize);
+    }
+
+    /**
+     * Reads the translations of the originals into a language, for
+     * $exportBatchSize originals at a time. One query for all originals bound
+     * one parameter per original.
+     *
+     * @param int[] $originals Uids in ascending order
+     *
+     * @return Generator<int, Translation>
+     *
+     * @throws InvalidQueryException
+     */
+    private function findTranslationsForExport(array $originals, int $languageId): Generator
+    {
+        foreach (array_chunk($originals, $this->exportBatchSize) as $chunk) {
+            yield from $this->translationRepository
+                ->findByTranslationsAndLanguage($chunk, $languageId, $this->getVisiblePageId())
+                ->toArray();
+
+            $this->persistenceManager->clearState();
         }
     }
 
@@ -1135,21 +1191,21 @@ final class TranslationController extends ActionController
     /**
      * Write the translation file for export and returns the uid of entries written to file.
      *
-     * @param QueryResultInterface<int, Translation> $translations
+     * The file is written entry by entry, so neither the entries nor the
+     * file content are held in memory as one string. A language without
+     * records gets no file.
+     *
+     * @param iterable<Translation> $translations
      *
      * @return int[]
      */
     private function writeTranslationExportFile(
         SiteLanguage $language,
-        QueryResultInterface $translations,
+        iterable $translations,
         string $exportDir,
         string $filename,
         bool $enableTargetMarker = false,
     ): array {
-        if ($translations->count() === 0) {
-            return [];
-        }
-
         $markup = file_get_contents(
             ExtensionManagementUtility::extPath(
                 'nr_textdb',
@@ -1161,73 +1217,121 @@ final class TranslationController extends ActionController
             return [];
         }
 
-        $entries               = '';
-        $writtenTranslationIds = [];
-
-        $marker = $enableTargetMarker ? 'target' : 'source';
-
-        /** @var Translation $translation */
-        foreach ($translations as $translation) {
-            if ($translation->getComponent() === null) {
-                continue;
-            }
-
-            if ($translation->getType() === null) {
-                continue;
-            }
-
-            $uid = $translation->getUid();
-            if ($uid !== null) {
-                $writtenTranslationIds[] = $uid;
-            }
-
-            // Escape ID attribute parts to prevent XML injection
-            $componentName = htmlspecialchars($translation->getComponent()->getName(), ENT_XML1 | ENT_QUOTES, 'UTF-8');
-            $typeName      = htmlspecialchars($translation->getType()->getName(), ENT_XML1 | ENT_QUOTES, 'UTF-8');
-            $placeholder   = htmlspecialchars($translation->getPlaceholder(), ENT_XML1 | ENT_QUOTES, 'UTF-8');
-
-            // Escape CDATA end sequence to prevent premature closing
-            $value = str_replace(']]>', ']]]]><![CDATA[>', $translation->getValue());
-
-            // xml:space="preserve" keeps line breaks and repeated spaces: without
-            // it an XLIFF reader, TYPO3's XliffLoader among them, collapses all
-            // whitespace inside the value. With "preserve" the indentation
-            // would count too, so the CDATA section sits directly in the tag.
-            $entries .= sprintf(
-                <<<XML
-                            <trans-unit id="%s|%s|%s" xml:space="preserve">
-                                <%s><![CDATA[%s]]></%s>
-                            </trans-unit>
-                    XML . PHP_EOL,
-                $componentName,
-                $typeName,
-                $placeholder,
-                $marker,
-                $value,
-                $marker,
-            );
-        }
-
         // The default-language export carries the texts in <source> and must not
         // declare a target-language: TYPO3's XliffLoader (and the XLIFF spec)
         // treat a file with target-language as a translation and read <target>,
         // which would import the default language back as empty values.
-        $fileContent = sprintf(
-            $markup,
-            $enableTargetMarker
-                ? sprintf(' target-language="%s"', $language->getLocale()->getLanguageCode())
-                : '',
-            $entries,
-        );
+        [$head, $tail] = explode(
+            '%s',
+            sprintf(
+                $markup,
+                $enableTargetMarker
+                    ? sprintf(' target-language="%s"', $language->getLocale()->getLanguageCode())
+                    : '',
+                '%s',
+            ),
+            2,
+        ) + ['', ''];
 
-        $writeResult = file_put_contents($exportDir . '/' . $filename, $fileContent);
-        if ($writeResult === false) {
-            throw new RuntimeException(
-                sprintf('Failed to write export file: %s/%s', $exportDir, $filename),
-            );
+        $file                  = $exportDir . '/' . $filename;
+        $handle                = null;
+        $writtenTranslationIds = [];
+
+        $marker = $enableTargetMarker ? 'target' : 'source';
+
+        try {
+            foreach ($translations as $translation) {
+                if ($handle === null) {
+                    $handle = $this->openExportFile($file);
+                    $this->writeExportFile($handle, $file, $head);
+                }
+
+                if ($translation->getComponent() === null) {
+                    continue;
+                }
+
+                if ($translation->getType() === null) {
+                    continue;
+                }
+
+                $uid = $translation->getUid();
+                if ($uid !== null) {
+                    $writtenTranslationIds[] = $uid;
+                }
+
+                // Escape ID attribute parts to prevent XML injection
+                $componentName = htmlspecialchars($translation->getComponent()->getName(), ENT_XML1 | ENT_QUOTES, 'UTF-8');
+                $typeName      = htmlspecialchars($translation->getType()->getName(), ENT_XML1 | ENT_QUOTES, 'UTF-8');
+                $placeholder   = htmlspecialchars($translation->getPlaceholder(), ENT_XML1 | ENT_QUOTES, 'UTF-8');
+
+                // Escape CDATA end sequence to prevent premature closing
+                $value = str_replace(']]>', ']]]]><![CDATA[>', $translation->getValue());
+
+                // xml:space="preserve" keeps line breaks and repeated spaces: without
+                // it an XLIFF reader, TYPO3's XliffLoader among them, collapses all
+                // whitespace inside the value. With "preserve" the indentation
+                // would count too, so the CDATA section sits directly in the tag.
+                $this->writeExportFile(
+                    $handle,
+                    $file,
+                    sprintf(
+                        <<<XML
+                                    <trans-unit id="%s|%s|%s" xml:space="preserve">
+                                        <%s><![CDATA[%s]]></%s>
+                                    </trans-unit>
+                            XML . PHP_EOL,
+                        $componentName,
+                        $typeName,
+                        $placeholder,
+                        $marker,
+                        $value,
+                        $marker,
+                    ),
+                );
+            }
+
+            if ($handle !== null) {
+                $this->writeExportFile($handle, $file, $tail);
+
+                $closed = fclose($handle);
+                $handle = null;
+
+                if (!$closed) {
+                    throw new RuntimeException(sprintf('Failed to write export file: %s', $file));
+                }
+            }
+        } finally {
+            // A failed write leaves the file open; exportAction() removes it.
+            if ($handle !== null) {
+                fclose($handle);
+            }
         }
 
         return $writtenTranslationIds;
+    }
+
+    /**
+     * @return resource
+     */
+    private function openExportFile(string $file)
+    {
+        $handle = fopen($file, 'wb');
+
+        if ($handle === false) {
+            throw new RuntimeException(sprintf('Failed to write export file: %s', $file));
+        }
+
+        return $handle;
+    }
+
+    /**
+     * @param resource $handle
+     */
+    private function writeExportFile($handle, string $file, string $content): void
+    {
+        if (fwrite($handle, $content) !== strlen($content)) {
+            throw new RuntimeException(sprintf('Failed to write export file: %s', $file));
+        }
     }
 
     /**

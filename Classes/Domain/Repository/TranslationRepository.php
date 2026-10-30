@@ -22,6 +22,7 @@ use TYPO3\CMS\Core\Context\LanguageAspect;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException;
 use TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings;
+use TYPO3\CMS\Extbase\Persistence\QueryInterface;
 use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 
 /**
@@ -52,6 +53,8 @@ class TranslationRepository extends AbstractRepository
     }
 
     /**
+     * Returns the translations of the originals, ordered by original and uid.
+     *
      * @param int[]    $originals
      * @param int|null $pageId    Only records on this page; null for records on any page
      *
@@ -78,7 +81,12 @@ class TranslationRepository extends AbstractRepository
             $constraints[] = $query->equals('pid', $pageId);
         }
 
-        $query->matching($query->logicalAnd(...$constraints));
+        $query
+            ->matching($query->logicalAnd(...$constraints))
+            ->setOrderings([
+                'l10nParent' => QueryInterface::ORDER_ASCENDING,
+                'uid'        => QueryInterface::ORDER_ASCENDING,
+            ]);
 
         return $query->execute();
     }
@@ -144,6 +152,8 @@ class TranslationRepository extends AbstractRepository
      * @param string|null $value       Value to search for
      * @param int         $languageId  Language ID
      * @param int|null    $pageId      Only records on this page; null for records on any page
+     * @param int         $limit       Maximum number of records, ordered by uid; 0 for all records in no defined order
+     * @param int         $afterUid    Only records with a higher uid, to read the next batch after the last uid read
      *
      * @return QueryResultInterface<int, Translation>
      *
@@ -156,6 +166,8 @@ class TranslationRepository extends AbstractRepository
         ?string $value = null,
         int $languageId = 0,
         ?int $pageId = null,
+        int $limit = 0,
+        int $afterUid = 0,
     ): QueryResultInterface {
         $query = $this->createQuery();
         $query
@@ -193,9 +205,19 @@ class TranslationRepository extends AbstractRepository
             $constraints[] = $query->equals('pid', $pageId);
         }
 
+        if ($afterUid > 0) {
+            $constraints[] = $query->greaterThan('uid', $afterUid);
+        }
+
         $query->matching(
             $query->logicalAnd(...$constraints),
         );
+
+        if ($limit > 0) {
+            $query
+                ->setOrderings(['uid' => QueryInterface::ORDER_ASCENDING])
+                ->setLimit($limit);
+        }
 
         return $query->execute();
     }
