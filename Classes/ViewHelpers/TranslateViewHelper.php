@@ -90,8 +90,8 @@ final class TranslateViewHelper extends AbstractViewHelper
      *
      * Delegates to TranslationService::findTranslation() which uses the in-memory
      * translation cache. If the entry does not exist and createIfMissing is
-     * enabled, the LLL value is used as the initial value for the auto-created
-     * TextDB record.
+     * enabled, the service creates it, marked as auto-created; it renders
+     * like a missing entry until an editor sets a value.
      *
      * Lookup order: the TextDB entry in the current language; the label from
      * the language file, in the current language or, when the file has no
