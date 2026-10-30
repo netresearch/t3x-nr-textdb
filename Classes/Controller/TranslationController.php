@@ -1090,12 +1090,15 @@ final class TranslationController extends ActionController
             // Escape CDATA end sequence to prevent premature closing
             $value = str_replace(']]>', ']]]]><![CDATA[>', $translation->getValue());
 
+            // The CDATA section sits directly in the tag: core's XliffParser
+            // returns the text of the unit as it stands, so indentation around
+            // the value would be imported as part of it. xml:space="preserve"
+            // declares the whitespace inside significant, for readers that
+            // normalise it otherwise, as TYPO3 v14's XliffLoader does.
             $entries .= sprintf(
                 <<<XML
-            <trans-unit id="%s|%s|%s">
-                <%s>
-                    <![CDATA[%s]]>
-                </%s>
+            <trans-unit id="%s|%s|%s" xml:space="preserve">
+                <%s><![CDATA[%s]]></%s>
             </trans-unit>
     XML . PHP_EOL,
                 $componentName,
