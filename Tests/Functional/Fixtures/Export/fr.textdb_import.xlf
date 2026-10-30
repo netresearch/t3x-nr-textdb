@@ -7,7 +7,7 @@
         </header>
         <body>
         <trans-unit id="export|button|gamma" xml:space="preserve">
-            <target><![CDATA[Gamma for all languages]]></target>
+            <target><![CDATA[Gamma FR]]></target>
         </trans-unit>
 
         </body>

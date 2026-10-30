@@ -1134,11 +1134,7 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
      * records in batches. The data set holds a record for all languages, a
      * hidden and a deleted one, a record whose type was deleted (skipped
      * together with its translation), line breaks, "]]>" and translations
-     * whose uids are not in the order of their originals. The French file
-     * holds the text of uid 100 in place of its translation uid 301: on
-     * TYPO3 13.4 the export loads translations with language overlays, and
-     * the overlay of a translation whose parent is in language -1 returns
-     * the parent.
+     * whose uids are not in the order of their originals.
      */
     #[Test]
     #[DataProvider('exportBatchSizeProvider')]
