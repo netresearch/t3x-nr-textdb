@@ -23,7 +23,15 @@ use Override;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use RuntimeException;
+use TYPO3\CMS\Core\Context\Context;
+use TYPO3\CMS\Core\Context\LanguageAspect;
+use TYPO3\CMS\Core\Core\SystemEnvironmentBuilder;
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Http\ServerRequest;
+use TYPO3\CMS\Core\Http\Uri;
+use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
+use TYPO3\CMS\Core\TypoScript\AST\Node\RootNode;
+use TYPO3\CMS\Core\TypoScript\FrontendTypoScript;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
@@ -49,6 +57,12 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 #[CoversClass(TranslateViewHelper::class)]
 final class TranslateViewHelperTest extends AbstractFunctionalTestCase
 {
+    private const ENVIRONMENT_LABEL_TEMPLATE = "{nrtextdb:translate(key: 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:tx_nrtextdb_domain_model_environment', environment: 'default')}";
+
+    private const PLAIN_PLACEHOLDER_TEMPLATE = "{nrtextdb:translate(key: 'some-plain-placeholder', environment: 'default')}";
+
+    private const ENVIRONMENT_TEXTDB_VALUE = 'Environment from TextDB';
+
     /**
      * @var non-empty-string[]
      */
@@ -81,6 +95,7 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
         // Guarantee cleanup of the static component property even if an
         // assertion fails inside a test.
         TranslateViewHelper::$component = '';
+        unset($GLOBALS['TYPO3_REQUEST']);
 
         parent::tearDown();
     }
@@ -398,8 +413,183 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
     }
 
     // =========================================================================
+    // Scenario 6 – Language fallback
+    // =========================================================================
+
+    #[Test]
+    public function germanLabelFromTheLanguageFileWinsOverTheEnglishTextDbEntry(): void
+    {
+        TranslateViewHelper::$component = 'lll-migration-component';
+
+        // English (default language) TextDB entry; no German entry. The
+        // German language file of nr_textdb translates the key as "Umgebung".
+        $this->insertDefaultLanguageTranslation('tx_nrtextdb_domain_model_environment', self::ENVIRONMENT_TEXTDB_VALUE);
+        $this->switchToGermanPage();
+
+        $output = $this->renderFluidTemplate(
+            self::ENVIRONMENT_LABEL_TEMPLATE,
+        );
+
+        self::assertSame('Umgebung', trim($output));
+    }
+
+    #[Test]
+    public function englishTextDbEntryIsRenderedWhenNeitherGermanEntryNorLabelExists(): void
+    {
+        TranslateViewHelper::$component = 'lll-migration-component';
+
+        // The key is in no language file, and only the default language has
+        // a TextDB entry.
+        $this->insertDefaultLanguageTranslation('some-plain-placeholder', 'Plain English value');
+        $this->switchToGermanPage();
+
+        $output = $this->renderFluidTemplate(
+            self::PLAIN_PLACEHOLDER_TEMPLATE,
+        );
+
+        self::assertSame('Plain English value', trim($output));
+    }
+
+    #[Test]
+    public function sourceLabelOfTheLanguageFileWinsOverTheEnglishTextDbEntry(): void
+    {
+        TranslateViewHelper::$component = 'lll-migration-component';
+
+        // de.locallang.xlf has no translation for this key, so LocalizationUtility
+        // returns the source label of locallang.xlf; the fallback chain is not
+        // reached.
+        $this->insertDefaultLanguageTranslation('message.error.export.empty', 'Edited TextDB value');
+        $this->switchToGermanPage();
+
+        $output = $this->renderFluidTemplate(
+            "{nrtextdb:translate(key: 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.error.export.empty', environment: 'default')}",
+        );
+
+        self::assertSame('No translation matches the current filter, so there is nothing to export.', trim($output));
+    }
+
+    #[Test]
+    public function valueEqualToItsKeyInTheCurrentLanguageIsNotReplacedByTheFallback(): void
+    {
+        TranslateViewHelper::$component = 'lll-migration-component';
+
+        // "Login" is a real German entry whose value equals its key, and the
+        // key is in no language file; the English entry must not replace it.
+        $this->insertDefaultLanguageTranslation('Login', 'Sign in');
+        $this->insertTranslation(1, 'Login', 'Login');
+        $this->switchToGermanPage();
+
+        $output = $this->renderFluidTemplate(
+            "{nrtextdb:translate(key: 'Login', environment: 'default')}",
+        );
+
+        self::assertSame('Login', trim($output));
+    }
+
+    #[Test]
+    public function autoCreationStillWritesTheCurrentLanguageEntryWhenTheFallbackFindsAValue(): void
+    {
+        TranslateViewHelper::$component = 'lll-migration-component';
+
+        // createIfMissing is enabled in setUp().
+        $this->insertDefaultLanguageTranslation('some-plain-placeholder', 'Plain English value');
+        $this->switchToGermanPage();
+
+        $output = $this->renderFluidTemplate(self::PLAIN_PLACEHOLDER_TEMPLATE);
+
+        self::assertSame('Plain English value', trim($output));
+        self::assertSame(
+            1,
+            (int) GeneralUtility::makeInstance(ConnectionPool::class)
+                ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
+                ->count(
+                    'uid',
+                    'tx_nrtextdb_domain_model_translation',
+                    ['placeholder' => 'some-plain-placeholder', 'sys_language_uid' => 1],
+                ),
+        );
+    }
+
+    #[Test]
+    public function bothViewHelpersKeepTheirOwnResultForTheSameKeyInOneRequest(): void
+    {
+        TranslateViewHelper::$component = 'lll-migration-component';
+
+        $this->insertDefaultLanguageTranslation('tx_nrtextdb_domain_model_environment', self::ENVIRONMENT_TEXTDB_VALUE);
+        $this->switchToGermanPage();
+
+        $textdbTemplate    = "{nrtextdb:textdb(placeholder: 'tx_nrtextdb_domain_model_environment', type: 'label', component: 'lll-migration-component', environment: 'default')}";
+        $translateTemplate = self::ENVIRONMENT_LABEL_TEMPLATE;
+
+        // textdb:textdb has no language-file step and falls back to the
+        // English entry; textdb:translate shows the German label. The service
+        // is a singleton, so both share its cache within the request.
+        self::assertSame(self::ENVIRONMENT_TEXTDB_VALUE, trim($this->renderFluidTemplate($textdbTemplate)));
+        self::assertSame('Umgebung', trim($this->renderFluidTemplate($translateTemplate)));
+        self::assertSame(self::ENVIRONMENT_TEXTDB_VALUE, trim($this->renderFluidTemplate($textdbTemplate)));
+    }
+
+    // =========================================================================
     // Helpers
     // =========================================================================
+
+    /**
+     * Makes the rendering run for a German frontend page (language 1, falling
+     * back to 0): the language aspect drives the TextDB lookup, the request
+     * the language LocalizationUtility reads its labels in.
+     */
+    private function switchToGermanPage(): void
+    {
+        GeneralUtility::makeInstance(Context::class)
+            ->setAspect(
+                'language',
+                new LanguageAspect(1, 1, LanguageAspect::OVERLAYS_ON_WITH_FLOATING, [0]),
+            );
+
+        // Extbase reads the frontend TypoScript of a frontend request; an
+        // empty setup is enough for the repositories.
+        $frontendTypoScript = new FrontendTypoScript(new RootNode(), [], [], []);
+        $frontendTypoScript->setSetupArray([]);
+
+        $GLOBALS['TYPO3_REQUEST'] = (new ServerRequest('https://example.com/de/'))
+            ->withAttribute('applicationType', SystemEnvironmentBuilder::REQUESTTYPE_FE)
+            ->withAttribute('frontend.typoscript', $frontendTypoScript)
+            ->withAttribute(
+                'language',
+                new SiteLanguage(1, 'de_DE.UTF-8', new Uri('https://example.com/de/'), ['typo3Language' => 'de']),
+            );
+    }
+
+    /**
+     * Inserts a default-language translation record in environment "default",
+     * component "lll-migration-component" and type "label".
+     */
+    private function insertDefaultLanguageTranslation(string $placeholder, string $value): void
+    {
+        $this->insertTranslation(0, $placeholder, $value);
+    }
+
+    /**
+     * Inserts a translation record in environment "default", component
+     * "lll-migration-component" and type "label".
+     */
+    private function insertTranslation(int $languageUid, string $placeholder, string $value): void
+    {
+        GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
+            ->insert(
+                'tx_nrtextdb_domain_model_translation',
+                [
+                    'pid'              => 1,
+                    'sys_language_uid' => $languageUid,
+                    'environment'      => 1,
+                    'component'        => 1,
+                    'type'             => 1,
+                    'placeholder'      => $placeholder,
+                    'value'            => $value,
+                ],
+            );
+    }
 
     /**
      * Counts translation rows matching the given placeholder to verify

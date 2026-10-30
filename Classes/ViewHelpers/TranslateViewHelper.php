@@ -88,10 +88,17 @@ final class TranslateViewHelper extends AbstractViewHelper
     /**
      * Render translated string.
      *
-     * Delegates to TranslationService::translate() which uses the in-memory
+     * Delegates to TranslationService::findTranslation() which uses the in-memory
      * translation cache. If the entry does not exist and createIfMissing is
-     * enabled, the LLL value is used as the initial value for the auto-created
-     * TextDB record.
+     * enabled, the service creates it, marked as auto-created; it renders
+     * like a missing entry until an editor sets a value.
+     *
+     * Lookup order: the TextDB entry in the current language; the label from
+     * the language file, in the current language or, when the file has no
+     * translation for it, the file's source label; the TextDB entries along
+     * the language fallback chain and the default language; then the key.
+     * The fallback chain is therefore reached only for a key that no language
+     * file holds, or whose label is empty.
      *
      * @return string The translated key or tag body if key doesn't exist
      *
@@ -123,24 +130,33 @@ final class TranslateViewHelper extends AbstractViewHelper
         assert(is_string($environmentName));
 
         // Delegate to TranslationService which has in-memory caching
-        $result = $this->translationService->translate(
+        $result = $this->translationService->findTranslation(
             $textdbKey,
             'label',
             self::$component,
             $environmentName,
         );
 
-        // If the result is the placeholder itself (auto-created or missing),
-        // try to return the LLL translation instead.
-        if ($result === $textdbKey) {
-            $lllTranslation = $this->translateLabel($placeholder, $extension);
-
-            if ($lllTranslation !== null && $lllTranslation !== '') {
-                return $lllTranslation;
-            }
+        // A value that equals the key is a real entry; only null means the
+        // current language has none (missing, empty or auto-created).
+        if ($result !== null) {
+            return $result;
         }
 
-        return $result;
+        // The language file comes next, then the TextDB entries along the
+        // language fallback chain.
+        $lllTranslation = $this->translateLabel($placeholder, $extension);
+
+        if ($lllTranslation !== null && $lllTranslation !== '') {
+            return $lllTranslation;
+        }
+
+        return $this->translationService->translateFromFallbackLanguages(
+            $textdbKey,
+            'label',
+            self::$component,
+            $environmentName,
+        ) ?? $textdbKey;
     }
 
     /**

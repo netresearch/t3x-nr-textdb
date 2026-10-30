@@ -66,14 +66,12 @@ which limits the speed.
 Language Fallback
 -----------------
 
-**Issue:** No automatic fallback to default language if translation missing
+**Issue:** When the current language had no entry, the ViewHelpers
+rendered the bare key instead of a value from another language.
 
-**Workaround:**
-  * Enable `createIfMissing` to auto-create translations
-  * Manually ensure all languages have translations
-  * Use `default` parameter in ViewHelpers
-
-**Status:** Feature request for 3.2.0
+**Status:** Resolved. The ViewHelpers now follow the fallback chain of the
+site language and then the default language. See
+:ref:`dev-viewhelpers-fallback` for the lookup order.
 
 **GitHub Issue:** `#32 <https://github.com/netresearch/t3x-nr-textdb/issues/32>`_
 
@@ -351,7 +349,6 @@ Version 3.2.0
 -------------
 
 * PSR-14 events for extensibility
-* Language fallback chain support
 * Translation versioning and history
 * REST API for external integrations
 

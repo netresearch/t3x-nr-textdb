@@ -56,6 +56,8 @@ final class TranslationServiceTest extends UnitTestCase
 
     private Context&Stub $context;
 
+    private LanguageAspect $languageAspect;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -68,18 +70,19 @@ final class TranslationServiceTest extends UnitTestCase
         $this->persistenceManager    = self::createStub(PersistenceManagerInterface::class);
         $this->context               = self::createStub(Context::class);
 
-        $languageAspect = new LanguageAspect(0);
+        $this->languageAspect = new LanguageAspect(0);
         // with() requires expects(), and PHPUnit 13 deprecated both any() and
         // stubbing with*() without expects(). The callback keeps the argument
         // assertion without pinning an invocation count — not every test under
-        // test reaches getCurrentLanguage().
+        // test reaches getCurrentLanguage(). It reads the property, so a test
+        // can switch the language after setUp().
         $this->context
             ->method('getAspect')
             ->willReturnCallback(
-                static function (string $aspectName) use ($languageAspect): LanguageAspect {
+                function (string $aspectName): LanguageAspect {
                     self::assertSame('language', $aspectName);
 
-                    return $languageAspect;
+                    return $this->languageAspect;
                 },
             );
 
@@ -367,5 +370,128 @@ final class TranslationServiceTest extends UnitTestCase
 
         // Auto-created translations return placeholder as value
         self::assertSame('auto.placeholder', $result);
+    }
+
+    #[Test]
+    public function translateFromFallbackLanguagesReturnsNullForTheDefaultLanguageWithoutLookup(): void
+    {
+        $this->stubLookupTables();
+
+        $translationRepository = $this->createMock(TranslationRepository::class);
+        $translationRepository
+            ->expects(self::never())
+            ->method('findByEnvironmentComponentTypePlaceholderAndLanguage');
+
+        $result = $this->createSubject($translationRepository)
+            ->translateFromFallbackLanguages('greeting', 'label', 'website', 'default');
+
+        self::assertNull($result);
+    }
+
+    #[Test]
+    public function translateFromFallbackLanguagesReturnsNullForAnEmptyPlaceholder(): void
+    {
+        $this->languageAspect = new LanguageAspect(1, 1, LanguageAspect::OVERLAYS_ON_WITH_FLOATING, [0]);
+        $this->stubLookupTables();
+
+        $translationRepository = $this->createMock(TranslationRepository::class);
+        $translationRepository
+            ->expects(self::never())
+            ->method('findByEnvironmentComponentTypePlaceholderAndLanguage');
+
+        $result = $this->createSubject($translationRepository)
+            ->translateFromFallbackLanguages('', 'label', 'website', 'default');
+
+        self::assertNull($result);
+    }
+
+    #[Test]
+    public function translateFromFallbackLanguagesTriesTheIntegerChainEntriesInOrderThenLanguageZero(): void
+    {
+        // The current language, strings and negative ids are skipped; a
+        // repeated id is looked up once, and 0 comes last.
+        $this->languageAspect = new LanguageAspect(
+            3,
+            3,
+            LanguageAspect::OVERLAYS_ON_WITH_FLOATING,
+            [3, 'pageNotFound', 5, -1, 2, 5, 'off'],
+        );
+        $this->stubLookupTables();
+
+        $requestedLanguages    = [];
+        $translationRepository = $this->createMock(TranslationRepository::class);
+        $translationRepository
+            ->expects(self::exactly(3))
+            ->method('findByEnvironmentComponentTypePlaceholderAndLanguage')
+            ->willReturnCallback(
+                static function (
+                    Environment $environment,
+                    Component $component,
+                    Type $type,
+                    string $placeholder,
+                    int $languageUid,
+                ) use (&$requestedLanguages): ?Translation {
+                    $requestedLanguages[] = $languageUid;
+
+                    return null;
+                },
+            );
+
+        $result = $this->createSubject($translationRepository)
+            ->translateFromFallbackLanguages('greeting', 'label', 'website', 'default');
+
+        self::assertNull($result);
+        self::assertSame([5, 2, 0], $requestedLanguages);
+    }
+
+    #[Test]
+    public function translateFromFallbackLanguagesReturnsTheFirstUsableValueAndCachesEachLanguage(): void
+    {
+        $this->languageAspect = new LanguageAspect(3, 3, LanguageAspect::OVERLAYS_ON_WITH_FLOATING, [5, 2, 0]);
+        $this->stubLookupTables();
+
+        $empty = new Translation();
+        $empty->setPlaceholder('greeting')->setValue('');
+
+        $autoCreated = new Translation();
+        $autoCreated->setPlaceholder('greeting')->setValue(Translation::AUTO_CREATE_IDENTIFIER);
+
+        $usable = new Translation();
+        $usable->setPlaceholder('greeting')->setValue('Hallo');
+
+        $byLanguage = [5 => $empty, 2 => $autoCreated, 0 => $usable];
+
+        $requestedLanguages    = [];
+        $translationRepository = $this->createMock(TranslationRepository::class);
+        $translationRepository
+            ->expects(self::exactly(3))
+            ->method('findByEnvironmentComponentTypePlaceholderAndLanguage')
+            ->willReturnCallback(
+                static function (
+                    Environment $environment,
+                    Component $component,
+                    Type $type,
+                    string $placeholder,
+                    int $languageUid,
+                ) use (&$requestedLanguages, $byLanguage): ?Translation {
+                    $requestedLanguages[] = $languageUid;
+
+                    return $byLanguage[$languageUid] ?? null;
+                },
+            );
+
+        $subject = $this->createSubject($translationRepository);
+
+        // The second call is served from the cache: three lookups in total.
+        self::assertSame('Hallo', $subject->translateFromFallbackLanguages('greeting', 'label', 'website', 'default'));
+        self::assertSame('Hallo', $subject->translateFromFallbackLanguages('greeting', 'label', 'website', 'default'));
+        self::assertSame([5, 2, 0], $requestedLanguages);
+    }
+
+    private function stubLookupTables(): void
+    {
+        $this->environmentRepository->method('findByName')->willReturn(new Environment());
+        $this->componentRepository->method('findByName')->willReturn(new Component());
+        $this->typeRepository->method('findByName')->willReturn(new Type());
     }
 }

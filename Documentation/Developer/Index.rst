@@ -233,7 +233,9 @@ TextDB ViewHelper
 
    **Output:**
 
-Returns the translated text for the current page language.
+Returns the translated text for the current page language. When that
+language has no usable entry, the ViewHelper falls back as described in
+:ref:`dev-viewhelpers-fallback`.
 
 **Example:**
 
@@ -291,6 +293,42 @@ When enabled (`createIfMissing = 1`), this ViewHelper will:
 1. Load translation from XLIFF file on first request
 2. Create TextDB record automatically
 3. Use TextDB record on subsequent requests
+
+.. _dev-viewhelpers-fallback:
+
+Lookup Order and Language Fallback
+----------------------------------
+
+Both ViewHelpers look for a value in this order and render the first one
+they find:
+
+1. The TextDB entry in the current language. An entry with an empty value,
+   or one that was auto-created and never edited, does not count. A value
+   that equals its key (``Login`` → ``Login``) does count.
+2. ``textdb:translate`` only: the label from the language file (XLIFF).
+   This is the label in the current language or, when the file has no
+   translation for the key, the file's source label. Step 3 therefore runs
+   for ``textdb:translate`` only when the key is in no language file, or
+   its label is empty.
+3. The TextDB entries in the languages of the site language's fallback
+   chain (``fallbackLanguageIds`` in the site configuration), in their
+   order, then the entry in the default language (``0``). The same rules as
+   in step 1 apply to each entry.
+4. The key itself.
+
+TYPO3 passes the ``fallbackLanguageIds`` on for every ``fallbackType``,
+so step 3 follows them for ``strict``, ``fallback`` and ``free`` alike. A
+site language without fallback languages still falls back to the default
+language in step 3.
+
+When ``createIfMissing`` is enabled, step 1 creates the missing entry in
+the current language, as before. Steps 3 and 4 never create translation
+records.
+
+For example, a German page (language ``1``) whose site language falls back
+to ``0`` renders the English TextDB entry when no German entry exists. With
+``textdb:translate``, a label in the language file wins over that English
+entry, whether it is the German label or the file's source label.
 
 .. _dev-services:
 
@@ -352,6 +390,60 @@ TranslationService
           componentName: 'website',
           environmentName: 'default',
       );
+
+   ``translate()`` looks up the current language only. It returns the key
+   both when there is no usable entry and when the value equals the key; use
+   ``findTranslation()`` to tell the two apart.
+
+   findTranslation()
+   ~~~~~~~~~~~~~~~~~
+
+   .. code-block:: php
+
+      public function findTranslation(
+          string $placeholder,
+          string $typeName,
+          string $componentName,
+          string $environmentName,
+      ): ?string
+
+   Same lookup as ``translate()``, including the auto-creation with
+   ``createIfMissing``, but returns ``null`` when the current language has
+   no usable entry: none, an empty value, or an auto-created one. The
+   ViewHelpers use it for step 1 of :ref:`dev-viewhelpers-fallback`.
+
+   :returns: The value, or ``null`` if the current language has no usable entry
+
+   translateFromFallbackLanguages()
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   .. code-block:: php
+
+      public function translateFromFallbackLanguages(
+          string $placeholder,
+          string $typeName,
+          string $componentName,
+          string $environmentName,
+      ): ?string
+
+   Returns the value of the first usable entry along the fallback chain of
+   the current language, then in the default language, as in step 3 of
+   :ref:`dev-viewhelpers-fallback`. The current language itself is not
+   searched. The method never creates translation records.
+
+   :param string $placeholder: Translation key
+   :param string $typeName: Type name (e.g., "label", "button")
+   :param string $componentName: Component name (e.g., "website", "checkout")
+   :param string $environmentName: Environment name (e.g., "default")
+   :returns: The value, or ``null`` if no fallback language has one
+
+   **Example:**
+
+   .. code-block:: php
+
+      $value = $this->translationService->findTranslation('welcome.message', 'label', 'website', 'default')
+          ?? $this->translationService->translateFromFallbackLanguages('welcome.message', 'label', 'website', 'default')
+          ?? 'welcome.message';
 
    createTranslation()
    ~~~~~~~~~~~~~~~~~~~~

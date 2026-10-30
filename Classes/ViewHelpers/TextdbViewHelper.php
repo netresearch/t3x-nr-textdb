@@ -79,7 +79,11 @@ final class TextdbViewHelper extends AbstractViewHelper
     /**
      * Render translated string.
      *
-     * @return string The translated key or tag body if key doesn't exist
+     * Looks up the entry in the current language first. Where that language
+     * has no usable entry, the entries along the language fallback chain and
+     * then the default language are tried; the placeholder is the last resort.
+     *
+     * @return string The translated value, or the placeholder if no language has one
      *
      * @throws IllegalObjectTypeException
      */
@@ -95,12 +99,22 @@ final class TextdbViewHelper extends AbstractViewHelper
         assert(is_string($component));
         assert(is_string($environment));
 
+        // A value that equals its placeholder ("Login" → "Login") is a real
+        // entry; only null means the current language has none.
         return $this->translationService
-            ->translate(
+            ->findTranslation(
                 $placeholder,
                 $type,
                 $component,
                 $environment,
-            );
+            )
+            ?? $this->translationService
+                ->translateFromFallbackLanguages(
+                    $placeholder,
+                    $type,
+                    $component,
+                    $environment,
+                )
+            ?? $placeholder;
     }
 }

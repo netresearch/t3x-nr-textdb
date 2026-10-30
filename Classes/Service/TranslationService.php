@@ -59,10 +59,21 @@ class TranslationService
 
     /**
      * In-memory translation cache to avoid repeated DB queries within a single request.
+     * Null records that the current language has no usable entry.
      *
-     * @var array<string, string>
+     * @var array<string, string|null>
      */
     private array $translationCache = [];
+
+    /**
+     * In-memory cache of the fallback lookups, kept apart from the cache of
+     * findTranslation(): one request can ask for the same key with and without the
+     * fallback (textdb:textdb and textdb:translate), and each must get its own
+     * answer. Keyed by language, so the entry does not depend on the chain.
+     *
+     * @var array<string, string|null>
+     */
+    private array $fallbackCache = [];
 
     /**
      * Translation constructor.
@@ -88,6 +99,10 @@ class TranslationService
     /**
      * Translate method.
      *
+     * Returns the value of the entry in the current language, or the
+     * placeholder when there is no usable entry. Use findTranslation() to tell
+     * a missing entry apart from a value that equals its placeholder.
+     *
      * @throws IllegalObjectTypeException
      */
     public function translate(
@@ -96,8 +111,28 @@ class TranslationService
         string $componentName,
         string $environmentName,
     ): string {
+        return $this->findTranslation($placeholder, $typeName, $componentName, $environmentName) ?? $placeholder;
+    }
+
+    /**
+     * Returns the value of the entry in the current language, or null when
+     * the language has no usable entry: no entry, an empty value, or an
+     * auto-created one.
+     *
+     * A missing entry is created when createIfMissing is enabled, exactly as
+     * in translate(); the created entry counts as auto-created, so the result
+     * is null.
+     *
+     * @throws IllegalObjectTypeException
+     */
+    public function findTranslation(
+        string $placeholder,
+        string $typeName,
+        string $componentName,
+        string $environmentName,
+    ): ?string {
         if ($placeholder === '') {
-            return $placeholder;
+            return null;
         }
 
         $languageUid = $this->getCurrentLanguage();
@@ -117,7 +152,7 @@ class TranslationService
             || !($component instanceof Component)
             || !($type instanceof Type)
         ) {
-            return $placeholder;
+            return null;
         }
 
         $translation = $this->translationRepository
@@ -182,18 +217,151 @@ class TranslationService
             $this->persistenceManager->persistAll();
         }
 
-        if (!$translation instanceof Translation) {
-            $this->translationCache[$cacheKey] = $placeholder;
-
-            return $placeholder;
-        }
-
-        $result = $translation->getValue() !== '' ? $translation->getValue() : $translation->getPlaceholder();
+        $result = $this->usableValue($translation);
 
         // Store in cache for subsequent lookups within same request
         $this->translationCache[$cacheKey] = $result;
 
         return $result;
+    }
+
+    /**
+     * Returns the value of the entry, or null when there is no entry, its
+     * value is empty or it was auto-created.
+     */
+    private function usableValue(?Translation $translation): ?string
+    {
+        if (
+            !($translation instanceof Translation)
+            || $translation->isAutoCreated()
+            || $translation->getValue() === ''
+        ) {
+            return null;
+        }
+
+        return $translation->getValue();
+    }
+
+    /**
+     * Returns the value of the first usable entry along the language fallback
+     * chain of the current language, or null when there is none.
+     *
+     * The chain is the one of the current language aspect: its integer entries
+     * in order, then the default language 0. The current language itself is
+     * skipped, because findTranslation() has already looked there. An entry
+     * is usable when its value is not empty and it was not auto-created.
+     *
+     * Unlike findTranslation(), it never creates a translation record. With
+     * createIfMissing enabled, the repositories still create a missing
+     * environment, component or type, as they do for findTranslation().
+     * Callers use it only where findTranslation() returned null, and after
+     * it, so the entry for the current language is created first.
+     */
+    public function translateFromFallbackLanguages(
+        string $placeholder,
+        string $typeName,
+        string $componentName,
+        string $environmentName,
+    ): ?string {
+        if ($placeholder === '') {
+            return null;
+        }
+
+        foreach ($this->getFallbackLanguages() as $languageUid) {
+            $cacheKey = sprintf('%s|%s|%s|%s|%d', $environmentName, $componentName, $typeName, $placeholder, $languageUid);
+
+            if (!array_key_exists($cacheKey, $this->fallbackCache)) {
+                $this->fallbackCache[$cacheKey] = $this->findUsableValue(
+                    $placeholder,
+                    $typeName,
+                    $componentName,
+                    $environmentName,
+                    $languageUid,
+                );
+            }
+
+            if ($this->fallbackCache[$cacheKey] !== null) {
+                return $this->fallbackCache[$cacheKey];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns the value of the entry in the given language, or null when the
+     * entry does not exist, is empty or was auto-created.
+     *
+     * @param int<-1, max> $languageUid
+     */
+    private function findUsableValue(
+        string $placeholder,
+        string $typeName,
+        string $componentName,
+        string $environmentName,
+        int $languageUid,
+    ): ?string {
+        $environment = $this->environmentRepository->findByName($environmentName);
+        $component   = $this->componentRepository->findByName($componentName);
+        $type        = $this->typeRepository->findByName($typeName);
+
+        if (
+            !($environment instanceof Environment)
+            || !($component instanceof Component)
+            || !($type instanceof Type)
+        ) {
+            return null;
+        }
+
+        return $this->usableValue(
+            $this->translationRepository
+                ->findByEnvironmentComponentTypePlaceholderAndLanguage(
+                    $environment,
+                    $component,
+                    $type,
+                    $placeholder,
+                    $languageUid,
+                ),
+        );
+    }
+
+    /**
+     * Returns the languages to try after the current one: the integer entries
+     * of the fallback chain in their order, then the default language 0. The
+     * chain can also hold strings such as "pageNotFound" or "off"; they name
+     * no language and are skipped.
+     *
+     * @return list<int<0, max>>
+     */
+    private function getFallbackLanguages(): array
+    {
+        try {
+            /** @var LanguageAspect $languageAspect */
+            $languageAspect = $this->context->getAspect('language');
+        } catch (AspectNotFoundException) {
+            return [];
+        }
+
+        // In the default language the list stays empty: 0 is the current
+        // language and therefore skipped.
+        $currentLanguage = $languageAspect->getId();
+        $languages       = [];
+
+        foreach ([...$languageAspect->getFallbackChain(), 0] as $languageUid) {
+            // A language listed twice is not filtered here: the second lookup
+            // is answered from the fallback cache.
+            if (
+                !is_int($languageUid)
+                || $languageUid < 0
+                || $languageUid === $currentLanguage
+            ) {
+                continue;
+            }
+
+            $languages[] = $languageUid;
+        }
+
+        return $languages;
     }
 
     /**
