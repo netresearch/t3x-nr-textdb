@@ -302,9 +302,9 @@ Lookup Order and Language Fallback
 Both ViewHelpers look for a value in this order and render the first one
 they find:
 
-1. The TextDB entry in the current language. An entry with an empty value,
-   or one that was auto-created and never edited, does not count. A value
-   that equals its key (``Login`` → ``Login``) does count.
+1. The TextDB entry in the current language. A hidden entry, an entry with
+   an empty value, or one that was auto-created and never edited, does not
+   count. A value that equals its key (``Login`` → ``Login``) does count.
 2. ``textdb:translate`` only: the label from the language file (XLIFF).
    This is the label in the current language or, when the file has no
    translation for the key, the file's source label. Step 3 therefore runs
@@ -324,6 +324,12 @@ language in step 3.
 When ``createIfMissing`` is enabled, step 1 creates the missing entry in
 the current language, as before. Steps 3 and 4 never create translation
 records.
+
+A hidden entry renders like a missing one: in step 1 the lookup goes on
+with step 2, and in step 3 the hidden entry is skipped. The lookup still
+finds the hidden entry, so ``createIfMissing`` does not create a second
+entry for its key. The backend module lists, edits, exports and imports
+hidden entries as before. Deleted entries are never found.
 
 For example, a German page (language ``1``) whose site language falls back
 to ``0`` renders the English TextDB entry when no German entry exists. With
@@ -409,7 +415,8 @@ TranslationService
 
    Same lookup as ``translate()``, including the auto-creation with
    ``createIfMissing``, but returns ``null`` when the current language has
-   no usable entry: none, an empty value, or an auto-created one. The
+   no usable entry: none, a hidden one, an empty value, or an auto-created
+   one. The
    ViewHelpers use it for step 1 of :ref:`dev-viewhelpers-fallback`.
 
    :returns: The value, or ``null`` if the current language has no usable entry
@@ -596,6 +603,8 @@ findByEnvironmentComponentTypePlaceholderAndLanguage()
    ): ?Translation
 
 Find a single translation by exact environment, component, type, placeholder, and language.
+Hidden translations are returned too; callers that render a value check
+``Translation::isHidden()`` themselves.
 
 findByEnvironmentComponentTypeAndPlaceholder()
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

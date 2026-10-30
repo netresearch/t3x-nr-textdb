@@ -23,7 +23,9 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\LanguageAspect;
+use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
@@ -428,6 +430,83 @@ final class TextdbViewHelperTest extends AbstractFunctionalTestCase
         self::assertSame('Checkout', trim($autoCreatedOutput));
     }
 
+    // =========================================================================
+    // Scenario 7 – Hidden entries render like missing ones
+    // =========================================================================
+
+    #[Test]
+    public function hiddenEntryInTheCurrentLanguageFallsBackToTheDefaultLanguage(): void
+    {
+        $this->insertTranslation(1, 1, 1, 'submit-button', 'Hidden DE', hidden: true);
+
+        $this->setLanguageAspect(1, [0]);
+
+        $output = $this->renderFluidTemplate(self::SUBMIT_BUTTON_TEMPLATE);
+
+        self::assertSame(self::SUBMIT_BUTTON_VALUE, trim($output));
+    }
+
+    #[Test]
+    public function hiddenEntryInAFallbackLanguageIsSkipped(): void
+    {
+        // Language 3 falls back to 4, then 0; the entry in language 4 is hidden.
+        $this->insertTranslation(4, 1, 1, 'submit-button', 'Hidden fallback', hidden: true);
+
+        $this->setLanguageAspect(3, [4, 0]);
+
+        $output = $this->renderFluidTemplate(self::SUBMIT_BUTTON_TEMPLATE);
+
+        self::assertSame(self::SUBMIT_BUTTON_VALUE, trim($output));
+    }
+
+    #[Test]
+    public function hiddenDefaultLanguageEntryIsNotRenderedThroughTheFallback(): void
+    {
+        $this->insertTranslation(0, 1, 1, 'hidden-key', 'Hidden EN', hidden: true);
+
+        $this->setLanguageAspect(1, [0]);
+
+        $template = "{nrtextdb:textdb(placeholder: 'hidden-key', component: 'test-component', environment: 'default')}";
+
+        // The second render in the same request is answered from the caches
+        // of the service, which must not hold the hidden value either.
+        self::assertSame('hidden-key', trim($this->renderFluidTemplate($template)));
+        self::assertSame('hidden-key', trim($this->renderFluidTemplate($template)));
+    }
+
+    #[Test]
+    public function hiddenDefaultLanguageEntryOnADefaultLanguagePageRendersTheKeyWithoutADuplicate(): void
+    {
+        $this->get(TranslationRepository::class)->setCreateIfMissing(true);
+        $this->insertTranslation(0, 1, 1, 'hidden-key', 'Hidden EN', hidden: true);
+
+        $this->setLanguageAspect(0);
+
+        $output = $this->renderFluidTemplate(
+            "{nrtextdb:textdb(placeholder: 'hidden-key', component: 'test-component', environment: 'default')}",
+        );
+
+        self::assertSame('hidden-key', trim($output));
+
+        // The lookup still finds the hidden entry, so createIfMissing does not
+        // add a second one for the same key.
+        self::assertSame(1, $this->countTranslationRowsInLanguage('hidden-key', 0));
+    }
+
+    #[Test]
+    public function hiddenCurrentLanguageEntryIsNotDuplicatedByCreateIfMissing(): void
+    {
+        $this->get(TranslationRepository::class)->setCreateIfMissing(true);
+        $this->insertTranslation(1, 1, 1, 'submit-button', 'Hidden DE', hidden: true);
+
+        $this->setLanguageAspect(1, [0]);
+
+        $output = $this->renderFluidTemplate(self::SUBMIT_BUTTON_TEMPLATE);
+
+        self::assertSame(self::SUBMIT_BUTTON_VALUE, trim($output));
+        self::assertSame(1, $this->countTranslationRowsInLanguage('submit-button', 1));
+    }
+
     #[Test]
     public function autoCreatedEntryReturnsPlaceholderAsValue(): void
     {
@@ -464,8 +543,14 @@ final class TextdbViewHelperTest extends AbstractFunctionalTestCase
      * Inserts a translation record on the storage page in environment
      * "default" (uid 1).
      */
-    private function insertTranslation(int $languageUid, int $component, int $type, string $placeholder, string $value): void
-    {
+    private function insertTranslation(
+        int $languageUid,
+        int $component,
+        int $type,
+        string $placeholder,
+        string $value,
+        bool $hidden = false,
+    ): void {
         GeneralUtility::makeInstance(ConnectionPool::class)
             ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
             ->insert(
@@ -478,22 +563,33 @@ final class TextdbViewHelperTest extends AbstractFunctionalTestCase
                     'type'             => $type,
                     'placeholder'      => $placeholder,
                     'value'            => $value,
+                    'hidden'           => (int) $hidden,
                 ],
             );
     }
 
     /**
-     * Counts the translation rows of one language for the given placeholder.
+     * Counts the translation rows of one language for the given placeholder,
+     * hidden rows included; deleted rows are not counted.
      */
     private function countTranslationRowsInLanguage(string $placeholder, int $languageUid): int
     {
-        return (int) GeneralUtility::makeInstance(ConnectionPool::class)
-            ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
-            ->count(
-                'uid',
-                'tx_nrtextdb_domain_model_translation',
-                ['placeholder' => $placeholder, 'sys_language_uid' => $languageUid],
-            );
+        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getQueryBuilderForTable('tx_nrtextdb_domain_model_translation');
+        $queryBuilder
+            ->getRestrictions()
+            ->removeAll()
+            ->add(GeneralUtility::makeInstance(DeletedRestriction::class));
+
+        return (int) $queryBuilder
+            ->count('uid')
+            ->from('tx_nrtextdb_domain_model_translation')
+            ->where(
+                $queryBuilder->expr()->eq('placeholder', $queryBuilder->createNamedParameter($placeholder)),
+                $queryBuilder->expr()->eq('sys_language_uid', $queryBuilder->createNamedParameter($languageUid, Connection::PARAM_INT)),
+            )
+            ->executeQuery()
+            ->fetchOne();
     }
 
     /**

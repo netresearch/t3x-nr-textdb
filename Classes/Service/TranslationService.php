@@ -116,8 +116,8 @@ class TranslationService
 
     /**
      * Returns the value of the entry in the current language, or null when
-     * the language has no usable entry: no entry, an empty value, or an
-     * auto-created one.
+     * the language has no usable entry: no entry, a hidden one, an empty
+     * value, or an auto-created one.
      *
      * A missing entry is created when createIfMissing is enabled, exactly as
      * in translate(); the created entry counts as auto-created, so the result
@@ -226,13 +226,18 @@ class TranslationService
     }
 
     /**
-     * Returns the value of the entry, or null when there is no entry, its
-     * value is empty or it was auto-created.
+     * Returns the value of the entry, or null when there is no entry, it is
+     * hidden, its value is empty or it was auto-created.
+     *
+     * A hidden entry is still found by the repository lookup, which ignores
+     * the enable fields, so createIfMissing does not create a second entry
+     * for the same key; it is only not rendered.
      */
     private function usableValue(?Translation $translation): ?string
     {
         if (
             !($translation instanceof Translation)
+            || $translation->isHidden()
             || $translation->isAutoCreated()
             || $translation->getValue() === ''
         ) {
@@ -249,7 +254,8 @@ class TranslationService
      * The chain is the one of the current language aspect: its integer entries
      * in order, then the default language 0. The current language itself is
      * skipped, because findTranslation() has already looked there. An entry
-     * is usable when its value is not empty and it was not auto-created.
+     * is usable when it is not hidden, its value is not empty and it was not
+     * auto-created.
      *
      * Unlike findTranslation(), it never creates a translation record. With
      * createIfMissing enabled, the repositories still create a missing
@@ -290,7 +296,7 @@ class TranslationService
 
     /**
      * Returns the value of the entry in the given language, or null when the
-     * entry does not exist, is empty or was auto-created.
+     * entry does not exist, is hidden, is empty or was auto-created.
      *
      * @param int<-1, max> $languageUid
      */
