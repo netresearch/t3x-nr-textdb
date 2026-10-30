@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Netresearch\NrTextdb\Tests\Functional\ViewHelpers;
 
+use Netresearch\NrTextdb\Domain\Model\Translation;
 use Netresearch\NrTextdb\Tests\Functional\AbstractFunctionalTestCase;
 use Netresearch\NrTextdb\ViewHelpers\TranslateViewHelper;
 use Override;
@@ -302,24 +303,32 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
     }
 
     // =========================================================================
-    // Scenario 5 – Hidden entries render like missing ones
+    // Scenario 5 – Hidden entries
     // =========================================================================
 
+    /**
+     * A hidden German entry renders the value of the English entry of its key,
+     * when that one is usable; otherwise the label of the language file.
+     */
     #[Test]
-    #[DataProvider('hiddenEntryParentProvider')]
-    public function hiddenGermanEntryRendersTheGermanLabelOfTheLanguageFile(bool $withParent): void
-    {
+    #[DataProvider('defaultLanguageEntryProvider')]
+    public function hiddenGermanEntryOfALanguageFileKeyRendersAUsableEnglishValueOrTheGermanLabel(
+        ?string $defaultValue,
+        bool $defaultHidden,
+        bool $linked,
+        ?string $expectedTextDbValue,
+    ): void {
         TranslateViewHelper::$component = 'lll-migration-component';
 
-        $parent = $withParent
-            ? $this->insertTranslation(0, 1, 1, 'tx_nrtextdb_domain_model_environment', self::ENVIRONMENT_TEXTDB_VALUE)
-            : 0;
-        $this->insertTranslation(1, 1, 1, 'tx_nrtextdb_domain_model_environment', 'Hidden DE', hidden: true, l10nParent: $parent);
+        $parent = $defaultValue === null
+            ? 0
+            : $this->insertTranslation(0, 1, 1, 'tx_nrtextdb_domain_model_environment', $defaultValue, hidden: $defaultHidden);
+        $this->insertTranslation(1, 1, 1, 'tx_nrtextdb_domain_model_environment', 'Hidden DE', hidden: true, l10nParent: $linked ? $parent : 0);
         $this->switchToGermanPage();
 
         $output = $this->renderFluidTemplate(self::ENVIRONMENT_LABEL_TEMPLATE);
 
-        self::assertSame('Umgebung', trim($output));
+        self::assertSame($expectedTextDbValue ?? 'Umgebung', trim($output));
 
         // createIfMissing is enabled in setUp(); the hidden entry is found, so
         // no second German entry is created for the key.
@@ -327,18 +336,60 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
     }
 
     /**
-     * TYPO3 13.4 has no language fallback for TextDB entries, so a hidden
-     * German entry of a key that no language file knows renders the key, also
-     * when an English entry exists.
+     * A key that no language file knows renders the English value when it is
+     * usable, otherwise the key.
      */
     #[Test]
-    #[DataProvider('hiddenEntryParentProvider')]
-    public function hiddenGermanEntryOfAKeyInNoLanguageFileRendersTheKey(bool $withParent): void
+    #[DataProvider('defaultLanguageEntryProvider')]
+    public function hiddenGermanEntryOfAKeyInNoLanguageFileRendersAUsableEnglishValueOrTheKey(
+        ?string $defaultValue,
+        bool $defaultHidden,
+        bool $linked,
+        ?string $expectedTextDbValue,
+    ): void {
+        TranslateViewHelper::$component = 'lll-migration-component';
+
+        $parent = $defaultValue === null
+            ? 0
+            : $this->insertTranslation(0, 1, 1, 'some-plain-placeholder', $defaultValue, hidden: $defaultHidden);
+        $this->insertTranslation(1, 1, 1, 'some-plain-placeholder', 'Hidden DE', hidden: true, l10nParent: $linked ? $parent : 0);
+        $this->switchToGermanPage();
+
+        $output = $this->renderFluidTemplate(self::PLAIN_PLACEHOLDER_TEMPLATE);
+
+        self::assertSame($expectedTextDbValue ?? 'some-plain-placeholder', trim($output));
+    }
+
+    /**
+     * Default-language entry of the key: value (null for none), hidden,
+     * linked as l10n_parent of the hidden German entry, and the value
+     * expected on the page (null where the language file or the key applies).
+     *
+     * @return array<string, array{?string, bool, bool, ?string}>
+     */
+    public static function defaultLanguageEntryProvider(): array
+    {
+        return [
+            'no default entry'               => [null, false, false, null],
+            'visible default, not linked'    => [self::ENVIRONMENT_TEXTDB_VALUE, false, false, self::ENVIRONMENT_TEXTDB_VALUE],
+            'visible default as parent'      => [self::ENVIRONMENT_TEXTDB_VALUE, false, true, self::ENVIRONMENT_TEXTDB_VALUE],
+            'hidden default as parent'       => [self::ENVIRONMENT_TEXTDB_VALUE, true, true, null],
+            'empty default as parent'        => ['', false, true, null],
+            'auto-created default as parent' => [Translation::AUTO_CREATE_IDENTIFIER, false, true, null],
+        ];
+    }
+
+    /**
+     * TYPO3 13.4 has no language fallback: a missing German entry does not
+     * take the English value.
+     */
+    #[Test]
+    public function missingGermanEntryOfAKeyInNoLanguageFileRendersTheKeyAlthoughAnEnglishEntryExists(): void
     {
         TranslateViewHelper::$component = 'lll-migration-component';
 
-        $parent = $this->insertTranslation(0, 1, 1, 'some-plain-placeholder', 'Plain English value');
-        $this->insertTranslation(1, 1, 1, 'some-plain-placeholder', 'Hidden DE', hidden: true, l10nParent: $withParent ? $parent : 0);
+        $this->setExtensionConfiguration(textDbPid: '1', createIfMissing: '0');
+        $this->insertTranslation(0, 1, 1, 'some-plain-placeholder', 'Plain English value');
         $this->switchToGermanPage();
 
         $output = $this->renderFluidTemplate(self::PLAIN_PLACEHOLDER_TEMPLATE);
@@ -357,17 +408,6 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
 
         self::assertSame('Environment', trim($output));
         self::assertSame(1, $this->countTranslationRowsInLanguage('tx_nrtextdb_domain_model_environment', 0));
-    }
-
-    /**
-     * @return array<string, array{bool}>
-     */
-    public static function hiddenEntryParentProvider(): array
-    {
-        return [
-            'without a parent'           => [false],
-            'with the default as parent' => [true],
-        ];
     }
 
     // =========================================================================

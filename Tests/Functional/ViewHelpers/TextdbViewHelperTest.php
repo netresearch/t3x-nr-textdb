@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Netresearch\NrTextdb\Tests\Functional\ViewHelpers;
 
+use Netresearch\NrTextdb\Domain\Model\Translation;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
 use Netresearch\NrTextdb\Tests\Functional\AbstractFunctionalTestCase;
 use Netresearch\NrTextdb\ViewHelpers\TextdbViewHelper;
@@ -290,27 +291,71 @@ final class TextdbViewHelperTest extends AbstractFunctionalTestCase
     }
 
     // =========================================================================
-    // Scenario 6 – Hidden entries render like missing ones
+    // Scenario 6 – Hidden entries
     // =========================================================================
 
     /**
-     * A hidden entry with a parent is the usual case: the module creates
-     * translations with l10n_parent set. Loaded with language overlays, it
-     * came back as its visible parent and rendered the parent's text.
+     * A hidden entry in the current language renders the value of the
+     * default-language entry of its key, when that one is usable; otherwise
+     * the key. Before, the lookup loaded a hidden translation with language
+     * overlays, which returned its visible parent, so linked entries showed
+     * the parent's text and unlinked ones their hidden value.
      */
     #[Test]
-    #[DataProvider('hiddenEntryParentProvider')]
-    public function hiddenEntryInTheCurrentLanguageRendersTheKey(int $l10nParent): void
+    #[DataProvider('defaultLanguageEntryProvider')]
+    public function hiddenEntryInTheCurrentLanguageRendersAUsableDefaultLanguageValueOrTheKey(
+        ?string $defaultValue,
+        bool $defaultHidden,
+        bool $linked,
+        string $expected,
+    ): void {
+        $parent = $defaultValue === null
+            ? 0
+            : $this->insertTranslation(0, 1, 1, 'probe-key', $defaultValue, hidden: $defaultHidden);
+
+        $this->insertTranslation(1, 1, 1, 'probe-key', 'Hidden DE', hidden: true, l10nParent: $linked ? $parent : 0);
+
+        $this->setLanguageAspect(1);
+
+        $template = "{nrtextdb:textdb(placeholder: 'probe-key', component: 'test-component', environment: 'default')}";
+
+        // The second render is answered from the cache of the service.
+        self::assertSame($expected, trim($this->renderFluidTemplate($template)));
+        self::assertSame($expected, trim($this->renderFluidTemplate($template)));
+    }
+
+    /**
+     * @return array<string, array{?string, bool, bool, string}>
+     */
+    public static function defaultLanguageEntryProvider(): array
     {
-        $this->insertTranslation(1, 1, 1, 'submit-button', 'Hidden DE', hidden: true, l10nParent: $l10nParent);
+        return [
+            'no default entry'               => [null, false, false, 'probe-key'],
+            'visible default, not linked'    => ['English value', false, false, 'English value'],
+            'visible default as parent'      => ['English value', false, true, 'English value'],
+            'hidden default as parent'       => ['English value', true, true, 'probe-key'],
+            'hidden default, not linked'     => ['English value', true, false, 'probe-key'],
+            'empty default as parent'        => ['', false, true, 'probe-key'],
+            'auto-created default as parent' => [Translation::AUTO_CREATE_IDENTIFIER, false, true, 'probe-key'],
+        ];
+    }
+
+    /**
+     * TYPO3 13.4 has no language fallback: only a hidden entry takes the
+     * default-language value, a missing one renders the key.
+     */
+    #[Test]
+    public function missingEntryInTheCurrentLanguageRendersTheKeyAlthoughADefaultEntryExists(): void
+    {
+        $this->insertTranslation(0, 1, 1, 'probe-key', 'English value');
 
         $this->setLanguageAspect(1);
 
         $output = $this->renderFluidTemplate(
-            '{nrtextdb:textdb(placeholder: \'submit-button\', component: \'test-component\', environment: \'default\')}',
+            "{nrtextdb:textdb(placeholder: 'probe-key', component: 'test-component', environment: 'default')}",
         );
 
-        self::assertSame('submit-button', trim($output));
+        self::assertSame('probe-key', trim($output));
     }
 
     #[Test]
@@ -346,8 +391,10 @@ final class TextdbViewHelperTest extends AbstractFunctionalTestCase
             '{nrtextdb:textdb(placeholder: \'submit-button\', component: \'test-component\', environment: \'default\')}',
         );
 
-        self::assertSame('submit-button', trim($output));
+        // Fixture uid 2 is the visible default-language entry of the key.
+        self::assertSame('Submit Order', trim($output));
         self::assertSame(1, $this->countTranslationRowsInLanguage('submit-button', 1));
+        self::assertSame(1, $this->countTranslationRowsInLanguage('submit-button', 0));
     }
 
     /**
