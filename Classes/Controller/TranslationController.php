@@ -186,6 +186,11 @@ final class TranslationController extends ActionController
         $this->pid            = (int) ($this->getExtensionConfiguration()['textDbPid'] ?? 0);
 
         $this->registerDocHeaderButtons();
+
+        // Runs before Extbase maps the request arguments.
+        if ($this->actionMethodName === 'translateRecordAction') {
+            $this->rejectMalformedTranslateRecordArguments();
+        }
     }
 
     /**
@@ -388,6 +393,31 @@ final class TranslationController extends ActionController
     }
 
     /**
+     * Extbase throws a TypeConverterException, instead of recording a mapping
+     * error, when an array arrives for the int $parent or a string for the
+     * array $new/$update, and errorAction() never runs. A request of the
+     * wrong shape is turned into one with a non-numeric $parent, which
+     * Extbase rejects as a mapping error and hands to errorAction(). See
+     * issue #143.
+     */
+    private function rejectMalformedTranslateRecordArguments(): void
+    {
+        $arguments = $this->request->getArguments();
+        $malformed = array_key_exists('parent', $arguments) && !is_scalar($arguments['parent']);
+
+        foreach (['new', 'update'] as $argumentName) {
+            if (array_key_exists($argumentName, $arguments) && !is_array($arguments[$argumentName])) {
+                $malformed     = true;
+                $this->request = $this->request->withArgument($argumentName, []);
+            }
+        }
+
+        if ($malformed) {
+            $this->request = $this->request->withArgument('parent', 'malformed');
+        }
+    }
+
+    /**
      * $new and $update come straight from the request. Extbase's property
      * mapping does not enforce the documented element shape at runtime, so
      * both loops below validate keys and values before touching a record.
@@ -508,6 +538,15 @@ final class TranslationController extends ActionController
 
             if (
                 ($translation instanceof Translation)
+                // Only the parent and its own translations, the records the
+                // dialog renders, may be updated through it (#138).
+                // findRawByUid() loads without language overlays, and Extbase
+                // then reports a translation's l10n_parent as its uid (the
+                // record's own uid is the localized uid). So getUid() is the
+                // parent's uid for the parent and for each of its
+                // translations, read from the record itself, and a parent
+                // deleted while the dialog was open still accepts them.
+                && ($translation->getUid() === $parent)
                 && $backendUser->checkLanguageAccess($translation->getSysLanguageUid())
                 && $this->hasPageAccess((int) $translation->getPid(), Permission::CONTENT_EDIT)
             ) {
@@ -517,9 +556,10 @@ final class TranslationController extends ActionController
                 ++$acceptedCount;
             } else {
                 // A well-formed but non-existent uid (deleted between page
-                // load and submit, or a tampered value), or a record in a
-                // language or on a page the user may not edit, must count as
-                // rejected too, or it is dropped without any signal.
+                // load and submit, or a tampered value), a record outside the
+                // parent, or a record in a language or on a page the user may
+                // not edit, must count as rejected too, or it is dropped
+                // without any signal.
                 ++$rejectedCount;
             }
         }

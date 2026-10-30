@@ -323,6 +323,44 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         self::assertSame('Absenden!', $this->fetchValue(5));
     }
 
+    /**
+     * @param array<int, string> $update
+     */
+    #[Test]
+    #[DataProvider('recordOutsideTheParentProvider')]
+    public function translateRecordDoesNotUpdateARecordOutsideTheParent(string $parent, array $update, int $foreignUid, string $storedValue): void
+    {
+        // update[] used to write any uid it was given, whatever $parent named
+        // (#138). The dialog only ever posts the parent and its translations.
+        $this->dispatchTranslateRecord(['parent' => $parent, 'update' => $update]);
+
+        self::assertSame($storedValue, $this->fetchValue($foreignUid));
+        self::assertSame(
+            ['WARNING' => [$GLOBALS['LANG']->sL('LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.translation.rejected')]],
+            $this->flashMessagesGroupedBySeverity(),
+        );
+    }
+
+    /**
+     * @return array<string, array{string, array<int, string>, int, string}>
+     */
+    public static function recordOutsideTheParentProvider(): array
+    {
+        return [
+            'another default-language record'   => ['1', [2 => 'Hijacked'], 2, 'Email Address'],
+            'the translation of another record' => ['2', [5 => 'Hijacked'], 5, 'Absenden'],
+            'a parent that does not exist'      => ['999999', [5 => 'Hijacked'], 5, 'Absenden'],
+        ];
+    }
+
+    #[Test]
+    public function translateRecordUpdatesTheParentItself(): void
+    {
+        $this->dispatchTranslateRecord(['parent' => '1', 'update' => [1 => 'Submit!']]);
+
+        self::assertSame('Submit!', $this->fetchValue(1));
+    }
+
     #[Test]
     public function translateRecordSurfacesAPersistenceFailureAsFlashMessage(): void
     {
@@ -530,7 +568,9 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         // the per-entry checks give: a mixed request with a valid update[]
         // entry alongside it must still warn about the lost new[] payload,
         // not just report the unrelated update[] success.
-        $this->dispatchTranslateRecord(['parent' => '999999', 'new' => [0 => 'Some text'], 'update' => [5 => 'Absenden!']]);
+        $this->softDeleteTranslation(1);
+
+        $this->dispatchTranslateRecord(['parent' => '1', 'new' => [0 => 'Some text'], 'update' => [5 => 'Absenden!']]);
 
         self::assertSame('Absenden!', $this->fetchValue(5));
         self::assertSame(
@@ -549,7 +589,9 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         // carries a payload that becomes unreachable. An update[]-only save
         // against a stale/tampered parent id must not spuriously warn about a
         // "lost" new[] submission that was never there.
-        $this->dispatchTranslateRecord(['parent' => '999999', 'update' => [5 => 'Absenden!']]);
+        $this->softDeleteTranslation(1);
+
+        $this->dispatchTranslateRecord(['parent' => '1', 'update' => [5 => 'Absenden!']]);
 
         self::assertSame('Absenden!', $this->fetchValue(5));
         self::assertSame(
@@ -566,7 +608,9 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         // deleted in the meantime, an editor who only touched the update[]
         // side must not be told their untouched textareas "could not be
         // saved", there was nothing there to lose.
-        $this->dispatchTranslateRecord(['parent' => '999999', 'new' => [1 => '   '], 'update' => [5 => 'Absenden!']]);
+        $this->softDeleteTranslation(1);
+
+        $this->dispatchTranslateRecord(['parent' => '1', 'new' => [1 => '   '], 'update' => [5 => 'Absenden!']]);
 
         self::assertSame('Absenden!', $this->fetchValue(5));
         self::assertSame(
@@ -581,7 +625,9 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         // A malformed (non-string) new[] value is a payload, not a blank, so
         // it must count towards the "lost payload" warning the same way a
         // real typed value does, even though the parent doesn't exist either.
-        $this->dispatchTranslateRecord(['parent' => '999999', 'new' => [0 => ['x']], 'update' => [5 => 'Absenden!']]);
+        $this->softDeleteTranslation(1);
+
+        $this->dispatchTranslateRecord(['parent' => '1', 'new' => [0 => ['x']], 'update' => [5 => 'Absenden!']]);
 
         self::assertSame('Absenden!', $this->fetchValue(5));
         self::assertSame(
@@ -805,6 +851,46 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
             ['ERROR' => [$GLOBALS['LANG']->sL('LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.error.translation.request')]],
             $this->flashMessagesGroupedBySeverity(),
         );
+    }
+
+    /**
+     * @param array<string, mixed> $arguments
+     */
+    #[Test]
+    #[DataProvider('argumentOfTheWrongShapeProvider')]
+    public function translateRecordWithAnArgumentOfTheWrongShapeRedirectsBackWithAnError(array $arguments): void
+    {
+        // An array where Extbase maps a scalar (or a scalar where it maps an
+        // array) used to throw a TypeConverterException before argument
+        // mapping could fail on its own, so errorAction() never ran (#143).
+        // It now takes the path a non-numeric parent takes.
+        $referrer = $this->extractReferrerFields(
+            (string) $this->dispatchModuleAction(
+                'translated',
+                ['uid' => '1'],
+            )->getBody(),
+        );
+
+        $response = $this->dispatchTranslateRecord($arguments + ['__referrer' => $referrer]);
+
+        self::assertSame(303, $response->getStatusCode());
+        self::assertStringContainsString('Translation/translated', $response->getHeaderLine('Location'));
+        self::assertSame(
+            ['ERROR' => [$GLOBALS['LANG']->sL('LLL:EXT:nr_textdb/Resources/Private/Language/locallang.xlf:message.error.translation.request')]],
+            $this->flashMessagesGroupedBySeverity(),
+        );
+    }
+
+    /**
+     * @return array<string, array{array<string, mixed>}>
+     */
+    public static function argumentOfTheWrongShapeProvider(): array
+    {
+        return [
+            'parent as array'  => [['parent' => ['1'], 'update' => ['1' => 'x']]],
+            'new as string'    => [['parent' => '1', 'new' => 'abc']],
+            'update as string' => [['parent' => '1', 'update' => 'abc']],
+        ];
     }
 
     #[Test]
@@ -1851,6 +1937,17 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         $directories = glob(sys_get_temp_dir() . '/*-textdb-export', GLOB_ONLYDIR);
 
         return $directories === false ? [] : $directories;
+    }
+
+    /**
+     * Marks a translation as deleted, the way DataHandler does when an editor
+     * deletes the record while the "translated" dialog is still open.
+     */
+    private function softDeleteTranslation(int $uid): void
+    {
+        GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
+            ->update('tx_nrtextdb_domain_model_translation', ['deleted' => 1], ['uid' => $uid]);
     }
 
     /**
