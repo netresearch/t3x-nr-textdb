@@ -43,6 +43,15 @@ use TYPO3\CMS\Extbase\Event\Persistence\EntityAddedToPersistenceEvent;
 #[CoversClass(ImportService::class)]
 final class ImportServiceTest extends AbstractFunctionalTestCase
 {
+    /**
+     * Records the entries of the rollback test reference, by table.
+     */
+    private const REFERENCE_RECORDS = [
+        'tx_nrtextdb_domain_model_environment' => 'default',
+        'tx_nrtextdb_domain_model_component'   => 'rollbackcomponent',
+        'tx_nrtextdb_domain_model_type'        => 'label',
+    ];
+
     private ImportService $importService;
 
     private TranslationRepository $translationRepository;
@@ -242,37 +251,53 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
         $this->get(ListenerProvider::class)
             ->addListener(EntityAddedToPersistenceEvent::class, 'nr_textdb.test.failing_write');
 
+        // Without the fixture's environment, the import creates the
+        // environment, the component and the type, all three inside the
+        // transaction that is rolled back.
+        $this->get(ConnectionPool::class)
+            ->getConnectionForTable('tx_nrtextdb_domain_model_environment')
+            ->delete('tx_nrtextdb_domain_model_environment', ['name' => 'default']);
+
         $translationsBefore = $this->countRows('tx_nrtextdb_domain_model_translation');
+        $failedResult       = new ImportResult();
 
         try {
-            $this->importService->importEntries($entries, 0, false, new ImportResult());
+            $this->importService->importEntries($entries, 0, false, $failedResult);
             self::fail('The simulated write failure did not reach the caller.');
         } catch (RuntimeException $exception) {
             self::assertSame(1793253600, $exception->getCode());
         }
 
         self::assertSame($translationsBefore, $this->countRows('tx_nrtextdb_domain_model_translation'));
-        self::assertSame(0, $this->countRows('tx_nrtextdb_domain_model_component', 'rollbackcomponent'));
+        self::assertSame(0, $failedResult->getImported(), 'A rolled-back file counts no entry.');
+
+        foreach (self::REFERENCE_RECORDS as $table => $name) {
+            self::assertSame(0, $this->countRows($table, $name), $table . ' keeps a rolled-back row.');
+        }
 
         // The same process imports the file again, as the CLI command does
-        // with its next file. The component it creates must be a row again.
+        // with its next file. Each record it references must be a row again.
         $listener->enabled = false;
         $result            = new ImportResult();
         $this->importService->importEntries($entries, 0, false, $result);
 
         self::assertSame(3, $result->getImported());
-        self::assertSame(1, $this->countRows('tx_nrtextdb_domain_model_component', 'rollbackcomponent'));
 
-        $componentUid = $this->get(ConnectionPool::class)
-            ->getConnectionForTable('tx_nrtextdb_domain_model_component')
-            ->select(['uid'], 'tx_nrtextdb_domain_model_component', ['name' => 'rollbackcomponent'])
-            ->fetchOne();
-        $translationComponents = $this->get(ConnectionPool::class)
+        $translation = $this->get(ConnectionPool::class)
             ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
-            ->select(['component'], 'tx_nrtextdb_domain_model_translation', ['placeholder' => 'second'])
-            ->fetchFirstColumn();
+            ->select(['environment', 'component', 'type'], 'tx_nrtextdb_domain_model_translation', ['placeholder' => 'second'])
+            ->fetchAssociative();
+        self::assertIsArray($translation);
 
-        self::assertSame([$componentUid], $translationComponents);
+        foreach (self::REFERENCE_RECORDS as $table => $name) {
+            $uids = $this->get(ConnectionPool::class)
+                ->getConnectionForTable($table)
+                ->select(['uid'], $table, ['name' => $name])
+                ->fetchFirstColumn();
+            $column = substr($table, strlen('tx_nrtextdb_domain_model_'));
+
+            self::assertSame([$translation[$column]], $uids, 'The translation references a missing ' . $column . '.');
+        }
     }
 
     // -------------------------------------------------------------------------

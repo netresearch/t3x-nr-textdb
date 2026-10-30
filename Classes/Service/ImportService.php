@@ -133,6 +133,8 @@ final readonly class ImportService
      * rolls back, the exception propagates and the file imports nothing.
      * The persistence session and the name caches of the repositories are
      * cleared then, because they hold records whose rows were rolled back.
+     * The counts of the file reach $result only once the transaction has
+     * committed, so a rolled-back file adds nothing to them.
      *
      * @param array<array-key, mixed> $entries
      * @param int<-1, max>            $languageUid
@@ -197,10 +199,12 @@ final readonly class ImportService
             $parsedEntries[] = [$componentName, $typeName, $placeholder, $value];
         }
 
+        $fileResult = new ImportResult();
+
         try {
             $this->connectionPool
                 ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
-                ->transactional(function () use ($parsedEntries, $languageUid, $forceUpdate, $result): void {
+                ->transactional(function () use ($parsedEntries, $languageUid, $forceUpdate, $fileResult): void {
                     foreach ($parsedEntries as $index => [$componentName, $typeName, $placeholder, $value]) {
                         $this->importEntry(
                             $languageUid,
@@ -209,7 +213,7 @@ final readonly class ImportService
                             $placeholder,
                             $value,
                             $forceUpdate,
-                            $result,
+                            $fileResult,
                         );
 
                         if ((($index + 1) % self::PERSIST_BATCH_SIZE) === 0) {
@@ -228,6 +232,8 @@ final readonly class ImportService
 
             throw $throwable;
         }
+
+        $result->add($fileResult);
     }
 
     /**

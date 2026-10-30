@@ -71,6 +71,16 @@ final class ImportResult
         $this->errors[] = $message;
     }
 
+    /**
+     * Adds the counts and error messages of another result to this one.
+     */
+    public function add(self $other): void
+    {
+        $this->imported += $other->imported;
+        $this->updated += $other->updated;
+        $this->errors = [...$this->errors, ...$other->errors];
+    }
+
     public function getImported(): int
     {
         return $this->imported;

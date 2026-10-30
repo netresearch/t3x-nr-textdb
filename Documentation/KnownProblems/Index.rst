@@ -39,22 +39,24 @@ backend request.
 
 An import writes every entry of a file in one database transaction and
 keeps at most 1,000 records in memory. A file of 10 MB with 48,500 units
-imported in these times, measured with a memory limit of 256 MB:
+imported in these times:
 
-* SQLite, CLI import: 1 minute 43 seconds, at most 160 MB
-* MariaDB 10.11, the same entries: 6 minutes 15 seconds
+* SQLite, CLI import with a memory limit of 256 MB: 1 minute 43 seconds,
+  at most 160 MB
+* MariaDB 10.11, the same entries through the import service:
+  6 minutes 15 seconds, at most 190 MB
 
 If an import fails, the file imports nothing.
 
 **Workaround:**
   * Import large files with the CLI command ``nr_textdb:import``, which
     has no time limit
-  * Split large files into smaller files for the backend module
-  * Increase PHP `max_execution_time` for the backend:
-
-    .. code-block:: ini
-
-       max_execution_time = 600
+  * Split large files into smaller files for the backend module. A file
+    uploaded there must also fit PHP's ``upload_max_filesize`` and
+    ``post_max_size``, which default to 2 MB and 8 MB.
+  * Increase PHP `max_execution_time` for the backend. Choose the value
+    from the times above; a backend upload of the 10 MB file was not
+    measured.
 
 **Status:** Open. Each new entry costs Extbase several SQL statements,
 which limits the speed.
