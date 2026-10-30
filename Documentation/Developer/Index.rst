@@ -609,9 +609,12 @@ importEntry()
 
 Imports a single translation entry and returns whether it imported or updated
 it. When the entry fails, it records the error on ``$result`` and returns
-``false``. A database error is the exception: it throws a DBAL exception, or
-the Extbase ``SqlErrorException`` that wraps one, so that ``importEntries()``
-rolls back the whole file on every database.
+``false``. Two kinds of error are thrown instead, so that ``importEntries()``
+rolls back the whole file on every database: a database error, as a DBAL
+exception or the Extbase ``SqlErrorException`` that wraps one, and any
+exception raised while the persistence session is written. The lookup of a
+component, type or environment that does not exist yet writes the session,
+and with it the pending records of earlier entries.
 
 ImportResult
 ~~~~~~~~~~~~

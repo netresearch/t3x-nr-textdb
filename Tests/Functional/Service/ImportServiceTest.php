@@ -15,6 +15,7 @@ declare(strict_types=1);
 namespace Netresearch\NrTextdb\Tests\Functional\Service;
 
 use Doctrine\DBAL\Exception as DBALException;
+use Exception;
 use Netresearch\NrTextdb\Domain\Model\Component;
 use Netresearch\NrTextdb\Domain\Model\Translation;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
@@ -577,6 +578,64 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
         self::assertSame([], $result->getErrors());
         self::assertSame($expectedUpdated, $result->getUpdated());
         self::assertSame($expectedPartiallyApproved, $result->getPartiallyApproved());
+    }
+
+    #[Test]
+    public function importEntriesImportsNothingWhenAWriteInsideALaterEntryFailsAndCanBeRepeated(): void
+    {
+        // The new component "rvcompc" of the last entry is written by its
+        // lookup, inside importEntry(); that write also writes the pending
+        // translation "boom", whose write fails with an exception that does
+        // not come from the database.
+        $entries = [
+            'rvcompa|label|aaa'   => 'A',
+            'checkout|label|bbb'  => 'B',
+            'checkout|label|boom' => 'X',
+            'rvcompc|label|ccc'   => 'C',
+        ];
+
+        $listener = new class {
+            public bool $enabled = true;
+
+            public function __invoke(EntityAddedToPersistenceEvent $event): void
+            {
+                $object = $event->getObject();
+
+                if ($this->enabled && $object instanceof Translation && $object->getPlaceholder() === 'boom') {
+                    throw new Exception('Simulated write failure', 1793253603);
+                }
+            }
+        };
+        $this->getContainer()->set('nr_textdb.test.failing_later_write', $listener);
+        $this->get(ListenerProvider::class)
+            ->addListener(EntityAddedToPersistenceEvent::class, 'nr_textdb.test.failing_later_write');
+
+        $translationsBefore = $this->countRows('tx_nrtextdb_domain_model_translation');
+        $failedResult       = new ImportResult();
+        $thrown             = null;
+
+        try {
+            $this->importService->importEntries($entries, 0, false, $failedResult);
+        } catch (Throwable $throwable) {
+            $thrown = $throwable;
+        }
+
+        self::assertInstanceOf(Exception::class, $thrown, 'The failed write did not reach the caller.');
+        self::assertSame(1793253603, $thrown->getCode());
+        self::assertSame([], $failedResult->getErrors(), 'The failed write reaches the caller as the exception only.');
+        self::assertSame(0, $failedResult->getImported(), 'A rolled-back file counts no entry.');
+        self::assertSame($translationsBefore, $this->countRows('tx_nrtextdb_domain_model_translation'));
+        self::assertSame(0, $this->countRows('tx_nrtextdb_domain_model_component', 'rvcompa'));
+        self::assertSame(0, $this->countRows('tx_nrtextdb_domain_model_component', 'rvcompc'));
+
+        // The cause is gone, the same process imports the file again.
+        $listener->enabled = false;
+        $result            = new ImportResult();
+        $this->importService->importEntries($entries, 0, false, $result);
+
+        self::assertSame([], $result->getErrors());
+        self::assertSame(4, $result->getImported());
+        self::assertSame($translationsBefore + 4, $this->countRows('tx_nrtextdb_domain_model_translation'));
     }
 
     // -------------------------------------------------------------------------
