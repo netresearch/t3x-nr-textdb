@@ -63,7 +63,8 @@ class TranslationRepository extends AbstractRepository
             ->getQuerySettings()
             ->setIgnoreEnableFields(true)
             ->setRespectStoragePage(false)
-            ->setRespectSysLanguage(false);
+            ->setRespectSysLanguage(false)
+            ->setLanguageAspect($this->rawLanguageAspect($languageUid));
 
         $constraints = [
             $query->equals('sys_language_uid', $languageUid),
@@ -88,11 +89,9 @@ class TranslationRepository extends AbstractRepository
      * uid, and silently getting null there is what made saving a translation
      * discard the change (issue #100).
      *
-     * The language aspect is pinned to "overlays off". With the default aspect
-     * of the global Context, Extbase on TYPO3 13.4 overlays a localized row
-     * onto its default-language parent and drops the row when that parent is
-     * deleted, so a translation whose parent was deleted while the module's
-     * dialog was open could not be loaded any more.
+     * The language aspect is pinned to "overlays off" (see rawLanguageAspect()),
+     * so a translation whose parent was deleted while the module's dialog was
+     * open can still be loaded.
      */
     public function findRawByUid(int $uid): ?Translation
     {
@@ -102,7 +101,7 @@ class TranslationRepository extends AbstractRepository
             ->setIgnoreEnableFields(true)
             ->setRespectStoragePage(false)
             ->setRespectSysLanguage(false)
-            ->setLanguageAspect(new LanguageAspect(0, 0, LanguageAspect::OVERLAYS_OFF));
+            ->setLanguageAspect($this->rawLanguageAspect(0));
 
         return $query
             ->matching($query->equals('uid', $uid))
@@ -125,7 +124,8 @@ class TranslationRepository extends AbstractRepository
             ->setIgnoreEnableFields(true)
             ->setRespectStoragePage(true)
             ->setStoragePageIds([$this->getConfiguredPageId()])
-            ->setRespectSysLanguage(false);
+            ->setRespectSysLanguage(false)
+            ->setLanguageAspect($this->rawLanguageAspect(0));
 
         $query->matching(
             $query->equals('l10nParent', $uid),
@@ -267,5 +267,25 @@ class TranslationRepository extends AbstractRepository
             )
             ->execute()
             ->getFirst();
+    }
+
+    /**
+     * Builds the language aspect for a query that has to return the raw row.
+     *
+     * TextDB rows are addressed as raw records: the repository selects an exact
+     * `sys_language_uid` itself and must receive that very row back, never a
+     * language overlay of it. Extbase resolves overlays from the query settings'
+     * language aspect, which defaults to the one in the global Context, so the
+     * aspect has to be pinned explicitly per query.
+     *
+     * With overlays on, Extbase on TYPO3 13.4 replaces a localized row by its
+     * default-language parent and looks the translation up again. That second
+     * lookup skips hidden rows and rows on another page than the parent and
+     * then returns the parent itself; when the parent is deleted, the row is
+     * dropped altogether.
+     */
+    private function rawLanguageAspect(int $languageUid): LanguageAspect
+    {
+        return new LanguageAspect($languageUid, $languageUid, LanguageAspect::OVERLAYS_OFF);
     }
 }
