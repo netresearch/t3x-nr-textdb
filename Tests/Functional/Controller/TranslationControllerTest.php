@@ -100,6 +100,13 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
 
     private TranslationController $controller;
 
+    /**
+     * Directories writeTemporaryFile() created; tearDown() removes them.
+     *
+     * @var list<string>
+     */
+    private array $temporaryDirectories = [];
+
     #[Override]
     protected function setUp(): void
     {
@@ -137,6 +144,12 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         // Both are set per test and are not part of the state the testing
         // framework restores.
         unset($GLOBALS['LANG'], $GLOBALS['TYPO3_REQUEST']);
+
+        foreach ($this->temporaryDirectories as $directory) {
+            GeneralUtility::rmdir($directory, true);
+        }
+
+        $this->temporaryDirectories = [];
 
         parent::tearDown();
     }
@@ -1364,6 +1377,8 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
     {
         $directory = Environment::getVarPath() . '/textdb-' . bin2hex(random_bytes(4));
         self::assertTrue(mkdir($directory, 0777, true));
+
+        $this->temporaryDirectories[] = $directory;
 
         $file = $directory . '/' . $fileName;
         self::assertNotFalse(file_put_contents($file, $content));
