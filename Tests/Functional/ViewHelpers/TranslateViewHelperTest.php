@@ -26,9 +26,7 @@ use RuntimeException;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\LanguageAspect;
 use TYPO3\CMS\Core\Core\SystemEnvironmentBuilder;
-use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
-use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
@@ -478,7 +476,7 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
         // "Login" is a real German entry whose value equals its key, and the
         // key is in no language file; the English entry must not replace it.
         $this->insertDefaultLanguageTranslation('Login', 'Sign in');
-        $this->insertTranslation(1, 'Login', 'Login');
+        $this->insertTranslation(1, 1, 1, 'Login', 'Login');
         $this->switchToGermanPage();
 
         $output = $this->renderFluidTemplate(
@@ -540,7 +538,7 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
     {
         TranslateViewHelper::$component = 'lll-migration-component';
 
-        $this->insertTranslation(1, 'tx_nrtextdb_domain_model_environment', 'Hidden DE', hidden: true);
+        $this->insertTranslation(1, 1, 1, 'tx_nrtextdb_domain_model_environment', 'Hidden DE', hidden: true);
         $this->switchToGermanPage();
 
         $output = $this->renderFluidTemplate(self::ENVIRONMENT_LABEL_TEMPLATE);
@@ -558,7 +556,7 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
         TranslateViewHelper::$component = 'lll-migration-component';
 
         $this->insertDefaultLanguageTranslation('some-plain-placeholder', 'Plain English value');
-        $this->insertTranslation(1, 'some-plain-placeholder', 'Hidden DE', hidden: true);
+        $this->insertTranslation(1, 1, 1, 'some-plain-placeholder', 'Hidden DE', hidden: true);
         $this->switchToGermanPage();
 
         $output = $this->renderFluidTemplate(self::PLAIN_PLACEHOLDER_TEMPLATE);
@@ -571,8 +569,8 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
     {
         TranslateViewHelper::$component = 'lll-migration-component';
 
-        $this->insertTranslation(0, 'some-plain-placeholder', 'Hidden EN', hidden: true);
-        $this->insertTranslation(1, 'some-plain-placeholder', 'Hidden DE', hidden: true);
+        $this->insertTranslation(0, 1, 1, 'some-plain-placeholder', 'Hidden EN', hidden: true);
+        $this->insertTranslation(1, 1, 1, 'some-plain-placeholder', 'Hidden DE', hidden: true);
         $this->switchToGermanPage();
 
         $output = $this->renderFluidTemplate(self::PLAIN_PLACEHOLDER_TEMPLATE);
@@ -585,7 +583,7 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
     {
         TranslateViewHelper::$component = 'lll-migration-component';
 
-        $this->insertTranslation(0, 'tx_nrtextdb_domain_model_environment', 'Hidden EN', hidden: true);
+        $this->insertTranslation(0, 1, 1, 'tx_nrtextdb_domain_model_environment', 'Hidden EN', hidden: true);
 
         $output = $this->renderFluidTemplate(self::ENVIRONMENT_LABEL_TEMPLATE);
 
@@ -630,54 +628,7 @@ final class TranslateViewHelperTest extends AbstractFunctionalTestCase
      */
     private function insertDefaultLanguageTranslation(string $placeholder, string $value): void
     {
-        $this->insertTranslation(0, $placeholder, $value);
-    }
-
-    /**
-     * Inserts a translation record in environment "default", component
-     * "lll-migration-component" and type "label".
-     */
-    private function insertTranslation(int $languageUid, string $placeholder, string $value, bool $hidden = false): void
-    {
-        GeneralUtility::makeInstance(ConnectionPool::class)
-            ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
-            ->insert(
-                'tx_nrtextdb_domain_model_translation',
-                [
-                    'pid'              => 1,
-                    'sys_language_uid' => $languageUid,
-                    'environment'      => 1,
-                    'component'        => 1,
-                    'type'             => 1,
-                    'placeholder'      => $placeholder,
-                    'value'            => $value,
-                    'hidden'           => (int) $hidden,
-                ],
-            );
-    }
-
-    /**
-     * Counts the translation rows of one language for the given placeholder,
-     * hidden rows included; deleted rows are not counted.
-     */
-    private function countTranslationRowsInLanguage(string $placeholder, int $languageUid): int
-    {
-        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
-            ->getQueryBuilderForTable('tx_nrtextdb_domain_model_translation');
-        $queryBuilder
-            ->getRestrictions()
-            ->removeAll()
-            ->add(GeneralUtility::makeInstance(DeletedRestriction::class));
-
-        return (int) $queryBuilder
-            ->count('uid')
-            ->from('tx_nrtextdb_domain_model_translation')
-            ->where(
-                $queryBuilder->expr()->eq('placeholder', $queryBuilder->createNamedParameter($placeholder)),
-                $queryBuilder->expr()->eq('sys_language_uid', $queryBuilder->createNamedParameter($languageUid, Connection::PARAM_INT)),
-            )
-            ->executeQuery()
-            ->fetchOne();
+        $this->insertTranslation(0, 1, 1, $placeholder, $value);
     }
 
     /**

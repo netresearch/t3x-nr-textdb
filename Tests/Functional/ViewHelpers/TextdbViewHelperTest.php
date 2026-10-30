@@ -23,9 +23,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\LanguageAspect;
-use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
-use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
@@ -537,59 +535,6 @@ final class TextdbViewHelperTest extends AbstractFunctionalTestCase
                 'language',
                 new LanguageAspect($languageUid, $languageUid, LanguageAspect::OVERLAYS_ON_WITH_FLOATING, $fallbackChain),
             );
-    }
-
-    /**
-     * Inserts a translation record on the storage page in environment
-     * "default" (uid 1).
-     */
-    private function insertTranslation(
-        int $languageUid,
-        int $component,
-        int $type,
-        string $placeholder,
-        string $value,
-        bool $hidden = false,
-    ): void {
-        GeneralUtility::makeInstance(ConnectionPool::class)
-            ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
-            ->insert(
-                'tx_nrtextdb_domain_model_translation',
-                [
-                    'pid'              => 1,
-                    'sys_language_uid' => $languageUid,
-                    'environment'      => 1,
-                    'component'        => $component,
-                    'type'             => $type,
-                    'placeholder'      => $placeholder,
-                    'value'            => $value,
-                    'hidden'           => (int) $hidden,
-                ],
-            );
-    }
-
-    /**
-     * Counts the translation rows of one language for the given placeholder,
-     * hidden rows included; deleted rows are not counted.
-     */
-    private function countTranslationRowsInLanguage(string $placeholder, int $languageUid): int
-    {
-        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
-            ->getQueryBuilderForTable('tx_nrtextdb_domain_model_translation');
-        $queryBuilder
-            ->getRestrictions()
-            ->removeAll()
-            ->add(GeneralUtility::makeInstance(DeletedRestriction::class));
-
-        return (int) $queryBuilder
-            ->count('uid')
-            ->from('tx_nrtextdb_domain_model_translation')
-            ->where(
-                $queryBuilder->expr()->eq('placeholder', $queryBuilder->createNamedParameter($placeholder)),
-                $queryBuilder->expr()->eq('sys_language_uid', $queryBuilder->createNamedParameter($languageUid, Connection::PARAM_INT)),
-            )
-            ->executeQuery()
-            ->fetchOne();
     }
 
     /**

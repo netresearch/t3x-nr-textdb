@@ -17,6 +17,9 @@ namespace Netresearch\NrTextdb\Tests\Functional;
 use Override;
 use Symfony\Component\Filesystem\Filesystem;
 use TYPO3\CMS\Core\Core\Environment;
+use TYPO3\CMS\Core\Database\Connection;
+use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\View\ViewFactoryData;
 use TYPO3\CMS\Core\View\ViewFactoryInterface;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
@@ -149,6 +152,61 @@ abstract class AbstractFunctionalTestCase extends FunctionalTestCase
             // rule that flags raw unlink() calls.
             (new Filesystem())->remove($templateFile);
         }
+    }
+
+    /**
+     * Inserts a translation record on the storage page 1 in environment
+     * "default" (uid 1).
+     *
+     * @param int<-1, max> $languageUid
+     */
+    protected function insertTranslation(
+        int $languageUid,
+        int $component,
+        int $type,
+        string $placeholder,
+        string $value,
+        bool $hidden = false,
+    ): void {
+        $this->get(ConnectionPool::class)
+            ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
+            ->insert(
+                'tx_nrtextdb_domain_model_translation',
+                [
+                    'pid'              => 1,
+                    'sys_language_uid' => $languageUid,
+                    'environment'      => 1,
+                    'component'        => $component,
+                    'type'             => $type,
+                    'placeholder'      => $placeholder,
+                    'value'            => $value,
+                    'hidden'           => (int) $hidden,
+                ],
+            );
+    }
+
+    /**
+     * Counts the translation rows of one language for the given placeholder,
+     * hidden rows included; deleted rows are not counted.
+     */
+    protected function countTranslationRowsInLanguage(string $placeholder, int $languageUid): int
+    {
+        $queryBuilder = $this->get(ConnectionPool::class)
+            ->getQueryBuilderForTable('tx_nrtextdb_domain_model_translation');
+        $queryBuilder
+            ->getRestrictions()
+            ->removeAll()
+            ->add(new DeletedRestriction());
+
+        return (int) $queryBuilder
+            ->count('uid')
+            ->from('tx_nrtextdb_domain_model_translation')
+            ->where(
+                $queryBuilder->expr()->eq('placeholder', $queryBuilder->createNamedParameter($placeholder)),
+                $queryBuilder->expr()->eq('sys_language_uid', $queryBuilder->createNamedParameter($languageUid, Connection::PARAM_INT)),
+            )
+            ->executeQuery()
+            ->fetchOne();
     }
 
     /**
