@@ -1707,8 +1707,8 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
     }
 
     /**
-     * German files with one approved unit, one unit that is not approved and
-     * one without text.
+     * German files with one approved unit, one unit that is not approved, one
+     * without text and a plural unit with one form that is not approved.
      *
      * @return array<string, array{string}>
      */
@@ -1720,6 +1720,10 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
                 . '<trans-unit id="checkout|button|submit"><source>Submit</source><target>Jetzt absenden</target></trans-unit>'
                 . '<trans-unit id="checkout|button|draft" approved="no"><source>Draft</source><target>Entwurf</target></trans-unit>'
                 . '<trans-unit id="checkout|button|untranslated"><source>Untranslated</source></trans-unit>'
+                . '<group id="checkout|label|items" restype="x-gettext-plurals">'
+                . '<trans-unit id="checkout|label|items[0]"><source>One item</source><target>Ein Eintrag</target></trans-unit>'
+                . '<trans-unit id="checkout|label|items[1]" approved="no"><source>%d items</source><target>%d Einträge</target></trans-unit>'
+                . '</group>'
                 . '</body></file></xliff>',
             ],
             'XLIFF 2.0' => [
@@ -1727,6 +1731,10 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
                 . '<unit id="checkout|button|submit"><segment state="final"><source>Submit</source><target>Jetzt absenden</target></segment></unit>'
                 . '<unit id="checkout|button|draft"><segment state="initial"><source>Draft</source><target>Entwurf</target></segment></unit>'
                 . '<unit id="checkout|button|untranslated"><segment><source>Untranslated</source><target/></segment></unit>'
+                . '<unit id="checkout|label|items">'
+                . '<segment state="final"><source>One item</source><target>Ein Eintrag</target></segment>'
+                . '<segment state="initial"><source>%d items</source><target>%d Einträge</target></segment>'
+                . '</unit>'
                 . '</file></xliff>',
             ],
         ];
@@ -1752,6 +1760,12 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         );
         self::assertStringContainsString(
             'Translations not imported because they have no text (1): checkout|button|untranslated',
+            $body,
+        );
+        self::assertStringContainsString(
+            htmlspecialchars(
+                "Plural translations imported without their forms that are not approved, because \$GLOBALS['TYPO3_CONF_VARS']['LANG']['requireApprovedLocalizations'] is enabled (1): checkout|label|items",
+            ),
             $body,
         );
     }

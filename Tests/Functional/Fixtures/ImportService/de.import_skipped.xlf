@@ -16,6 +16,16 @@
             <trans-unit id="skipcomponent|label|untranslated">
                 <source>Untranslated</source>
             </trans-unit>
+            <group id="skipcomponent|label|plural" restype="x-gettext-plurals">
+                <trans-unit id="skipcomponent|label|plural[0]">
+                    <source>One item</source>
+                    <target>Ein Eintrag</target>
+                </trans-unit>
+                <trans-unit id="skipcomponent|label|plural[1]" approved="no">
+                    <source>%d items</source>
+                    <target>%d Einträge</target>
+                </trans-unit>
+            </group>
         </body>
     </file>
 </xliff>

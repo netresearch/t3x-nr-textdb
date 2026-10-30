@@ -302,12 +302,14 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
         );
 
         self::assertSame([], $result->getErrors());
-        self::assertSame(1, $result->getImported());
+        self::assertSame(2, $result->getImported());
         self::assertSame(['skipcomponent|label|draft'], $result->getSkippedUnapproved());
         // XLIFF 2.0: the unit without <target> is not in the catalogue at
         // all, with or without approval, so it is not reported.
         self::assertSame(['skipcomponent|label|untranslated'], $result->getSkippedEmpty());
-        self::assertSame(['approved'], $this->importedPlaceholders('skipcomponent'));
+        // The plural unit is imported with its approved form only.
+        self::assertSame(['skipcomponent|label|plural'], $result->getPartiallyApproved());
+        self::assertSame(['approved', 'plural'], $this->importedPlaceholders('skipcomponent'));
         self::assertTrue($GLOBALS['TYPO3_CONF_VARS']['LANG']['requireApprovedLocalizations']);
     }
 
@@ -326,8 +328,9 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
         );
 
         self::assertSame([], $result->getSkippedUnapproved());
+        self::assertSame([], $result->getPartiallyApproved());
         self::assertSame(['skipcomponent|label|untranslated'], $result->getSkippedEmpty());
-        self::assertSame(['approved', 'draft'], $this->importedPlaceholders('skipcomponent'));
+        self::assertSame(['approved', 'draft', 'plural'], $this->importedPlaceholders('skipcomponent'));
         self::assertFalse($GLOBALS['TYPO3_CONF_VARS']['LANG']['requireApprovedLocalizations']);
     }
 
@@ -374,7 +377,14 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
         $failedResult       = new ImportResult();
 
         try {
-            $this->importService->importEntries($entries, 0, false, $failedResult, ['rollbackcomponent|label|draft']);
+            $this->importService->importEntries(
+                $entries,
+                0,
+                false,
+                $failedResult,
+                ['rollbackcomponent|label|draft'],
+                ['rollbackcomponent|label|first'],
+            );
             self::fail('The simulated write failure did not reach the caller.');
         } catch (RuntimeException $exception) {
             self::assertSame(1793253600, $exception->getCode());
@@ -384,6 +394,7 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
         self::assertSame(0, $failedResult->getImported(), 'A rolled-back file counts no entry.');
         self::assertSame([], $failedResult->getSkippedUnapproved(), 'A rolled-back file reports no unapproved unit.');
         self::assertSame([], $failedResult->getSkippedEmpty(), 'A rolled-back file reports no unit without text.');
+        self::assertSame([], $failedResult->getPartiallyApproved(), 'A rolled-back file reports no partly approved unit.');
 
         foreach (self::REFERENCE_RECORDS as $table => $name) {
             self::assertSame(0, $this->countRows($table, $name), $table . ' keeps a rolled-back row.');

@@ -250,6 +250,16 @@ final class ImportCommand extends Command
             ));
         }
 
+        $partiallyApproved = $fileResult->getPartiallyApproved();
+        if ($partiallyApproved !== []) {
+            $output->writeln(sprintf(
+                "<comment>Plural translations imported without their forms that are not approved, because \$GLOBALS['TYPO3_CONF_VARS']['LANG']['%s'] is enabled (%d): %s</comment>",
+                ImportService::APPROVAL_SETTING,
+                count($partiallyApproved),
+                $this->listKeys($partiallyApproved),
+            ));
+        }
+
         $empty = $fileResult->getSkippedEmpty();
         if ($empty !== []) {
             $output->writeln(sprintf(

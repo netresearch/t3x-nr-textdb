@@ -69,6 +69,14 @@ final class ImportResult
     private array $skippedEmpty = [];
 
     /**
+     * Keys of plural units imported without their forms that are not
+     * approved, as the keys of the array so a key counts once.
+     *
+     * @var array<string, true>
+     */
+    private array $partiallyApproved = [];
+
+    /**
      * Increment the imported counter by one.
      */
     public function recordImported(): void
@@ -109,6 +117,15 @@ final class ImportResult
     }
 
     /**
+     * Records a plural unit that was imported without its forms that are not
+     * approved.
+     */
+    public function recordPartiallyApproved(string $key): void
+    {
+        $this->partiallyApproved[$key] = true;
+    }
+
+    /**
      * Adds the counts, skipped keys and error messages of another result to
      * this one.
      */
@@ -119,6 +136,7 @@ final class ImportResult
         $this->errors = [...$this->errors, ...$other->errors];
         $this->skippedUnapproved += $other->skippedUnapproved;
         $this->skippedEmpty += $other->skippedEmpty;
+        $this->partiallyApproved += $other->partiallyApproved;
     }
 
     public function getImported(): int
@@ -159,5 +177,16 @@ final class ImportResult
     public function getSkippedEmpty(): array
     {
         return array_map(strval(...), array_keys($this->skippedEmpty));
+    }
+
+    /**
+     * Keys of the plural units imported without their forms that are not
+     * approved, each once, in the order they were recorded.
+     *
+     * @return list<string>
+     */
+    public function getPartiallyApproved(): array
+    {
+        return array_map(strval(...), array_keys($this->partiallyApproved));
     }
 }

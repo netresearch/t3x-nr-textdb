@@ -25,11 +25,13 @@ namespace Netresearch\NrTextdb\Service;
 final readonly class LoadedXliffFile
 {
     /**
-     * @param array<array-key, mixed> $entries        The messages keyed "component|type|placeholder"
-     * @param list<string>            $unapprovedKeys Keys of the units the loader left out because they are not approved
+     * @param array<array-key, mixed> $entries               The messages keyed "component|type|placeholder"
+     * @param list<string>            $unapprovedKeys        Keys of the units the loader left out because they are not approved
+     * @param list<string>            $partiallyApprovedKeys Keys of the plural units the loader kept without their forms that are not approved
      */
     public function __construct(
         public array $entries,
         public array $unapprovedKeys,
+        public array $partiallyApprovedKeys,
     ) {}
 }

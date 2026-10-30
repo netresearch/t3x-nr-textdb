@@ -147,6 +147,10 @@
         <source>Translations not imported because they are not approved and %3$s is enabled (%1$d): %2$s</source>
         <target state="final">Übersetzungen nicht importiert, weil sie nicht freigegeben sind und %3$s aktiviert ist (%1$d): %2$s</target>
       </trans-unit>
+      <trans-unit id="message.import.partially.approved" approved="yes">
+        <source>Plural translations imported without their forms that are not approved, because %3$s is enabled (%1$d): %2$s</source>
+        <target state="final">Pluralübersetzungen ohne ihre nicht freigegebenen Formen importiert, weil %3$s aktiviert ist (%1$d): %2$s</target>
+      </trans-unit>
       <trans-unit id="message.import.skipped.empty" approved="yes">
         <source>Translations not imported because they have no text (%1$d): %2$s</source>
         <target state="final">Übersetzungen nicht importiert, weil sie keinen Text haben (%1$d): %2$s</target>

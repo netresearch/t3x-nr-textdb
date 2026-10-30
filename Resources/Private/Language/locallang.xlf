@@ -129,6 +129,9 @@
             <trans-unit id="message.import.skipped.unapproved">
                 <source>Translations not imported because they are not approved and %3$s is enabled (%1$d): %2$s</source>
             </trans-unit>
+            <trans-unit id="message.import.partially.approved">
+                <source>Plural translations imported without their forms that are not approved, because %3$s is enabled (%1$d): %2$s</source>
+            </trans-unit>
             <trans-unit id="message.import.skipped.empty">
                 <source>Translations not imported because they have no text (%1$d): %2$s</source>
             </trans-unit>

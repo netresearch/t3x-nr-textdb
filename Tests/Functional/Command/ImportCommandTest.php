@@ -25,8 +25,8 @@ use Symfony\Component\Console\Tester\CommandTester;
  *
  * The fixture extension textdb_import_test carries a German XLIFF 1.2 and a
  * French XLIFF 2.0 file. Each holds one approved unit, one that is not
- * approved and one without text; the French one also a unit without
- * <target>, which XliffLoader leaves out of the catalogue entirely. An
+ * approved, one without text and a plural unit with one form that is not
+ * approved; the French one also a unit without <target>, which XliffLoader leaves out of the catalogue entirely. An
  * Italian file holds twelve units without text, the first with a key that
  * contains a console style tag.
  */
@@ -75,12 +75,14 @@ final class ImportCommandTest extends AbstractFunctionalTestCase
 
         $unapproved = "Translations not imported because they are not approved and \$GLOBALS['TYPO3_CONF_VARS']['LANG']['requireApprovedLocalizations'] is enabled (1): skipcomponent|label|draft";
         $empty      = 'Translations not imported because they have no text (1): skipcomponent|label|untranslated';
+        $partly     = "Plural translations imported without their forms that are not approved, because \$GLOBALS['TYPO3_CONF_VARS']['LANG']['requireApprovedLocalizations'] is enabled (1): skipcomponent|label|plural";
 
         // Once for the German XLIFF 1.2 file, once for the French XLIFF 2.0 file.
         self::assertSame(2, substr_count($display, $unapproved), $display);
         self::assertSame(2, substr_count($display, $empty), $display);
+        self::assertSame(2, substr_count($display, $partly), $display);
         self::assertStringNotContainsString('without_target', $display);
-        self::assertStringContainsString('Imported: 1, Updated: 0', $display);
+        self::assertStringContainsString('Imported: 2, Updated: 0', $display);
     }
 
     #[Test]
@@ -104,12 +106,13 @@ final class ImportCommandTest extends AbstractFunctionalTestCase
         $display = $this->runImport();
 
         self::assertStringNotContainsString('not approved', $display);
+        self::assertStringNotContainsString('Plural translations', $display);
         self::assertSame(
             2,
             substr_count($display, 'Translations not imported because they have no text (1): skipcomponent|label|untranslated'),
             $display,
         );
-        self::assertStringContainsString('Imported: 2, Updated: 0', $display);
+        self::assertStringContainsString('Imported: 3, Updated: 0', $display);
     }
 
     /**

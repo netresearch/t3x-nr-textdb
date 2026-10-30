@@ -26,5 +26,15 @@
                 <source>Without target</source>
             </segment>
         </unit>
+        <unit id="skipcomponent|label|plural">
+            <segment state="final">
+                <source>One item</source>
+                <target>Ein Eintrag</target>
+            </segment>
+            <segment state="initial">
+                <source>%d items</source>
+                <target>%d Einträge</target>
+            </segment>
+        </unit>
     </file>
 </xliff>

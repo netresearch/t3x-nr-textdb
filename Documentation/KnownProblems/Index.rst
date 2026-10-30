@@ -207,10 +207,13 @@ Problem: Import Fails Silently
       xmllint --noout yourfile.xlf
 
 5. Read the warnings about skipped units. The import names the units it
-   leaves out because they are not approved or have no text, see
-   :ref:`import-skipped-units`. One kind of unit it skips without a
-   message: a unit of an XLIFF 2.0 translation file without ``<target>``,
-   which TYPO3 drops while reading the file. Check such a file for units
+   leaves out because they are not approved or have no text, and the plural
+   units it imports without their forms that are not approved, see
+   :ref:`import-skipped-units`. Two cases it does not report, because TYPO3
+   drops the text while reading the file: a unit of an XLIFF 2.0
+   translation file without ``<target>``, which is not imported, and a
+   segment without ``<target>`` in an XLIFF 2.0 plural unit, which is
+   imported without that form. Check such a file for units and segments
    without ``<target>``.
 
 Problem: Line Breaks Lost After Re-Import

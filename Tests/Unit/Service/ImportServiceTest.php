@@ -387,9 +387,11 @@ final class ImportServiceTest extends UnitTestCase
                 false,
                 $result,
                 ['comp|type|draft'],
+                ['comp|type|plural'],
             );
 
         self::assertSame(['comp|type|draft'], $result->getSkippedUnapproved());
+        self::assertSame(['comp|type|plural'], $result->getPartiallyApproved());
         self::assertSame(['comp|type|empty', 'comp|type|blank'], $result->getSkippedEmpty());
     }
 
@@ -411,7 +413,7 @@ final class ImportServiceTest extends UnitTestCase
 
         try {
             $this->createSubject($this->translationRepository, $connectionPool)
-                ->importEntries(['comp|type|empty' => ''], 0, false, $result, ['comp|type|draft']);
+                ->importEntries(['comp|type|empty' => ''], 0, false, $result, ['comp|type|draft'], ['comp|type|plural']);
             self::fail('The failed commit did not reach the caller.');
         } catch (RuntimeException $exception) {
             self::assertSame(1793253603, $exception->getCode());
@@ -419,6 +421,107 @@ final class ImportServiceTest extends UnitTestCase
 
         self::assertSame([], $result->getSkippedUnapproved());
         self::assertSame([], $result->getSkippedEmpty());
+        self::assertSame([], $result->getPartiallyApproved());
+    }
+
+    /**
+     * Plural units of translation files. The loader keeps the approved forms
+     * of a unit and drops the others.
+     *
+     * @return array<string, array{string, list<string>, list<string>, list<string>}>
+     */
+    public static function pluralFileProvider(): array
+    {
+        $xliff12 = static fn (string $body): string => '<?xml version="1.0" encoding="UTF-8"?>'
+            . '<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">'
+            . '<file source-language="en" target-language="de" datatype="plaintext" original="messages"><body>'
+            . $body
+            . '</body></file></xliff>';
+        $xliff20 = static fn (string $body): string => '<?xml version="1.0" encoding="UTF-8"?>'
+            . '<xliff version="2.0" xmlns="urn:oasis:names:tc:xliff:document:2.0" srcLang="en" trgLang="de">'
+            . '<file id="messages">' . $body . '</file></xliff>';
+
+        return [
+            'XLIFF 1.2, one form not approved' => [
+                $xliff12(
+                    '<group id="c|t|p" restype="x-gettext-plurals">'
+                    . '<trans-unit id="c|t|p[0]"><source>one</source><target>eins</target></trans-unit>'
+                    . '<trans-unit id="c|t|p[1]" approved="no"><source>many</source><target>viele</target></trans-unit>'
+                    . '</group>',
+                ),
+                ['c|t|p'],
+                [],
+                ['c|t|p'],
+            ],
+            'XLIFF 1.2, no form approved' => [
+                $xliff12(
+                    '<group id="c|t|p" restype="x-gettext-plurals">'
+                    . '<trans-unit id="c|t|p[0]" approved="no"><source>one</source><target>eins</target></trans-unit>'
+                    . '<trans-unit id="c|t|p[1]" approved="no"><source>many</source><target>viele</target></trans-unit>'
+                    . '</group>',
+                ),
+                [],
+                ['c|t|p'],
+                [],
+            ],
+            'XLIFF 1.2, every form approved' => [
+                $xliff12(
+                    '<group id="c|t|p" restype="x-gettext-plurals">'
+                    . '<trans-unit id="c|t|p[0]"><source>one</source><target>eins</target></trans-unit>'
+                    . '<trans-unit id="c|t|p[1]"><source>many</source><target>viele</target></trans-unit>'
+                    . '</group>',
+                ),
+                ['c|t|p'],
+                [],
+                [],
+            ],
+            'XLIFF 2.0, second segment initial' => [
+                $xliff20(
+                    '<unit id="c|t|p">'
+                    . '<segment state="final"><source>one</source><target>eins</target></segment>'
+                    . '<segment state="initial"><source>many</source><target>viele</target></segment>'
+                    . '</unit>',
+                ),
+                ['c|t|p'],
+                [],
+                ['c|t|p'],
+            ],
+            // The loader drops a segment without <target> in both reads, so
+            // the two values agree and the missing form is not reported.
+            'XLIFF 2.0, second segment without target' => [
+                $xliff20(
+                    '<unit id="c|t|p">'
+                    . '<segment state="final"><source>one</source><target>eins</target></segment>'
+                    . '<segment state="final"><source>many</source></segment>'
+                    . '</unit>',
+                ),
+                ['c|t|p'],
+                [],
+                [],
+            ],
+        ];
+    }
+
+    /**
+     * @param list<string> $expectedEntries
+     * @param list<string> $expectedUnapproved
+     * @param list<string> $expectedPartiallyApproved
+     */
+    #[Test]
+    #[DataProvider('pluralFileProvider')]
+    public function loadFileNamesThePluralUnitsTheLoaderKeptWithoutTheirUnapprovedForms(
+        string $xliff,
+        array $expectedEntries,
+        array $expectedUnapproved,
+        array $expectedPartiallyApproved,
+    ): void {
+        $GLOBALS['TYPO3_CONF_VARS']['LANG']['requireApprovedLocalizations'] = true;
+
+        $loadedFile = $this->subject->loadFile($xliff, 'de');
+
+        self::assertSame($expectedEntries, array_keys($loadedFile->entries));
+        self::assertSame($expectedUnapproved, $loadedFile->unapprovedKeys);
+        self::assertSame($expectedPartiallyApproved, $loadedFile->partiallyApprovedKeys);
     }
 
     /**

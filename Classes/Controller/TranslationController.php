@@ -1001,6 +1001,7 @@ final class TranslationController extends ActionController
                     $forceUpdate,
                     $result,
                     $loadedFile->unapprovedKeys,
+                    $loadedFile->partiallyApprovedKeys,
                 );
             } catch (Exception $exception) {
                 // An unusable key, which importEntries() reports before it
@@ -1040,6 +1041,15 @@ final class TranslationController extends ActionController
             $messages[] = $this->translate('message.import.skipped.unapproved', [
                 count($unapproved),
                 $this->listKeys($unapproved),
+                "\$GLOBALS['TYPO3_CONF_VARS']['LANG']['" . ImportService::APPROVAL_SETTING . "']",
+            ]) ?? '';
+        }
+
+        $partiallyApproved = $result->getPartiallyApproved();
+        if ($partiallyApproved !== []) {
+            $messages[] = $this->translate('message.import.partially.approved', [
+                count($partiallyApproved),
+                $this->listKeys($partiallyApproved),
                 "\$GLOBALS['TYPO3_CONF_VARS']['LANG']['" . ImportService::APPROVAL_SETTING . "']",
             ]) ?? '';
         }

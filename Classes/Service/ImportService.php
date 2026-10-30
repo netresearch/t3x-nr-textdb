@@ -122,7 +122,14 @@ final readonly class ImportService
         $languageUid = $this->getLanguageId($languageKey);
         $loadedFile  = $this->loadFile($file, $languageKey);
 
-        $this->importEntries($loadedFile->entries, $languageUid, $forceUpdate, $result, $loadedFile->unapprovedKeys);
+        $this->importEntries(
+            $loadedFile->entries,
+            $languageUid,
+            $forceUpdate,
+            $result,
+            $loadedFile->unapprovedKeys,
+            $loadedFile->partiallyApprovedKeys,
+        );
     }
 
     /**
@@ -140,7 +147,9 @@ final readonly class ImportService
      * approved while $GLOBALS['TYPO3_CONF_VARS']['LANG']['requireApprovedLocalizations']
      * is enabled, its default. To name those units, the file is read a second
      * time with the setting disabled; the keys only that read returns are the
-     * unapproved ones. The setting is restored afterwards.
+     * unapproved ones. A key both reads return with different values is a
+     * plural unit of which only some forms are approved: the loader keeps the
+     * approved forms and drops the others. The setting is restored afterwards.
      *
      * @param string $file   Path of the file
      * @param string $locale Language code the loader passes to the catalogue
@@ -155,7 +164,7 @@ final readonly class ImportService
             ->all('messages');
 
         if (!$this->isApprovalRequired()) {
-            return new LoadedXliffFile($entries, []);
+            return new LoadedXliffFile($entries, [], []);
         }
 
         $languageConfiguration = $this->getLanguageConfiguration();
@@ -172,9 +181,17 @@ final readonly class ImportService
             $this->setLanguageConfiguration($languageConfiguration);
         }
 
+        $partiallyApprovedKeys = [];
+        foreach ($entries as $key => $value) {
+            if (array_key_exists($key, $allEntries) && ($allEntries[$key] !== $value)) {
+                $partiallyApprovedKeys[] = (string) $key;
+            }
+        }
+
         return new LoadedXliffFile(
             $entries,
             array_map(strval(...), array_keys(array_diff_key($allEntries, $entries))),
+            $partiallyApprovedKeys,
         );
     }
 
@@ -185,8 +202,8 @@ final readonly class ImportService
      * marked unused, imports without that suffix.
      *
      * A unit whose value trims to '' is skipped; its key and the keys in
-     * $unapprovedKeys reach $result with the counts, once the file has
-     * committed.
+     * $unapprovedKeys and $partiallyApprovedKeys reach $result with the
+     * counts, once the file has committed.
      *
      * Every key is checked before the first entry is written, so a file with
      * an unusable key imports nothing instead of a part of it.
@@ -206,7 +223,8 @@ final readonly class ImportService
      *
      * @param array<array-key, mixed> $entries
      * @param int<-1, max>            $languageUid
-     * @param list<string>            $unapprovedKeys Keys of the units the loader left out because they are not approved
+     * @param list<string>            $unapprovedKeys        Keys of the units the loader left out because they are not approved
+     * @param list<string>            $partiallyApprovedKeys Keys of the plural units the loader kept without their forms that are not approved
      *
      * @throws RuntimeException when a key lacks a component, type or placeholder, or a value is no string
      */
@@ -216,12 +234,17 @@ final readonly class ImportService
         bool $forceUpdate,
         ImportResult $result,
         array $unapprovedKeys = [],
+        array $partiallyApprovedKeys = [],
     ): void {
         $parsedEntries = [];
         $fileResult    = new ImportResult();
 
         foreach ($unapprovedKeys as $unapprovedKey) {
             $fileResult->recordSkippedUnapproved($unapprovedKey);
+        }
+
+        foreach ($partiallyApprovedKeys as $partiallyApprovedKey) {
+            $fileResult->recordPartiallyApproved($partiallyApprovedKey);
         }
 
         foreach ($entries as $key => $value) {
