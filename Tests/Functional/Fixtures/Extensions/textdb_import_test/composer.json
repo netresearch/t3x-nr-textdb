@@ -1,0 +1,14 @@
+{
+    "name": "netresearch/textdb-import-test",
+    "description": "Fixture extension whose language files the nr_textdb:import command reads",
+    "type": "typo3-cms-extension",
+    "license": "GPL-3.0-or-later",
+    "require": {
+        "typo3/cms-core": "^14.3"
+    },
+    "extra": {
+        "typo3/cms": {
+            "extension-key": "textdb_import_test"
+        }
+    }
+}

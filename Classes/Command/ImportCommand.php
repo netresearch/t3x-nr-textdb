@@ -18,6 +18,7 @@ use Netresearch\NrTextdb\Service\ImportResult;
 use Netresearch\NrTextdb\Service\ImportService;
 use Netresearch\NrTextdb\Service\TranslationService;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -206,29 +207,71 @@ final class ImportCommand extends Command
         $result = new ImportResult();
 
         foreach ($files as $file) {
-            $errorOffset = count($result->getErrors());
+            $fileResult = new ImportResult();
 
             try {
                 $this->importFile(
                     $output,
                     $file,
                     $forceUpdate,
-                    $result,
+                    $fileResult,
                 );
             } catch (Throwable $exception) {
-                $result->recordError(
+                $fileResult->recordError(
                     sprintf('Failed to import file %s: %s', $file, $exception->getMessage()),
                 );
             }
 
-            // Print only errors collected during this file's import.
-            $errorsForFile = array_slice($result->getErrors(), $errorOffset);
-            foreach ($errorsForFile as $error) {
+            foreach ($fileResult->getErrors() as $error) {
                 $output->writeln(sprintf('<error>%s</error>', $error));
             }
+
+            $this->writeSkippedUnits($output, $fileResult);
+
+            $result->add($fileResult);
         }
 
         $output->writeln(sprintf('Imported: %s, Updated: %s', $result->getImported(), $result->getUpdated()));
+    }
+
+    /**
+     * Prints one line per reason the import of a file skipped units for,
+     * with the number of units and the first of their keys.
+     */
+    private function writeSkippedUnits(OutputInterface $output, ImportResult $fileResult): void
+    {
+        $unapproved = $fileResult->getSkippedUnapproved();
+        if ($unapproved !== []) {
+            $output->writeln(sprintf(
+                "<comment>Translations not imported because they are not approved and \$GLOBALS['TYPO3_CONF_VARS']['LANG']['%s'] is enabled (%d): %s</comment>",
+                ImportService::APPROVAL_SETTING,
+                count($unapproved),
+                $this->listKeys($unapproved),
+            ));
+        }
+
+        $empty = $fileResult->getSkippedEmpty();
+        if ($empty !== []) {
+            $output->writeln(sprintf(
+                '<comment>Translations not imported because they have no text (%d): %s</comment>',
+                count($empty),
+                $this->listKeys($empty),
+            ));
+        }
+    }
+
+    /**
+     * Lists the first keys, and how many more there are.
+     *
+     * @param list<string> $keys
+     */
+    private function listKeys(array $keys): string
+    {
+        // A key comes from the file and may hold a console style tag.
+        $list = OutputFormatter::escape(implode(', ', array_slice($keys, 0, ImportResult::LISTED_KEYS)));
+        $more = count($keys) - ImportResult::LISTED_KEYS;
+
+        return $more > 0 ? sprintf('%s and %d more', $list, $more) : $list;
     }
 
     private function importFile(

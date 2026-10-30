@@ -24,8 +24,10 @@ use Netresearch\NrTextdb\Domain\Repository\EnvironmentRepository;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
 use Netresearch\NrTextdb\Domain\Repository\TypeRepository;
 use RuntimeException;
+use Symfony\Component\Translation\Exception\InvalidResourceException;
 use Throwable;
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Localization\Exception\InvalidXmlFileException;
 use TYPO3\CMS\Core\Localization\Loader\XliffLoader;
 use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
@@ -54,6 +56,12 @@ final readonly class ImportService
      * `x-unused-since`, XLIFF 2.0 segment `subState="deprecated"`.
      */
     private const UNUSED_SUFFIX = '.x-unused';
+
+    /**
+     * The key in $GLOBALS['TYPO3_CONF_VARS']['LANG'] that makes XliffLoader
+     * leave out the units of a translation file that are not approved.
+     */
+    public const APPROVAL_SETTING = 'requireApprovedLocalizations';
 
     private PersistenceManagerInterface $persistenceManager;
 
@@ -112,18 +120,62 @@ final readonly class ImportService
     ): void {
         $languageKey = $this->getLanguageKeyFromFile($file);
         $languageUid = $this->getLanguageId($languageKey);
+        $loadedFile  = $this->loadFile($file, $languageKey);
 
-        // TYPO3 v14 replaced the localization parsers with Symfony Translation
-        // loaders (Deprecation #107436). XliffLoader is the core replacement for
-        // XliffParser: unlike Symfony's own XliffFileLoader it keeps TYPO3's
-        // XLIFF dialect working — `<xliff version="1.0">` documents, the
-        // source-only default-language file, and the `approved` attribute — and
-        // returns a Symfony MessageCatalogue instead of the nested array.
+        $this->importEntries($loadedFile->entries, $languageUid, $forceUpdate, $result, $loadedFile->unapprovedKeys);
+    }
+
+    /**
+     * Reads the messages of an XLIFF file and the keys of the units left out
+     * because they are not approved.
+     *
+     * TYPO3 v14 replaced the localization parsers with Symfony Translation
+     * loaders (Deprecation #107436). XliffLoader is the core replacement for
+     * XliffParser: unlike Symfony's own XliffFileLoader it keeps TYPO3's
+     * XLIFF dialect working — `<xliff version="1.0">` documents, the
+     * source-only default-language file, and the `approved` attribute — and
+     * returns a Symfony MessageCatalogue instead of the nested array.
+     *
+     * In a translation file the loader leaves out every unit that is not
+     * approved while $GLOBALS['TYPO3_CONF_VARS']['LANG']['requireApprovedLocalizations']
+     * is enabled, its default. To name those units, the file is read a second
+     * time with the setting disabled; the keys only that read returns are the
+     * unapproved ones. The setting is restored afterwards.
+     *
+     * @param string $file   Path of the file
+     * @param string $locale Language code the loader passes to the catalogue
+     *
+     * @throws InvalidXmlFileException  when the file is missing or no well-formed XML
+     * @throws InvalidResourceException when the path is no file
+     */
+    public function loadFile(string $file, string $locale): LoadedXliffFile
+    {
         $entries = $this->xliffLoader
-            ->load($file, $languageKey)
+            ->load($file, $locale)
             ->all('messages');
 
-        $this->importEntries($entries, $languageUid, $forceUpdate, $result);
+        if (!$this->isApprovalRequired()) {
+            return new LoadedXliffFile($entries, []);
+        }
+
+        $languageConfiguration = $this->getLanguageConfiguration();
+
+        try {
+            $this->setLanguageConfiguration(
+                [...$languageConfiguration ?? [], self::APPROVAL_SETTING => false],
+            );
+
+            $allEntries = $this->xliffLoader
+                ->load($file, $locale)
+                ->all('messages');
+        } finally {
+            $this->setLanguageConfiguration($languageConfiguration);
+        }
+
+        return new LoadedXliffFile(
+            $entries,
+            array_map(strval(...), array_keys(array_diff_key($allEntries, $entries))),
+        );
     }
 
     /**
@@ -131,6 +183,10 @@ final readonly class ImportService
      *
      * A key ending in ".x-unused", the suffix XliffLoader appends to a unit
      * marked unused, imports without that suffix.
+     *
+     * A unit whose value trims to '' is skipped; its key and the keys in
+     * $unapprovedKeys reach $result with the counts, once the file has
+     * committed.
      *
      * Every key is checked before the first entry is written, so a file with
      * an unusable key imports nothing instead of a part of it.
@@ -150,6 +206,7 @@ final readonly class ImportService
      *
      * @param array<array-key, mixed> $entries
      * @param int<-1, max>            $languageUid
+     * @param list<string>            $unapprovedKeys Keys of the units the loader left out because they are not approved
      *
      * @throws RuntimeException when a key lacks a component, type or placeholder, or a value is no string
      */
@@ -158,8 +215,14 @@ final readonly class ImportService
         int $languageUid,
         bool $forceUpdate,
         ImportResult $result,
+        array $unapprovedKeys = [],
     ): void {
         $parsedEntries = [];
+        $fileResult    = new ImportResult();
+
+        foreach ($unapprovedKeys as $unapprovedKey) {
+            $fileResult->recordSkippedUnapproved($unapprovedKey);
+        }
 
         foreach ($entries as $key => $value) {
             $key = (string) $key;
@@ -212,13 +275,13 @@ final readonly class ImportService
             // A unit without text, an untranslated unit of a translation file
             // for example, would overwrite a stored value with nothing.
             if (trim($value) === '') {
+                $fileResult->recordSkippedEmpty($key);
+
                 continue;
             }
 
             $parsedEntries[] = [$componentName, $typeName, $placeholder, $value];
         }
-
-        $fileResult = new ImportResult();
 
         try {
             $this->connectionPool
@@ -378,6 +441,47 @@ final readonly class ImportService
             $this->componentRepository->setCreateIfMissing(false);
             $this->typeRepository->setCreateIfMissing(false);
         }
+    }
+
+    /**
+     * Whether XliffLoader leaves out units that are not approved. It reads the
+     * setting the same way, with TRUE when it is not set.
+     */
+    private function isApprovalRequired(): bool
+    {
+        return (bool) ($this->getLanguageConfiguration()[self::APPROVAL_SETTING] ?? true);
+    }
+
+    /**
+     * Returns $GLOBALS['TYPO3_CONF_VARS']['LANG'], or NULL when it is no array.
+     *
+     * @return array<array-key, mixed>|null
+     */
+    private function getLanguageConfiguration(): ?array
+    {
+        $configuration = $GLOBALS['TYPO3_CONF_VARS'] ?? null;
+        $language      = is_array($configuration) ? ($configuration['LANG'] ?? null) : null;
+
+        return is_array($language) ? $language : null;
+    }
+
+    /**
+     * Replaces $GLOBALS['TYPO3_CONF_VARS']['LANG'], or removes it for NULL.
+     *
+     * @param array<array-key, mixed>|null $language
+     */
+    private function setLanguageConfiguration(?array $language): void
+    {
+        $configuration = $GLOBALS['TYPO3_CONF_VARS'] ?? [];
+        $configuration = is_array($configuration) ? $configuration : [];
+
+        if ($language === null) {
+            unset($configuration['LANG']);
+        } else {
+            $configuration['LANG'] = $language;
+        }
+
+        $GLOBALS['TYPO3_CONF_VARS'] = $configuration;
     }
 
     /**

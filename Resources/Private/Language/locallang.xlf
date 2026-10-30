@@ -126,6 +126,15 @@
             <trans-unit id="error.import.language.denied">
                 <source>You may not edit the language "%s", so its entries were not imported.</source>
             </trans-unit>
+            <trans-unit id="message.import.skipped.unapproved">
+                <source>Translations not imported because they are not approved and %3$s is enabled (%1$d): %2$s</source>
+            </trans-unit>
+            <trans-unit id="message.import.skipped.empty">
+                <source>Translations not imported because they have no text (%1$d): %2$s</source>
+            </trans-unit>
+            <trans-unit id="message.import.skipped.more">
+                <source>and %d more</source>
+            </trans-unit>
             <trans-unit id="error.storage.pid.title" translate="no">
                 <source>TextDb</source>
             </trans-unit>

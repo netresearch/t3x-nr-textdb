@@ -147,6 +147,34 @@ Import from XLIFF File
 4. Click **Import**
 5. Review the import summary
 
+.. _import-skipped-units:
+
+Units the Import Skips
+----------------------
+
+The import leaves out two kinds of units and names them after the import,
+in one warning per kind. Each warning gives the number of units and the
+keys of the first ten.
+
+**Not approved.** In a translation file (XLIFF 1.2 with ``target-language``,
+XLIFF 2.0 with ``trgLang``), TYPO3 reads only approved units while
+``$GLOBALS['TYPO3_CONF_VARS']['LANG']['requireApprovedLocalizations']`` is
+enabled, which is the TYPO3 default. A unit is not approved when it is
+marked ``approved="no"`` (XLIFF 1.2) or when its segment has
+``state="initial"`` or ``state="translated"`` (XLIFF 2.0). The warning names
+the setting. To import such units, approve them in the file, or ask the
+administrator to disable the setting. The setting applies to every XLIFF
+file TYPO3 reads, not only to the TextDB import.
+
+**No text.** A unit whose text is empty or only whitespace, for example an
+untranslated unit without ``<target>`` in an XLIFF 1.2 translation file.
+Importing it would overwrite the stored value with nothing.
+
+A unit of an XLIFF 2.0 translation file without ``<target>`` is not
+reported: TYPO3 drops it while reading the file, so the import never sees
+it. A unit of a default-language file (no ``target-language`` or
+``trgLang``) is never skipped for approval.
+
 Expected File Format
 --------------------
 

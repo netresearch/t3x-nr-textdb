@@ -57,9 +57,16 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
 
     private TranslationRepository $translationRepository;
 
+    /**
+     * $GLOBALS['TYPO3_CONF_VARS']['LANG'] as it was before the test.
+     */
+    private mixed $languageConfigurationBackup = null;
+
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->languageConfigurationBackup = $GLOBALS['TYPO3_CONF_VARS']['LANG'] ?? null;
 
         $this->setExtensionConfiguration(textDbPid: '1', createIfMissing: '1');
 
@@ -78,6 +85,17 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
         $this->importCSVDataSet(
             __DIR__ . '/../Fixtures/ImportService/Translations.csv',
         );
+    }
+
+    protected function tearDown(): void
+    {
+        if ($this->languageConfigurationBackup === null) {
+            unset($GLOBALS['TYPO3_CONF_VARS']['LANG']);
+        } else {
+            $GLOBALS['TYPO3_CONF_VARS']['LANG'] = $this->languageConfigurationBackup;
+        }
+
+        parent::tearDown();
     }
 
     // -------------------------------------------------------------------------
@@ -258,6 +276,61 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
         self::assertSame(['unused_key'], $placeholders);
     }
 
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function translationFileWithSkippedUnitsProvider(): array
+    {
+        return [
+            'XLIFF 1.2' => ['de.import_skipped.xlf'],
+            'XLIFF 2.0' => ['de.import_skipped_xliff2.xlf'],
+        ];
+    }
+
+    #[Test]
+    #[DataProvider('translationFileWithSkippedUnitsProvider')]
+    public function importFileReportsTheUnitsItSkipped(string $fixture): void
+    {
+        $GLOBALS['TYPO3_CONF_VARS']['LANG']['requireApprovedLocalizations'] = true;
+
+        $result = new ImportResult();
+
+        $this->importService->importFile(
+            __DIR__ . '/../Fixtures/ImportService/' . $fixture,
+            false,
+            $result,
+        );
+
+        self::assertSame([], $result->getErrors());
+        self::assertSame(1, $result->getImported());
+        self::assertSame(['skipcomponent|label|draft'], $result->getSkippedUnapproved());
+        // XLIFF 2.0: the unit without <target> is not in the catalogue at
+        // all, with or without approval, so it is not reported.
+        self::assertSame(['skipcomponent|label|untranslated'], $result->getSkippedEmpty());
+        self::assertSame(['approved'], $this->importedPlaceholders('skipcomponent'));
+        self::assertTrue($GLOBALS['TYPO3_CONF_VARS']['LANG']['requireApprovedLocalizations']);
+    }
+
+    #[Test]
+    #[DataProvider('translationFileWithSkippedUnitsProvider')]
+    public function importFileImportsAndReportsNoUnapprovedUnitWhenApprovalIsNotRequired(string $fixture): void
+    {
+        $GLOBALS['TYPO3_CONF_VARS']['LANG']['requireApprovedLocalizations'] = false;
+
+        $result = new ImportResult();
+
+        $this->importService->importFile(
+            __DIR__ . '/../Fixtures/ImportService/' . $fixture,
+            false,
+            $result,
+        );
+
+        self::assertSame([], $result->getSkippedUnapproved());
+        self::assertSame(['skipcomponent|label|untranslated'], $result->getSkippedEmpty());
+        self::assertSame(['approved', 'draft'], $this->importedPlaceholders('skipcomponent'));
+        self::assertFalse($GLOBALS['TYPO3_CONF_VARS']['LANG']['requireApprovedLocalizations']);
+    }
+
     // -------------------------------------------------------------------------
     // importEntries
     // -------------------------------------------------------------------------
@@ -269,6 +342,7 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
             'rollbackcomponent|label|first'  => 'First',
             'rollbackcomponent|label|second' => 'Second',
             'rollbackcomponent|label|third'  => 'Third',
+            'rollbackcomponent|label|empty'  => '',
         ];
 
         // Fails the write of the second new translation, after the first
@@ -300,7 +374,7 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
         $failedResult       = new ImportResult();
 
         try {
-            $this->importService->importEntries($entries, 0, false, $failedResult);
+            $this->importService->importEntries($entries, 0, false, $failedResult, ['rollbackcomponent|label|draft']);
             self::fail('The simulated write failure did not reach the caller.');
         } catch (RuntimeException $exception) {
             self::assertSame(1793253600, $exception->getCode());
@@ -308,6 +382,8 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
 
         self::assertSame($translationsBefore, $this->countRows('tx_nrtextdb_domain_model_translation'));
         self::assertSame(0, $failedResult->getImported(), 'A rolled-back file counts no entry.');
+        self::assertSame([], $failedResult->getSkippedUnapproved(), 'A rolled-back file reports no unapproved unit.');
+        self::assertSame([], $failedResult->getSkippedEmpty(), 'A rolled-back file reports no unit without text.');
 
         foreach (self::REFERENCE_RECORDS as $table => $name) {
             self::assertSame(0, $this->countRows($table, $name), $table . ' keeps a rolled-back row.');
@@ -501,6 +577,33 @@ final class ImportServiceTest extends AbstractFunctionalTestCase
     // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
+
+    /**
+     * Returns the placeholders of the translations of a component, sorted.
+     *
+     * @return list<string>
+     */
+    private function importedPlaceholders(string $component): array
+    {
+        $queryBuilder = $this->get(ConnectionPool::class)
+            ->getQueryBuilderForTable('tx_nrtextdb_domain_model_translation');
+
+        $placeholders = $queryBuilder
+            ->select('translation.placeholder')
+            ->from('tx_nrtextdb_domain_model_translation', 'translation')
+            ->join(
+                'translation',
+                'tx_nrtextdb_domain_model_component',
+                'component',
+                $queryBuilder->expr()->eq('component.uid', $queryBuilder->quoteIdentifier('translation.component')),
+            )
+            ->where($queryBuilder->expr()->eq('component.name', $queryBuilder->createNamedParameter($component)))
+            ->orderBy('translation.placeholder')
+            ->executeQuery()
+            ->fetchFirstColumn();
+
+        return array_map(strval(...), $placeholders);
+    }
 
     /**
      * Counts the rows of a table, or those with the given name.

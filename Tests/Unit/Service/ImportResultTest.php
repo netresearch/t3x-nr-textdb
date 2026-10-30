@@ -41,4 +41,38 @@ final class ImportResultTest extends UnitTestCase
         self::assertSame(1, $total->getUpdated());
         self::assertSame(['first', 'second'], $total->getErrors());
     }
+
+    #[Test]
+    public function addMergesTheSkippedKeysOfBothReasons(): void
+    {
+        $total = new ImportResult();
+        $total->recordSkippedUnapproved('c|t|first');
+        $total->recordSkippedEmpty('c|t|empty');
+
+        $file = new ImportResult();
+        $file->recordSkippedUnapproved('c|t|second');
+        $file->recordSkippedUnapproved('c|t|first');
+        $file->recordSkippedEmpty('c|t|blank');
+
+        $total->add($file);
+
+        self::assertSame(['c|t|first', 'c|t|second'], $total->getSkippedUnapproved());
+        self::assertSame(['c|t|empty', 'c|t|blank'], $total->getSkippedEmpty());
+    }
+
+    #[Test]
+    public function aSkippedKeyCountsOnceAndStaysAString(): void
+    {
+        // The import of one file for two site languages with the same code
+        // reports the same key twice. A key of digits only becomes an integer
+        // as an array key.
+        $result = new ImportResult();
+        $result->recordSkippedUnapproved('123');
+        $result->recordSkippedUnapproved('123');
+        $result->recordSkippedEmpty('42');
+        $result->recordSkippedEmpty('42');
+
+        self::assertSame(['123'], $result->getSkippedUnapproved());
+        self::assertSame(['42'], $result->getSkippedEmpty());
+    }
 }
