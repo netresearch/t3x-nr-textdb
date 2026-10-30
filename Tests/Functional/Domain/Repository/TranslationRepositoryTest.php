@@ -22,6 +22,8 @@ use Netresearch\NrTextdb\Domain\Repository\TypeRepository;
 use Netresearch\NrTextdb\Tests\Functional\AbstractFunctionalTestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
+use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * Functional tests for TranslationRepository.
@@ -418,6 +420,27 @@ final class TranslationRepositoryTest extends AbstractFunctionalTestCase
             ->findByTranslationsAndLanguage([9999, 8888], 1);
 
         self::assertSame(0, $result->count());
+    }
+
+    // -------------------------------------------------------------------------
+    // findRawByUid
+    // -------------------------------------------------------------------------
+
+    #[Test]
+    public function findRawByUidLoadsATranslationWhoseParentIsDeleted(): void
+    {
+        // uid 5 is the German translation of uid 1. With language overlays on,
+        // Extbase replaces a localized row by its default-language parent
+        // before the overlay, and finds nothing when that parent is deleted.
+        GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
+            ->update('tx_nrtextdb_domain_model_translation', ['deleted' => 1], ['uid' => 1]);
+
+        $translation = $this->translationRepository->findRawByUid(5);
+
+        self::assertInstanceOf(Translation::class, $translation);
+        self::assertSame(1, $translation->getSysLanguageUid());
+        self::assertSame('Absenden', $translation->getValue());
     }
 
     // -------------------------------------------------------------------------
