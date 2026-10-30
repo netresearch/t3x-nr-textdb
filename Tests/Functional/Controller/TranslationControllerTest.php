@@ -19,6 +19,7 @@ use Netresearch\NrTextdb\Domain\Repository\ComponentRepository;
 use Netresearch\NrTextdb\Domain\Repository\EnvironmentRepository;
 use Netresearch\NrTextdb\Domain\Repository\TranslationRepository;
 use Netresearch\NrTextdb\Domain\Repository\TypeRepository;
+use Netresearch\NrTextdb\Service\ImportResult;
 use Netresearch\NrTextdb\Service\ImportService;
 use Netresearch\NrTextdb\Service\TranslationService;
 use Netresearch\NrTextdb\Tests\Functional\AbstractFunctionalTestCase;
@@ -39,6 +40,7 @@ use TYPO3\CMS\Core\Crypto\HashService;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Http\ServerRequest;
+use TYPO3\CMS\Core\Http\UploadedFile;
 use TYPO3\CMS\Core\Imaging\IconFactory;
 use TYPO3\CMS\Core\Localization\LanguageServiceFactory;
 use TYPO3\CMS\Core\Messaging\FlashMessageService;
@@ -50,6 +52,7 @@ use TYPO3\CMS\Extbase\Mvc\Request as ExtbaseRequest;
 use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
 use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
 use TYPO3\CMS\Extbase\Security\HashScope;
+use ZipArchive;
 
 /**
  * Regression tests for the backend module's save path.
@@ -97,6 +100,13 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
 
     private TranslationController $controller;
 
+    /**
+     * Directories writeTemporaryFile() created; tearDown() removes them.
+     *
+     * @var list<string>
+     */
+    private array $temporaryDirectories = [];
+
     #[Override]
     protected function setUp(): void
     {
@@ -134,6 +144,12 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
         // Both are set per test and are not part of the state the testing
         // framework restores.
         unset($GLOBALS['LANG'], $GLOBALS['TYPO3_REQUEST']);
+
+        foreach ($this->temporaryDirectories as $directory) {
+            GeneralUtility::rmdir($directory, true);
+        }
+
+        $this->temporaryDirectories = [];
 
         parent::tearDown();
     }
@@ -906,6 +922,81 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
     }
 
     #[Test]
+    #[DataProvider('exportedLanguageFileProvider')]
+    public function anExportedValueSurvivesTheCliImportOfItsFileUnchanged(int $uid, int $component, string $fileName): void
+    {
+        // Line breaks, repeated spaces and markup in a value. The import
+        // service, which the nr_textdb:import command calls, reads the file
+        // with core's XliffParser, which returns the text of a unit as it
+        // stands: indentation the export writes around the value ends up in
+        // the database.
+        $value = "<p>Line one</p>\n<p>Line  two</p>\nplain";
+        $this->updateValue($uid, $value);
+        $this->storeFilterConfig(['component' => $component]);
+
+        $file = $this->writeTemporaryFile(
+            $fileName,
+            $this->exportedFile($this->dispatchModuleAction('export'), $fileName),
+        );
+
+        // The command runs in a process of its own, with an empty
+        // persistence session; this test runs both steps in one process.
+        $this->get(PersistenceManagerInterface::class)->clearState();
+
+        $this->updateValue($uid, 'changed in the meantime');
+
+        $result = new ImportResult();
+        $this->get(ImportService::class)->importFile($file, true, $result);
+
+        self::assertSame([], $result->getErrors());
+        self::assertSame($value, $this->fetchValue($uid));
+    }
+
+    #[Test]
+    #[DataProvider('exportedLanguageFileProvider')]
+    public function anExportedValueSurvivesTheBackendImportOfItsFileUnchanged(int $uid, int $component, string $fileName): void
+    {
+        // The backend import parses the upload itself. It has to read the
+        // export format with xml:space="preserve" just as it read the old one.
+        $value = "<p>Line one</p>\n<p>Line  two</p>\nplain";
+        $this->updateValue($uid, $value);
+        $this->storeFilterConfig(['component' => $component]);
+
+        $file = $this->writeTemporaryFile(
+            $fileName,
+            $this->exportedFile($this->dispatchModuleAction('export'), $fileName),
+        );
+
+        // A backend request starts with an empty persistence session; this
+        // test runs both requests in one process.
+        $this->get(PersistenceManagerInterface::class)->clearState();
+
+        $this->updateValue($uid, 'changed in the meantime');
+
+        $response = $this->dispatchModuleAction(
+            'import',
+            ['update' => '1'],
+            ['translationFile' => new UploadedFile($file, (int) filesize($file), UPLOAD_ERR_OK, $fileName)],
+        );
+
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame($value, $this->fetchValue($uid));
+    }
+
+    /**
+     * Records whose key occurs once in the exported file.
+     *
+     * @return array<string, array{int, int, string}>
+     */
+    public static function exportedLanguageFileProvider(): array
+    {
+        return [
+            'default language' => [4, 3, 'textdb_import.xlf'],
+            'German'           => [6, 1, 'de.textdb_import.xlf'],
+        ];
+    }
+
+    #[Test]
     public function listingTheModuleWithoutAStoredFilterEmitsNoWarning(): void
     {
         // The reported defect. listAction() read placeholder and value without a
@@ -1091,21 +1182,23 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
      * what the page renderer of the module template resolves asset paths with.
      *
      * @param array<string, string|array<array-key, string|string[]>> $queryParams
-     *                                                                             Backend module
-     *                                                                             arguments arrive
-     *                                                                             without a plugin
-     *                                                                             namespace
+     *                                                                               Backend module
+     *                                                                               arguments arrive
+     *                                                                               without a plugin
+     *                                                                               namespace
+     * @param array<string, UploadedFile>                             $uploadedFiles
      */
-    private function dispatchModuleAction(string $action, array $queryParams = []): ResponseInterface
+    private function dispatchModuleAction(string $action, array $queryParams = [], array $uploadedFiles = []): ResponseInterface
     {
         $route = $this->get(Router::class)
             ->getRoute('netresearch_textdb.Translation_' . $action);
 
-        $request = (new ServerRequest('https://example.com/typo3/module/netresearch/textdb', 'GET'))
+        $request = (new ServerRequest('https://example.com/typo3/module/netresearch/textdb', $uploadedFiles === [] ? 'GET' : 'POST'))
             ->withAttribute('applicationType', SystemEnvironmentBuilder::REQUESTTYPE_BE)
             ->withAttribute('route', $route)
             ->withAttribute('module', $route->getOption('module'))
-            ->withQueryParams($queryParams);
+            ->withQueryParams($queryParams)
+            ->withUploadedFiles($uploadedFiles);
 
         $request = $request->withAttribute(
             'normalizedParams',
@@ -1247,6 +1340,50 @@ final class TranslationControllerTest extends AbstractFunctionalTestCase
                 'deleted'          => 0,
             ],
         );
+    }
+
+    private function updateValue(int $uid, string $value): void
+    {
+        GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getConnectionForTable('tx_nrtextdb_domain_model_translation')
+            ->update('tx_nrtextdb_domain_model_translation', ['value' => $value], ['uid' => $uid]);
+    }
+
+    /**
+     * Returns one file of an export archive.
+     */
+    private function exportedFile(ResponseInterface $response, string $fileName): string
+    {
+        self::assertSame(200, $response->getStatusCode());
+
+        $archive = $this->writeTemporaryFile('textdb-export.zip', (string) $response->getBody());
+
+        $zip = new ZipArchive();
+        self::assertTrue($zip->open($archive));
+
+        $content = $zip->getFromName($fileName);
+        $zip->close();
+
+        self::assertIsString($content, 'The export has to contain ' . $fileName . '.');
+
+        return $content;
+    }
+
+    /**
+     * Writes a file under its own name into a fresh directory of the test
+     * instance. The import reads the language from the file name.
+     */
+    private function writeTemporaryFile(string $fileName, string $content): string
+    {
+        $directory = Environment::getVarPath() . '/textdb-' . bin2hex(random_bytes(4));
+        self::assertTrue(mkdir($directory, 0777, true));
+
+        $this->temporaryDirectories[] = $directory;
+
+        $file = $directory . '/' . $fileName;
+        self::assertNotFalse(file_put_contents($file, $content));
+
+        return $file;
     }
 
     private function fetchValue(int $uid): string
