@@ -15,6 +15,7 @@ use function count;
 
 use Netresearch\NrTextdb\Service\ImportResult;
 use Netresearch\NrTextdb\Service\ImportService;
+use Netresearch\NrTextdb\Service\TranslationService;
 
 use function sprintf;
 
@@ -24,9 +25,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
 use TYPO3\CMS\Core\Package\Exception\UnknownPackageException;
-use TYPO3\CMS\Core\Site\Entity\Site;
-use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
-use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Extensionmanager\Utility\ListUtility;
 
@@ -56,7 +54,7 @@ final class ImportCommand extends Command
 
     private readonly ImportService $importService;
 
-    private readonly SiteFinder $siteFinder;
+    private readonly TranslationService $translationService;
 
     /**
      * Constructor.
@@ -64,13 +62,13 @@ final class ImportCommand extends Command
     public function __construct(
         ListUtility $listUtility,
         ImportService $importService,
-        SiteFinder $siteFinder,
+        TranslationService $translationService,
     ) {
         parent::__construct();
 
-        $this->listUtility   = $listUtility;
-        $this->importService = $importService;
-        $this->siteFinder    = $siteFinder;
+        $this->listUtility        = $listUtility;
+        $this->importService      = $importService;
+        $this->translationService = $translationService;
     }
 
     /**
@@ -132,26 +130,13 @@ final class ImportCommand extends Command
             $languageCode = 'en';
         }
 
-        foreach ($this->getAllLanguages() as $localLanguage) {
+        foreach ($this->translationService->getAllLanguages() as $localLanguage) {
             if ($languageCode === $localLanguage->getLocale()->getLanguageCode()) {
                 return $localLanguage->getLanguageId();
             }
         }
 
         return 0;
-    }
-
-    /**
-     * Get All languages, configured.
-     *
-     * @return SiteLanguage[]
-     */
-    private function getAllLanguages(): array
-    {
-        $sites     = $this->siteFinder->getAllSites();
-        $firstSite = reset($sites);
-
-        return ($firstSite instanceof Site) ? $firstSite->getAllLanguages() : [];
     }
 
     /**

@@ -540,15 +540,15 @@ final class TranslationControllerTest extends FunctionalTestCase
     }
 
     #[Test]
-    public function translateRecordSkipsANewEntryForALanguageThatIsNotConfiguredOnTheFirstSite(): void
+    public function translateRecordSkipsANewEntryForALanguageThatIsNotConfiguredOnTheStoragePagesSite(): void
     {
         // new[999]=Text reaches this method with a syntactically valid but
         // meaningless language id. Before the fix this silently persisted a
         // translation that could never be reached again through the translation
         // dialog, since that only lists the site's configured languages (issue
-        // #129, case 3). getAllLanguages() resolves the first configured site
-        // only (see TranslationService::getAllLanguages()), hence "first site"
-        // rather than "any site" in this test's name.
+        // #129, case 3). getAllLanguages() returns the languages of the
+        // storage page's site (see TranslationService::getAllLanguages()),
+        // hence that site rather than "any site" in this test's name.
         $this->dispatchTranslateRecord(['parent' => '1', 'new' => [999 => 'Some text']]);
 
         self::assertSame(0, $this->countRows(placeholder: 'submit', languageUid: 999));
@@ -1068,8 +1068,8 @@ final class TranslationControllerTest extends FunctionalTestCase
      *
      * Called from setUp() for every test: translateRecordAction() now checks
      * new[] language ids against the site's configured languages (issue
-     * #129), and the export actions iterate the languages of the first site
-     * and produce no file at all without one. typo3/testing-framework 9 has
+     * #129), and the export actions iterate the languages of the storage
+     * page's site (root page 1) and produce no file at all without one. typo3/testing-framework 9 has
      * no helper for this any more, and a SiteFinder mock via
      * GeneralUtility::addInstance() does not work here either, because the
      * controller is built by the container. The configuration is therefore
