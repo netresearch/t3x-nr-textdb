@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: Netresearch DTT GmbH -->
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file source-language="en" datatype="plaintext" original="messages" date="2019-09-11T10:31:41Z" product-name="nr_textdb" target-language="da">
     <header/>
@@ -147,6 +149,14 @@
         <source>Please configure a valid storage page ID in the extension configuration.</source>
         <target state="final">Konfigurer et gyldigt lagringssside-ID i udvidelseskonfigurationen.</target>
       </trans-unit>
+      <trans-unit id="error.access.denied" approved="yes">
+        <source>You lack the permissions this action needs: access to the TextDB tables, to the TextDB storage page and, to make changes, the live workspace.</source>
+        <target state="final">Du mangler de tilladelser, som denne handling kræver: Adgang til TextDB-tabellerne, til TextDB-lagringssiden og til at foretage ændringer i live arbejdsrummet.</target>
+      </trans-unit>
+      <trans-unit id="error.import.language.denied" approved="yes">
+        <source>You may not edit the language "%s", so its entries were not imported.</source>
+        <target state="final">Du kan ikke redigere sproget "%s", så dets poster blev ikke importeret.</target>
+      </trans-unit>
       <trans-unit id="error.storage.pid.title" translate="no" approved="yes">
         <source>TextDb</source>
         <target state="final">TextDb</target>
@@ -175,17 +185,33 @@
         <source>Missing value in key: %s</source>
         <target state="final">Manglende værdi i nøgle: %s</target>
       </trans-unit>
-      <trans-unit id="message.translation.saved">
+      <trans-unit id="message.translation.saved" approved="yes">
         <source>The translation was saved.</source>
-        <target state="needs-translation">The translation was saved.</target>
+        <target state="final">Oversættelsen blev gemt.</target>
+      </trans-unit>
+      <trans-unit id="message.translation.rejected" approved="yes">
+        <source>One or more of the submitted translations could not be saved. The record, the target language, or the submitted value was not valid.</source>
+        <target state="final">En eller flere af de indsendte oversættelser kunne ikke gemmes. Elementet, målsproget, eller den indsendte værdi var ikke gyldig.</target>
       </trans-unit>
       <trans-unit id="message.translation.save.title" translate="no">
         <source>TextDb</source>
         <target state="needs-translation">TextDb</target>
       </trans-unit>
-      <trans-unit id="message.error.translation.save">
+      <trans-unit id="message.error.translation.save" approved="yes">
         <source>The translation could not be saved: %s</source>
-        <target state="needs-translation">The translation could not be saved: %s</target>
+        <target state="final">Oversættelsen kunne ikke gemmes: %s</target>
+      </trans-unit>
+      <trans-unit id="message.error.translation.request" approved="yes">
+        <source>The submitted request could not be processed.</source>
+        <target state="final">Den indsendte anmodning kunne ikke behandles.</target>
+      </trans-unit>
+      <trans-unit id="heading.import" approved="yes">
+        <source>Import translations</source>
+        <target state="final">Importer oversættelser</target>
+      </trans-unit>
+      <trans-unit id="heading.translated" approved="yes">
+        <source>Translations</source>
+        <target state="final">Oversættelser</target>
       </trans-unit>
     </body>
   </file>
