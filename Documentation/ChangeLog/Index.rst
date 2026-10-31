@@ -9,6 +9,64 @@
 ChangeLog
 =========
 
+.. _version-4-1-0:
+
+Version 4.1.0
+=============
+
+**Features:**
+
+* ✨ ``textdb:textdb`` and ``textdb:translate`` fall back along the site
+  language's fallback chain, then the default language, before they render
+  the key (`#194 <https://github.com/netresearch/t3x-nr-textdb/pull/194>`__)
+* ✨ The backend import and ``nr_textdb:import`` name the XLIFF units they
+  leave out or shorten (`#193
+  <https://github.com/netresearch/t3x-nr-textdb/pull/193>`__)
+
+**Fixes:**
+
+* 🐛 Lookups made by the backend module follow the ``createIfMissing``
+  extension setting (`#172
+  <https://github.com/netresearch/t3x-nr-textdb/pull/172>`__)
+* 🐛 A hidden TextDB entry is not rendered in the frontend (`#206
+  <https://github.com/netresearch/t3x-nr-textdb/pull/206>`__)
+* 🐛 An import writes a file in one database transaction and rolls back the
+  whole file on any error, on every supported database (`#189
+  <https://github.com/netresearch/t3x-nr-textdb/pull/189>`__, `#211
+  <https://github.com/netresearch/t3x-nr-textdb/pull/211>`__, `#215
+  <https://github.com/netresearch/t3x-nr-textdb/pull/215>`__)
+* 🐛 A unit marked unused imports under its own placeholder (`#191
+  <https://github.com/netresearch/t3x-nr-textdb/pull/191>`__)
+* 🐛 The backend upload reads files with ``XliffLoader`` and shows an error
+  for a malformed file; multi-line values survive export and re-import
+  (`#186 <https://github.com/netresearch/t3x-nr-textdb/pull/186>`__)
+* 🐛 The module, the export and the imports use the languages of the site
+  that holds the storage page (`#188
+  <https://github.com/netresearch/t3x-nr-textdb/pull/188>`__)
+* 🐛 The translation list and the default-language export contain
+  default-language records only (`#187
+  <https://github.com/netresearch/t3x-nr-textdb/pull/187>`__)
+* 🐛 A malformed ``translateRecord`` request shows an error, and the dialog
+  saves only the record it was opened for and its translations (`#182
+  <https://github.com/netresearch/t3x-nr-textdb/pull/182>`__)
+* 🐛 Saving from the list view shows the save messages, on every TYPO3 14.3
+  release (`#185 <https://github.com/netresearch/t3x-nr-textdb/pull/185>`__,
+  `#202 <https://github.com/netresearch/t3x-nr-textdb/pull/202>`__)
+* 🐛 The filter reset clears the stored filter (`#181
+  <https://github.com/netresearch/t3x-nr-textdb/pull/181>`__)
+* 🐛 An export that matches no record shows an error instead of HTTP 500 and
+  leaves no working directory behind (`#180
+  <https://github.com/netresearch/t3x-nr-textdb/pull/180>`__)
+
+**Changes:**
+
+* Import and export read and write 1,000 records at a time, and the import
+  writes new entries in bulk, which lowers memory use and import time (`#204
+  <https://github.com/netresearch/t3x-nr-textdb/pull/204>`__, `#216
+  <https://github.com/netresearch/t3x-nr-textdb/pull/216>`__)
+* One extension title in ``ext_emconf.php`` and ``composer.json`` (`#169
+  <https://github.com/netresearch/t3x-nr-textdb/pull/169>`__)
+
 .. _version-4-0-2:
 
 Version 4.0.2

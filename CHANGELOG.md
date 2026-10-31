@@ -1,10 +1,31 @@
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- SPDX-FileCopyrightText: Netresearch DTT GmbH -->
-# Unreleased
+# 4.1.0
+
+## FEATURE
+
+- [FEATURE] `textdb:textdb` and `textdb:translate` fall back along the site language's fallback chain, then the default language, before they render the key; `textdb:translate` still asks the language file first (#194)
+- [FEATURE] The backend import and `nr_textdb:import` name the XLIFF units they leave out or shorten (not approved while `requireApprovedLocalizations` is enabled, partly approved plural units, units without text), with the number of units and the first ten keys (#193)
 
 ## BUGFIX
 
-- [BUGFIX] Backend module: constructing the module no longer switches the environment, type, component and translation repositories to "create if missing"; a lookup made in the same request now follows the `createIfMissing` extension setting. Saving a translation for a new language and importing XLIFF files create records as before, whatever the setting says
+- [BUGFIX] Backend module: constructing the module no longer switches the environment, type, component and translation repositories to "create if missing"; a lookup made in the same request now follows the `createIfMissing` extension setting. Saving a translation for a new language and importing XLIFF files create records as before, whatever the setting says (#172)
+- [BUGFIX] Frontend: `textdb:textdb` and `textdb:translate` render a hidden TextDB entry as if it did not exist; the backend module keeps listing, editing, exporting and importing hidden entries (#206)
+- [BUGFIX] Import: a file is written in one database transaction; a database error, or any other exception raised while the file is written, rolls back the whole file on MariaDB, MySQL, PostgreSQL and SQLite, and the backend module and the CLI command show the error (#189, #211, #215)
+- [BUGFIX] Import: an XLIFF unit marked unused (`x-unused-since`, or `subState="deprecated"` in XLIFF 2.0) imports under its own placeholder instead of one ending in `.x-unused` (#191)
+- [BUGFIX] Import: the backend upload reads files with TYPO3's `XliffLoader` like the CLI import, so a malformed upload shows an error instead of an HTTP 500; the export marks each unit `xml:space="preserve"`, so a multi-line value survives export and re-import (#186)
+- [BUGFIX] The module, the export and both imports use the languages of the site that holds the configured storage page (`textDbPid`) instead of the first site TYPO3 lists (#188)
+- [BUGFIX] The translation list and the default-language export contain default-language records only; before, translations appeared as records of their own, and re-importing such an export with "Override existing" could write a translation over its original (#187)
+- [BUGFIX] Backend module: a wrongly shaped `translateRecord` request redirects back to the dialog with an error message instead of throwing, and the dialog's save can change only the record it was opened for and its translations (#182)
+- [BUGFIX] Backend module: saving a translation from the list view shows the confirmation, rejection warning or save error in the opened row, on every TYPO3 14.3 release (#185, #202)
+- [BUGFIX] Backend module: the filter "Reset" clears the stored filter (#181)
+- [BUGFIX] Export: an export whose filter matches no record redirects back with an error instead of HTTP 500, and no export leaves its working directory behind (#180)
+
+## TASK
+
+- [TASK] Import and export are faster and use less memory: the export reads and writes 1,000 records at a time (an export of 48,500 entries with one translation each needs 28.5 MB instead of 685 MB), and the import writes new entries in bulk (a 10 MB file of 48,500 units imports in 10 s on SQLite, 44 s on MariaDB 10.11 and 31 s on PostgreSQL 16 instead of 33 s, 175 s and 270 s) (#204, #216)
+- [TASK] One extension title in `ext_emconf.php` and `composer.json`, so the TYPO3 Reports "Composer Manifest" check no longer reports a description mismatch (#169)
+- [TASK] `composer ci:test` runs phplint again (#190)
 
 # 4.0.2
 
