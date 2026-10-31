@@ -38,58 +38,31 @@ jobs:
       run-functional-tests: true
       functional-test-db: sqlite
       compact-jobs: true
+      # All three server suites share this preflight and strict aggregate.
+      # Explicit complete rows add no PHP/TYPO3 cross product.
+      functional-db-matrix: >-
+        [{"php":"8.5","typo3":"^14.3","db":"mariadb","image":"ghcr.io/netresearch/ci-mirror/mariadb:10.11"},
+         {"php":"8.5","typo3":"^14.3","db":"mysql","image":"ghcr.io/netresearch/ci-mirror/mysql:8.0"},
+         {"php":"8.5","typo3":"^14.3","db":"postgres","image":"ghcr.io/netresearch/ci-mirror/postgres:16-alpine"}]
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
-  # The functional suite once more against the database servers the manual
-  # names as tested. Only the functional tests run here, on the newest PHP;
-  # the job above covers everything else. The reusable workflow maps every
-  # functional-test-db value except sqlite and postgres to mysqli and starts
-  # db-image, which defaults to MySQL 9.6, so each cell names its image.
-  functional-db:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - db: mariadb
-            image: ghcr.io/netresearch/ci-mirror/mariadb:10.11
-          - db: mysql
-            image: ghcr.io/netresearch/ci-mirror/mysql:8.0
-          - db: postgres
-            image: ghcr.io/netresearch/ci-mirror/postgres:16-alpine
-    uses: netresearch/typo3-ci-workflows/.github/workflows/ci.yml@main
-    permissions:
-      contents: read
-    with:
-      php-versions: '["8.5"]'
-      typo3-versions: '["^14.3"]'
-      run-lint: false
-      run-cgl: false
-      run-phpstan: false
-      run-phpstan-unpinned: false
-      run-rector: false
-      run-unit-tests: false
-      run-docs: false
-      run-functional-tests: true
-      functional-test-db: ${{ matrix.db }}
-      db-image: ${{ matrix.image }}
-
   database-gate:
     name: All database checks
-    needs: functional-db
+    needs: ci
     if: ${{ always() }}
     runs-on: ubuntu-latest
     timeout-minutes: 2
     permissions: {}
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
           egress-policy: audit
       - name: Require a successful database matrix
         shell: bash
         env:
-          DB_RESULT: ${{ needs.functional-db.result }}
+          DB_RESULT: ${{ needs.ci.result }}
         run: |
           set -euo pipefail
           if [[ "${DB_RESULT:-}" != success ]]; then

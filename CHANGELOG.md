@@ -1,5 +1,11 @@
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- SPDX-FileCopyrightText: Netresearch DTT GmbH -->
+# Unreleased
+
+## TASK
+
+- [TASK] CI runs the unchanged MariaDB, MySQL and PostgreSQL functional suites in the principal shared graph, sharing preflight and final aggregation with the SQLite matrix while retaining the required database gate
+
 # 4.1.0
 
 ## FEATURE
