@@ -2,6 +2,10 @@
 <!-- SPDX-FileCopyrightText: Netresearch DTT GmbH -->
 # Unreleased
 
+## TASK
+
+- [TASK] CI runs the unchanged MariaDB, MySQL and PostgreSQL functional suites in the principal shared graph, sharing preflight and final aggregation with the SQLite matrix while retaining the required database gate
+
 ## BUGFIX
 
 - [BUGFIX] Backend module: constructing the module no longer switches the environment, type, component and translation repositories to "create if missing"; a lookup made in the same request now follows the `createIfMissing` extension setting. Saving a translation for a new language and importing XLIFF files create records as before, whatever the setting says
