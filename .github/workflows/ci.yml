@@ -37,6 +37,7 @@ jobs:
       # workflow, which left the extension without any functional CI evidence.
       run-functional-tests: true
       functional-test-db: sqlite
+      compact-jobs: true
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
