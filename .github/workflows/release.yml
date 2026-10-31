@@ -21,5 +21,8 @@ jobs:
       archive-prefix: nr-textdb
       package-name: netresearch/nr-textdb
       extension-key: nr_textdb
+      # TYPO3_13 is the maintenance line: a 3.x release must not take the
+      # "Latest" badge from the 4.x line on main.
+      make-latest: false
     secrets:
       TYPO3_TER_ACCESS_TOKEN: ${{ secrets.TYPO3_TER_ACCESS_TOKEN }}
