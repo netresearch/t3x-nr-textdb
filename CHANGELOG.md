@@ -1,3 +1,43 @@
+# 3.0.6
+
+Maintenance release for the TYPO3 v13 line. It carries the fixes made on the
+4.x line since 3.0.5 that apply to TYPO3 13.4.
+
+## FIX
+
+- Backend module: every action checks the backend user's table rights and
+  page permissions before it reads or writes TextDB records, and the write
+  actions also check excluded fields, allowed languages and the live
+  workspace; the list and the export show non-admins only the records of the
+  configured storage page (#205)
+- Backend module: lookups made in the module follow the `createIfMissing`
+  extension setting instead of forcing it (#207)
+- Backend module: a wrongly shaped `translateRecord` request redirects back to
+  the dialog with an error message instead of throwing, and the dialog saves
+  only the record it was opened for and its translations (#209)
+- Backend module: the translation dialog loads its translations without
+  language overlay (#210)
+- Backend module: saving from the list view shows the flash messages, and a
+  double-click opens a translation row once (#200)
+- Backend module: the filter "Reset" clears the stored filter (#197)
+- Backend module views use core markup and scheme-coloured icons, and the
+  import view renders its errors (#201)
+- The module, the export and the imports use the languages of the site that
+  holds the configured storage page (#196)
+- Frontend: a hidden TextDB entry is not rendered; a hidden translation falls
+  back to the default-language value (#213)
+- Import: a file is written in one database transaction and rolls back as a
+  whole on any error, on every supported database (#214)
+- Export: an export that matches no record shows an error instead of HTTP 500
+  and leaves no working directory behind (#208); records are read and written
+  1,000 at a time (#212); line breaks in a value survive export and CLI import
+  (#199)
+- German label capitalisation corrected (#195)
+
+## TASK
+
+- `composer ci:test` runs phplint again (#198)
+
 # 3.0.5
 
 Maintenance release for the TYPO3 v13 line. It carries the fixes made on the

@@ -6,6 +6,45 @@
 ChangeLog
 =========
 
+.. _version-3-0-6:
+
+Version 3.0.6
+=============
+
+Maintenance release for the TYPO3 v13 line. It carries the fixes made on the
+4.x line since 3.0.5 that apply to TYPO3 13.4.
+
+**Fixes:**
+
+* 🐛 Every action of the backend module checks the backend user's table
+  rights and page permissions before it reads or writes TextDB records (`#205
+  <https://github.com/netresearch/t3x-nr-textdb/pull/205>`__)
+* 🐛 Lookups made by the backend module follow the ``createIfMissing``
+  extension setting (`#207
+  <https://github.com/netresearch/t3x-nr-textdb/pull/207>`__)
+* 🐛 A malformed ``translateRecord`` request shows an error, and the dialog
+  saves only the record it was opened for and its translations (`#209
+  <https://github.com/netresearch/t3x-nr-textdb/pull/209>`__, `#210
+  <https://github.com/netresearch/t3x-nr-textdb/pull/210>`__)
+* 🐛 Saving from the list view shows the save messages, the filter reset
+  clears the stored filter, and the module views use core markup (`#197
+  <https://github.com/netresearch/t3x-nr-textdb/pull/197>`__, `#200
+  <https://github.com/netresearch/t3x-nr-textdb/pull/200>`__, `#201
+  <https://github.com/netresearch/t3x-nr-textdb/pull/201>`__)
+* 🐛 The module, the export and the imports use the languages of the site
+  that holds the storage page (`#196
+  <https://github.com/netresearch/t3x-nr-textdb/pull/196>`__)
+* 🐛 A hidden TextDB entry is not rendered in the frontend (`#213
+  <https://github.com/netresearch/t3x-nr-textdb/pull/213>`__)
+* 🐛 An import writes a file in one database transaction and rolls back the
+  whole file on any error (`#214
+  <https://github.com/netresearch/t3x-nr-textdb/pull/214>`__)
+* 🐛 The export refuses an empty result, reads and writes 1,000 records at a
+  time and keeps line breaks (`#199
+  <https://github.com/netresearch/t3x-nr-textdb/pull/199>`__, `#208
+  <https://github.com/netresearch/t3x-nr-textdb/pull/208>`__, `#212
+  <https://github.com/netresearch/t3x-nr-textdb/pull/212>`__)
+
 .. _version-3-0-5:
 
 Version 3.0.5
