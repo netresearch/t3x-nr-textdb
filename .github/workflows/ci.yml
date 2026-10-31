@@ -37,6 +37,7 @@ jobs:
       # workflow, which left the extension without any functional CI evidence.
       run-functional-tests: true
       functional-test-db: sqlite
+      compact-jobs: true
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
@@ -72,3 +73,27 @@ jobs:
       run-functional-tests: true
       functional-test-db: ${{ matrix.db }}
       db-image: ${{ matrix.image }}
+
+  database-gate:
+    name: All database checks
+    needs: functional-db
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    permissions: {}
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+        with:
+          egress-policy: audit
+      - name: Require a successful database matrix
+        shell: bash
+        env:
+          DB_RESULT: ${{ needs.functional-db.result }}
+        run: |
+          set -euo pipefail
+          if [[ "${DB_RESULT:-}" != success ]]; then
+            echo "::error::Database matrix must succeed; got '${DB_RESULT:-missing}'."
+            exit 1
+          fi
+          echo 'All database checks succeeded.'
