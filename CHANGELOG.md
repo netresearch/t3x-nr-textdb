@@ -17,7 +17,7 @@
 - [BUGFIX] The module, the export and both imports use the languages of the site that holds the configured storage page (`textDbPid`) instead of the first site TYPO3 lists (#188)
 - [BUGFIX] The translation list and the default-language export contain default-language records only; before, translations appeared as records of their own, and re-importing such an export with "Override existing" could write a translation over its original (#187)
 - [BUGFIX] Backend module: a wrongly shaped `translateRecord` request redirects back to the dialog with an error message instead of throwing, and the dialog's save can change only the record it was opened for and its translations (#182)
-- [BUGFIX] Backend module: saving a translation from the list view shows the confirmation, rejection warning or save error in the opened row, on every TYPO3 14.3 release (#185, #202)
+- [BUGFIX] Backend module: saving a translation from the list view shows the confirmation, rejection warning or save error in the opened row, on every TYPO3 14.3 release, and a double-click opens a translation row once (#185, #202)
 - [BUGFIX] Backend module: the filter "Reset" clears the stored filter (#181)
 - [BUGFIX] Export: an export whose filter matches no record redirects back with an error instead of HTTP 500, and no export leaves its working directory behind (#180)
 

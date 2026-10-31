@@ -50,7 +50,7 @@ Version 4.1.0
   saves only the record it was opened for and its translations (`#182
   <https://github.com/netresearch/t3x-nr-textdb/pull/182>`__)
 * 🐛 Saving from the list view shows the save messages, on every TYPO3 14.3
-  release (`#185 <https://github.com/netresearch/t3x-nr-textdb/pull/185>`__,
+  release, and a double-click opens a translation row once (`#185 <https://github.com/netresearch/t3x-nr-textdb/pull/185>`__,
   `#202 <https://github.com/netresearch/t3x-nr-textdb/pull/202>`__)
 * 🐛 The filter reset clears the stored filter (`#181
   <https://github.com/netresearch/t3x-nr-textdb/pull/181>`__)
