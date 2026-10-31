@@ -60,8 +60,9 @@ Version 4.1.0
 
 **Changes:**
 
-* Import and export read and write 1,000 records at a time, and the import
-  writes new entries in bulk, which lowers memory use and import time (`#204
+* The export reads and writes 1,000 records at a time, which lowers its
+  memory use, and the import writes new entries in bulk, which lowers its
+  run time (`#204
   <https://github.com/netresearch/t3x-nr-textdb/pull/204>`__, `#216
   <https://github.com/netresearch/t3x-nr-textdb/pull/216>`__)
 * One extension title in ``ext_emconf.php`` and ``composer.json`` (`#169
