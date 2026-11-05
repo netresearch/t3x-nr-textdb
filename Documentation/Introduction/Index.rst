@@ -242,7 +242,7 @@ Database-Backed Approach (With TextDB)
 **Backend Interface**::
 
    Your TYPO3 Backend/
-   └── Netresearch → TextDB Module
+   └── Content → TextDb Module
        ├── 🔍 Search: [button checkout]          # Instant filtering
        ├── 📊 Filter: Component: "checkout" | Type: "button"
        │

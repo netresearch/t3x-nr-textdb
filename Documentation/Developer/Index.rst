@@ -125,18 +125,17 @@ All language files use UTF-8 encoding to support non-Latin scripts:
 File Structure
 --------------
 
-Each language has 5 translation files:
+Each language has 4 translation files:
 
 .. code-block:: none
 
    Resources/Private/Language/
    ├── {lang}.locallang.xlf           # General interface labels
    ├── {lang}.locallang_db.xlf        # Database field labels
-   ├── {lang}.locallang_mod.xlf       # Backend module labels
    ├── {lang}.locallang_mod_sync.xlf  # Sync module labels
    └── {lang}.locallang_mod_textdb.xlf # TextDB module labels
 
-Total: 116 XLIFF files (23 languages × 5 files + 1 source file per type)
+Total: 128 XLIFF files (31 languages × 4 files + 1 source file per type)
 
 Community Translation Workflow
 -------------------------------

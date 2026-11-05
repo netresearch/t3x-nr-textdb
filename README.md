@@ -134,7 +134,7 @@ Your TYPO3 Project/
 
 ```
 Your TYPO3 Backend/
-└── Netresearch → TextDB Module
+└── Content → TextDb Module
     ├── 🔍 Search: [button checkout]          # Instant filtering
     ├── 📊 Filter: Component: "checkout" | Type: "button"
     │
@@ -348,7 +348,7 @@ Create a dedicated storage folder for your translations:
 
 ### Backend Module
 
-Access the TextDB module under **Netresearch → TextDB** in the TYPO3 backend.
+Access the TextDB module under **Content → TextDb** in the TYPO3 backend.
 
 **Key Features:**
 - **List View**: Browse and filter all translations

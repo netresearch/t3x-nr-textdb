@@ -1,12 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 48 48">
-    <symbol id="tx_nrtextdb_domain_model_environment" viewBox="0 0 48 48">
-        <g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M40.5,5.5H7.5a2,2,0,0,0-2,2v33a2,2,0,0,0,2,2h33a2,2,0,0,0,2-2V7.5A2,2,0,0,0,40.5,5.5Z"/>
-            <line x1="17.25" y1="37.5" x2="30.75" y2="37.5"/>
-            <line x1="17.25" y1="10.5" x2="30.75" y2="10.5"/>
-            <line x1="17.25" y1="24" x2="26.05" y2="24"/>
-            <line x1="17.25" y1="10.5" x2="17.25" y2="37.5"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 64 64">
+    <symbol id="tx_nrtextdb_domain_model_environment" viewBox="0 0 64 64">
+        <path fill="currentColor" fill-rule="evenodd" d="M14 12h36a4 4 0 0 1 4 4v8a4 4 0 0 1-4 4H14a4 4 0 0 1-4-4v-8a4 4 0 0 1 4-4ZM14 16v8h36v-8Z"/>
+        <g opacity=".4">
+            <path fill="currentColor" fill-rule="evenodd" d="M14 36h36a4 4 0 0 1 4 4v8a4 4 0 0 1-4 4H14a4 4 0 0 1-4-4v-8a4 4 0 0 1 4-4ZM14 40v8h36v-8Z"/>
         </g>
+        <path fill="var(--nr-icon-accent, #2F99A4)" d="M43 17.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 1 0 0-5Z"/>
     </symbol>
     <use href="#tx_nrtextdb_domain_model_environment"/>
 </svg>

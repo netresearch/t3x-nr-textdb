@@ -37,17 +37,16 @@ Once you're in the TYPO3 Crowdin project:
 
 #### 3. Start Translating
 
-The extension has **5 translation files** to work on:
+The extension has **4 translation files** to work on:
 
 | File | Description | Translation Units |
 |------|-------------|-------------------|
 | `locallang.xlf` | General interface labels | ~48 strings |
 | `locallang_db.xlf` | Database field labels | ~12 strings |
-| `locallang_mod.xlf` | Backend module labels | ~3 strings |
 | `locallang_mod_sync.xlf` | Sync module labels | ~1 string |
 | `locallang_mod_textdb.xlf` | TextDB module labels | ~3 strings |
 
-**Total:** ~67 strings per language
+**Total:** ~64 strings per language
 
 #### 4. Translation Guidelines
 

@@ -130,9 +130,7 @@ The TextDB backend module requires appropriate permissions:
 
 1. Navigate to **System > Backend Users > [User Group]**
 2. Go to tab **Access Lists**
-3. Under **Modules**, check:
-   * Netresearch
-   * Netresearch TextDB
+3. Under **Modules**, check **Content > TextDb**
 
 **Record Permissions:**
 
@@ -189,16 +187,9 @@ The backend module is configured in `Configuration/Backend/Modules.php`:
 
 .. code-block:: php
 
-   // Parent module (Netresearch)
-   'netresearch_module' => [
-       'labels' => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang_mod.xlf',
-       'iconIdentifier' => 'extension-netresearch-module',
-       'position' => ['after' => 'web'],
-   ],
-
-   // TextDB submodule
+   // TextDB module in the core "Content" group
    'netresearch_textdb' => [
-       'parent' => 'netresearch_module',
+       'parent' => 'content',
        'access' => 'user',
        'iconIdentifier' => 'extension-netresearch-textdb',
        'path' => '/module/netresearch/textdb',
@@ -311,10 +302,6 @@ Icons are registered in `Configuration/Icons.php`:
 .. code-block:: php
 
    return [
-       'extension-netresearch-module' => [
-           'provider' => SvgIconProvider::class,
-           'source' => 'EXT:nr_textdb/Resources/Public/Icons/ModuleGroup.svg',
-       ],
        'extension-netresearch-textdb' => [
            'provider' => SvgIconProvider::class,
            'source' => 'EXT:nr_textdb/Resources/Public/Icons/Module.svg',
@@ -327,10 +314,12 @@ Icons are registered in `Configuration/Icons.php`:
    ];
 
 The glyphs use ``currentColor``, so they follow the backend colour scheme.
-The group icon is rendered inline in the module menu. The record icons are
-sprite icons, referenced from the TCA through ``ctrl.typeicon_classes``, so
-TYPO3 renders them as ``<svg><use>`` instead of ``<img>``.
-``Extension.svg`` stays the extension logo shown in the Extension Manager.
+The module icon is rendered inline in the module menu; its second colour is
+``var(--nr-icon-accent, #2F99A4)``. The record icons are sprite icons,
+referenced from the TCA through ``ctrl.typeicon_classes``, so TYPO3 renders
+them as ``<svg><use>`` instead of ``<img>``. ``Extension.svg`` is the tile
+shown in the Extension Manager: the white glyph on the brand teal with an
+orange accent dot.
 
 .. _language-configuration:
 
@@ -344,11 +333,11 @@ The extension uses XLIFF files for localization:
    Resources/Private/Language/
    ├── locallang.xlf                  # General labels
    ├── locallang_db.xlf               # Database field labels
-   ├── locallang_mod.xlf              # Main module labels
+   ├── locallang_mod_sync.xlf         # Sync module labels
    ├── locallang_mod_textdb.xlf       # TextDB module labels
    ├── de.locallang.xlf               # German translations
    ├── de.locallang_db.xlf
-   ├── de.locallang_mod.xlf
+   ├── de.locallang_mod_sync.xlf
    └── de.locallang_mod_textdb.xlf
 
 Adding Custom Translations
