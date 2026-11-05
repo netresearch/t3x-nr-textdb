@@ -44,8 +44,11 @@ final class ModuleRegistrationTest extends AbstractFunctionalTestCase
     #[Test]
     public function extensionRegistersNoTopLevelGroup(): void
     {
+        // require, not require_once: the file returns the module array, and
+        // require_once returns true instead whenever TYPO3 has already
+        // included the file in this process.
         /** @var array<string, array<string, mixed>> $modules */
-        $modules = require __DIR__ . '/../../../Configuration/Backend/Modules.php';
+        $modules = require __DIR__ . '/../../../Configuration/Backend/Modules.php'; // NOSONAR php:S2003
 
         self::assertNotSame([], $modules);
         foreach ($modules as $identifier => $configuration) {
