@@ -572,9 +572,9 @@ We welcome all types of contributions! Whether you're a developer, translator, o
 
 **Make TextDB available in your language!** We use Crowdin for community translations.
 
-The extension currently supports **23 languages**, and we're always looking to add more:
+The extension currently supports **31 languages**, and we're always looking to add more:
 
-🇿🇦 Afrikaans • 🇸🇦 Arabic • 🇨🇿 Czech • 🇩🇰 Danish • 🇩🇪 German • 🇪🇸 Spanish • 🇫🇮 Finnish • 🇫🇷 French • 🇮🇳 Hindi • 🇮🇩 Indonesian • 🇮🇹 Italian • 🇯🇵 Japanese • 🇰🇷 Korean • 🇳🇱 Dutch • 🇳🇴 Norwegian • 🇵🇱 Polish • 🇵🇹 Portuguese • 🇷🇺 Russian • 🇸🇪 Swedish • 🇹🇿 Swahili • 🇹🇭 Thai • 🇻🇳 Vietnamese • 🇨🇳 Chinese
+🇿🇦 Afrikaans • 🇸🇦 Arabic • 🇦🇩 Catalan • 🇨🇿 Czech • 🇩🇰 Danish • 🇩🇪 German • 🇬🇷 Greek • 🇪🇸 Spanish • 🇫🇮 Finnish • 🇫🇷 French • 🇮🇱 Hebrew • 🇮🇳 Hindi • 🇭🇺 Hungarian • 🇮🇩 Indonesian • 🇮🇹 Italian • 🇯🇵 Japanese • 🇰🇷 Korean • 🇳🇱 Dutch • 🇳🇴 Norwegian • 🇵🇱 Polish • 🇵🇹 Portuguese • 🇷🇴 Romanian • 🇷🇺 Russian • 🇷🇸 Serbian • 🇸🇪 Swedish • 🇹🇿 Swahili • 🇹🇭 Thai • 🇹🇷 Turkish • 🇺🇦 Ukrainian • 🇻🇳 Vietnamese • 🇨🇳 Chinese
 
 **How to contribute translations:**
 

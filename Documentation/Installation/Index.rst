@@ -121,11 +121,11 @@ Post-Installation Steps
 Localization
 ============
 
-The extension backend interface is available in **23 languages** out of the box:
+The extension backend interface is available in **31 languages** out of the box:
 
-**European**: Afrikaans, Czech, Danish, German, Spanish, Finnish, French, Italian, Dutch, Norwegian, Polish, Portuguese, Swedish
+**European**: Afrikaans, Catalan, Czech, Danish, German, Greek, Spanish, Finnish, French, Hungarian, Italian, Dutch, Norwegian, Polish, Portuguese, Romanian, Serbian, Swedish, Ukrainian
 
-**Asian & African**: Arabic, Hindi, Indonesian, Japanese, Korean, Russian, Swahili, Thai, Vietnamese, Chinese
+**Asian & African**: Arabic, Hebrew, Hindi, Indonesian, Japanese, Korean, Russian, Swahili, Thai, Turkish, Vietnamese, Chinese
 
 The interface language follows your TYPO3 backend user settings. To change the backend language:
 

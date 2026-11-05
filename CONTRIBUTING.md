@@ -74,9 +74,9 @@ The extension has **4 translation files** to work on:
 
 ### Currently Supported Languages
 
-The extension already supports **23 languages**:
+The extension already supports **31 languages**:
 
-🇿🇦 Afrikaans (af) • 🇸🇦 Arabic (ar) • 🇨🇿 Czech (cs) • 🇩🇰 Danish (da) • 🇩🇪 German (de) • 🇪🇸 Spanish (es) • 🇫🇮 Finnish (fi) • 🇫🇷 French (fr) • 🇮🇳 Hindi (hi) • 🇮🇩 Indonesian (id) • 🇮🇹 Italian (it) • 🇯🇵 Japanese (ja) • 🇰🇷 Korean (ko) • 🇳🇱 Dutch (nl) • 🇳🇴 Norwegian (no) • 🇵🇱 Polish (pl) • 🇵🇹 Portuguese (pt) • 🇷🇺 Russian (ru) • 🇸🇪 Swedish (sv) • 🇹🇿 Swahili (sw) • 🇹🇭 Thai (th) • 🇻🇳 Vietnamese (vi) • 🇨🇳 Chinese (zh)
+🇿🇦 Afrikaans (af) • 🇸🇦 Arabic (ar) • 🇦🇩 Catalan (ca) • 🇨🇿 Czech (cs) • 🇩🇰 Danish (da) • 🇩🇪 German (de) • 🇬🇷 Greek (el) • 🇪🇸 Spanish (es) • 🇫🇮 Finnish (fi) • 🇫🇷 French (fr) • 🇮🇱 Hebrew (he) • 🇮🇳 Hindi (hi) • 🇭🇺 Hungarian (hu) • 🇮🇩 Indonesian (id) • 🇮🇹 Italian (it) • 🇯🇵 Japanese (ja) • 🇰🇷 Korean (ko) • 🇳🇱 Dutch (nl) • 🇳🇴 Norwegian (no) • 🇵🇱 Polish (pl) • 🇵🇹 Portuguese (pt) • 🇷🇴 Romanian (ro) • 🇷🇺 Russian (ru) • 🇷🇸 Serbian (sr) • 🇸🇪 Swedish (sv) • 🇹🇿 Swahili (sw) • 🇹🇭 Thai (th) • 🇹🇷 Turkish (tr) • 🇺🇦 Ukrainian (uk) • 🇻🇳 Vietnamese (vi) • 🇨🇳 Chinese (zh)
 
 **Want to add a new language?** Create an issue requesting the language, or start translating it in Crowdin and we'll add it!
 
