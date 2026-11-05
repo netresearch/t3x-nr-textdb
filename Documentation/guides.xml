@@ -10,8 +10,8 @@
     max-menu-depth="3"
 >
     <project title="TextDB"
-             version="4.1"
-             release="4.1.0"
+             version="4.2"
+             release="4.2.0"
              copyright="since 2024 by Netresearch DTT GmbH"/>
 
     <extension class="\T3Docs\Typo3DocsTheme\DependencyInjection\Typo3DocsThemeExtension"
