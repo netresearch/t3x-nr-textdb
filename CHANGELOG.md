@@ -1,10 +1,17 @@
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- SPDX-FileCopyrightText: Netresearch DTT GmbH -->
-# Unreleased
+# 4.2.0
+
+## FEATURE
+
+- [FEATURE] The backend module sits under the core "Content" group instead of a top-level "Netresearch" group. Its identifier and path are unchanged, so backend group permissions and bookmarks keep working. The module, extension and record icons are redrawn in the flat TYPO3 v14 style; the module icon follows the light and dark backend scheme (#226)
 
 ## TASK
 
-- [TASK] CI runs the unchanged MariaDB, MySQL and PostgreSQL functional suites in the principal shared graph, sharing preflight and final aggregation with the SQLite matrix while retaining the required database gate
+- [TASK] Translations updated from Crowdin (#224); Crowdin translations now arrive through a signed pull request (#223)
+- [TASK] `ddev install-v14` runs through on a fresh DDEV environment: it creates the root page and site configuration through the core setup and installs `helhum/typo3-console` for its `configuration:set` calls (#228)
+- [TASK] CI runs the unchanged MariaDB, MySQL and PostgreSQL functional suites in the principal shared graph, sharing preflight and final aggregation with the SQLite matrix while retaining the required database gate (#222)
+- [TASK] CI keeps its strict action pin checks (#225); the import command's glob filter declares its parameter type for Rector (#227)
 
 # 4.1.0
 

@@ -9,6 +9,26 @@
 ChangeLog
 =========
 
+.. _version-4-2-0:
+
+Version 4.2.0
+=============
+
+**Features:**
+
+* ✨ The backend module sits under **Content** instead of a top-level
+  **Netresearch** group; identifier and path are unchanged, so group
+  permissions and bookmarks keep working. The module, extension and record
+  icons are redrawn in the flat TYPO3 v14 style (`#226
+  <https://github.com/netresearch/t3x-nr-textdb/pull/226>`__)
+
+**Changes:**
+
+* Translations updated from Crowdin (`#224
+  <https://github.com/netresearch/t3x-nr-textdb/pull/224>`__)
+* ``ddev install-v14`` runs through on a fresh DDEV environment (`#228
+  <https://github.com/netresearch/t3x-nr-textdb/pull/228>`__)
+
 .. _version-4-1-0:
 
 Version 4.1.0
