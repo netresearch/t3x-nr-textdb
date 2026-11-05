@@ -36,9 +36,22 @@ final class ModuleRegistrationTest extends AbstractFunctionalTestCase
         self::assertSame('/module/netresearch/textdb', $module->getPath());
     }
 
+    /**
+     * Scoped to this extension's own declarations: another Netresearch
+     * extension (nr_sync) still registers the shared group itself, so a
+     * system-wide lookup of netresearch_module would test that extension.
+     */
     #[Test]
     public function extensionRegistersNoTopLevelGroup(): void
     {
-        self::assertFalse($this->get(ModuleProvider::class)->isModuleRegistered('netresearch_module'));
+        /** @var array<string, array<string, mixed>> $modules */
+        $modules = require __DIR__ . '/../../../Configuration/Backend/Modules.php';
+
+        self::assertNotSame([], $modules);
+        foreach ($modules as $identifier => $configuration) {
+            self::assertArrayHasKey('parent', $configuration, $identifier . ' is a top-level module');
+        }
+
+        self::assertArrayNotHasKey('netresearch_module', $modules);
     }
 }

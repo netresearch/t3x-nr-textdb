@@ -16,7 +16,8 @@ use TYPO3\CMS\Core\Imaging\IconProvider\SvgIconProvider;
 use TYPO3\CMS\Core\Imaging\IconProvider\SvgSpriteIconProvider;
 
 // The module icon is rendered inline in the module menu, so its currentColor
-// glyph and its var(--nr-icon-accent) accent follow the backend colour scheme.
+// glyph follows the backend colour scheme. The accent is var(--nr-icon-accent)
+// with the brand teal as fallback; no stylesheet sets that property yet.
 //
 // Record icons are sprite icons, the way core registers its own: their default
 // markup is <svg><use>, which inherits currentColor. An SvgIconProvider icon is
