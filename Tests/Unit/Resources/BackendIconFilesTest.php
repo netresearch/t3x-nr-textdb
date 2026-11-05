@@ -55,7 +55,7 @@ final class BackendIconFilesTest extends UnitTestCase
 
     private const GEOMETRY_ATTRIBUTES = ['d', 'points', 'transform', 'viewBox'];
 
-    private const RECORD_VIEWBOX = '0 0 64 64';
+    private const ICON_VIEWBOX = '0 0 64 64';
 
     private const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 
@@ -129,8 +129,8 @@ final class BackendIconFilesTest extends UnitTestCase
         return [
             $table,
             [
-                ['svg', 0, ['height' => '16', 'viewBox' => self::geometry(self::RECORD_VIEWBOX), 'width' => '16'], ''],
-                ['symbol', 1, ['id' => $table, 'viewBox' => self::geometry(self::RECORD_VIEWBOX)], ''],
+                ['svg', 0, ['height' => '16', 'viewBox' => self::geometry(self::ICON_VIEWBOX), 'width' => '16'], ''],
+                ['symbol', 1, ['id' => $table, 'viewBox' => self::geometry(self::ICON_VIEWBOX)], ''],
                 ...$children,
                 ['use', 1, ['href' => '#' . $table], ''],
             ],
@@ -195,7 +195,7 @@ final class BackendIconFilesTest extends UnitTestCase
         // filter or element fails as well as a changed path or colour.
         self::assertSame(
             [
-                ['svg', 0, ['viewBox' => self::geometry('0 0 64 64')], ''],
+                ['svg', 0, ['viewBox' => self::geometry(self::ICON_VIEWBOX)], ''],
                 ['title', 1, [], 'TextDB - Netresearch DTT GmbH'],
                 ['path', 1, ['d' => self::geometry(self::TILE_PATH), 'fill' => self::BRAND_TEAL], ''],
                 ['path', 1, ['d' => self::geometry(self::TRANSLATE_SOURCE_PATH), 'fill' => '#FFFFFF'], ''],
@@ -221,7 +221,7 @@ final class BackendIconFilesTest extends UnitTestCase
 
         self::assertSame(
             [
-                ['svg', 0, ['viewBox' => self::geometry('0 0 64 64')], ''],
+                ['svg', 0, ['viewBox' => self::geometry(self::ICON_VIEWBOX)], ''],
                 ['path', 1, ['d' => self::geometry(self::TRANSLATE_SOURCE_PATH), 'fill' => 'currentColor'], ''],
                 ['path', 1, ['d' => self::geometry(self::TRANSLATE_TARGET_PATH), 'fill' => self::ICON_ACCENT, 'fill-rule' => 'evenodd'], ''],
             ],
