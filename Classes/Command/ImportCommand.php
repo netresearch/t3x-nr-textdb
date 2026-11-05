@@ -177,7 +177,7 @@ final class ImportCommand extends Command
             // Filter all possible "false" values
             $files = array_filter(
                 $files,
-                static fn ($file): bool => $file !== false,
+                static fn (array|false $file): bool => $file !== false,
             );
 
             $files = array_merge(...$files);
