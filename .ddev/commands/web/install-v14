@@ -21,6 +21,12 @@ cd "$INSTALL_DIR"
 
 # Initialize composer project
 if [ ! -f "composer.json" ]; then
+    # The web image puts "perform this first" placeholders into public/ (see
+    # .ddev/web-build/Dockerfile). create-project refuses a non-empty
+    # directory, so remove exactly those files before creating the project.
+    rm -f public/index.html public/typo3/index.html
+    rmdir public/typo3 public 2>/dev/null || true
+
     echo "🔧 Creating TYPO3 project..."
     composer create-project typo3/cms-base-distribution:$TYPO3_VERSION . --no-install --no-interaction
 fi
@@ -39,11 +45,12 @@ echo "🔗 Adding nr_textdb extension..."
 composer config repositories.nr_textdb path /var/www/nr_textdb
 composer require netresearch/nr-textdb:@dev --no-interaction
 
-# Install introduction package for demo content
-echo "📚 Installing introduction package..."
-composer require --no-interaction typo3/cms-introduction
+# configuration:set below comes from typo3-console, not from the core CLI
+echo "🧰 Installing typo3-console..."
+composer require --no-interaction helhum/typo3-console
 
-# Run TYPO3 setup
+# Run TYPO3 setup. --create-site creates the root page and the site
+# configuration; typo3/cms-introduction has no TYPO3 v14 release.
 echo "⚙️  Setting up TYPO3..."
 vendor/bin/typo3 setup \
     --driver=mysqli \
@@ -57,6 +64,7 @@ vendor/bin/typo3 setup \
     --admin-user-password='Password:joh316' \
     --project-name='EXT:nr_textdb Dev Environment' \
     --server-type=apache \
+    --create-site='https://v14.nr-textdb.ddev.site/' \
     --no-interaction \
     --force
 
@@ -72,32 +80,6 @@ vendor/bin/typo3 configuration:set 'SYS/displayErrors' 1
 echo "✅ Activating extensions..."
 vendor/bin/typo3 extension:setup --extension=backend || true
 vendor/bin/typo3 extension:setup --extension=nr_textdb || true
-vendor/bin/typo3 extension:setup --extension=introduction || true
-
-# Create site configuration if not exists
-echo "🌐 Creating site configuration..."
-mkdir -p config/sites/main
-if [ ! -f "config/sites/main/config.yaml" ]; then
-    cat > config/sites/main/config.yaml << 'EOF'
-base: /
-baseVariants: {  }
-languages:
-  - title: English
-    enabled: true
-    languageId: 0
-    base: /
-    typo3Language: default
-    locale: en_US.UTF-8
-    iso-639-1: en
-    navigationTitle: English
-    hreflang: en-us
-    direction: ltr
-    flag: us
-rootPageId: 1
-routes: {  }
-websiteTitle: 'TYPO3 14.3 - nr_textdb'
-EOF
-fi
 
 # Flush caches
 echo "🧹 Flushing caches..."
