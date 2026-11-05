@@ -134,7 +134,7 @@ Your TYPO3 Project/
 
 ```
 Your TYPO3 Backend/
-└── Netresearch → TextDB Module
+└── Content → TextDb Module
     ├── 🔍 Search: [button checkout]          # Instant filtering
     ├── 📊 Filter: Component: "checkout" | Type: "button"
     │
@@ -348,7 +348,7 @@ Create a dedicated storage folder for your translations:
 
 ### Backend Module
 
-Access the TextDB module under **Netresearch → TextDB** in the TYPO3 backend.
+Access the TextDB module under **Content → TextDb** in the TYPO3 backend.
 
 **Key Features:**
 - **List View**: Browse and filter all translations
@@ -572,9 +572,9 @@ We welcome all types of contributions! Whether you're a developer, translator, o
 
 **Make TextDB available in your language!** We use Crowdin for community translations.
 
-The extension currently supports **23 languages**, and we're always looking to add more:
+The extension currently supports **31 languages**, and we're always looking to add more:
 
-🇿🇦 Afrikaans • 🇸🇦 Arabic • 🇨🇿 Czech • 🇩🇰 Danish • 🇩🇪 German • 🇪🇸 Spanish • 🇫🇮 Finnish • 🇫🇷 French • 🇮🇳 Hindi • 🇮🇩 Indonesian • 🇮🇹 Italian • 🇯🇵 Japanese • 🇰🇷 Korean • 🇳🇱 Dutch • 🇳🇴 Norwegian • 🇵🇱 Polish • 🇵🇹 Portuguese • 🇷🇺 Russian • 🇸🇪 Swedish • 🇹🇿 Swahili • 🇹🇭 Thai • 🇻🇳 Vietnamese • 🇨🇳 Chinese
+🇿🇦 Afrikaans • 🇸🇦 Arabic • 🇦🇩 Catalan • 🇨🇿 Czech • 🇩🇰 Danish • 🇩🇪 German • 🇬🇷 Greek • 🇪🇸 Spanish • 🇫🇮 Finnish • 🇫🇷 French • 🇮🇱 Hebrew • 🇮🇳 Hindi • 🇭🇺 Hungarian • 🇮🇩 Indonesian • 🇮🇹 Italian • 🇯🇵 Japanese • 🇰🇷 Korean • 🇳🇱 Dutch • 🇳🇴 Norwegian • 🇵🇱 Polish • 🇵🇹 Portuguese • 🇷🇴 Romanian • 🇷🇺 Russian • 🇷🇸 Serbian • 🇸🇪 Swedish • 🇹🇿 Swahili • 🇹🇭 Thai • 🇹🇷 Turkish • 🇺🇦 Ukrainian • 🇻🇳 Vietnamese • 🇨🇳 Chinese
 
 **How to contribute translations:**
 

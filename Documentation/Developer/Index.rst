@@ -70,16 +70,16 @@ All services use constructor injection via `Configuration/Services.yaml`:
 Localization Infrastructure
 ============================
 
-The extension includes a robust localization infrastructure supporting **23 languages** for the backend interface.
+The extension includes a robust localization infrastructure supporting **31 languages** for the backend interface.
 
 Supported Languages
 -------------------
 
-**European (13):**
-Afrikaans (af), Czech (cs), Danish (da), German (de), Spanish (es), Finnish (fi), French (fr), Italian (it), Dutch (nl), Norwegian (no), Polish (pl), Portuguese (pt), Swedish (sv)
+**European (19):**
+Afrikaans (af), Catalan (ca), Czech (cs), Danish (da), German (de), Greek (el), Spanish (es), Finnish (fi), French (fr), Hungarian (hu), Italian (it), Dutch (nl), Norwegian (no), Polish (pl), Portuguese (pt), Romanian (ro), Serbian (sr), Swedish (sv), Ukrainian (uk)
 
-**Asian & African (10):**
-Arabic (ar), Hindi (hi), Indonesian (id), Japanese (ja), Korean (ko), Russian (ru), Swahili (sw), Thai (th), Vietnamese (vi), Chinese (zh)
+**Asian & African (12):**
+Arabic (ar), Hebrew (he), Hindi (hi), Indonesian (id), Japanese (ja), Korean (ko), Russian (ru), Swahili (sw), Thai (th), Turkish (tr), Vietnamese (vi), Chinese (zh)
 
 Technical Implementation
 ------------------------
@@ -125,18 +125,17 @@ All language files use UTF-8 encoding to support non-Latin scripts:
 File Structure
 --------------
 
-Each language has 5 translation files:
+Each language has 4 translation files:
 
 .. code-block:: none
 
    Resources/Private/Language/
    ├── {lang}.locallang.xlf           # General interface labels
    ├── {lang}.locallang_db.xlf        # Database field labels
-   ├── {lang}.locallang_mod.xlf       # Backend module labels
    ├── {lang}.locallang_mod_sync.xlf  # Sync module labels
    └── {lang}.locallang_mod_textdb.xlf # TextDB module labels
 
-Total: 116 XLIFF files (23 languages × 5 files + 1 source file per type)
+Total: 128 XLIFF files (31 languages × 4 files + 1 source file per type)
 
 Community Translation Workflow
 -------------------------------

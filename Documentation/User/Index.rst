@@ -29,10 +29,10 @@ Accessing the TextDB Module
 ============================
 
 1. Log in to the TYPO3 backend
-2. In the left menu, click on **Netresearch**
-3. Select **Netresearch TextDB** from the submenu
+2. In the left menu, open **Content**
+3. Select **TextDb**
 
-The TextDB module is located under the **Netresearch** section in the backend menu.
+The TextDB module is located under **Content** in the backend menu.
 
 .. _viewing-translations:
 

@@ -30,136 +30,110 @@ final class BackendIconFilesTest extends UnitTestCase
 {
     private const BRAND_TEAL = '#2F99A4';
 
-    private const BRAND_ANTHRACITE = '#585961';
+    private const BRAND_ORANGE = '#FF4D00';
 
     /**
-     * The [n] logo as netresearch-branding/references/typo3-extension-branding.md
-     * ships it: frame path, then letter path, both with the same transform.
+     * The accent fill of the flat v14 module icons across the Netresearch
+     * extensions: a custom property a theme can override, with the brand teal
+     * as fallback.
      */
-    private const BRAND_FRAME_PATH = 'M209.6,0V31.62h32.77a26.38,26.38,0,0,1,26.44,26.43V242a26.38,26.38,0,0,1-26.44,26.44H209.6V300h47.93a42.77,42.77,0,0,0,42.86-42.86V42.89A42.76,42.76,0,0,0,257.53,0ZM43.25,0A42.76,42.76,0,0,0,.39,42.89V257.18A42.76,42.76,0,0,0,43.25,300H91.18V268.46H58.4A26.38,26.38,0,0,1,32,242v-184A26.37,26.37,0,0,1,58.4,31.62H91.18V0Z';
+    private const ICON_ACCENT = 'var(--nr-icon-accent, #2F99A4)';
 
-    private const BRAND_LETTER_PATH = 'M221.44,120.41c0-34.48-13.94-57.82-48.93-57.82-26.62,0-48.54,7.74-64.17,26.56l-.7-22.06-28.31.06V232.94h31.59V124.69c7.14-18.38,32.14-34.8,53-34.5,27.38.4,25.2,26.24,26,45.81v96.94h31.58';
+    /**
+     * The translate pictogram on the 64 grid: the source character, then the
+     * target letter A with its counter. Module.svg and Extension.svg draw the
+     * same two shapes.
+     */
+    private const TRANSLATE_SOURCE_PATH = 'M33.74 38.14l-5.08-5.02 0.06-0.06c3.48-3.88 5.96-8.34 7.42-13.06H42V16h-14V12H24v4H10v3.98h22.34C31 23.84 28.88 27.5 26 30.7 24.14 28.64 22.6 26.38 21.38 24h-4c1.46 3.26 3.46 6.34 5.96 9.12l-10.18 10.04L16 46l10-10 6.22 6.22 1.52-4.08Z';
 
-    private const BRAND_TRANSFORM = 'translate(-0.39 -0.04)';
+    private const TRANSLATE_TARGET_PATH = 'M45 28h-4L32 52h4l2.24-6h9.5L50 52h4l-9-24ZM39.76 42l3.24-8.66L46.24 42h-6.48Z';
+
+    /**
+     * The rounded tile every Netresearch extension icon sits on.
+     */
+    private const TILE_PATH = 'M8 0h48a8 8 0 0 1 8 8v48a8 8 0 0 1-8 8H8a8 8 0 0 1-8-8V8a8 8 0 0 1 8-8Z';
 
     private const GEOMETRY_ATTRIBUTES = ['d', 'points', 'transform', 'viewBox'];
 
-    private const RECORD_VIEWBOX = '0 0 48 48';
-
-    /**
-     * The rounded frame the component, environment and type icons draw
-     * around their letter.
-     */
-    private const RECORD_FRAME = ['path', ['d' => 'M40.5,5.5H7.5a2,2,0,0,0-2,2v33a2,2,0,0,0,2,2h33a2,2,0,0,0,2-2V7.5A2,2,0,0,0,40.5,5.5Z'], ''];
+    private const ICON_VIEWBOX = '0 0 64 64';
 
     private const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 
     private const ICON_DIR = __DIR__ . '/../../../Resources/Public/Icons/';
 
     /**
-     * Every record icon as its full expected tree. The icon registry
-     * references "<file>#<table>", so the symbol carries the table name as id,
-     * and the file itself draws the symbol with <use> so it also shows as a
-     * standalone image. Every glyph is a currentColor stroke of width 3.
+     * Every record icon as its full expected tree, in the flat v14 grammar of
+     * Module.svg: filled shapes only, the main shape in currentColor,
+     * secondary detail at opacity .4, one accent in ICON_ACCENT. The icon
+     * registry references "<file>#<table>", so the symbol carries the table
+     * name as id, and the file itself draws the symbol with <use> so it also
+     * shows as a standalone image.
+     *
+     * Rows are the children of the symbol: element, depth below the symbol,
+     * attributes.
      *
      * @return iterable<string, array{string, list<array{string, int, array<string, string>, string}>}>
      */
     public static function recordIconProvider(): iterable
     {
         yield 'tx_nrtextdb_domain_model_component' => self::recordIcon('tx_nrtextdb_domain_model_component', [
-            self::RECORD_FRAME,
-            ['path', ['d' => self::geometry('M33,28.45a9,9,0,0,1-9,9.05h0a9,9,0,0,1-9-9v-8.9a9,9,0,0,1,9-9h0a9,9,0,0,1,9,9.05')], ''],
+            ['path', 0, ['d' => 'M15 12h11a3 3 0 0 1 3 3v11a3 3 0 0 1-3 3H15a3 3 0 0 1-3-3V15a3 3 0 0 1 3-3Z', 'fill' => 'currentColor']],
+            ['g', 0, ['opacity' => '.4']],
+            ['path', 1, ['d' => 'M38 12h11a3 3 0 0 1 3 3v11a3 3 0 0 1-3 3H38a3 3 0 0 1-3-3V15a3 3 0 0 1 3-3ZM15 35h11a3 3 0 0 1 3 3v11a3 3 0 0 1-3 3H15a3 3 0 0 1-3-3V38a3 3 0 0 1 3-3Z', 'fill' => 'currentColor']],
+            ['path', 0, ['d' => 'M38 35h11a3 3 0 0 1 3 3v11a3 3 0 0 1-3 3H38a3 3 0 0 1-3-3V38a3 3 0 0 1 3-3Z', 'fill' => self::ICON_ACCENT]],
         ]);
 
         yield 'tx_nrtextdb_domain_model_environment' => self::recordIcon('tx_nrtextdb_domain_model_environment', [
-            self::RECORD_FRAME,
-            ['line', ['x1' => '17.25', 'x2' => '30.75', 'y1' => '37.5', 'y2' => '37.5'], ''],
-            ['line', ['x1' => '17.25', 'x2' => '30.75', 'y1' => '10.5', 'y2' => '10.5'], ''],
-            ['line', ['x1' => '17.25', 'x2' => '26.05', 'y1' => '24', 'y2' => '24'], ''],
-            ['line', ['x1' => '17.25', 'x2' => '17.25', 'y1' => '10.5', 'y2' => '37.5'], ''],
+            ['path', 0, ['d' => 'M14 12h36a4 4 0 0 1 4 4v8a4 4 0 0 1-4 4H14a4 4 0 0 1-4-4v-8a4 4 0 0 1 4-4ZM14 16v8h36v-8Z', 'fill' => 'currentColor', 'fill-rule' => 'evenodd']],
+            ['g', 0, ['opacity' => '.4']],
+            ['path', 1, ['d' => 'M14 36h36a4 4 0 0 1 4 4v8a4 4 0 0 1-4 4H14a4 4 0 0 1-4-4v-8a4 4 0 0 1 4-4ZM14 40v8h36v-8Z', 'fill' => 'currentColor', 'fill-rule' => 'evenodd']],
+            ['path', 0, ['d' => 'M43 17.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 1 0 0-5Z', 'fill' => self::ICON_ACCENT]],
         ]);
 
-        yield 'tx_nrtextdb_domain_model_translation' => self::recordIcon('tx_nrtextdb_domain_model_translation', self::translationGlyph());
+        yield 'tx_nrtextdb_domain_model_translation' => self::recordIcon('tx_nrtextdb_domain_model_translation', [
+            ['path', 0, ['d' => self::TRANSLATE_SOURCE_PATH, 'fill' => 'currentColor']],
+            ['path', 0, ['d' => self::TRANSLATE_TARGET_PATH, 'fill' => self::ICON_ACCENT, 'fill-rule' => 'evenodd']],
+        ]);
 
         yield 'tx_nrtextdb_domain_model_type' => self::recordIcon('tx_nrtextdb_domain_model_type', [
-            self::RECORD_FRAME,
-            ['line', ['x1' => '13.84', 'x2' => '34.16', 'y1' => '10.5', 'y2' => '10.5'], ''],
-            ['line', ['x1' => '24', 'x2' => '24', 'y1' => '37.5', 'y2' => '10.5'], ''],
+            ['path', 0, ['d' => 'M10 32L22 18H50a4 4 0 0 1 4 4V42a4 4 0 0 1-4 4H22ZM15.27 32L23.84 22H50V42H23.84Z', 'fill' => 'currentColor', 'fill-rule' => 'evenodd']],
+            ['g', 0, ['opacity' => '.4']],
+            ['path', 1, ['d' => 'M35 30h9a2 2 0 0 1 0 4h-9a2 2 0 0 1 0-4Z', 'fill' => 'currentColor']],
+            ['path', 0, ['d' => 'M26 28.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 1 0 0-7Z', 'fill' => self::ICON_ACCENT]],
         ]);
     }
 
     /**
      * The expected tree of a record icon: a <symbol> with the table name as
-     * id, one group drawing its shapes with a currentColor stroke of width 3
-     * and no fill, and a <use> of the symbol, so the file also shows as a
-     * standalone image.
+     * id holding the given rows, and a <use> of the symbol.
      *
-     * @param list<array{string, array<string, string>, string}> $shapes
+     * @param list<array{string, int, array<string, string>}> $rows
      *
      * @return array{string, list<array{string, int, array<string, string>, string}>}
      */
-    private static function recordIcon(string $table, array $shapes): array
+    private static function recordIcon(string $table, array $rows): array
     {
-        return [
-            $table,
-            [
-                ['svg', 0, ['height' => '16', 'viewBox' => self::geometry(self::RECORD_VIEWBOX), 'width' => '16'], ''],
-                ['symbol', 1, ['id' => $table, 'viewBox' => self::geometry(self::RECORD_VIEWBOX)], ''],
-                ['g', 2, ['fill' => 'none', 'stroke' => 'currentColor', 'stroke-linecap' => 'round', 'stroke-linejoin' => 'round', 'stroke-width' => '3'], ''],
-                ...self::at(3, $shapes),
-                ['use', 1, ['href' => '#' . $table], ''],
-            ],
-        ];
-    }
+        $children = [];
 
-    /**
-     * Places depth-less expected rows (the children of one element) at the
-     * given depth, and applies geometry() to their geometry attributes, as
-     * normalisedTree() does to the actual tree.
-     *
-     * @param list<array{string, array<string, string>, string}> $rows
-     *
-     * @return list<array{string, int, array<string, string>, string}>
-     */
-    private static function at(int $depth, array $rows): array
-    {
-        $placed = [];
-
-        foreach ($rows as [$name, $attributes, $text]) {
+        foreach ($rows as [$name, $depth, $attributes]) {
             foreach ($attributes as $attribute => $value) {
                 if (in_array($attribute, self::GEOMETRY_ATTRIBUTES, true)) {
                     $attributes[$attribute] = self::geometry($value);
                 }
             }
 
-            $placed[] = [$name, $depth, $attributes, $text];
+            ksort($attributes);
+            $children[] = [$name, $depth + 2, $attributes, ''];
         }
 
-        return $placed;
-    }
-
-    /**
-     * The translation glyph: the text-to-character pictogram in its frame.
-     * The translation record icon and the Module.svg tile draw the same
-     * shapes.
-     *
-     * @return list<array{string, array<string, string>, string}>
-     */
-    private static function translationGlyph(): array
-    {
         return [
-            ['line', ['x1' => '10.3148', 'x2' => '14.4567', 'y1' => '35.6362', 'y2' => '24.4924'], ''],
-            ['line', ['x1' => '18.4271', 'x2' => '14.4567', 'y1' => '35.6694', 'y2' => '24.4924'], ''],
-            ['line', ['x1' => '17.0988', 'x2' => '11.6921', 'y1' => '31.9306', 'y2' => '31.9306'], ''],
-            ['line', ['x1' => '25.8582', 'x2' => '38.3148', 'y1' => '13.3468', 'y2' => '13.3468'], ''],
-            ['line', ['x1' => '32.0865', 'x2' => '32.0865', 'y1' => '10.879', 'y2' => '13.3468'], ''],
-            ['path', ['d' => self::geometry('M35.5727,13.3468c0,3.408-3.9563,9.0486-7.9125,9.91')], ''],
-            ['path', ['d' => self::geometry('M28.2871,16.4414c.3917,2.35,4.4656,6.2674,8.089,6.8158')], ''],
-            ['path', ['d' => self::geometry('M26.7456,34.933a5.1656,5.1656,0,0,0,5.1656-5.1655V27.1924')], ''],
-            ['polyline', ['points' => self::geometry('29.581 29.522 31.911 27.192 34.242 29.522')], ''],
-            ['path', ['d' => self::geometry('M19.5371,13.3468a5.1656,5.1656,0,0,0-5.1655,5.1656v2.5751')], ''],
-            ['polyline', ['points' => self::geometry('16.701 18.758 14.372 21.087 12.04 18.758')], ''],
-            ['path', ['d' => self::geometry('M40.5,5.5H7.5a2,2,0,0,0-2,2h0v33a2,2,0,0,0,2,2h33a2,2,0,0,0,2-2h0V7.5a2,2,0,0,0-2-2Z')], ''],
+            $table,
+            [
+                ['svg', 0, ['height' => '16', 'viewBox' => self::geometry(self::ICON_VIEWBOX), 'width' => '16'], ''],
+                ['symbol', 1, ['id' => $table, 'viewBox' => self::geometry(self::ICON_VIEWBOX)], ''],
+                ...$children,
+                ['use', 1, ['href' => '#' . $table], ''],
+            ],
         ];
     }
 
@@ -203,42 +177,16 @@ final class BackendIconFilesTest extends UnitTestCase
     }
 
     /**
-     * ModuleGroup.svg is the [n] logo as the Netresearch group icon in the
-     * module menu: the frame in the brand teal and the letter in currentColor,
-     * so the letter takes the menu's text colour. Pinned as its full tree, so
-     * an added attribute, element, style, clip, mask or transform fails.
+     * Extension.svg is the extension tile shown in the Extension Manager and
+     * on TER, in the form the Netresearch TYPO3 v14 extensions share: a
+     * rounded #2F99A4 tile, the feature glyph in white, one #FF4D00 accent
+     * dot. On 2026-11-05 the user asked for this form, replacing the [n] logo
+     * chosen on 2026-09-29; that decision was among variants of the logo, the
+     * feature tile was not one of them. White on #2F99A4 is 3.38:1. The
+     * Extension Manager shows the file as <img>, so it uses fixed colours.
      */
     #[Test]
-    public function moduleGroupIconIsTheLogoWithACurrentColorLetter(): void
-    {
-        $svg = $this->load(self::ICON_DIR . 'ModuleGroup.svg')->documentElement;
-        self::assertInstanceOf(DOMElement::class, $svg);
-
-        self::assertSame(
-            [
-                ['svg', 0, ['height' => '16', 'viewBox' => self::geometry('0 0 300 300'), 'width' => '16'], ''],
-                ['path', 1, ['d' => self::geometry(self::BRAND_FRAME_PATH), 'fill' => self::BRAND_TEAL, 'transform' => self::geometry(self::BRAND_TRANSFORM)], ''],
-                ['path', 1, ['d' => self::geometry(self::BRAND_LETTER_PATH), 'fill' => 'currentColor', 'transform' => self::geometry(self::BRAND_TRANSFORM)], ''],
-            ],
-            $this->normalisedTree($svg),
-        );
-    }
-
-    /**
-     * Extension.svg is the Netresearch [n] logo exactly as the
-     * netresearch-branding skill specifies it (typo3-extension-branding.md):
-     * frame #2F99A4, letter #585961, the only valid brand values for the
-     * symbol. The Extension Manager shows it as <img>, so it cannot follow
-     * the colour scheme. Measured with TYPO3 14.3.7's backend.css on the plain
-     * rows of the extension list (striped and unstriped, at rest and hovered,
-     * fresh, modern and classic theme), the lowest ratios are: frame 2.58:1
-     * light / 3.91:1 dark, letter 5.32:1 light / 1.90:1 dark. WCAG 1.4.3 and
-     * 1.4.11 exempt logotypes. Keeping the brand logo was the user's decision
-     * over a non-brand #7b7b7b / #248791 pair (at least 3.11:1) and a teal
-     * tile with a white letter (not a sanctioned form of the logo).
-     */
-    #[Test]
-    public function extensionLogoIsExactlyTheBrandSpec(): void
+    public function extensionIconIsTheWhiteTranslateGlyphOnTheBrandTile(): void
     {
         $svg = $this->load(self::ICON_DIR . 'Extension.svg')->documentElement;
         self::assertInstanceOf(DOMElement::class, $svg);
@@ -247,36 +195,35 @@ final class BackendIconFilesTest extends UnitTestCase
         // filter or element fails as well as a changed path or colour.
         self::assertSame(
             [
-                ['svg', 0, ['viewBox' => '0 0 300 300'], ''],
-                ['title', 1, [], 'Netresearch DTT GmbH'],
-                ['path', 1, ['d' => self::geometry(self::BRAND_FRAME_PATH), 'fill' => self::BRAND_TEAL, 'transform' => self::geometry(self::BRAND_TRANSFORM)], ''],
-                ['path', 1, ['d' => self::geometry(self::BRAND_LETTER_PATH), 'fill' => self::BRAND_ANTHRACITE, 'transform' => self::geometry(self::BRAND_TRANSFORM)], ''],
+                ['svg', 0, ['viewBox' => self::geometry(self::ICON_VIEWBOX)], ''],
+                ['title', 1, [], 'TextDB - Netresearch DTT GmbH'],
+                ['path', 1, ['d' => self::geometry(self::TILE_PATH), 'fill' => self::BRAND_TEAL], ''],
+                ['path', 1, ['d' => self::geometry(self::TRANSLATE_SOURCE_PATH), 'fill' => '#FFFFFF'], ''],
+                ['path', 1, ['d' => self::geometry(self::TRANSLATE_TARGET_PATH), 'fill' => '#FFFFFF', 'fill-rule' => 'evenodd'], ''],
+                ['circle', 1, ['cx' => '51', 'cy' => '13', 'fill' => self::BRAND_ORANGE, 'r' => '5'], ''],
             ],
             $this->normalisedTree($svg),
         );
     }
 
     /**
-     * Module.svg is the TextDB module icon, a tile in the brand teal with the
-     * feature glyph drawn in white on top (typo3-extension-branding.md asks for
-     * #2F99A4 in module icons). White on #2F99A4 is 3.38:1.
+     * Module.svg is the TextDB module icon in the flat TYPO3 v14 grammar the
+     * Netresearch extensions share: filled shapes only, the source character
+     * in currentColor, so it takes the module menu's text colour in the light
+     * and the dark scheme, and the target letter in the shared accent. No
+     * tile: the v14 module menu draws core icons without one.
      */
     #[Test]
-    public function moduleIconIsAWhiteGlyphOnTheBrandTealTile(): void
+    public function moduleIconIsTheFlatTranslateGlyphInCurrentColorAndAccent(): void
     {
         $svg = $this->load(self::ICON_DIR . 'Module.svg')->documentElement;
         self::assertInstanceOf(DOMElement::class, $svg);
 
-        // Every element with every attribute: the #2F99A4 tile, the white
-        // stroke of the glyph, its width, and no opacity or visibility
-        // setting anywhere, so neither part can be recoloured, thinned out
-        // or faded without failing here.
         self::assertSame(
             [
-                ['svg', 0, ['height' => '64px', 'stroke-width' => '1.5', 'viewBox' => self::geometry('0 0 48.00 48.00'), 'width' => '64px'], ''],
-                ['rect', 1, ['fill' => '#2F99A4', 'height' => '48.00', 'rx' => '0', 'stroke-width' => '0', 'width' => '48.00', 'x' => '0', 'y' => '0'], ''],
-                ['g', 1, ['fill' => 'none', 'stroke' => '#ffffff', 'stroke-linecap' => 'round', 'stroke-linejoin' => 'round'], ''],
-                ...self::at(2, self::translationGlyph()),
+                ['svg', 0, ['viewBox' => self::geometry(self::ICON_VIEWBOX)], ''],
+                ['path', 1, ['d' => self::geometry(self::TRANSLATE_SOURCE_PATH), 'fill' => 'currentColor'], ''],
+                ['path', 1, ['d' => self::geometry(self::TRANSLATE_TARGET_PATH), 'fill' => self::ICON_ACCENT, 'fill-rule' => 'evenodd'], ''],
             ],
             $this->normalisedTree($svg),
         );

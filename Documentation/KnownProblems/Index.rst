@@ -160,7 +160,7 @@ Problem: Module Not Visible
       vendor/bin/typo3 cache:flush
 
 2. For an editor who is no administrator, check that the backend user or
-   one of the user's groups lists the module :guilabel:`Netresearch > TextDb`
+   one of the user's groups lists the module :guilabel:`Content > TextDb`
    in :guilabel:`Allowed modules` on the tab
    :guilabel:`Module Permissions`.
 

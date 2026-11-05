@@ -22,7 +22,7 @@ use TYPO3\CMS\Core\Imaging\IconFactory;
 use TYPO3\CMS\Core\Imaging\IconSize;
 
 /**
- * The record icons and the module group icon must reach the backend in a
+ * The record icons and the module icon must reach the backend in a
  * form that inherits currentColor, otherwise they cannot follow the colour
  * scheme: <svg><use> or inline SVG, never <img>.
  */
@@ -59,14 +59,14 @@ final class BackendIconRegistrationTest extends AbstractFunctionalTestCase
     }
 
     #[Test]
-    public function moduleGroupIconInlineMarkupDrawsTheGlyphInCurrentColor(): void
+    public function moduleIconInlineMarkupDrawsTheGlyphInCurrentColorAndTheAccent(): void
     {
-        $icon = $this->get(IconFactory::class)->getIcon('extension-netresearch-module', IconSize::SMALL);
+        $icon = $this->get(IconFactory::class)->getIcon('extension-netresearch-textdb', IconSize::SMALL);
 
         $markup = $icon->getAlternativeMarkup('inline');
 
         self::assertStringContainsString('<svg', $markup);
         self::assertStringContainsString('fill="currentColor"', $markup);
-        self::assertStringContainsString('fill="#2F99A4"', $markup);
+        self::assertStringContainsString('fill="var(--nr-icon-accent, #2F99A4)"', $markup);
     }
 }

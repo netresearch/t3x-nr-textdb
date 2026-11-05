@@ -1,0 +1,60 @@
+<?php
+
+/*
+ * This file is part of the package netresearch/nr-textdb.
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ * SPDX-FileCopyrightText: Netresearch DTT GmbH
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
+
+namespace Netresearch\NrTextdb\Tests\Functional\Backend;
+
+use Netresearch\NrTextdb\Tests\Functional\AbstractFunctionalTestCase;
+use PHPUnit\Framework\Attributes\CoversNothing;
+use PHPUnit\Framework\Attributes\Test;
+use TYPO3\CMS\Backend\Module\ModuleProvider;
+
+/**
+ * The TextDB module sits in the core "Content" group, like the other
+ * page-independent editor modules, instead of a top-level group of its own.
+ */
+#[CoversNothing]
+final class ModuleRegistrationTest extends AbstractFunctionalTestCase
+{
+    #[Test]
+    public function textdbModuleIsASubmoduleOfTheContentGroup(): void
+    {
+        $module = $this->get(ModuleProvider::class)->getModule('netresearch_textdb');
+
+        self::assertNotNull($module);
+        self::assertSame('content', $module->getParentModule()?->getIdentifier());
+        self::assertSame('/module/netresearch/textdb', $module->getPath());
+    }
+
+    /**
+     * Scoped to this extension's own declarations: another Netresearch
+     * extension (nr_sync) still registers the shared group itself, so a
+     * system-wide lookup of netresearch_module would test that extension.
+     */
+    #[Test]
+    public function extensionRegistersNoTopLevelGroup(): void
+    {
+        // require, not require_once: the file returns the module array, and
+        // require_once returns true instead whenever TYPO3 has already
+        // included the file in this process.
+        /** @var array<string, array<string, mixed>> $modules */
+        $modules = require __DIR__ . '/../../../Configuration/Backend/Modules.php'; // NOSONAR php:S2003
+
+        self::assertNotSame([], $modules);
+        foreach ($modules as $identifier => $configuration) {
+            self::assertArrayHasKey('parent', $configuration, $identifier . ' is a top-level module');
+        }
+
+        self::assertArrayNotHasKey('netresearch_module', $modules);
+    }
+}

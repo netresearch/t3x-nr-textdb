@@ -92,8 +92,7 @@ TextDB Editors
 .. code-block:: none
 
    Module Access:
-   ✓ Netresearch
-   ✓ Netresearch TextDB
+   ✓ Content > TextDb
 
    Table Access (Modify):
    ✓ tx_nrtextdb_domain_model_translation
@@ -117,8 +116,7 @@ TextDB Administrators
 .. code-block:: none
 
    Module Access:
-   ✓ Netresearch
-   ✓ Netresearch TextDB
+   ✓ Content > TextDb
 
    Table Access (Full):
    ✓ tx_nrtextdb_domain_model_translation

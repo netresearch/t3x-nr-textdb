@@ -80,7 +80,7 @@ Key Features
 * **Pagination**: Efficient handling of large translation sets
 
 .. note::
-   The extension backend interface is available in **23 languages** including European, Asian, and African languages. See the :ref:`Installation Guide <localization>` for changing your backend language, or :ref:`Developer Manual <dev-localization>` for technical details about the localization infrastructure.
+   The extension backend interface is available in **31 languages** including European, Asian, and African languages. See the :ref:`Installation Guide <localization>` for changing your backend language, or :ref:`Developer Manual <dev-localization>` for technical details about the localization infrastructure.
 
 .. _screenshots:
 
@@ -242,7 +242,7 @@ Database-Backed Approach (With TextDB)
 **Backend Interface**::
 
    Your TYPO3 Backend/
-   └── Netresearch → TextDB Module
+   └── Content → TextDb Module
        ├── 🔍 Search: [button checkout]          # Instant filtering
        ├── 📊 Filter: Component: "checkout" | Type: "button"
        │

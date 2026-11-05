@@ -15,17 +15,15 @@ declare(strict_types=1);
 use TYPO3\CMS\Core\Imaging\IconProvider\SvgIconProvider;
 use TYPO3\CMS\Core\Imaging\IconProvider\SvgSpriteIconProvider;
 
-// The group icon is rendered inline in the module menu, so its currentColor
-// glyph follows the backend colour scheme.
+// The module icon is rendered inline in the module menu, so its currentColor
+// glyph follows the backend colour scheme. The accent is var(--nr-icon-accent)
+// with the brand teal as fallback; no stylesheet sets that property yet.
 //
 // Record icons are sprite icons, the way core registers its own: their default
 // markup is <svg><use>, which inherits currentColor. An SvgIconProvider icon is
-// rendered as <img>, where currentColor cannot reach the SVG.
+// rendered as <img> outside the module menu, where currentColor cannot reach
+// the SVG.
 return [
-    'extension-netresearch-module' => [
-        'provider' => SvgIconProvider::class,
-        'source'   => 'EXT:nr_textdb/Resources/Public/Icons/ModuleGroup.svg',
-    ],
     'extension-netresearch-textdb' => [
         'provider' => SvgIconProvider::class,
         'source'   => 'EXT:nr_textdb/Resources/Public/Icons/Module.svg',

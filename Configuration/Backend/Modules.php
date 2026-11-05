@@ -18,15 +18,12 @@ use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 
 // Caution, variable name must not exist within \TYPO3\CMS\Core\Package\AbstractServiceProvider::configureBackendModules
 $backendModulesConfiguration = [
-    'netresearch_module' => [
-        'labels'         => 'LLL:EXT:nr_textdb/Resources/Private/Language/locallang_mod.xlf',
-        'iconIdentifier' => 'extension-netresearch-module',
-        'position'       => [
-            'after' => 'web',
-        ],
-    ],
+    // Editors maintain the frontend texts here, so the module sits in the
+    // core "Content" group, next to the other page-independent editor modules
+    // such as Forms. The identifier and path stay unchanged: group
+    // permissions and bookmarks refer to them.
     'netresearch_textdb' => [
-        'parent'                                   => 'netresearch_module',
+        'parent'                                   => 'content',
         'position'                                 => [],
         'access'                                   => 'user',
         'iconIdentifier'                           => 'extension-netresearch-textdb',
