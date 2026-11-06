@@ -24,7 +24,7 @@ use TYPO3\CMS\Core\Imaging\IconSize;
 /**
  * The record icons and the module icon must reach the backend in a
  * form that inherits currentColor, otherwise they cannot follow the colour
- * scheme: <svg><use> or inline SVG, never <img>.
+ * scheme: <svg><use>, never <img>.
  */
 #[CoversNothing]
 final class BackendIconRegistrationTest extends AbstractFunctionalTestCase
@@ -58,15 +58,22 @@ final class BackendIconRegistrationTest extends AbstractFunctionalTestCase
         }
     }
 
+    /**
+     * The module menu renders the inline markup, the About module and the
+     * submodule overview render the default markup; both must be the sprite.
+     */
     #[Test]
-    public function moduleIconInlineMarkupDrawsTheGlyphInCurrentColorAndTheAccent(): void
+    public function moduleIconRendersAsSpriteUseInBothMarkups(): void
     {
         $icon = $this->get(IconFactory::class)->getIcon('extension-netresearch-textdb', IconSize::SMALL);
 
-        $markup = $icon->getAlternativeMarkup('inline');
-
-        self::assertStringContainsString('<svg', $markup);
-        self::assertStringContainsString('fill="currentColor"', $markup);
-        self::assertStringContainsString('fill="var(--nr-icon-accent, #2F99A4)"', $markup);
+        foreach (['default' => $icon->render(), 'inline' => $icon->render('inline')] as $variant => $markup) {
+            self::assertStringNotContainsString('<img', $markup, $variant . ' markup of the module icon');
+            self::assertMatchesRegularExpression(
+                '/<use [^>]*href="[^"]*\/Module\.svg(\?[^"#]*)?#extension-netresearch-textdb"/',
+                $markup,
+                $variant . ' markup of the module icon',
+            );
+        }
     }
 }

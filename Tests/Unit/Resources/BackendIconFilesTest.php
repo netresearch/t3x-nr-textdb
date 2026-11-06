@@ -113,6 +113,19 @@ final class BackendIconFilesTest extends UnitTestCase
      */
     private static function recordIcon(string $table, array $rows): array
     {
+        return [$table, self::spriteTree($table, $rows)];
+    }
+
+    /**
+     * The expected tree of a sprite icon file: a <symbol> with the given id
+     * holding the given rows, and a <use> of the symbol.
+     *
+     * @param list<array{string, int, array<string, string>}> $rows
+     *
+     * @return list<array{string, int, array<string, string>, string}>
+     */
+    private static function spriteTree(string $symbolId, array $rows): array
+    {
         $children = [];
 
         foreach ($rows as [$name, $depth, $attributes]) {
@@ -127,13 +140,10 @@ final class BackendIconFilesTest extends UnitTestCase
         }
 
         return [
-            $table,
-            [
-                ['svg', 0, ['height' => '16', 'viewBox' => self::geometry(self::ICON_VIEWBOX), 'width' => '16'], ''],
-                ['symbol', 1, ['id' => $table, 'viewBox' => self::geometry(self::ICON_VIEWBOX)], ''],
-                ...$children,
-                ['use', 1, ['href' => '#' . $table], ''],
-            ],
+            ['svg', 0, ['height' => '16', 'viewBox' => self::geometry(self::ICON_VIEWBOX), 'width' => '16'], ''],
+            ['symbol', 1, ['id' => $symbolId, 'viewBox' => self::geometry(self::ICON_VIEWBOX)], ''],
+            ...$children,
+            ['use', 1, ['href' => '#' . $symbolId], ''],
         ];
     }
 
@@ -209,9 +219,11 @@ final class BackendIconFilesTest extends UnitTestCase
     /**
      * Module.svg is the TextDB module icon in the flat TYPO3 v14 grammar the
      * Netresearch extensions share: filled shapes only, the source character
-     * in currentColor, so it takes the module menu's text colour in the light
+     * in currentColor, so it takes the surrounding text colour in the light
      * and the dark scheme, and the target letter in the shared accent. No
-     * tile: the v14 module menu draws core icons without one.
+     * tile: the v14 module menu draws core icons without one. It is a sprite
+     * like the record icons, with the icon identifier as symbol id, the way
+     * core names its module sprites ("module.svg#module-web").
      */
     #[Test]
     public function moduleIconIsTheFlatTranslateGlyphInCurrentColorAndAccent(): void
@@ -220,11 +232,10 @@ final class BackendIconFilesTest extends UnitTestCase
         self::assertInstanceOf(DOMElement::class, $svg);
 
         self::assertSame(
-            [
-                ['svg', 0, ['viewBox' => self::geometry(self::ICON_VIEWBOX)], ''],
-                ['path', 1, ['d' => self::geometry(self::TRANSLATE_SOURCE_PATH), 'fill' => 'currentColor'], ''],
-                ['path', 1, ['d' => self::geometry(self::TRANSLATE_TARGET_PATH), 'fill' => self::ICON_ACCENT, 'fill-rule' => 'evenodd'], ''],
-            ],
+            self::spriteTree('extension-netresearch-textdb', [
+                ['path', 0, ['d' => self::TRANSLATE_SOURCE_PATH, 'fill' => 'currentColor']],
+                ['path', 0, ['d' => self::TRANSLATE_TARGET_PATH, 'fill' => self::ICON_ACCENT, 'fill-rule' => 'evenodd']],
+            ]),
             $this->normalisedTree($svg),
         );
     }

@@ -12,21 +12,23 @@
 
 declare(strict_types=1);
 
-use TYPO3\CMS\Core\Imaging\IconProvider\SvgIconProvider;
 use TYPO3\CMS\Core\Imaging\IconProvider\SvgSpriteIconProvider;
 
-// The module icon is rendered inline in the module menu, so its currentColor
-// glyph follows the backend colour scheme. The accent is var(--nr-icon-accent)
-// with the brand teal as fallback; no stylesheet sets that property yet.
+// All icons are sprite icons, the way core registers its own. A sprite icon
+// renders as <svg><use> in both the default markup (About module, submodule
+// overview, record lists) and the inline markup (module menu), and <use>
+// inherits currentColor, so the glyphs follow the light and dark backend
+// scheme everywhere. An SvgIconProvider icon would render its default markup
+// as <img>, where currentColor cannot reach the SVG. Do not add a "source"
+// option: the sprite provider would then inline that file for the inline
+// markup instead of the sprite.
 //
-// Record icons are sprite icons, the way core registers its own: their default
-// markup is <svg><use>, which inherits currentColor. An SvgIconProvider icon is
-// rendered as <img> outside the module menu, where currentColor cannot reach
-// the SVG.
+// The accent is var(--nr-icon-accent) with the brand teal as fallback; no
+// stylesheet sets that property yet.
 return [
     'extension-netresearch-textdb' => [
-        'provider' => SvgIconProvider::class,
-        'source'   => 'EXT:nr_textdb/Resources/Public/Icons/Module.svg',
+        'provider' => SvgSpriteIconProvider::class,
+        'sprite'   => 'EXT:nr_textdb/Resources/Public/Icons/Module.svg#extension-netresearch-textdb',
     ],
     'nr-textdb-record-component' => [
         'provider' => SvgSpriteIconProvider::class,

@@ -303,8 +303,8 @@ Icons are registered in `Configuration/Icons.php`:
 
    return [
        'extension-netresearch-textdb' => [
-           'provider' => SvgIconProvider::class,
-           'source' => 'EXT:nr_textdb/Resources/Public/Icons/Module.svg',
+           'provider' => SvgSpriteIconProvider::class,
+           'sprite' => 'EXT:nr_textdb/Resources/Public/Icons/Module.svg#extension-netresearch-textdb',
        ],
        'nr-textdb-record-component' => [
            'provider' => SvgSpriteIconProvider::class,
@@ -313,11 +313,12 @@ Icons are registered in `Configuration/Icons.php`:
        // nr-textdb-record-environment, -translation and -type follow the same pattern
    ];
 
-The glyphs use ``currentColor``, so they follow the backend colour scheme.
-The module icon is rendered inline in the module menu; its second colour is
-``var(--nr-icon-accent, #2F99A4)``. The record icons are sprite icons,
-referenced from the TCA through ``ctrl.typeicon_classes``, so TYPO3 renders
-them as ``<svg><use>`` instead of ``<img>``. ``Extension.svg`` is the tile
+The glyphs use ``currentColor``, so they follow the backend colour scheme;
+the second colour is ``var(--nr-icon-accent, #2F99A4)``. The module icon and
+the record icons are sprite icons, so TYPO3 renders them as ``<svg><use>``
+instead of ``<img>`` everywhere: in the module menu, in the About module and
+in record lists. The record icons are referenced from the TCA through
+``ctrl.typeicon_classes``. ``Extension.svg`` is the tile
 shown in the Extension Manager: the white glyph on the brand teal with an
 orange accent dot.
 
