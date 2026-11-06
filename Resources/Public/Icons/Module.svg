@@ -1,4 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-    <path fill="currentColor" d="M33.74 38.14l-5.08-5.02 0.06-0.06c3.48-3.88 5.96-8.34 7.42-13.06H42V16h-14V12H24v4H10v3.98h22.34C31 23.84 28.88 27.5 26 30.7 24.14 28.64 22.6 26.38 21.38 24h-4c1.46 3.26 3.46 6.34 5.96 9.12l-10.18 10.04L16 46l10-10 6.22 6.22 1.52-4.08Z"/>
-    <path fill="var(--nr-icon-accent, #2F99A4)" fill-rule="evenodd" d="M45 28h-4L32 52h4l2.24-6h9.5L50 52h4l-9-24ZM39.76 42l3.24-8.66L46.24 42h-6.48Z"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 64 64">
+    <symbol id="extension-netresearch-textdb" viewBox="0 0 64 64">
+        <path fill="currentColor" d="M33.74 38.14l-5.08-5.02 0.06-0.06c3.48-3.88 5.96-8.34 7.42-13.06H42V16h-14V12H24v4H10v3.98h22.34C31 23.84 28.88 27.5 26 30.7 24.14 28.64 22.6 26.38 21.38 24h-4c1.46 3.26 3.46 6.34 5.96 9.12l-10.18 10.04L16 46l10-10 6.22 6.22 1.52-4.08Z"/>
+        <path fill="var(--nr-icon-accent, #2F99A4)" fill-rule="evenodd" d="M45 28h-4L32 52h4l2.24-6h9.5L50 52h4l-9-24ZM39.76 42l3.24-8.66L46.24 42h-6.48Z"/>
+    </symbol>
+    <use href="#extension-netresearch-textdb"/>
 </svg>
