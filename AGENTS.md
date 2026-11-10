@@ -29,6 +29,11 @@
 - All checks: `composer ci:test`
 - Make shortcuts: `make help` (cgl, cgl-fix, phpstan, rector, test, test-unit)
 
+## Changelog
+
+- Changes are recorded in [`CHANGELOG.md`](CHANGELOG.md), newest first: `# X.Y.Z`, then `## BREAKING`, `## FEATURE`, `## BUGFIX`, `## TASK`, `## MISC` as needed; each bullet starts with its tag and ends with its PR number, for example `- [FEATURE] … (#226)`.
+- The release PR `chore(release): X.Y.Z` writes the version's section, and the same changes in reStructuredText in `Documentation/ChangeLog/Index.rst`. A PR that records its own change puts it under a `# Unreleased` heading at the top of `CHANGELOG.md`; most PRs leave it to the release PR.
+
 ## Index of scoped AGENTS.md
 
 - `./Classes/AGENTS.md` — PHP backend classes (Controllers, Domain, Services, ViewHelpers)
