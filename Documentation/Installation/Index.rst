@@ -18,7 +18,7 @@ Minimum Requirements
 --------------------
 
 * **TYPO3**: 14.3.0 or higher
-* **PHP**: 8.2, 8.3, 8.4, or 8.5
+* **PHP**: 8.2, 8.3, 8.4, 8.5, or 8.6
 * **PHP Extensions**:
    * ext-zip
    * ext-simplexml
