@@ -60,7 +60,7 @@
         "symfony/translation": "^7.0 || ^8.0"
     },
     "require-dev": {
-        "netresearch/typo3-ci-workflows": "^2.0.3"
+        "netresearch/typo3-ci-workflows": "^2.3.1"
     },
     "suggest": {
         "netresearch/nr-sync": "Enables synchronization of TextDB translations between TYPO3 instances"
@@ -122,6 +122,7 @@
             "fractor process --config Build/fractor.php"
         ],
         "ci:test:php:cgl": [
+            "@ci:test:changelog",
             "@ci:cgl --dry-run"
         ],
         "ci:test:php:lint": [
@@ -159,6 +160,8 @@
         ],
         "docs:render": "docker run --rm --pull always -v \"$(pwd):/project\" ghcr.io/typo3-documentation/render-guides:latest --config=Documentation/guides.xml",
         "docs:serve": "php -S localhost:8090 -t Documentation-GENERATED-temp/",
-        "docs:clean": "rm -rf Documentation-GENERATED-temp/"
+        "docs:clean": "rm -rf Documentation-GENERATED-temp/",
+        "changelog:collect": "changelog-fragments collect",
+        "ci:test:changelog": "changelog-fragments check @no_additional_args"
     }
 }
