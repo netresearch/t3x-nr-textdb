@@ -27,12 +27,15 @@
 - Functional Tests: `composer ci:test:php:functional`
 - Mutation Tests: `composer ci:test:php:mutation`
 - All checks: `composer ci:test`
+- Changelog fragments: `composer ci:test:changelog`
 - Make shortcuts: `make help` (cgl, cgl-fix, phpstan, rector, test, test-unit)
 
 ## Changelog
 
-- Changes are recorded in [`CHANGELOG.md`](CHANGELOG.md), newest first: `# X.Y.Z`, then `## BREAKING`, `## FEATURE`, `## BUGFIX`, `## TASK`, `## MISC` as needed; each bullet starts with its tag and ends with its PR number, for example `- [FEATURE] … (#226)`.
-- The release PR `chore(release): X.Y.Z` writes the version's section, and the same changes in reStructuredText in `Documentation/ChangeLog/Index.rst`. A PR that records its own change puts it under a `# Unreleased` heading at the top of `CHANGELOG.md`; most PRs leave it to the release PR.
+- Changes are recorded in [`CHANGELOG.md`](CHANGELOG.md), [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/) from the release after 4.2.0 on: `## [X.Y.Z] - YYYY-MM-DD` with `### Added`, `### Changed`, `### Deprecated`, `### Removed`, `### Fixed`, `### Security` as needed, newest first, below `## [Unreleased]`. Releases up to 4.2.0 keep their original format (`# X.Y.Z` with `## FEATURE`, `## BUGFIX` and the like) below.
+- A feature or fix PR writes its entry as a fragment `changelog.d/<branch-slug>.<section>.md` ([format](changelog.d/README.md)) instead of editing `CHANGELOG.md`; `composer ci:test:changelog` checks it, and CI runs it through `composer ci:test:php:cgl`.
+- The release PR `chore(release): X.Y.Z` runs `composer changelog:collect`, which moves the fragments into `## [Unreleased]`, and then renames that section to `## [X.Y.Z] - YYYY-MM-DD`.
+- The release PR also writes the same changes in reStructuredText in `Documentation/ChangeLog/Index.rst`.
 
 ## Index of scoped AGENTS.md
 
